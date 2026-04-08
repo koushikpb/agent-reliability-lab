@@ -1,0 +1,9 @@
+model: TBD
+prompt_version: v1
+retriever: hybrid_rerank
+retriever_params:
+  k: 8
+  rrf_k: 60
+agent:
+  max_steps: 12
+  temperature: 0

@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+.env
+data/corpus/
+data/cache/
+recordings/live/
+reports/
+.DS_Store
+.idea/
+.vscode/

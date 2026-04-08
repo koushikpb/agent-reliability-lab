@@ -1,0 +1,35 @@
+[project]
+name = "arlab"
+version = "0.1.0"
+description = "Regression testing and fault injection for a RAG-backed, tool-using LLM agent"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "psycopg[binary]",
+    "pgvector",
+    "pydantic>=2",
+    "pyyaml",
+    "typer",
+    "sentence-transformers",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp",
+]
+
+[project.scripts]
+arlab = "arlab.cli:app"
+
+[dependency-groups]
+dev = ["pytest", "ruff", "mypy"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
