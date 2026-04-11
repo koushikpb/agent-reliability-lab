@@ -1,12 +1,24 @@
+import time
+from pathlib import Path
+
 import typer
+
+from arlab.db import apply_schema, connect
 
 app = typer.Typer(no_args_is_help=True)
 
 
 @app.command()
-def ingest() -> None:
+def ingest(corpus_dir: Path = Path("data/corpus")) -> None:
     """Chunk and embed the docs corpus into Postgres."""
-    raise NotImplementedError
+    from arlab import ingest as ingest_mod
+
+    started = time.perf_counter()
+    with connect() as conn:
+        apply_schema(conn)
+        n = ingest_mod.ingest(conn, corpus_dir)
+    elapsed = time.perf_counter() - started
+    typer.echo(f"ingested {n} chunks, index {ingest_mod.index_version()}, {elapsed:.1f}s")
 
 
 @app.command("retrieval-eval")

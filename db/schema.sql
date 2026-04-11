@@ -20,6 +20,15 @@ CREATE TABLE IF NOT EXISTS chunks (
 -- makes every insert update the graph.
 CREATE INDEX IF NOT EXISTS chunks_tsv_idx ON chunks USING gin (tsv);
 
+-- One row: which corpus/chunker/embedder produced the current chunks. Runs copy it into
+-- runs.index_version.
+CREATE TABLE IF NOT EXISTS ingest_meta (
+    singleton     boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+    index_version text NOT NULL,
+    n_chunks      integer NOT NULL,
+    ingested_at   timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS queries (
     id   text PRIMARY KEY,
     text text NOT NULL
