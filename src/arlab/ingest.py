@@ -1,7 +1,9 @@
+import functools
 import hashlib
 import json
 from collections.abc import Callable, Sequence
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import psycopg
@@ -9,6 +11,9 @@ from pgvector.psycopg import register_vector
 
 from arlab import corpus
 from arlab.chunking import CHUNKER_VERSION, MAX_WORDS, Chunk, chunk_document
+
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
 
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 EMBED_REVISION = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
@@ -38,13 +43,17 @@ def embedding_input(chunk: Chunk) -> str:
     return f"{chunk.heading}\n{chunk.text}"
 
 
-def embed_texts(texts: Sequence[str]) -> np.ndarray:
+@functools.cache
+def _embed_model() -> "SentenceTransformer":
     # Imported here because loading torch takes seconds and most commands don't need it.
     from sentence_transformers import SentenceTransformer
 
-    model = SentenceTransformer(EMBED_MODEL, revision=EMBED_REVISION)
+    return SentenceTransformer(EMBED_MODEL, revision=EMBED_REVISION)
+
+
+def embed_texts(texts: Sequence[str]) -> np.ndarray:
     # Normalized so cosine distance and inner product rank the same.
-    return model.encode(list(texts), batch_size=64, normalize_embeddings=True)
+    return _embed_model().encode(list(texts), batch_size=64, normalize_embeddings=True)
 
 
 def load_chunks(conn: psycopg.Connection, chunks: Sequence[Chunk], embeddings: np.ndarray) -> None:
