@@ -1,0 +1,10 @@
+# Labeled retrieval queries for milestone 2, written by hand.
+# Use `uv run arlab search "<query>"` to see pooled candidates from every retriever, then label
+# the chunks that answer the query: 2 = directly answers it, 1 = useful but partial.
+# Chunk ids are only valid for the current index version; `arlab retrieval-eval` checks them.
+#
+# - id: q001
+#   text: "pod keeps restarting with CrashLoopBackOff after a config change"
+#   relevant:
+#     tasks/debug/debug-application/debug-pods#some-anchor-0: 2
+[]
