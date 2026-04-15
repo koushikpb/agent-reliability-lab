@@ -10,10 +10,11 @@ import psycopg
 from pgvector.psycopg import register_vector
 
 from arlab import corpus
-from arlab.chunking import CHUNKER_VERSION, MAX_WORDS, Chunk, chunk_document
+from arlab.chunking import CHUNKER_VERSION, MAX_TOKENS, Chunk, chunk_document
 
 if TYPE_CHECKING:
     from sentence_transformers import SentenceTransformer
+    from transformers import PreTrainedTokenizerBase
 
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 EMBED_REVISION = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
@@ -29,7 +30,7 @@ def index_version() -> str:
     params = {
         "corpus_commit": corpus.COMMIT,
         "sections": corpus.SECTIONS,
-        "max_words": MAX_WORDS,
+        "max_tokens": MAX_TOKENS,
         "chunker_version": CHUNKER_VERSION,
         "embed_model": EMBED_MODEL,
         "embed_revision": EMBED_REVISION,
@@ -49,6 +50,17 @@ def _embed_model() -> "SentenceTransformer":
     from sentence_transformers import SentenceTransformer
 
     return SentenceTransformer(EMBED_MODEL, revision=EMBED_REVISION)
+
+
+@functools.cache
+def _tokenizer() -> "PreTrainedTokenizerBase":
+    from transformers import AutoTokenizer
+
+    return AutoTokenizer.from_pretrained(EMBED_MODEL, revision=EMBED_REVISION)
+
+
+def count_tokens(text: str) -> int:
+    return len(_tokenizer().tokenize(text))
 
 
 def embed_texts(texts: Sequence[str]) -> np.ndarray:
@@ -84,8 +96,13 @@ def load_chunks(conn: psycopg.Connection, chunks: Sequence[Chunk], embeddings: n
 
 
 def ingest(conn: psycopg.Connection, corpus_dir: Path, embed: Embedder = embed_texts) -> int:
-    if not (corpus_dir / corpus.DOCS_ROOT).exists():
-        corpus.fetch_corpus(corpus_dir)
-    chunks = [c for path, raw in corpus.iter_docs(corpus_dir) for c in chunk_document(path, raw)]
+    corpus.ensure_corpus(corpus_dir)
+    chunks = [
+        c
+        for path, raw in corpus.iter_docs(corpus_dir)
+        for c in chunk_document(
+            path, raw, count_tokens, read_example=lambda f: corpus.read_example(corpus_dir, f)
+        )
+    ]
     load_chunks(conn, chunks, embed([embedding_input(c) for c in chunks]))
     return len(chunks)

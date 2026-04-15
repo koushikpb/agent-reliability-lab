@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from arlab.chunking import Chunk
 from arlab.db import apply_schema
@@ -27,3 +28,11 @@ def test_load_replaces_chunks_builds_hnsw_and_records_version(conn):
 def test_index_version_is_stable():
     assert index_version() == index_version()
     assert len(index_version()) == 12
+
+
+def test_failed_load_keeps_previous_chunks(conn):
+    apply_schema(conn)
+    load_chunks(conn, fake_chunks(2), np.ones((2, 384), dtype=np.float32))
+    with pytest.raises(ValueError):
+        load_chunks(conn, fake_chunks(3), np.ones((2, 384), dtype=np.float32))
+    assert conn.execute("SELECT count(*) FROM chunks").fetchone() == (2,)
