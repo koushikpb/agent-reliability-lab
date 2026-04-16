@@ -30,6 +30,7 @@ def retrieval_eval(
     """Score retrievers on the labeled query set."""
     from arlab.labels import load_queries, missing_chunk_ids, store_queries
     from arlab.retrieval import RETRIEVERS
+    from arlab.retrieval import settings as retrieval_settings
     from arlab.retrieval_eval import evaluate, markdown_table
 
     queries = load_queries(labels)
@@ -51,6 +52,7 @@ def retrieval_eval(
         json.dumps(
             {
                 "index_version": version[0] if version else None,
+                "retrieval_settings": retrieval_settings(),
                 "labels": str(labels),
                 "reports": [asdict(r) for r in reports],
             },
@@ -83,6 +85,22 @@ def search(query: str, k: int = 10) -> None:
         typer.echo(
             f"{chunk_id}  [{', '.join(found[chunk_id])}]\n  {heading}\n  {' '.join(text.split())}\n"
         )
+    # Paste as the query's judged list after labeling, so unjudged@10 can be measured.
+    typer.echo("judged:\n" + "\n".join(f"  - {cid}" for cid in sorted(found)))
+
+
+@app.command("hnsw-recall")
+def hnsw_recall_cmd(labels: Path = Path("labels/queries.yaml"), k: int = 50) -> None:
+    """Overlap of HNSW top-k with exact search, for several ef_search values."""
+    from arlab.labels import load_queries
+    from arlab.retrieval_eval import hnsw_recall
+
+    texts = [q.text for q in load_queries(labels)]
+    if not texts:
+        raise typer.BadParameter(f"no queries in {labels}")
+    with connect() as conn:
+        for ef, overlap in hnsw_recall(conn, texts, k, [k, 100, 200]).items():
+            typer.echo(f"ef_search={ef}: recall@{k} vs exact = {overlap:.3f}")
 
 
 @app.command()

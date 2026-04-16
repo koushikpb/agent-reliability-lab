@@ -10,11 +10,22 @@ class LabeledQuery:
     id: str
     text: str
     grades: dict[str, int]  # chunk id -> 1 (relevant) or 2 (highly relevant)
+    # Every chunk id a person looked at, relevant or not. Without it, a chunk nobody judged and a
+    # chunk judged non-relevant look the same, and unjudged results silently count as misses.
+    judged: frozenset[str] | None = None
 
 
 def load_queries(path: Path) -> list[LabeledQuery]:
     raw = yaml.safe_load(path.read_text()) or []
-    queries = [LabeledQuery(q["id"], q["text"], dict(q["relevant"])) for q in raw]
+    queries = [
+        LabeledQuery(
+            q["id"],
+            q["text"],
+            dict(q["relevant"]),
+            frozenset(q["judged"]) if "judged" in q else None,
+        )
+        for q in raw
+    ]
     ids = [q.id for q in queries]
     if len(ids) != len(set(ids)):
         raise ValueError(f"duplicate query ids in {path}")
@@ -23,6 +34,8 @@ def load_queries(path: Path) -> list[LabeledQuery]:
             raise ValueError(f"query {q.id} has no relevant chunks")
         if any(g not in (1, 2) for g in q.grades.values()):
             raise ValueError(f"query {q.id} has a grade outside 1-2")
+        if q.judged is not None and not set(q.grades) <= q.judged:
+            raise ValueError(f"query {q.id} has relevant ids missing from judged")
     return queries
 
 
