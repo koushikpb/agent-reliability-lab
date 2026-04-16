@@ -41,3 +41,24 @@ def test_ndcg_ideal_is_over_all_labels_not_just_retrieved():
     # "b" is relevant but never retrieved; it still counts in the ideal ranking.
     idcg = (2**2 - 1) / math.log2(2) + (2**2 - 1) / math.log2(3)
     assert ndcg_at_k(["a", "x"], {"a": 2, "b": 2}, k=2) == pytest.approx(3 / idcg)
+
+
+def test_ndcg_ideal_is_cut_at_k_too():
+    # Three highly relevant chunks, k=2: a perfect top-2 is the best possible, so it scores 1.
+    # Computing the ideal over all three labels without the cutoff gives less than 1.
+    assert ndcg_at_k(["a", "b"], {"a": 2, "b": 2, "c": 2}, k=2) == pytest.approx(1.0)
+
+
+def test_k_larger_than_the_ranking():
+    assert recall_at_k(["a"], {"a", "b"}, k=10) == pytest.approx(0.5)
+    assert ndcg_at_k(["a"], {"a": 1}, k=10) == pytest.approx(1.0)
+
+
+def test_duplicate_ids_in_a_ranking_count_once():
+    assert recall_at_k(["a", "a", "a"], {"a", "b"}, k=3) == pytest.approx(0.5)
+    assert ndcg_at_k(["a", "a"], {"a": 2, "b": 2}, k=2) < 1.0
+
+
+def test_mrr_with_no_relevant_is_an_error():
+    with pytest.raises(ValueError):
+        mrr(RANKED, set())

@@ -25,3 +25,7 @@ def test_rrf_ties_break_deterministically_by_id():
 def test_empty_ranking_contributes_nothing():
     # Lexical search often returns nothing for a paraphrased query; fusion must still work.
     assert rrf_fuse([[], ["a"]]) == rrf_fuse([["a"]])
+
+
+def test_all_empty_rankings_fuse_to_empty():
+    assert rrf_fuse([[], []]) == []
