@@ -5,10 +5,9 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import psycopg
-from pgvector.psycopg import register_vector
 
 from arlab.fusion import rrf_fuse
-from arlab.ingest import embed_texts
+from arlab.ingest import EMBED_MODEL, EMBED_REVISION, embed_texts
 
 if TYPE_CHECKING:
     from sentence_transformers import CrossEncoder
@@ -19,6 +18,7 @@ RETRIEVERS = ("fts", "dense", "hybrid", "hybrid_rerank")
 # How deep each list goes before fusion or reranking. Deeper lists give fusion more overlap to work
 # with but cost rerank time linearly.
 CANDIDATES = 50
+EF_SEARCH = 40
 
 ScorePairs = Callable[[str, Sequence[str]], Sequence[float]]
 
@@ -33,10 +33,12 @@ def fts_search(conn: psycopg.Connection, query: str, k: int) -> list[Hit]:
     # plainto_tsquery ANDs every term, and a ticket sentence almost never matches every term in one
     # chunk, so the terms are ORed and ts_rank_cd orders by how many match and how close together.
     # ts_rank_cd has no IDF or length saturation, so this is BM25-style, not BM25.
+    # The ORed text is cast, not re-parsed: to_tsquery would stem the stems again
+    # ('releas' -> 'relea'), and kind names like HorizontalPodAutoscaler would match nothing.
     rows = conn.execute(
         """
         SELECT id, ts_rank_cd(tsv, q) AS score
-        FROM chunks, to_tsquery('english', replace(plainto_tsquery('english', %s)::text, '&', '|')) q
+        FROM chunks, cast(replace(plainto_tsquery('english', %s)::text, '&', '|') AS tsquery) q
         WHERE tsv @@ q
         ORDER BY score DESC, id
         LIMIT %s
@@ -47,9 +49,8 @@ def fts_search(conn: psycopg.Connection, query: str, k: int) -> list[Hit]:
 
 
 def dense_search(
-    conn: psycopg.Connection, query_vec: np.ndarray, k: int, ef_search: int = 40
+    conn: psycopg.Connection, query_vec: np.ndarray, k: int, ef_search: int = EF_SEARCH
 ) -> list[Hit]:
-    register_vector(conn)
     with conn.transaction():
         # ef_search must be >= k or HNSW returns fewer than k rows.
         conn.execute(f"SET LOCAL hnsw.ef_search = {max(ef_search, k):d}")
@@ -91,9 +92,33 @@ def rerank(
             "SELECT id, heading || E'\\n' || text FROM chunks WHERE id = ANY(%s)", (ids,)
         ).fetchall()
     )
+    missing = [i for i in ids if i not in rows]
+    if missing:
+        raise LookupError(f"candidates not in the index (re-ingested mid-run?): {missing}")
     scores = score_pairs(query, [rows[i] for i in ids])
     ranked = sorted(zip(ids, scores, strict=True), key=lambda p: (-p[1], p[0]))
     return [Hit(chunk_id, float(score)) for chunk_id, score in ranked[:k]]
+
+
+def settings() -> dict[str, object]:
+    """Retriever settings stored with each eval report, so two reports can be compared fairly."""
+    return {
+        "candidates": CANDIDATES,
+        "ef_search": EF_SEARCH,
+        "rrf_k": 60,
+        "embed_model": f"{EMBED_MODEL}@{EMBED_REVISION}",
+        "rerank_model": f"{RERANK_MODEL}@{RERANK_REVISION}",
+    }
+
+
+def exact_dense_search(conn: psycopg.Connection, query_vec: np.ndarray, k: int) -> list[str]:
+    """Brute-force nearest neighbors, the ground truth for HNSW recall."""
+    with conn.transaction():
+        conn.execute("SET LOCAL enable_indexscan = off")
+        rows = conn.execute(
+            "SELECT id FROM chunks ORDER BY embedding <=> %s LIMIT %s", (query_vec, k)
+        ).fetchall()
+    return [r[0] for r in rows]
 
 
 def search(conn: psycopg.Connection, retriever: str, query: str, k: int) -> list[Hit]:

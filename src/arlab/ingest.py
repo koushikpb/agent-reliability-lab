@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import psycopg
-from pgvector.psycopg import register_vector
 
 from arlab import corpus
 from arlab.chunking import CHUNKER_VERSION, MAX_TOKENS, Chunk, chunk_document
@@ -70,7 +69,6 @@ def embed_texts(texts: Sequence[str]) -> np.ndarray:
 
 def load_chunks(conn: psycopg.Connection, chunks: Sequence[Chunk], embeddings: np.ndarray) -> None:
     """Replace all chunks in one transaction, then build HNSW over the loaded rows."""
-    register_vector(conn)
     with conn.transaction():
         # Dropped first so inserts don't each update the graph.
         conn.execute("DROP INDEX IF EXISTS chunks_embedding_idx")

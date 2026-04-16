@@ -26,8 +26,9 @@ def loaded(conn):
         ),
         Chunk("svc#dns-0", "svc", "Debug Services > DNS", "Check that the Service name resolves."),
         Chunk("pv#bind-0", "pv", "Volumes > Binding", "A PersistentVolumeClaim binds to a volume."),
+        Chunk("hpa#scale-0", "hpa", "Autoscaling", "A HorizontalPodAutoscaler scales a release."),
     ]
-    load_chunks(conn, chunks, np.stack([unit(0), unit(1), unit(2)]))
+    load_chunks(conn, chunks, np.stack([unit(0), unit(1), unit(2), unit(3)]))
     return conn
 
 
@@ -73,3 +74,14 @@ def test_hybrid_passes_both_rankings_to_fusion(loaded, monkeypatch):
 def test_unknown_retriever_is_rejected(loaded):
     with pytest.raises(ValueError):
         retrieval.search(loaded, "bm25", "q", k=5)
+
+
+@pytest.mark.parametrize("query", ["HorizontalPodAutoscaler", "release", "apiVersion release"])
+def test_fts_does_not_stem_query_terms_twice(loaded, query):
+    # Re-parsing plainto_tsquery output stems again: 'releas' -> 'relea' matches nothing.
+    assert "hpa#scale-0" in [h.chunk_id for h in fts_search(loaded, query, k=5)]
+
+
+def test_rerank_names_candidates_missing_from_the_index(loaded):
+    with pytest.raises(LookupError, match="gone#x-0"):
+        rerank(loaded, "q", [Hit("gone#x-0", 1.0)], k=1, score_pairs=lambda q, t: [0.0] * len(t))

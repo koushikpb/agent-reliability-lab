@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import psycopg
+from pgvector.psycopg import register_vector
 
 DEFAULT_URL = "postgresql://arlab:arlab@localhost:5433/arlab"
 # Resolved from the source tree; this is a dev tool, not an installed package.
@@ -13,8 +14,13 @@ def database_url() -> str:
 
 
 def connect(url: str | None = None) -> psycopg.Connection:
-    return psycopg.connect(url or database_url(), autocommit=True)
+    conn = psycopg.connect(url or database_url(), autocommit=True)
+    # The vector type exists only after the schema is applied, e.g. in a fresh test database.
+    if conn.execute("SELECT 1 FROM pg_type WHERE typname = 'vector'").fetchone():
+        register_vector(conn)
+    return conn
 
 
 def apply_schema(conn: psycopg.Connection) -> None:
     conn.execute(SCHEMA_PATH.read_text())
+    register_vector(conn)
