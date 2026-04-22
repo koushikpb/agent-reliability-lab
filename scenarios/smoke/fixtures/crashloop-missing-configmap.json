@@ -1,0 +1,17 @@
+{
+  "pods": {
+    "payments": [
+      {"name": "payments-api-6f7c9d-k2x8p", "status": "CrashLoopBackOff", "ready": false, "restarts": 14,
+       "image": "registry.internal/payments-api:2.14.0", "last_state": "Terminated (Error), exit code 1"},
+      {"name": "payments-api-6f7c9d-q9w4m", "status": "CrashLoopBackOff", "ready": false, "restarts": 13,
+       "image": "registry.internal/payments-api:2.14.0", "last_state": "Terminated (Error), exit code 1"},
+      {"name": "payments-db-0", "status": "Running", "ready": true, "restarts": 0,
+       "image": "postgres:16.4", "last_state": null}
+    ]
+  },
+  "logs": {
+    "payments-api-6f7c9d-k2x8p": "2026-04-15T08:02:11Z INFO starting payments-api 2.14.0\n2026-04-15T08:02:11Z ERROR config: required file /etc/payments/feature-flags.yaml not found\n2026-04-15T08:02:11Z FATAL exiting: configuration incomplete (expected ConfigMap payments-flags mounted at /etc/payments)",
+    "payments-api-6f7c9d-q9w4m": "2026-04-15T08:03:40Z INFO starting payments-api 2.14.0\n2026-04-15T08:03:40Z ERROR config: required file /etc/payments/feature-flags.yaml not found\n2026-04-15T08:03:40Z FATAL exiting: configuration incomplete (expected ConfigMap payments-flags mounted at /etc/payments)",
+    "payments-db-0": "2026-04-15T07:00:00Z LOG database system is ready to accept connections"
+  }
+}

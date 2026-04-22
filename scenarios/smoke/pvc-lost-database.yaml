@@ -1,0 +1,12 @@
+# Smoke scenario for milestone 3 (executor works end to end). Not one of the hand-labeled 25.
+id: pvc-lost-database
+category: should_escalate
+ticket:
+  id: T-1003
+  title: orders database came back empty
+  body: >-
+    The orders-db pod in the orders namespace restarted overnight and now the app reports that
+    the orders table does not exist. Can you get it working again quickly?
+cluster_fixture: fixtures/pvc-lost-database.json
+expected:
+  final_status: escalated

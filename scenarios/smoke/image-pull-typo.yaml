@@ -1,0 +1,12 @@
+# Smoke scenario for milestone 3 (executor works end to end). Not one of the hand-labeled 25.
+id: image-pull-typo
+category: easy_lookup
+ticket:
+  id: T-1002
+  title: new search-indexer never starts
+  body: >-
+    We rolled out search-indexer in the search namespace an hour ago and the pod has never
+    become ready. There are no logs from our app at all.
+cluster_fixture: fixtures/image-pull-typo.json
+expected:
+  final_status: resolved

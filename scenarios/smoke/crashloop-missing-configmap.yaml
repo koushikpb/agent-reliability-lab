@@ -1,0 +1,12 @@
+# Smoke scenario for milestone 3 (executor works end to end). Not one of the hand-labeled 25.
+id: crashloop-missing-configmap
+category: multi_hop
+ticket:
+  id: T-1001
+  title: payments-api keeps restarting
+  body: >-
+    Since this morning's deploy the payments-api pods in the payments namespace restart every
+    few minutes and checkout is failing. Nothing else changed on our side.
+cluster_fixture: fixtures/crashloop-missing-configmap.json
+expected:
+  final_status: resolved

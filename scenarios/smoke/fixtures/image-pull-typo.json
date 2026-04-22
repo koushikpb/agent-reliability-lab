@@ -1,0 +1,12 @@
+{
+  "pods": {
+    "search": [
+      {"name": "search-indexer-7b5d8-zt6qn", "status": "ImagePullBackOff", "ready": false, "restarts": 0,
+       "image": "registry.internal/serach-indexer:1.3.2",
+       "message": "Back-off pulling image \"registry.internal/serach-indexer:1.3.2\": manifest unknown"}
+    ]
+  },
+  "logs": {
+    "search-indexer-7b5d8-zt6qn": "Error from server (BadRequest): container \"indexer\" in pod \"search-indexer-7b5d8-zt6qn\" is waiting to start: trying and failing to pull image"
+  }
+}

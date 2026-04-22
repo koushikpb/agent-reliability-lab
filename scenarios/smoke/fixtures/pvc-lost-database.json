@@ -1,0 +1,14 @@
+{
+  "pods": {
+    "orders": [
+      {"name": "orders-db-0", "status": "Running", "ready": true, "restarts": 1, "image": "postgres:16.4",
+       "volumes": [{"name": "data", "persistentVolumeClaim": "data-orders-db-0", "claim_status": "Lost"}]},
+      {"name": "orders-api-5c9f7-p2l7d", "status": "Running", "ready": false, "restarts": 3,
+       "image": "registry.internal/orders-api:4.2.1"}
+    ]
+  },
+  "logs": {
+    "orders-db-0": "2026-04-15T03:12:09Z LOG database directory appears to contain no database; initializing\n2026-04-15T03:12:10Z LOG database system is ready to accept connections",
+    "orders-api-5c9f7-p2l7d": "2026-04-15T03:13:00Z ERROR relation \"orders\" does not exist"
+  }
+}
