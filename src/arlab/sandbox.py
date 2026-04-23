@@ -1,6 +1,7 @@
 import copy
 import json
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
 
 import httpx2
@@ -93,6 +94,9 @@ def create_tool_server(fixture: dict[str, Any], search: SearchFn) -> FastAPI:
     @app.post("/tools/update_ticket")
     def update_ticket(args: dict[str, str]) -> dict[str, Any]:
         t = ticket(args["id"])
+        if t["status"] == "escalated":
+            # Escalation hands the ticket to a human; the agent may not quietly undo it.
+            raise HTTPException(409, "ticket is escalated and owned by a human engineer")
         if args["status"] not in TICKET_STATUSES:
             raise HTTPException(422, f"status must be one of {TICKET_STATUSES}")
         # Not idempotent: a retried call appends the note twice. Milestone 8 measures this.
@@ -110,6 +114,20 @@ def create_tool_server(fixture: dict[str, Any], search: SearchFn) -> FastAPI:
     return app
 
 
+@dataclass(frozen=True)
+class ToolResponse:
+    text: str  # what the model sees
+    status: int  # HTTP status, kept so agent mistakes (4xx) and server faults (5xx, 429) differ
+
+
+def _detail(response: httpx2.Response) -> str:
+    # Error bodies are not always JSON (a proxy 502, an injected malformed body).
+    try:
+        return str(response.json().get("detail", response.text))
+    except (ValueError, AttributeError):
+        return response.text[:500]
+
+
 class ToolClient:
     """Calls the tool server over HTTP, so faults injected at the HTTP layer reach the agent."""
 
@@ -120,11 +138,12 @@ class ToolClient:
     def in_process(cls, app: FastAPI) -> "ToolClient":
         return cls(TestClient(app, raise_server_exceptions=False))
 
-    def call(self, name: str, args: dict[str, Any]) -> tuple[str, bool]:
-        """Returns (result text for the model, is_error)."""
+    def call(self, name: str, args: dict[str, Any]) -> ToolResponse:
         response = self.http.post(f"/tools/{name}", json=args)
-        if response.status_code == 404 and response.json().get("detail") == "Not Found":
-            return f"unknown tool {name}", True
+        if response.status_code == 404 and _detail(response) == "Not Found":
+            return ToolResponse(f"unknown tool {name}", 404)
         if response.is_error:
-            return f"error {response.status_code}: {response.json().get('detail')}", True
-        return json.dumps(response.json()), False
+            return ToolResponse(
+                f"error {response.status_code}: {_detail(response)}", response.status_code
+            )
+        return ToolResponse(json.dumps(response.json()), response.status_code)

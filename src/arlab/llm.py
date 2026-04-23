@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Protocol
@@ -93,7 +94,10 @@ class RecordingStore:
 
     def put(self, key: str, value: Any) -> None:
         self.root.mkdir(parents=True, exist_ok=True)
-        (self.root / f"{key}.json").write_text(json.dumps(value, indent=1, sort_keys=True))
+        # Written to a temp file and renamed, so a crash never leaves a truncated recording.
+        tmp = self.root / f"{key}.json.tmp"
+        tmp.write_text(json.dumps(value, indent=1, sort_keys=True))
+        os.replace(tmp, self.root / f"{key}.json")
 
 
 class RecordingProvider:

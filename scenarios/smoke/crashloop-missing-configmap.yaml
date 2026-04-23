@@ -1,6 +1,6 @@
 # Smoke scenario for milestone 3 (executor works end to end). Not one of the hand-labeled 25.
 id: crashloop-missing-configmap
-category: multi_hop
+category: easy_lookup
 ticket:
   id: T-1001
   title: payments-api keeps restarting
