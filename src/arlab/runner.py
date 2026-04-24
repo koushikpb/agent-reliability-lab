@@ -9,9 +9,11 @@ import yaml
 
 from arlab.agent import AgentResult, run_agent
 from arlab.config import RunConfig, system_prompt
-from arlab.llm import Provider, RecordingStore, ReplayMiss
+from arlab.llm import Provider, RecordingProvider, RecordingStore, ReplayMiss, ReplayProvider
+from arlab.results import ScenarioRow, row_from_result
 from arlab.retrieval import search
 from arlab.sandbox import SearchFn, ToolClient, create_tool_server
+from arlab.tracing import Event, make_tracer, record
 
 
 @dataclass(frozen=True)
@@ -28,6 +30,8 @@ class ScenarioOutcome:
     scenario_id: str
     final_status: str
     result: AgentResult
+    events: list[Event]
+    row: ScenarioRow
 
 
 def load_scenario(path: Path) -> Scenario:
@@ -44,18 +48,42 @@ def load_suite(suite_dir: Path) -> list[Scenario]:
 
 
 def run_scenario(
-    scenario: Scenario, provider: Provider, search_docs: SearchFn, config: RunConfig
+    scenario: Scenario,
+    provider: Provider,
+    search_docs: SearchFn,
+    config: RunConfig,
+    fault: str = "none",
 ) -> ScenarioOutcome:
-    server = create_tool_server(scenario.cluster, search_docs)
-    result = run_agent(
-        provider,
-        ToolClient.in_process(server),
-        system_prompt(config),
-        scenario.ticket_id,
-        config.agent.max_steps,
-    )
+    tracer, collector = make_tracer()
+
+    def traced_search(query: str) -> list[dict[str, str]]:
+        with tracer.start_as_current_span("retrieval") as span:
+            hits = search_docs(query)
+            record(span, "retrieval", {"query": query, "chunk_ids": [h["chunk_id"] for h in hits]})
+        return hits
+
+    server = create_tool_server(scenario.cluster, traced_search)
+    with tracer.start_as_current_span("scenario") as span:
+        result = run_agent(
+            provider,
+            ToolClient.in_process(server),
+            system_prompt(config),
+            scenario.ticket_id,
+            config.agent.max_steps,
+            tracer,
+        )
+        record(
+            span,
+            "scenario",
+            {"scenario_id": scenario.id, "ticket_id": scenario.ticket_id, "stop": result.stop},
+        )
+    events = collector.drain()
     final_status = server.state.cluster["tickets"][scenario.ticket_id]["status"]
-    return ScenarioOutcome(scenario.id, final_status, result)
+    [scenario_event] = [e for e in events if e.kind == "scenario"]
+    row = row_from_result(
+        scenario.id, fault, scenario.expected, final_status, result, scenario_event.duration_ms
+    )
+    return ScenarioOutcome(scenario.id, final_status, result, events, row)
 
 
 def _search_key(index_version: str, retriever: str, k: int, query: str) -> str:
@@ -100,3 +128,32 @@ def replay_search(store: RecordingStore, index_version: str, retriever: str, k: 
         return hits
 
     return search_docs
+
+
+def scenario_io(
+    mode: str,
+    store_root: Path,
+    scenario_id: str,
+    config: RunConfig,
+    index_version: str,
+    live: Provider | None,
+    conn: psycopg.Connection | None,
+) -> tuple[Provider, SearchFn]:
+    """Provider and search for one scenario. Each scenario records into its own directory: the
+    first request is the same for every scenario with the same ticket id, so a shared store would
+    let one scenario replay another's responses."""
+    store = RecordingStore(store_root / scenario_id)
+    retriever, k = config.retriever, config.retriever_params.k
+    if mode == "replay":
+        return ReplayProvider(config.model, store), replay_search(
+            store, index_version, retriever, k
+        )
+    if live is None or conn is None:
+        raise ValueError(f"mode {mode} needs a live provider and a database connection")
+    search_docs = db_search(conn, retriever, k)
+    if mode == "live":
+        return live, search_docs
+    return (
+        RecordingProvider(live, store),
+        recording_search(search_docs, store, index_version, retriever, k),
+    )

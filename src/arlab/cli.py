@@ -109,60 +109,94 @@ def run(
     config: Path,
     mode: str = typer.Option("replay", help="replay (no spend), record, or live"),
     recordings: Path = Path("recordings"),
+    save: bool = typer.Option(True, help="store the run, results and events in Postgres"),
+    batch: str = typer.Option("", help="batch id grouping repeats of one config"),
 ) -> None:
     """Run a scenario suite against one config."""
+    import uuid
+
     from arlab.config import config_hash, load_config
-    from arlab.llm import (
-        AnthropicProvider,
-        Provider,
-        RecordingProvider,
-        RecordingStore,
-        ReplayMiss,
-        ReplayProvider,
+    from arlab.llm import AnthropicProvider, ReplayMiss
+    from arlab.runner import load_suite, run_scenario, scenario_io
+    from arlab.store import (
+        finish_run,
+        read_store_meta,
+        record_scenario,
+        start_run,
+        suite_hash,
+        write_store_meta,
     )
-    from arlab.runner import db_search, load_suite, recording_search, replay_search, run_scenario
 
     if mode not in ("replay", "record", "live"):
         raise typer.BadParameter("mode must be replay, record or live")
     cfg = load_config(config)
     scenarios = load_suite(suite)
     # Recordings are per suite and config hash: a changed prompt or tool schema can't replay old ones.
-    store = RecordingStore(recordings / suite.name / config_hash(cfg))
-    k = cfg.retriever_params.k
-    with connect() as conn:
-        row = conn.execute("SELECT index_version FROM ingest_meta").fetchone()
-        index_version = row[0] if row else "none"
-        provider: Provider
-        if mode == "replay":
-            provider = ReplayProvider(cfg.model, store)
-            search_docs = replay_search(store, index_version, cfg.retriever, k)
-        else:
-            provider = AnthropicProvider(cfg.model, cfg.effort, cfg.agent.max_tokens)
-            search_docs = db_search(conn, cfg.retriever, k)
-            if mode == "record":
-                provider = RecordingProvider(provider, store)
-                search_docs = recording_search(search_docs, store, index_version, cfg.retriever, k)
-        typer.echo(f"config {config_hash(cfg)}  index {index_version}  mode {mode}")
-        total_cost = 0.0
+    store_root = recordings / suite.name / config_hash(cfg)
+    # Replay without --save needs no database, which is how CI runs.
+    conn = connect() if mode != "replay" or save else None
+    if mode == "replay":
+        index_version = read_store_meta(store_root)
+        if index_version is None:
+            typer.echo(f"no recordings at {store_root}; record with --mode record (costs money)")
+            raise typer.Exit(1)
+    else:
+        assert conn is not None
+        ingest = conn.execute("SELECT index_version FROM ingest_meta").fetchone()
+        if ingest is None:
+            raise typer.BadParameter("no ingested index; run `arlab ingest` first")
+        index_version = ingest[0]
+        if mode == "record":
+            write_store_meta(store_root, index_version)
+    live = (
+        None if mode == "replay" else AnthropicProvider(cfg.model, cfg.effort, cfg.agent.max_tokens)
+    )
+    run_id = None
+    if conn is not None and save:
+        run_id = start_run(
+            conn,
+            batch_id=batch or uuid.uuid4().hex,
+            suite=suite.name,
+            suite_hash=suite_hash(suite),
+            config=cfg,
+            index_version=index_version,
+            mode="replay" if mode == "replay" else "live",
+        )
+    typer.echo(f"config {config_hash(cfg)}  index {index_version}  mode {mode}  run {run_id}")
+    total_cost = 0.0
+    finished = False
+    try:
         for scenario in scenarios:
+            provider, search_docs = scenario_io(
+                mode, store_root, scenario.id, cfg, index_version, live, conn
+            )
             try:
                 outcome = run_scenario(scenario, provider, search_docs, cfg)
             except ReplayMiss:
                 typer.echo(
-                    f"{scenario.id}: no recording for this config ({store.root}). Record it with"
-                    " --mode record, which calls the live model and costs money."
+                    f"{scenario.id}: no recording for this request under {store_root}. Record it"
+                    " with --mode record, which calls the live model and costs money."
                 )
                 raise typer.Exit(1) from None
-            r = outcome.result
-            total_cost += r.cost_usd
+            if run_id is not None and conn is not None:
+                record_scenario(conn, run_id, outcome.row, outcome.events)
+            row = outcome.row
+            total_cost += row.cost_usd
             expected = scenario.expected["final_status"]
-            verdict = "ok" if outcome.final_status == expected else "MISMATCH"
             typer.echo(
-                f"{scenario.id:32} {verdict:8} expected={expected} got={outcome.final_status}"
-                f" stop={r.stop} steps={r.steps} tool_errors={sum(c.is_error for c in r.tool_calls)}"
-                f" cited={len(r.cited_ids)} tokens={r.input_tokens}/{r.output_tokens}"
-                f" ${r.cost_usd:.4f}"
+                f"{scenario.id:32} {'ok' if row.success else 'FAIL':5} expected={expected}"
+                f" got={row.final_status} stop={outcome.result.stop} steps={outcome.result.steps}"
+                f" invalid={row.invalid_calls} tool_errors={row.tool_errors}"
+                f" cited={len(row.cited_ids)} tokens={row.input_tokens}/{row.output_tokens}"
+                f" ${row.cost_usd:.4f}"
             )
+        finished = True
+    finally:
+        # A run that stopped early is marked failed, so it is never compared as if complete.
+        if run_id is not None and conn is not None:
+            finish_run(conn, run_id, "finished" if finished else "failed")
+        if conn is not None:
+            conn.close()
     # Replayed runs report what the recorded run cost, not new spend.
     typer.echo(
         f"total ${total_cost:.4f}" + (" (recorded cost, no new spend)" if mode == "replay" else "")

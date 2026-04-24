@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -140,7 +141,12 @@ def test_record_then_replay_gives_the_same_run(suite, tmp_path):
     replayed = run_scenario(
         scenario, ReplayProvider(MODEL, store), replay_search(store, "idx", "dense", 8), CONFIG
     )
-    assert replayed == recorded
+    # Timing differs between any two runs; everything the agent did must not.
+    assert replayed.result == recorded.result
+    assert replace(replayed.row, latency_ms=0) == replace(recorded.row, latency_ms=0)
+    assert [(e.kind, e.payload) for e in replayed.events] == [
+        (e.kind, e.payload) for e in recorded.events
+    ]
 
 
 def test_replay_misses_when_the_prompt_changes(suite, tmp_path):
@@ -163,3 +169,23 @@ def test_all_smoke_scenarios_load(suite):
     assert set(suite) == {"crashloop-missing-configmap", "image-pull-typo", "pvc-lost-database"}
     for s in suite.values():
         assert s.cluster["tickets"][s.ticket_id]["status"] == "open"
+
+
+def test_final_text_comes_only_from_the_terminal_response():
+    server = create_tool_server({"tickets": {"T": {"status": "open", "notes": []}}}, fake_search)
+    narration = {"type": "text", "text": "Checking [cite: early#x-0] first."}
+    provider = ScriptedProvider(
+        [reply(narration, tool_use(1, "get_ticket", {"id": "T"})) for _ in range(2)]
+    )
+    result = run_agent(provider, ToolClient.in_process(server), "s", "T", max_steps=2)
+    assert result.stop == "max_steps"
+    assert result.final_text == "" and result.cited_ids == []
+
+
+def test_pause_turn_resumes_instead_of_stopping():
+    server = create_tool_server({"tickets": {}}, fake_search)
+    provider = ScriptedProvider(
+        [reply(stop="pause_turn"), reply({"type": "text", "text": "ok"}, stop="end_turn")]
+    )
+    result = run_agent(provider, ToolClient.in_process(server), "s", "T", max_steps=5)
+    assert (result.stop, result.steps, result.final_text) == ("end_turn", 2, "ok")
