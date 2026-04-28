@@ -136,14 +136,23 @@ class ToolClient:
 
     @classmethod
     def in_process(cls, app: FastAPI) -> "ToolClient":
-        return cls(TestClient(app, raise_server_exceptions=False))
+        # An exception inside the server is a bug or an infrastructure failure (a replay miss, the
+        # database down), not something the agent should see as a tool error, so it propagates.
+        # Injected faults are explicit HTTP responses instead.
+        return cls(TestClient(app, raise_server_exceptions=True))
 
     def call(self, name: str, args: dict[str, Any]) -> ToolResponse:
-        response = self.http.post(f"/tools/{name}", json=args)
+        try:
+            response = self.http.post(f"/tools/{name}", json=args)
+        except httpx2.TimeoutException:
+            return ToolResponse("error: tool call timed out", 0)
         if response.status_code == 404 and _detail(response) == "Not Found":
             return ToolResponse(f"unknown tool {name}", 404)
         if response.is_error:
-            return ToolResponse(
-                f"error {response.status_code}: {_detail(response)}", response.status_code
-            )
-        return ToolResponse(json.dumps(response.json()), response.status_code)
+            detail = _detail(response)
+            return ToolResponse(f"error {response.status_code}: {detail}", response.status_code)
+        try:
+            body = response.json()
+        except ValueError:
+            return ToolResponse(f"error: malformed response body: {response.text[:200]}", 0)
+        return ToolResponse(json.dumps(body), response.status_code)

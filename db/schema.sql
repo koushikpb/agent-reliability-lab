@@ -64,7 +64,9 @@ CREATE TABLE IF NOT EXISTS runs (
     -- corpus commit + chunker params + embedder; retrieval results are only comparable within one.
     index_version text NOT NULL,
     git_sha       text NOT NULL,
-    mode          text NOT NULL CHECK (mode IN ('live', 'replay')),
+    -- record runs are live runs whose responses were saved; replay runs re-score recordings, and
+    -- their cost_usd is the recorded cost, not new spend. Filter by mode before summing spend.
+    mode          text NOT NULL CHECK (mode IN ('live', 'record', 'replay')),
     -- Without status, a crashed run and a run in progress both look like finished_at IS NULL.
     status        text NOT NULL DEFAULT 'running' CHECK (status IN ('running', 'finished', 'failed')),
     started_at    timestamptz NOT NULL DEFAULT now(),
@@ -91,9 +93,15 @@ CREATE TABLE IF NOT EXISTS scenario_results (
     PRIMARY KEY (run_id, scenario_id, fault)
 );
 
+CREATE INDEX IF NOT EXISTS runs_batch_idx ON runs (batch_id);
+CREATE INDEX IF NOT EXISTS runs_config_idx ON runs (config_hash);
+CREATE INDEX IF NOT EXISTS scenario_results_scenario_idx ON scenario_results (scenario_id);
+CREATE INDEX IF NOT EXISTS scenario_results_failure_idx ON scenario_results (failure_class);
+
 -- seq orders events within a scenario, so a run can be replayed without trusting wall-clock times.
 -- span ids mirror the OpenTelemetry tree, e.g. a retrieval inside a tool call. kind has no CHECK
 -- because judge calls and faults add kinds later, and IF NOT EXISTS would never widen it.
+-- No foreign key to scenario_results: a scenario that crashed has events but no result row.
 CREATE TABLE IF NOT EXISTS events (
     run_id         text NOT NULL REFERENCES runs (id),
     scenario_id    text NOT NULL,

@@ -2,6 +2,7 @@ import json
 import time
 from dataclasses import asdict
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
@@ -105,22 +106,23 @@ def hnsw_recall_cmd(labels: Path = Path("labels/queries.yaml"), k: int = 50) -> 
 
 @app.command()
 def run(
-    suite: Path,
-    config: Path,
-    mode: str = typer.Option("replay", help="replay (no spend), record, or live"),
+    suite: Annotated[Path, typer.Option(help="scenario suite directory")],
+    config: Annotated[Path, typer.Option(help="run config YAML")],
+    mode: Annotated[str, typer.Option(help="replay (no spend), record, or live")] = "replay",
     recordings: Path = Path("recordings"),
-    save: bool = typer.Option(True, help="store the run, results and events in Postgres"),
-    batch: str = typer.Option("", help="batch id grouping repeats of one config"),
+    save: Annotated[bool, typer.Option(help="store the run and its events in Postgres")] = True,
+    batch: Annotated[str, typer.Option(help="batch id grouping repeats of one config")] = "",
 ) -> None:
     """Run a scenario suite against one config."""
     import uuid
 
     from arlab.config import config_hash, load_config
     from arlab.llm import AnthropicProvider, ReplayMiss
-    from arlab.runner import load_suite, run_scenario, scenario_io
+    from arlab.runner import ScenarioCrashed, load_suite, run_scenario, scenario_io
     from arlab.store import (
         finish_run,
         read_store_meta,
+        record_events,
         record_scenario,
         start_run,
         suite_hash,
@@ -160,7 +162,7 @@ def run(
             suite_hash=suite_hash(suite),
             config=cfg,
             index_version=index_version,
-            mode="replay" if mode == "replay" else "live",
+            mode=mode,
         )
     typer.echo(f"config {config_hash(cfg)}  index {index_version}  mode {mode}  run {run_id}")
     total_cost = 0.0
@@ -172,19 +174,23 @@ def run(
             )
             try:
                 outcome = run_scenario(scenario, provider, search_docs, cfg)
-            except ReplayMiss:
-                typer.echo(
-                    f"{scenario.id}: no recording for this request under {store_root}. Record it"
-                    " with --mode record, which calls the live model and costs money."
-                )
-                raise typer.Exit(1) from None
+            except ScenarioCrashed as crash:
+                if run_id is not None and conn is not None:
+                    record_events(conn, run_id, scenario.id, "none", crash.events)
+                if isinstance(crash.__cause__, ReplayMiss):
+                    typer.echo(
+                        f"{scenario.id}: no recording for this request under {store_root}. Record"
+                        " it with --mode record, which calls the live model and costs money."
+                    )
+                    raise typer.Exit(1) from None
+                raise
             if run_id is not None and conn is not None:
                 record_scenario(conn, run_id, outcome.row, outcome.events)
             row = outcome.row
             total_cost += row.cost_usd
-            expected = scenario.expected["final_status"]
+            expected = scenario.expected.final_status
             typer.echo(
-                f"{scenario.id:32} {'ok' if row.success else 'FAIL':5} expected={expected}"
+                f"{scenario.id:32} {'ok' if row.success else row.failure_class:22} expected={expected}"
                 f" got={row.final_status} stop={outcome.result.stop} steps={outcome.result.steps}"
                 f" invalid={row.invalid_calls} tool_errors={row.tool_errors}"
                 f" cited={len(row.cited_ids)} tokens={row.input_tokens}/{row.output_tokens}"
@@ -207,3 +213,36 @@ def run(
 def gate(baseline: str, candidate: str) -> None:
     """Compare two runs and exit nonzero on regression."""
     raise NotImplementedError
+
+
+@app.command("check-suite")
+def check_suite(suite: Path) -> None:
+    """Validate every scenario in a suite, and that its chunk ids exist in the current index."""
+    from pydantic import ValidationError
+
+    from arlab.runner import load_scenario
+
+    problems = []
+    scenarios = []
+    for path in sorted(suite.glob("*.yaml")):
+        try:
+            scenarios.append(load_scenario(path))
+        except (ValidationError, KeyError, FileNotFoundError) as e:
+            problems.append(f"{path.name}: {e}")
+    ids = [s.id for s in scenarios]
+    problems += [f"duplicate id {i}" for i in sorted({i for i in ids if ids.count(i) > 1})]
+    labeled = {cid for s in scenarios for cid in (s.expected.relevant_chunk_ids or [])}
+    if labeled:
+        with connect() as conn:
+            found = {
+                r[0]
+                for r in conn.execute(
+                    "SELECT id FROM chunks WHERE id = ANY(%s)", (sorted(labeled),)
+                ).fetchall()
+            }
+        problems += [f"chunk id not in index: {cid}" for cid in sorted(labeled - found)]
+    for problem in problems:
+        typer.echo(problem)
+    typer.echo(f"{len(scenarios)} scenarios, {len(problems)} problems")
+    if problems:
+        raise typer.Exit(1)

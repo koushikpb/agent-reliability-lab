@@ -7,7 +7,7 @@ from typing import Any
 from opentelemetry.context import Context
 from opentelemetry.sdk.trace import ReadableSpan, Span, SpanProcessor, TracerProvider
 from opentelemetry.trace import Span as ApiSpan
-from opentelemetry.trace import Tracer
+from opentelemetry.trace import StatusCode, Tracer
 
 
 @dataclass(frozen=True)
@@ -36,13 +36,17 @@ class EventCollector(SpanProcessor):
         attrs = span.attributes or {}
         if "arlab.kind" not in attrs or span.start_time is None or span.end_time is None:
             return
+        payload = json.loads(str(attrs["arlab.payload"]))
+        if span.status.status_code == StatusCode.ERROR:
+            # The span ended by an exception: keep the event, so a crashed run can be explained.
+            payload["error"] = span.status.description or "error"
         self.events.append(
             Event(
                 seq=int(attrs["arlab.seq"]),  # type: ignore[arg-type]
                 span_id=format(span.context.span_id, "016x"),
                 parent_span_id=format(span.parent.span_id, "016x") if span.parent else None,
                 kind=str(attrs["arlab.kind"]),
-                payload=json.loads(str(attrs["arlab.payload"])),
+                payload=payload,
                 started_at=datetime.fromtimestamp(span.start_time / 1e9, tz=UTC),
                 duration_ms=round((span.end_time - span.start_time) / 1e6),
             )

@@ -1,5 +1,6 @@
 import json
 
+import httpx2
 import pytest
 
 from arlab.sandbox import TOOLS, ToolClient, create_tool_server
@@ -55,13 +56,34 @@ def test_escalated_ticket_cannot_be_resolved_afterwards(client):
     assert json.loads(client.call("get_ticket", {"id": "T-1"}).text)["status"] == "escalated"
 
 
-def test_server_crash_with_plain_text_body_reaches_the_model_as_an_error():
+def test_server_exceptions_propagate_instead_of_posing_as_tool_errors():
+    # A crash inside the server (database down, replay miss) is not the agent's tool error.
     def broken_search(query):
         raise RuntimeError("index unavailable")
 
     crashing = ToolClient.in_process(create_tool_server(FIXTURE, broken_search))
-    response = crashing.call("search_docs", {"query": "x"})
-    assert response.status == 500 and response.text.startswith("error 500")
+    with pytest.raises(RuntimeError, match="index unavailable"):
+        crashing.call("search_docs", {"query": "x"})
+
+
+def transport_client(handler):
+    return ToolClient(httpx2.Client(transport=httpx2.MockTransport(handler), base_url="http://t"))
+
+
+def test_plain_text_error_body_reaches_the_model():
+    client = transport_client(lambda request: httpx2.Response(502, text="Bad Gateway"))
+    response = client.call("list_pods", {"namespace": "x"})
+    assert response.status == 502 and "Bad Gateway" in response.text
+
+
+def test_timeout_and_malformed_body_are_tool_errors_with_status_zero():
+    def timeout(request):
+        raise httpx2.ReadTimeout("slow", request=request)
+
+    assert transport_client(timeout).call("list_pods", {"namespace": "x"}).status == 0
+    garbled = transport_client(lambda request: httpx2.Response(200, text='{"pods": ['))
+    response = garbled.call("list_pods", {"namespace": "x"})
+    assert response.status == 0 and "malformed" in response.text
 
 
 def test_every_tool_schema_is_strict():

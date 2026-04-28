@@ -1,9 +1,9 @@
 import json
 from collections import Counter
 from dataclasses import dataclass
-from typing import Any
 
 from arlab.agent import AgentResult, ToolCall, citations
+from arlab.checks import Expected, check_run
 from arlab.tracing import Event
 
 STATUS_TOOLS = ("update_ticket", "escalate")
@@ -43,19 +43,20 @@ def redundant_calls(calls: list[ToolCall]) -> int:
 def _row(
     scenario_id: str,
     fault: str,
-    expected: dict[str, Any],
+    expected: Expected,
     final_status: str,
+    stop: str,
     calls: list[ToolCall],
     cited: list[str],
     latency_ms: int,
     tokens: tuple[int, int],
     cost: float,
 ) -> ScenarioRow:
-    # Final status only, until milestone 5 adds the full deterministic checks and failure classes.
+    checks = check_run(expected, final_status, calls, cited, stop)
     return ScenarioRow(
         scenario_id=scenario_id,
         fault=fault,
-        success=final_status == expected["final_status"],
+        success=checks.passed,
         final_status=final_status,
         tool_errors=sum(c.is_tool_error for c in calls),
         invalid_calls=sum(c.is_invalid for c in calls),
@@ -66,14 +67,14 @@ def _row(
         output_tokens=tokens[1],
         # Rounded to the numeric(10, 6) column so a stored row and a rebuilt row compare equal.
         cost_usd=round(cost, 6),
-        failure_class=None,
+        failure_class=checks.failure_class,
     )
 
 
 def row_from_result(
     scenario_id: str,
     fault: str,
-    expected: dict[str, Any],
+    expected: Expected,
     final_status: str,
     result: AgentResult,
     latency_ms: int,
@@ -83,6 +84,7 @@ def row_from_result(
         fault,
         expected,
         final_status,
+        result.stop,
         result.tool_calls,
         result.cited_ids,
         latency_ms,
@@ -92,7 +94,7 @@ def row_from_result(
 
 
 def row_from_events(
-    scenario_id: str, fault: str, expected: dict[str, Any], events: list[Event]
+    scenario_id: str, fault: str, expected: Expected, events: list[Event]
 ) -> ScenarioRow:
     """Rebuilds a result row from the trace alone. Must agree with row_from_result; a test checks
     that, which proves the events hold everything needed to explain a run."""
@@ -109,7 +111,7 @@ def row_from_events(
     # The final answer is the text of the terminal model call only (see AgentResult.final_text).
     last = model_calls[-1] if model_calls else None
     final_text = ""
-    if last and last["stop_reason"] != "tool_use":
+    if last and last["stop_reason"] not in ("tool_use", "pause_turn"):
         final_text = "\n".join(b["text"] for b in last["content"] if b["type"] == "text")
     notes = [c.args.get("note", "") for c in calls if c.name == "update_ticket"]
     [scenario] = [e for e in events if e.kind == "scenario"]
@@ -118,6 +120,7 @@ def row_from_events(
         fault,
         expected,
         final_status,
+        scenario.payload["stop"],
         calls,
         citations([*notes, final_text]),
         scenario.duration_ms,

@@ -1,10 +1,13 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from arlab.config import load_config
 from arlab.db import apply_schema
+from arlab.llm import RecordingStore, ReplayMiss
 from arlab.results import row_from_events
-from arlab.runner import load_suite, run_scenario
+from arlab.runner import ScenarioCrashed, load_suite, replay_search, run_scenario
 from arlab.store import finish_run, load_events, load_row, record_scenario, start_run
 from tests.test_agent import ScriptedProvider, fake_search, reply, resolve_script, tool_use
 
@@ -83,3 +86,65 @@ def test_failed_run_is_marked_failed(conn):
     assert conn.execute("SELECT status FROM runs WHERE id = %s", (run_id,)).fetchone() == (
         "failed",
     )
+
+
+def test_crashed_scenario_keeps_its_events_with_the_error():
+    class Exploding(ScriptedProvider):
+        def complete(self, system, messages, tools):
+            if len(self.requests) == 1:
+                raise ConnectionError("api unreachable")
+            return super().complete(system, messages, tools)
+
+    scenario = load_suite(Path("scenarios/smoke"))[0]
+    with pytest.raises(ScenarioCrashed) as crash:
+        run_scenario(scenario, Exploding(resolve_script("T-1001", "payments")), fake_search, CONFIG)
+    events = crash.value.events
+    assert isinstance(crash.value.__cause__, ConnectionError)
+    assert [e.kind for e in events if e.kind == "model_call"] == ["model_call", "model_call"]
+    [failed_call] = [e for e in events if e.kind == "model_call" and "error" in e.payload]
+    assert "api unreachable" in failed_call.payload["error"]
+    assert any(e.kind == "scenario" and "error" in e.payload for e in events)
+
+
+def test_search_replay_miss_crashes_the_scenario_instead_of_reaching_the_agent(tmp_path):
+    scenario = load_suite(Path("scenarios/smoke"))[0]
+    store = RecordingStore(tmp_path)
+    with pytest.raises(ScenarioCrashed) as crash:
+        run_scenario(
+            scenario,
+            ScriptedProvider(resolve_script("T-1001", "payments")),
+            replay_search(store, "idx", "dense", 8),
+            CONFIG,
+        )
+    assert isinstance(crash.value.__cause__, ReplayMiss)
+
+
+def test_escalation_and_step_limit_rebuild_from_events(conn):
+    apply_schema(conn)
+    scenario = {s.id: s for s in load_suite(Path("scenarios/smoke"))}["pvc-lost-database"]
+    script = [
+        reply(tool_use(1, "escalate", {"id": "T-1003", "reason": "PVC lost, data loss risk"})),
+        reply(tool_use(2, "get_ticket", {"id": "T-1003"})),
+        reply(tool_use(3, "get_ticket", {"id": "T-1003"})),
+    ]
+    config = CONFIG.model_copy(update={"agent": CONFIG.agent.model_copy(update={"max_steps": 3})})
+    outcome = run_scenario(scenario, ScriptedProvider(script), fake_search, config)
+    run_id = start_run(
+        conn,
+        batch_id="b",
+        suite="s",
+        suite_hash="h",
+        config=config,
+        index_version="i",
+        mode="replay",
+    )
+    record_scenario(conn, run_id, outcome.row, outcome.events)
+    stored = load_row(conn, run_id, scenario.id, "none")
+    rebuilt = row_from_events(
+        scenario.id, "none", scenario.expected, load_events(conn, run_id, scenario.id, "none")
+    )
+    assert rebuilt == stored
+    assert (stored.final_status, stored.failure_class) == ("escalated", "step_limit")
+    assert stored.redundant_calls == 1
+    # Latency in the row is the scenario span; check it against wall time, not against itself.
+    assert 0 <= stored.latency_ms < 10_000

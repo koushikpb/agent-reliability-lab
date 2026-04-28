@@ -8,6 +8,7 @@ import psycopg
 import yaml
 
 from arlab.agent import AgentResult, run_agent
+from arlab.checks import Expected
 from arlab.config import RunConfig, system_prompt
 from arlab.llm import Provider, RecordingProvider, RecordingStore, ReplayMiss, ReplayProvider
 from arlab.results import ScenarioRow, row_from_result
@@ -22,7 +23,7 @@ class Scenario:
     category: str
     ticket_id: str
     cluster: dict[str, Any]
-    expected: dict[str, Any]
+    expected: Expected
 
 
 @dataclass(frozen=True)
@@ -34,13 +35,25 @@ class ScenarioOutcome:
     row: ScenarioRow
 
 
+class ScenarioCrashed(Exception):
+    """A scenario raised before finishing. Carries the events traced so far, so the crash can be
+    stored and explained; the original exception is the __cause__."""
+
+    def __init__(self, scenario_id: str, events: list[Event]) -> None:
+        super().__init__(scenario_id)
+        self.scenario_id = scenario_id
+        self.events = events
+
+
 def load_scenario(path: Path) -> Scenario:
     spec = yaml.safe_load(path.read_text())
     cluster = json.loads((path.parent / spec["cluster_fixture"]).read_text())
     # The ticket lives in the scenario file so its text sits next to the expected outcome.
     ticket = {**spec["ticket"], "status": "open", "notes": []}
     cluster["tickets"] = {ticket["id"]: ticket}
-    return Scenario(spec["id"], spec["category"], ticket["id"], cluster, spec["expected"])
+    # Validated at load, so a typo in an expectation fails before any model call is paid for.
+    expected = Expected.model_validate(spec["expected"])
+    return Scenario(spec["id"], spec["category"], ticket["id"], cluster, expected)
 
 
 def load_suite(suite_dir: Path) -> list[Scenario]:
@@ -63,20 +76,25 @@ def run_scenario(
         return hits
 
     server = create_tool_server(scenario.cluster, traced_search)
-    with tracer.start_as_current_span("scenario") as span:
-        result = run_agent(
-            provider,
-            ToolClient.in_process(server),
-            system_prompt(config),
-            scenario.ticket_id,
-            config.agent.max_steps,
-            tracer,
-        )
-        record(
-            span,
-            "scenario",
-            {"scenario_id": scenario.id, "ticket_id": scenario.ticket_id, "stop": result.stop},
-        )
+    try:
+        with tracer.start_as_current_span("scenario") as span:
+            record(span, "scenario", {"scenario_id": scenario.id, "ticket_id": scenario.ticket_id})
+            result = run_agent(
+                provider,
+                ToolClient.in_process(server),
+                system_prompt(config),
+                scenario.ticket_id,
+                config.agent.max_steps,
+                tracer,
+            )
+            record(
+                span,
+                "scenario",
+                {"scenario_id": scenario.id, "ticket_id": scenario.ticket_id, "stop": result.stop},
+            )
+    except Exception as e:
+        # Not swallowed: re-raised with the partial trace attached.
+        raise ScenarioCrashed(scenario.id, collector.drain()) from e
     events = collector.drain()
     final_status = server.state.cluster["tickets"][scenario.ticket_id]["status"]
     [scenario_event] = [e for e in events if e.kind == "scenario"]

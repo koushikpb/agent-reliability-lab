@@ -5,6 +5,7 @@ import uuid
 from pathlib import Path
 
 import psycopg
+import yaml
 from psycopg.types.json import Jsonb
 
 from arlab.config import RunConfig, config_hash, resolved_params
@@ -17,8 +18,9 @@ def git_sha() -> str:
     sha = subprocess.run(
         ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
     ).stdout.strip()
+    # Untracked files count: a new module the run imports changes behavior just as an edit does.
     dirty = subprocess.run(
-        ["git", "status", "--porcelain", "--untracked-files=no"],
+        ["git", "status", "--porcelain"],
         capture_output=True,
         text=True,
         check=True,
@@ -27,11 +29,14 @@ def git_sha() -> str:
 
 
 def suite_hash(suite_dir: Path) -> str:
-    """Hash of every scenario and fixture file, so an edited expectation shows up as a new suite."""
+    """Hash of the scenario files and the fixtures they reference, so an edited expectation or
+    fixture shows up as a new suite. Other files (editor swap files, .DS_Store) don't count."""
     digest = hashlib.sha256()
-    for path in sorted(p for p in suite_dir.rglob("*") if p.is_file()):
-        digest.update(path.relative_to(suite_dir).as_posix().encode())
-        digest.update(path.read_bytes())
+    for path in sorted(suite_dir.glob("*.yaml")):
+        fixture = path.parent / yaml.safe_load(path.read_text())["cluster_fixture"]
+        for part in (path, fixture):
+            digest.update(part.name.encode())
+            digest.update(part.read_bytes())
     return digest.hexdigest()[:16]
 
 
@@ -128,6 +133,32 @@ def record_scenario(
                 row.cost_usd,
                 row.failure_class,
             ),
+        )
+
+
+def record_events(
+    conn: psycopg.Connection, run_id: str, scenario_id: str, fault: str, events: list[Event]
+) -> None:
+    """Events of a scenario that crashed: kept without a result row, so the crash is explainable."""
+    with conn.transaction(), conn.cursor() as cur:
+        cur.executemany(
+            "INSERT INTO events (run_id, scenario_id, fault, seq, span_id, parent_span_id, kind,"
+            " payload, started_at, duration_ms) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            [
+                (
+                    run_id,
+                    scenario_id,
+                    fault,
+                    e.seq,
+                    e.span_id,
+                    e.parent_span_id,
+                    e.kind,
+                    Jsonb(e.payload),
+                    e.started_at,
+                    e.duration_ms,
+                )
+                for e in events
+            ],
         )
 
 

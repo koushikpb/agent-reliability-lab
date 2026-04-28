@@ -74,7 +74,7 @@ def test_resolves_smoke_ticket_end_to_end(suite):
     provider = ScriptedProvider(resolve_script("T-1001", "payments"))
     outcome = run_scenario(scenario, provider, fake_search, CONFIG)
 
-    assert outcome.final_status == scenario.expected["final_status"] == "resolved"
+    assert outcome.final_status == scenario.expected.final_status == "resolved"
     assert outcome.result.stop == "end_turn"
     assert outcome.result.steps == 4
     assert [c.name for c in outcome.result.tool_calls] == [

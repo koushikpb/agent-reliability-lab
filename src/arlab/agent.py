@@ -26,7 +26,7 @@ class ToolCall:
 
     @property
     def is_error(self) -> bool:
-        return self.status >= 400
+        return self.is_invalid or self.is_tool_error
 
     @property
     def is_invalid(self) -> bool:
@@ -35,7 +35,8 @@ class ToolCall:
 
     @property
     def is_tool_error(self) -> bool:
-        """A server-side failure the agent did not cause: 5xx, rate limit, or no response (0)."""
+        """A server-side failure the agent did not cause: 5xx, rate limit, or no usable response (0:
+        a timeout or a malformed body)."""
         return self.status >= 500 or self.status in (0, 429)
 
 
@@ -70,6 +71,8 @@ def run_agent(
     messages: list[dict[str, Any]] = [{"role": "user", "content": f"Resolve ticket {ticket_id}."}]
     while result.steps < max_steps:
         with tracer.start_as_current_span("model_call") as span:
+            # Recorded before the call too, so a call that raises still leaves an event.
+            record(span, "model_call", {"model": provider.model})
             response = provider.complete(system, messages, TOOLS)
             record(
                 span,
@@ -104,6 +107,7 @@ def run_agent(
             if block["type"] != "tool_use":
                 continue
             with tracer.start_as_current_span("tool_call") as span:
+                record(span, "tool_call", {"name": block["name"], "args": block["input"]})
                 tool_response = tools.call(block["name"], block["input"])
                 record(
                     span,
