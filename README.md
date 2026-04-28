@@ -26,7 +26,16 @@ retrieval quality, task success, tool correctness, grounding, latency and cost.
 ```bash
 docker compose up -d
 uv sync
-uv run arlab --help
+uv run arlab ingest                                   # fetch pinned docs, chunk, embed, build HNSW
+uv run arlab search "pod stuck in CrashLoopBackOff"   # pooled candidates, for labeling queries
+uv run arlab retrieval-eval --retriever all           # needs labels/queries.yaml
+uv run arlab check-suite scenarios/smoke              # validate scenario files and chunk ids
+uv run arlab run --suite scenarios/smoke --config configs/baseline.yaml               # replay, no spend
+uv run arlab run --suite scenarios/smoke --config configs/baseline.yaml --mode record # live, costs money
+uv run pytest
 ```
+
+The lexical retriever is Postgres full-text search ranked with `ts_rank_cd`. It is BM25-style, not
+BM25: `ts_rank_cd` has no IDF term and no term-frequency saturation.
 
 Corpus: Kubernetes documentation, © The Kubernetes Authors, CC BY 4.0.

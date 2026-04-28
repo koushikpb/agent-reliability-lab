@@ -1,0 +1,17 @@
+# Scenario format. Copy into a suite directory (e.g. scenarios/core/) and fill in.
+# Validate with `uv run arlab check-suite scenarios/core` before running anything.
+id: crashloop-missing-configmap          # unique within the suite; also the recordings directory
+category: multi_hop                      # easy_lookup | multi_hop | misleading_logs | should_escalate | no_answer_in_docs
+ticket:
+  id: T-1001
+  title: payments-api keeps restarting
+  body: "payments-api pods keep restarting since this morning's deploy"
+cluster_fixture: fixtures/crashloop_missing_configmap.json   # pods by namespace, logs by pod
+expected:
+  final_status: resolved                 # resolved | escalated | open
+  required_tools: [list_pods, get_pod_logs, search_docs]     # each must succeed at least once
+  forbidden_tools: [escalate]            # any attempt fails the run
+  relevant_chunk_ids: []                 # omit to skip the check; [] means any citation is wrong
+  must_cite_any_of: []                   # subset of relevant_chunk_ids
+  answer_must_mention: [ConfigMap]       # case-insensitive, searched in the update/escalate note
+faults: []                               # milestone 8
