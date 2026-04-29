@@ -17,6 +17,17 @@ def citations(texts: Iterable[str]) -> list[str]:
     return list(dict.fromkeys(found))
 
 
+def answer_texts(calls: list["ToolCall"], final_text: str) -> list[str]:
+    """What the ticket owner actually receives: notes and escalation reasons that the server
+    accepted, plus the final answer. Citations and answer checks both read exactly this."""
+    delivered = [
+        c.args.get("note") or c.args.get("reason") or ""
+        for c in calls
+        if c.name in ("update_ticket", "escalate") and not c.is_error
+    ]
+    return [*delivered, final_text]
+
+
 @dataclass(frozen=True)
 class ToolCall:
     name: str
@@ -53,9 +64,8 @@ class AgentResult:
 
     @property
     def cited_ids(self) -> list[str]:
-        """Chunk ids cited in ticket notes and the final answer, in first-seen order."""
-        notes = [c.args.get("note", "") for c in self.tool_calls if c.name == "update_ticket"]
-        return citations([*notes, self.final_text])
+        """Chunk ids cited in delivered notes, escalation reasons and the final answer."""
+        return citations(answer_texts(self.tool_calls, self.final_text))
 
 
 def run_agent(

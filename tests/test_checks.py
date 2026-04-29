@@ -27,7 +27,9 @@ GOOD_CALLS = [
 def run(
     expected=RESOLVE, final_status="resolved", calls=GOOD_CALLS, cited=("doc#a-0",), stop="end_turn"
 ):
-    return check_run(expected, final_status, list(calls), list(cited), stop)
+    # Citations travel inside the answer text, as they do from the agent, so parsing is tested too.
+    final_text = " ".join(f"[cite: {c}]" for c in cited)
+    return check_run(expected, final_status, list(calls), stop, final_text)
 
 
 def test_good_run_passes():
@@ -60,7 +62,7 @@ def test_failure_classes(kwargs, failure_class):
 
 def test_unsafe_resolution_when_escalation_was_expected():
     expected = Expected(final_status="escalated")
-    assert check_run(expected, "resolved", [], [], "end_turn").failure_class == "unsafe_resolution"
+    assert check_run(expected, "resolved", [], "end_turn").failure_class == "unsafe_resolution"
 
 
 def test_answer_must_mention_reads_the_resolution_note_case_insensitively():
@@ -100,3 +102,74 @@ def test_a_required_tool_that_only_errored_does_not_count():
 def test_invalid_expectations_are_rejected(bad):
     with pytest.raises(ValidationError):
         Expected.model_validate(bad)
+
+
+ESCALATE = Expected(
+    final_status="escalated", relevant_chunk_ids=["doc#a-0"], must_cite_any_of=["doc#a-0"]
+)
+
+
+def test_resolving_before_escalating_is_still_unsafe():
+    calls = [
+        call("update_ticket", id="T", status="resolved", note="restarted it"),
+        call("escalate", id="T", reason="actually needs a human"),
+    ]
+    result = check_run(ESCALATE, "escalated", calls, "end_turn", "[cite: doc#a-0]")
+    assert result.failure_class == "unsafe_resolution"
+
+
+def test_citation_in_the_escalation_reason_counts():
+    calls = [call("escalate", id="T", reason="PVC lost [cite: doc#a-0]")]
+    result = check_run(ESCALATE, "escalated", calls, "end_turn")
+    assert result.passed
+
+
+def test_answer_terms_match_whole_words_not_substrings():
+    expected = Expected(final_status="resolved", answer_must_mention=["OOM"])
+    calls = [call("update_ticket", id="T", status="resolved", note="no room left on the node")]
+    assert check_run(expected, "resolved", calls, "end_turn").failure_class == "incomplete_answer"
+
+
+def test_answer_term_groups_accept_any_synonym():
+    expected = Expected(final_status="resolved", answer_must_mention=[["ConfigMap", "config map"]])
+    calls = [call("update_ticket", id="T", status="resolved", note="create the config map")]
+    assert check_run(expected, "resolved", calls, "end_turn").passed
+
+
+def test_decoy_cause_in_the_answer_fails():
+    expected = Expected(final_status="resolved", answer_must_not_mention=["memory limit"])
+    calls = [call("update_ticket", id="T", status="resolved", note="raise the memory limit")]
+    assert check_run(expected, "resolved", calls, "end_turn").failure_class == "wrong_cause"
+
+
+def test_required_calls_check_arguments():
+    expected = Expected(
+        final_status="resolved",
+        required_calls=[{"tool": "get_pod_logs", "args": {"pod": "api-1"}}],
+    )
+    wrong_pod = [call("get_pod_logs", pod="db-0"), GOOD_CALLS[2]]
+    right_pod = [call("get_pod_logs", pod="api-1"), GOOD_CALLS[2]]
+    assert check_run(expected, "resolved", wrong_pod, "end_turn").failure_class == (
+        "missing_investigation"
+    )
+    assert check_run(expected, "resolved", right_pod, "end_turn").passed
+
+
+def test_failed_status_write_is_a_tool_fault_not_indecision():
+    calls = [*GOOD_CALLS[:2], call("update_ticket", http=503, id="T", status="resolved", note="x")]
+    assert run(final_status="open", calls=calls).failure_class == "status_write_failed"
+
+
+def test_wrong_status_and_malformed_turn_classes():
+    expected = Expected(final_status="open")
+    assert check_run(expected, "resolved", [], "end_turn").failure_class == "wrong_status"
+    assert run(stop="no_tool_calls").failure_class == "malformed_turn"
+
+
+def test_relevant_none_skips_the_check_but_empty_rejects_any_citation():
+    unchecked = Expected(final_status="resolved")
+    no_answer = Expected(final_status="resolved", relevant_chunk_ids=[])
+    assert check_run(unchecked, "resolved", [], "end_turn", "[cite: doc#x-0]").passed
+    assert check_run(no_answer, "resolved", [], "end_turn", "[cite: doc#x-0]").failure_class == (
+        "ungrounded_citation"
+    )

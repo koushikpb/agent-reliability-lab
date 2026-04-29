@@ -2,7 +2,7 @@ import json
 from collections import Counter
 from dataclasses import dataclass
 
-from arlab.agent import AgentResult, ToolCall, citations
+from arlab.agent import AgentResult, ToolCall, answer_texts, citations
 from arlab.checks import Expected, check_run
 from arlab.tracing import Event
 
@@ -47,12 +47,12 @@ def _row(
     final_status: str,
     stop: str,
     calls: list[ToolCall],
-    cited: list[str],
+    final_text: str,
     latency_ms: int,
     tokens: tuple[int, int],
     cost: float,
 ) -> ScenarioRow:
-    checks = check_run(expected, final_status, calls, cited, stop)
+    checks = check_run(expected, final_status, calls, stop, final_text)
     return ScenarioRow(
         scenario_id=scenario_id,
         fault=fault,
@@ -61,7 +61,7 @@ def _row(
         tool_errors=sum(c.is_tool_error for c in calls),
         invalid_calls=sum(c.is_invalid for c in calls),
         redundant_calls=redundant_calls(calls),
-        cited_ids=cited,
+        cited_ids=citations(answer_texts(calls, final_text)),
         latency_ms=latency_ms,
         input_tokens=tokens[0],
         output_tokens=tokens[1],
@@ -86,7 +86,7 @@ def row_from_result(
         final_status,
         result.stop,
         result.tool_calls,
-        result.cited_ids,
+        result.final_text,
         latency_ms,
         (result.input_tokens, result.output_tokens),
         result.cost_usd,
@@ -113,7 +113,6 @@ def row_from_events(
     final_text = ""
     if last and last["stop_reason"] not in ("tool_use", "pause_turn"):
         final_text = "\n".join(b["text"] for b in last["content"] if b["type"] == "text")
-    notes = [c.args.get("note", "") for c in calls if c.name == "update_ticket"]
     [scenario] = [e for e in events if e.kind == "scenario"]
     return _row(
         scenario_id,
@@ -122,7 +121,7 @@ def row_from_events(
         final_status,
         scenario.payload["stop"],
         calls,
-        citations([*notes, final_text]),
+        final_text,
         scenario.duration_ms,
         (sum(m["input_tokens"] for m in model_calls), sum(m["output_tokens"] for m in model_calls)),
         sum(m["cost_usd"] for m in model_calls),

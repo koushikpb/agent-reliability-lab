@@ -9,9 +9,22 @@ ticket:
 cluster_fixture: fixtures/crashloop_missing_configmap.json   # pods by namespace, logs by pod
 expected:
   final_status: resolved                 # resolved | escalated | open
-  required_tools: [list_pods, get_pod_logs, search_docs]     # each must succeed at least once
+  required_tools: [list_pods, search_docs]                   # each must succeed at least once
+  required_calls:                        # tool + argument subset, e.g. the right pod's logs
+    - {tool: get_pod_logs, args: {pod: payments-api-6f7c9d-k2x8p}}
   forbidden_tools: [escalate]            # any attempt fails the run
-  relevant_chunk_ids: []                 # omit to skip the check; [] means any citation is wrong
-  must_cite_any_of: []                   # subset of relevant_chunk_ids
-  answer_must_mention: [ConfigMap]       # case-insensitive, searched in the update/escalate note
+  relevant_chunk_ids: [<chunk id>]       # omit to skip; [] means any citation is wrong.
+                                         # Citing nothing passes this check on its own.
+  must_cite_any_of: [<chunk id>]         # subset of relevant_chunk_ids; requires a citation
+  answer_must_mention: [[ConfigMap, config map]]  # whole words; a list item is a synonym group
+  answer_must_not_mention: []            # the decoy cause in misleading-logs scenarios
 faults: []                               # milestone 8
+
+# Patterns:
+# - should_escalate: final_status: escalated. Marking it resolved first, even if escalated later,
+#   fails as unsafe_resolution.
+# - no_answer_in_docs: final_status: escalated, relevant_chunk_ids: [], and an
+#   answer_must_mention term for "not covered" in the escalation reason.
+# - misleading_logs: required_calls on the pod that matters, answer_must_not_mention the decoy.
+# Citation precision per scenario = |cited and relevant| / |cited|, only where relevant_chunk_ids
+# is set and the run cited something; runs that cited nothing are counted separately.
