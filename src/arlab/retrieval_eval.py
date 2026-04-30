@@ -23,6 +23,10 @@ class RetrieverReport:
     # Share of top-10 results nobody judged; None when no query has a judged list. High values
     # mean the metrics understate this retriever, because unjudged results count as misses.
     unjudged_at_10: float | None = None
+    # Best possible mean Recall@k: a query with more than k relevant chunks can't reach 1, so a
+    # Recall@5 of 0.5 means little until it is read against this ceiling.
+    recall_at_5_max: float = 1.0
+    recall_at_10_max: float = 1.0
     # Kept so two retrievers can be compared per query (paired test, bootstrap), not only by mean.
     per_query: list[dict[str, object]] = field(default_factory=list)
 
@@ -36,12 +40,16 @@ def evaluate(
     latencies = []
     per_query: list[dict[str, object]] = []
     unjudged = []
+    ceilings = []
     for q in queries:
         # Timed from query text to ranked ids, so query embedding is included for dense retrievers.
         started = time.perf_counter()
         ranked = [h.chunk_id for h in search(conn, retriever, q.text, k=10)]
         latencies.append((time.perf_counter() - started) * 1000)
         relevant = set(q.grades)
+        ceilings.append(
+            (min(5, len(relevant)) / len(relevant), min(10, len(relevant)) / len(relevant))
+        )
         scores = (
             recall_at_k(ranked, relevant, 5),
             recall_at_k(ranked, relevant, 10),
@@ -54,6 +62,7 @@ def evaluate(
             unjudged.append(sum(cid not in q.judged for cid in ranked) / max(len(ranked), 1))
     r5, r10, mean_rr, ndcg10 = (float(m) for m in np.mean(rows, axis=0))
     p50, p95 = (float(p) for p in np.percentile(latencies, [50, 95]))
+    max5, max10 = (float(m) for m in np.mean(ceilings, axis=0))
     return RetrieverReport(
         retriever,
         len(queries),
@@ -63,8 +72,10 @@ def evaluate(
         ndcg10,
         p50,
         p95,
-        float(np.mean(unjudged)) if unjudged else None,
-        per_query,
+        unjudged_at_10=float(np.mean(unjudged)) if unjudged else None,
+        recall_at_5_max=max5,
+        recall_at_10_max=max10,
+        per_query=per_query,
     )
 
 
@@ -92,6 +103,12 @@ def markdown_table(reports: list[RetrieverReport]) -> str:
         "| Retriever | Recall@5 | Recall@10 | MRR | nDCG@10 | p50 ms | p95 ms | Unjudged@10 |",
         "|---|---|---|---|---|---|---|---|",
     ]
+    if reports:
+        r = reports[0]
+        lines.append(
+            f"| (best possible) | {r.recall_at_5_max:.3f} | {r.recall_at_10_max:.3f}"
+            " | 1.000 | 1.000 | | | |"
+        )
     for r in reports:
         unjudged = "n/a" if r.unjudged_at_10 is None else f"{r.unjudged_at_10:.2f}"
         lines.append(

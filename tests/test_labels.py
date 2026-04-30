@@ -46,3 +46,11 @@ def test_missing_chunk_ids_and_store(conn, tmp_path):
     store_queries(conn, queries)
     store_queries(conn, queries)
     assert conn.execute("SELECT count(*) FROM query_labels").fetchone() == (2,)
+
+
+def test_min_grade_drops_lower_labels_and_empty_queries():
+    from arlab.labels import LabeledQuery, at_min_grade
+
+    queries = [LabeledQuery("q1", "t", {"a": 2, "b": 1}), LabeledQuery("q2", "t", {"c": 1})]
+    assert at_min_grade(queries, 2) == [LabeledQuery("q1", "t", {"a": 2})]
+    assert at_min_grade(queries, 1) == queries

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import psycopg
@@ -37,6 +37,15 @@ def load_queries(path: Path) -> list[LabeledQuery]:
         if q.judged is not None and not set(q.grades) <= q.judged:
             raise ValueError(f"query {q.id} has relevant ids missing from judged")
     return queries
+
+
+def at_min_grade(queries: list[LabeledQuery], min_grade: int) -> list[LabeledQuery]:
+    """Keep only labels at or above min_grade; queries left with none are dropped."""
+    kept = [
+        replace(q, grades={cid: g for cid, g in q.grades.items() if g >= min_grade})
+        for q in queries
+    ]
+    return [q for q in kept if q.grades]
 
 
 def missing_chunk_ids(conn: psycopg.Connection, queries: list[LabeledQuery]) -> list[str]:

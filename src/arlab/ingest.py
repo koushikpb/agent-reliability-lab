@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 EMBED_REVISION = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
 # pgvector defaults, set explicitly so they are part of the index version. HNSW recall against
-# exact search, and the query-time ef_search, are measured in milestone 2.
+# exact search, and the query-time ef_search, are measured by `arlab retrieval-eval`.
 HNSW_M = 16
 HNSW_EF_CONSTRUCTION = 64
 
