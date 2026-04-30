@@ -4,9 +4,6 @@ import pytest
 
 from arlab.metrics import mrr, ndcg_at_k, recall_at_k
 
-# xfail only while the stub raises NotImplementedError; once implemented, a wrong answer fails.
-pytestmark = pytest.mark.xfail(raises=NotImplementedError, reason="metrics not written yet")
-
 RANKED = ["a", "b", "c", "d", "e"]
 
 
@@ -57,6 +54,7 @@ def test_k_larger_than_the_ranking():
 def test_duplicate_ids_in_a_ranking_count_once():
     assert recall_at_k(["a", "a", "a"], {"a", "b"}, k=3) == pytest.approx(0.5)
     assert ndcg_at_k(["a", "a"], {"a": 2, "b": 2}, k=2) < 1.0
+    assert mrr(["x", "x", "a"], {"a"}) == pytest.approx(1 / 2)
 
 
 def test_mrr_with_no_relevant_is_an_error():

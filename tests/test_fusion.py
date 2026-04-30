@@ -2,8 +2,6 @@ import pytest
 
 from arlab.fusion import rrf_fuse
 
-pytestmark = pytest.mark.xfail(raises=NotImplementedError, reason="RRF not written yet")
-
 
 def test_rrf_scores_are_sum_of_reciprocal_ranks():
     fused = dict(rrf_fuse([["a", "b"], ["b", "c"]], k=60))
@@ -29,3 +27,8 @@ def test_empty_ranking_contributes_nothing():
 
 def test_all_empty_rankings_fuse_to_empty():
     assert rrf_fuse([[], []]) == []
+
+
+def test_negative_k_is_rejected():
+    with pytest.raises(ValueError):
+        rrf_fuse([["a"]], k=-1)

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import psycopg
 
-from arlab.fusion import rrf_fuse
+from arlab.fusion import RRF_K, rrf_fuse
 from arlab.ingest import EMBED_MODEL, EMBED_REVISION, embed_texts
 
 if TYPE_CHECKING:
@@ -105,7 +105,7 @@ def settings() -> dict[str, object]:
     return {
         "candidates": CANDIDATES,
         "ef_search": EF_SEARCH,
-        "rrf_k": 60,
+        "rrf_k": RRF_K,
         "embed_model": f"{EMBED_MODEL}@{EMBED_REVISION}",
         "rerank_model": f"{RERANK_MODEL}@{RERANK_REVISION}",
     }
