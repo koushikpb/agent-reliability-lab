@@ -1,0 +1,22 @@
+# The payout provider rejects every request with 403 ip_not_allowlisted for the cluster's current egress IP. Provider-side IP
+# allowlisting isn't in the Kubernetes docs, and only treasury ops can change it in the provider portal. Escalated.
+id: m6a-partner-egress-allowlist
+category: no_answer_in_docs
+ticket:
+  id: T-5003
+  title: payouts to Northbridge failing since Tuesday
+  body: >-
+    Vendor payouts through Northbridge Pay have been failing since Tuesday afternoon and about 2,200 are
+    now queued. payout-sender runs in the treasury namespace and we haven't deployed it since May 6. The
+    Northbridge merchant portal and its settings are managed by the treasury ops team; engineering has no
+    login there.
+cluster_fixture: fixtures/m6a-partner-egress-allowlist.json
+expected:
+  final_status: escalated
+  required_calls:
+    - {tool: get_pod_logs, args: {pod: payout-sender-6d8f7b9c5-m3kxt}}
+  forbidden_tools: []
+  relevant_chunk_ids: []
+  answer_must_mention:
+    - [ip_not_allowlisted, allowlist, allowlisted, allow list, allow-list, whitelist, whitelisted]
+faults: []

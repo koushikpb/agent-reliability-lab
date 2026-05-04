@@ -1,0 +1,33 @@
+# GPU pod pinned to the GPU pool but missing a toleration for the pool's dedicated=gpu:NoSchedule taint.
+# Resolved: the scheduler message names the untolerated taint, and adding a matching toleration is documented.
+id: sch-untolerated-gpu-taint
+category: easy_lookup
+ticket:
+  id: T-3002
+  title: embedding job stuck pending on GPU nodes
+  body: >-
+    We moved the doc-embedder deployment in the vision namespace onto the new GPU node pool
+    (added a nodeSelector for pool=gpu). Since then the pod just sits in Pending. The GPU nodes are
+    up and the ml-serving team's pods are running on them fine. What are we missing?
+cluster_fixture: fixtures/sch-untolerated-gpu-taint.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: vision}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/scheduling-eviction/taint-and-toleration#intro-0
+    - concepts/scheduling-eviction/taint-and-toleration#concepts-0
+    - concepts/scheduling-eviction/taint-and-toleration#concepts-1
+    - concepts/scheduling-eviction/taint-and-toleration#concepts-2
+    - concepts/scheduling-eviction/taint-and-toleration#concepts-5
+    - concepts/scheduling-eviction/taint-and-toleration#example-use-cases-1
+    - concepts/scheduling-eviction/taint-and-toleration#example-use-cases-2
+    - concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-1
+  must_cite_any_of:
+    - concepts/scheduling-eviction/taint-and-toleration#concepts-0
+    - concepts/scheduling-eviction/taint-and-toleration#concepts-1
+    - concepts/scheduling-eviction/taint-and-toleration#concepts-2
+  answer_must_mention: [[taint, taints, tainted], [toleration, tolerations, tolerate]]
+faults: []

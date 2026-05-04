@@ -1,0 +1,36 @@
+# Two pieces of evidence: the pod is OOMKilled, and its 512Mi memory limit was injected by the namespace
+# LimitRange (limit-ranger annotation), not set in the team's manifest. Resolved: set an explicit memory limit.
+id: sch-limitrange-default-oom
+category: multi_hop
+ticket:
+  id: T-3003
+  title: ingest-worker restarting since namespace move
+  body: >-
+    Last week we moved ingest-worker from our old team namespace into the shared data-platform
+    namespace. Same image, same manifest, we only changed the namespace. Now it restarts every
+    10-20 minutes once the morning batch load kicks in. It never did this in the old namespace.
+cluster_fixture: fixtures/sch-limitrange-default-oom.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: data-platform}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/policy/limit-range#intro-1
+    - concepts/policy/limit-range#constraints-on-resource-limits-and-requests-0
+    - concepts/policy/limit-range#example-resource-constraints-0
+    - tasks/administer-cluster/manage-resources/memory-default-namespace#intro-0
+    - tasks/administer-cluster/manage-resources/memory-default-namespace#create-a-limitrange-and-a-pod-0
+    - tasks/administer-cluster/manage-resources/memory-default-namespace#create-a-limitrange-and-a-pod-1
+    - tasks/administer-cluster/manage-resources/memory-default-namespace#what-if-you-specify-a-container-s-request-but-not-its-limit-1
+    - concepts/configuration/manage-resources-containers#my-container-is-terminated-3
+    - concepts/configuration/manage-resources-containers#requests-and-limits-1
+    - tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-0
+    - tasks/configure-pod-container/assign-memory-resource#if-you-do-not-specify-a-memory-limit-0
+  must_cite_any_of:
+    - concepts/policy/limit-range#constraints-on-resource-limits-and-requests-0
+    - tasks/administer-cluster/manage-resources/memory-default-namespace#intro-0
+    - tasks/administer-cluster/manage-resources/memory-default-namespace#create-a-limitrange-and-a-pod-0
+  answer_must_mention: [[LimitRange, limit range, LimitRanger], [512Mi, memory limit]]
+faults: []

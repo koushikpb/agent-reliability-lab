@@ -1,0 +1,32 @@
+{
+  "pods": {
+    "reporting": [
+      {"name": "report-generator-7d9b6c5f8-4hqzt", "status": "Evicted", "ready": false, "restarts": 0,
+       "image": "registry.internal/finance/report-generator:3.8.1", "node": "ip-10-0-61-23.ec2.internal",
+       "phase": "Failed", "reason": "Evicted",
+       "message": "The node was low on resource: ephemeral-storage. Threshold quantity: 10%, available: 4718592Ki. Container report-generator was using 39845888Ki, request is 0, has larger consumption of ephemeral-storage.",
+       "resources": {"requests": {"cpu": "2", "memory": "6Gi"}, "limits": {"memory": "6Gi"}}},
+      {"name": "report-generator-7d9b6c5f8-m2v8k", "status": "Evicted", "ready": false, "restarts": 0,
+       "image": "registry.internal/finance/report-generator:3.8.1", "node": "ip-10-0-62-71.ec2.internal",
+       "phase": "Failed", "reason": "Evicted",
+       "message": "The node was low on resource: ephemeral-storage. Threshold quantity: 10%, available: 5033164Ki. Container report-generator was using 38797312Ki, request is 0, has larger consumption of ephemeral-storage.",
+       "resources": {"requests": {"cpu": "2", "memory": "6Gi"}, "limits": {"memory": "6Gi"}}},
+      {"name": "report-generator-7d9b6c5f8-xq5tn", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/finance/report-generator:3.8.1", "node": "ip-10-0-61-40.ec2.internal",
+       "resources": {"requests": {"cpu": "2", "memory": "6Gi"}, "limits": {"memory": "6Gi"}}},
+      {"name": "report-scheduler-5f7c9d8b6-w9lkz", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/finance/report-scheduler:1.2.0", "node": "ip-10-0-62-71.ec2.internal"}
+    ],
+    "finance-web": [
+      {"name": "finance-portal-6c8b7d9f5-t4jxp", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/finance/portal:7.0.3", "node": "ip-10-0-61-23.ec2.internal"}
+    ]
+  },
+  "logs": {
+    "report-generator-7d9b6c5f8-4hqzt": "2026-04-23T01:00:03Z INFO report-generator 3.8.1 starting nightly build run_id=nb-20260423\n2026-04-23T01:00:04Z INFO spool dir: /var/tmp/reportgen/spool\n2026-04-23T01:00:09Z ERROR notify: smtp send failed: 535 5.7.8 Username and Password not accepted (smtp.mail.internal:587)\n2026-04-23T01:00:09Z ERROR notify: could not deliver 'nightly build started' to finance-ops@\n2026-04-23T01:18:44Z INFO spooled partition 12/96 (9.6 GiB written)\n2026-04-23T01:18:45Z ERROR notify: smtp send failed: 535 5.7.8 Username and Password not accepted (smtp.mail.internal:587)\n2026-04-23T01:41:02Z INFO spooled partition 27/96 (21.4 GiB written)\n2026-04-23T01:41:03Z ERROR notify: smtp send failed: 535 5.7.8 Username and Password not accepted (smtp.mail.internal:587)\n2026-04-23T02:07:30Z INFO spooled partition 48/96 (37.9 GiB written)\n2026-04-23T02:07:31Z ERROR notify: smtp send failed: 535 5.7.8 Username and Password not accepted (smtp.mail.internal:587)\n2026-04-23T02:07:31Z ERROR notify: 4 notifications dropped",
+    "report-generator-7d9b6c5f8-m2v8k": "2026-04-21T01:00:02Z INFO report-generator 3.8.1 starting nightly build run_id=nb-20260421\n2026-04-21T01:00:03Z INFO spool dir: /var/tmp/reportgen/spool\n2026-04-21T01:00:08Z ERROR notify: smtp send failed: 535 5.7.8 Username and Password not accepted (smtp.mail.internal:587)\n2026-04-21T01:39:57Z INFO spooled partition 25/96 (20.1 GiB written)\n2026-04-21T01:39:58Z ERROR notify: smtp send failed: 535 5.7.8 Username and Password not accepted (smtp.mail.internal:587)\n2026-04-21T02:04:12Z INFO spooled partition 46/96 (36.8 GiB written)",
+    "report-generator-7d9b6c5f8-xq5tn": "2026-04-23T02:09:15Z INFO report-generator 3.8.1 starting nightly build run_id=nb-20260423-retry1\n2026-04-23T02:09:16Z INFO spool dir: /var/tmp/reportgen/spool\n2026-04-23T02:09:20Z ERROR notify: smtp send failed: 535 5.7.8 Username and Password not accepted (smtp.mail.internal:587)\n2026-04-23T02:09:20Z ERROR notify: could not deliver 'nightly build started' to finance-ops@\n2026-04-23T02:22:41Z INFO spooled partition 9/96 (7.2 GiB written)\n2026-04-23T02:22:42Z ERROR notify: smtp send failed: 535 5.7.8 Username and Password not accepted (smtp.mail.internal:587)",
+    "report-scheduler-5f7c9d8b6-w9lkz": "2026-04-23T01:00:00Z INFO triggered job nightly-build\n2026-04-23T02:09:10Z WARN job nightly-build: worker report-generator-7d9b6c5f8-4hqzt lost, rescheduling from partition 0",
+    "finance-portal-6c8b7d9f5-t4jxp": "2026-04-23T08:00:12Z INFO GET /reports/latest 404 report not ready"
+  }
+}

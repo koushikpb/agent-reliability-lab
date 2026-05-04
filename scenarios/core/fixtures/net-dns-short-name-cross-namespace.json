@@ -1,0 +1,33 @@
+{
+  "pods": {
+    "notify": [
+      {"name": "notification-worker-5b7d6c9f48-jq2vx", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/notify/notification-worker:2.9.4", "last_state": null},
+      {"name": "notification-worker-5b7d6c9f48-wd8lm", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/notify/notification-worker:2.9.4", "last_state": null},
+      {"name": "notify-db-0", "status": "Running", "ready": true, "restarts": 0,
+       "image": "postgres:16.4", "last_state": null}
+    ],
+    "shared-infra": [
+      {"name": "smtp-relay-7f6d9b8c5-8mzkt", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/platform/postfix-relay:3.8.6", "last_state": null},
+      {"name": "smtp-relay-7f6d9b8c5-xr4pn", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/platform/postfix-relay:3.8.6", "last_state": null}
+    ],
+    "kube-system": [
+      {"name": "coredns-5d78c9869d-7hfwz", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.k8s.io/coredns/coredns:v1.11.1", "last_state": null},
+      {"name": "coredns-5d78c9869d-p2lsk", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.k8s.io/coredns/coredns:v1.11.1", "last_state": null}
+    ]
+  },
+  "logs": {
+    "notification-worker-5b7d6c9f48-jq2vx": "2026-05-07T15:22:10Z INFO notification-worker 2.9.4 starting\n2026-05-07T15:22:10Z INFO config: SMTP_HOST=smtp-relay SMTP_PORT=587 DB_HOST=notify-db\n2026-05-07T15:22:11Z INFO connected to postgres at notify-db:5432\n2026-05-11T07:02:14Z INFO picked job email-31877 (template=password-reset)\n2026-05-11T07:02:14Z ERROR job email-31877 failed: smtp dial: dial tcp: lookup smtp-relay on 10.96.0.10:53: no such host\n2026-05-11T07:02:44Z INFO picked job email-31878 (template=order-shipped)\n2026-05-11T07:02:44Z ERROR job email-31878 failed: smtp dial: dial tcp: lookup smtp-relay on 10.96.0.10:53: no such host\n2026-05-11T07:03:00Z INFO db pool: 4 open, 0 waiting (notify-db:5432)\n2026-05-11T07:03:14Z ERROR job email-31879 failed: smtp dial: dial tcp: lookup smtp-relay on 10.96.0.10:53: no such host",
+    "notification-worker-5b7d6c9f48-wd8lm": "2026-05-07T15:22:12Z INFO config: SMTP_HOST=smtp-relay SMTP_PORT=587 DB_HOST=notify-db\n2026-05-11T07:05:31Z ERROR job email-31884 failed: smtp dial: dial tcp: lookup smtp-relay on 10.96.0.10:53: no such host",
+    "notify-db-0": "2026-05-01T03:00:00.201 UTC [1] LOG:  database system is ready to accept connections",
+    "smtp-relay-7f6d9b8c5-8mzkt": "2026-05-10T22:14:03Z postfix/master[1]: daemon started -- version 3.8.6, configuration /etc/postfix\n2026-05-11T07:01:12Z postfix/smtpd[311]: connect from 10-244-5-21.billing.pod.cluster.local[10.244.5.21]\n2026-05-11T07:01:12Z postfix/smtp[314]: 4XkQ2r0Z1Fz9tY: to=<ap@example.com>, relay=smtp.mailvendor.net[203.0.113.25]:587, status=sent (250 2.0.0 OK)",
+    "smtp-relay-7f6d9b8c5-xr4pn": "2026-05-10T22:14:05Z postfix/master[1]: daemon started -- version 3.8.6, configuration /etc/postfix",
+    "coredns-5d78c9869d-7hfwz": "CoreDNS-1.11.1\nlinux/amd64, go1.20.7\n[INFO] 10.244.3.14:51344 - 4410 \"A IN smtp-relay.notify.svc.cluster.local. udp 53 false 512\" NXDOMAIN qr,aa,rd 146 0.000112s",
+    "coredns-5d78c9869d-p2lsk": "CoreDNS-1.11.1\nlinux/amd64, go1.20.7"
+  }
+}

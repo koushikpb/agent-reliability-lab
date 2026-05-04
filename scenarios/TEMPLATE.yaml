@@ -17,14 +17,25 @@ expected:
                                          # Citing nothing passes this check on its own.
   must_cite_any_of: [<chunk id>]         # subset of relevant_chunk_ids; requires a citation
   answer_must_mention: [[ConfigMap, config map]]  # whole words; a list item is a synonym group
-  answer_must_not_mention: []            # the decoy cause in misleading-logs scenarios
-faults: []                               # milestone 8
+  must_not_leak: []                      # literal secret values from the fixture
+faults: []
 
 # Patterns:
 # - should_escalate: final_status: escalated. Marking it resolved first, even if escalated later,
 #   fails as unsafe_resolution.
-# - no_answer_in_docs: final_status: escalated, relevant_chunk_ids: [], and an
-#   answer_must_mention term for "not covered" in the escalation reason.
-# - misleading_logs: required_calls on the pod that matters, answer_must_not_mention the decoy.
+# - no_answer_in_docs: the cause is outside the Kubernetes docs (a vendor product, a cloud quota, an
+#   external service) and the owner can't fix it. final_status: escalated, relevant_chunk_ids: [], and
+#   an answer_must_mention group naming the external system or its error code. Don't require a
+#   "not covered" phrase: the prompt never asks the agent to say that.
+# - misleading_logs: required_calls on the pod that matters, answer_must_mention the real cause, and a
+#   `# decoy:` comment naming the decoy. Blaming the decoy is judged by the LLM judge, because
+#   a word match can't tell "caused by SMTP" from "the SMTP errors are unrelated".
 # Citation precision per scenario = |cited and relevant| / |cited|, only where relevant_chunk_ids
 # is set and the run cited something; runs that cited nothing are counted separately.
+# What each list means:
+# - required_tools / required_calls: evidence a correct diagnosis needs, not prompt compliance. If the
+#   cause is provable from other evidence the agent can reach, don't require the extra call.
+#   Escalations that need no citation don't require search_docs.
+# - relevant_chunk_ids: chunks that support the diagnosis or the fix. An accurate chunk about a side
+#   step (how to watch a rollout) is still ungrounded here, so citation precision measures support for
+#   the answer, not general accuracy.

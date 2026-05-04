@@ -1,0 +1,36 @@
+{
+  "pods": {
+    "shop": [
+      {"name": "storefront-84c7d9f6b5-tx4mh", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/shop/storefront:7.3.1", "last_state": null,
+       "labels": {"app": "storefront", "pod-template-hash": "84c7d9f6b5"}},
+      {"name": "storefront-84c7d9f6b5-zb92k", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/shop/storefront:7.3.1", "last_state": null,
+       "labels": {"app": "storefront", "pod-template-hash": "84c7d9f6b5"}},
+      {"name": "cart-service-6d5f8c7b9-4hnwq", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/shop/cart-service:4.2.0", "last_state": null,
+       "labels": {"app.kubernetes.io/name": "cart-service", "app.kubernetes.io/instance": "cart-service", "app.kubernetes.io/version": "4.2.0", "pod-template-hash": "6d5f8c7b9"}},
+      {"name": "cart-service-6d5f8c7b9-kq7rd", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/shop/cart-service:4.2.0", "last_state": null,
+       "labels": {"app.kubernetes.io/name": "cart-service", "app.kubernetes.io/instance": "cart-service", "app.kubernetes.io/version": "4.2.0", "pod-template-hash": "6d5f8c7b9"}},
+      {"name": "cart-redis-0", "status": "Running", "ready": true, "restarts": 0,
+       "image": "redis:7.2.5-alpine", "last_state": null,
+       "labels": {"app": "cart-redis", "statefulset.kubernetes.io/pod-name": "cart-redis-0"}}
+    ],
+    "kube-system": [
+      {"name": "coredns-5d78c9869d-7hfwz", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.k8s.io/coredns/coredns:v1.11.1", "last_state": null},
+      {"name": "coredns-5d78c9869d-p2lsk", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.k8s.io/coredns/coredns:v1.11.1", "last_state": null}
+    ]
+  },
+  "logs": {
+    "storefront-84c7d9f6b5-tx4mh": "2026-05-14T08:12:40Z INFO GET / 200 31ms\n2026-05-14T08:12:41Z WARN cart client: GET http://cart-service:8080/v1/carts/c_99a1f: dial tcp 10.96.47.12:8080: connect: connection refused (attempt 1/3)\n2026-05-14T08:12:41Z WARN cart client: GET http://cart-service:8080/v1/carts/c_99a1f: dial tcp 10.96.47.12:8080: connect: connection refused (attempt 2/3)\n2026-05-14T08:12:42Z WARN cart client: GET http://cart-service:8080/v1/carts/c_99a1f: dial tcp 10.96.47.12:8080: connect: connection refused (attempt 3/3)\n2026-05-14T08:12:42Z ERROR render cart widget: cart-service unavailable, showing fallback\n2026-05-14T08:12:44Z INFO GET /product/sku-4410 200 44ms",
+    "storefront-84c7d9f6b5-zb92k": "2026-05-14T08:12:50Z WARN cart client: GET http://cart-service:8080/v1/carts/c_17be0: dial tcp 10.96.47.12:8080: connect: connection refused (attempt 3/3)\n2026-05-14T08:12:50Z ERROR render cart widget: cart-service unavailable, showing fallback",
+    "cart-service-6d5f8c7b9-4hnwq": "2026-05-13T16:40:02Z INFO cart-service 4.2.0 starting\n2026-05-13T16:40:02Z INFO connected to redis at cart-redis:6379\n2026-05-13T16:40:03Z INFO http listening on 0.0.0.0:8080\n2026-05-14T08:10:03Z INFO stats: requests_last_60s=0 readiness_checks_last_60s=6\n2026-05-14T08:11:03Z INFO stats: requests_last_60s=0 readiness_checks_last_60s=6\n2026-05-14T08:12:03Z INFO stats: requests_last_60s=0 readiness_checks_last_60s=6",
+    "cart-service-6d5f8c7b9-kq7rd": "2026-05-13T16:40:05Z INFO cart-service 4.2.0 starting\n2026-05-13T16:40:05Z INFO connected to redis at cart-redis:6379\n2026-05-13T16:40:06Z INFO http listening on 0.0.0.0:8080\n2026-05-14T08:12:06Z INFO stats: requests_last_60s=0 readiness_checks_last_60s=6",
+    "cart-redis-0": "1:M 10 May 2026 02:11:40.003 * Ready to accept connections tcp\n1:M 14 May 2026 08:00:01.551 * 100 changes in 300 seconds. Saving...",
+    "coredns-5d78c9869d-7hfwz": "[INFO] plugin/reload: Running configuration SHA512 = 591cf328cccc12bc490481273e738df59329c62c0b729d94e8b61db9961c2fa5f046dd37f1cf888b953814040d180f52594972691cd6ff41be96639138a43908\nCoreDNS-1.11.1\nlinux/amd64, go1.20.7",
+    "coredns-5d78c9869d-p2lsk": "CoreDNS-1.11.1\nlinux/amd64, go1.20.7"
+  }
+}

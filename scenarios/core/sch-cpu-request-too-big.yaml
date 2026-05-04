@@ -1,0 +1,33 @@
+# Pending pod whose 16-CPU request exceeds every 8-vCPU node; the scheduler message alone shows it.
+# Resolved: the owner lowers the CPU request (or asks for a bigger node pool), which the docs cover directly.
+id: sch-cpu-request-too-big
+category: easy_lookup
+ticket:
+  id: T-3001
+  title: training job never starts after config update
+  body: >-
+    We updated the trainer job config in ml-training for the bigger Q3 dataset and pushed it this
+    morning. The new trainer pod has been sitting in Pending for three hours and never starts.
+    Last week's run went through fine. Our general node pool is m6i.2xlarge (8 vCPU, 32 GiB) if
+    that matters. Can you tell us what's wrong?
+cluster_fixture: fixtures/sch-cpu-request-too-big.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: ml-training}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-0
+    - concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-1
+    - concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-5
+    - concepts/configuration/manage-resources-containers#how-pods-with-resource-requests-are-scheduled-0
+    - tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-0
+    - tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-1
+    - tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-2
+  must_cite_any_of:
+    - concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-1
+    - concepts/configuration/manage-resources-containers#how-pods-with-resource-requests-are-scheduled-0
+    - tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-0
+  answer_must_mention: [[cpu], [request, requests, requested]]
+faults: []

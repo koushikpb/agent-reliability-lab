@@ -1,0 +1,39 @@
+{
+  "pods": {
+    "catalog": [
+      {"name": "search-api-75d9c8b6f4-2hxkq", "status": "Running", "ready": true, "restarts": 0,
+       "node": "ip-10-0-21-14.ec2.internal", "owner": "ReplicaSet/search-api-75d9c8b6f4 (Deployment/search-api)",
+       "containers": [
+         {"name": "api", "image": "registry.internal/catalog/search-api:4.8.0",
+          "resources": {"requests": {"cpu": "1", "memory": "2Gi"}, "limits": {"memory": "2Gi"}}},
+         {"name": "log-forwarder", "image": "fluent/fluent-bit:3.1.4", "resources": {}}
+       ]},
+      {"name": "search-api-75d9c8b6f4-8mwzt", "status": "Running", "ready": true, "restarts": 0,
+       "node": "ip-10-0-22-61.ec2.internal", "owner": "ReplicaSet/search-api-75d9c8b6f4 (Deployment/search-api)",
+       "containers": [
+         {"name": "api", "image": "registry.internal/catalog/search-api:4.8.0",
+          "resources": {"requests": {"cpu": "1", "memory": "2Gi"}, "limits": {"memory": "2Gi"}}},
+         {"name": "log-forwarder", "image": "fluent/fluent-bit:3.1.4", "resources": {}}
+       ]},
+      {"name": "search-api-75d9c8b6f4-r4c9j", "status": "Running", "ready": true, "restarts": 0,
+       "node": "ip-10-0-23-08.ec2.internal", "owner": "ReplicaSet/search-api-75d9c8b6f4 (Deployment/search-api)",
+       "containers": [
+         {"name": "api", "image": "registry.internal/catalog/search-api:4.8.0",
+          "resources": {"requests": {"cpu": "1", "memory": "2Gi"}, "limits": {"memory": "2Gi"}}},
+         {"name": "log-forwarder", "image": "fluent/fluent-bit:3.1.4", "resources": {}}
+       ]},
+      {"name": "catalog-indexer-6b7f5d9c8-kq2vn", "status": "Running", "ready": true, "restarts": 0,
+       "node": "ip-10-0-21-14.ec2.internal", "owner": "ReplicaSet/catalog-indexer-6b7f5d9c8 (Deployment/catalog-indexer)",
+       "containers": [
+         {"name": "indexer", "image": "registry.internal/catalog/catalog-indexer:2.2.1",
+          "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"memory": "1Gi"}}}
+       ]}
+    ]
+  },
+  "logs": {
+    "search-api-75d9c8b6f4-2hxkq": "2026-05-19T12:14:02Z INFO search-api 4.8.0 GET /v2/search?q=garden+hose 200 412ms\n2026-05-19T12:14:02Z INFO search-api 4.8.0 GET /v2/search?q=drill 200 388ms\n2026-05-19T12:14:03Z INFO worker pool busy=16/16 queued=41",
+    "search-api-75d9c8b6f4-8mwzt": "2026-05-19T12:14:01Z INFO search-api 4.8.0 GET /v2/search?q=paint 200 455ms\n2026-05-19T12:14:03Z INFO worker pool busy=16/16 queued=38",
+    "search-api-75d9c8b6f4-r4c9j": "2026-05-19T12:14:02Z INFO search-api 4.8.0 GET /v2/search?q=lawn+mower 200 471ms\n2026-05-19T12:14:04Z INFO worker pool busy=16/16 queued=44",
+    "catalog-indexer-6b7f5d9c8-kq2vn": "2026-05-19T12:10:00Z INFO indexed 1840 changed products in 3.2s"
+  }
+}

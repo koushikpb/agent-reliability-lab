@@ -1,0 +1,26 @@
+# pricing-engine panics in its own rule compiler on rule BF-2026-STACKED, created minutes earlier, with no deploy.
+# Resolved: the owner (the pricing team) can roll back or fix the rule; the restart chunks explain the CrashLoopBackOff.
+id: wl-pricing-rule-panic
+category: multi_hop
+ticket:
+  id: T-2009
+  title: pricing-engine crash looping, checkout shows no prices
+  body: >-
+    Since a little after 2pm both pricing-engine pods in the pricing namespace keep crashing and
+    checkout can't show prices. We haven't deployed pricing-engine since April and nobody touched
+    the cluster today. Can you figure out what Kubernetes is doing to it?
+cluster_fixture: fixtures/wl-pricing-rule-panic.json
+expected:
+  final_status: resolved
+  required_tools: [list_pods, get_pod_logs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: pricing}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/workloads/pods/pod-lifecycle#container-restarts-0
+    - concepts/workloads/pods/pod-lifecycle#container-restarts-1
+    - concepts/workloads/pods/pod-lifecycle#restart-policy-9
+  answer_must_mention:
+    - [BF-2026-STACKED]
+    - [roll back, rollback, revert, disable, disabling, remove the rule, fix the rule]
+faults: []

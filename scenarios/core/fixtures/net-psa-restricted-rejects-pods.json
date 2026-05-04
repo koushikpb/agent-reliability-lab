@@ -1,0 +1,25 @@
+{
+  "pods": {
+    "documents": [
+      {"name": "pdf-exporter-7d9c6b5f84-2ntkx", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/docs/pdf-exporter:1.4.2", "last_state": null},
+      {"name": "pdf-exporter-7d9c6b5f84-v8lqc", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/docs/pdf-exporter:1.4.2", "last_state": null},
+      {"name": "pdf-exporter-redis-0", "status": "Running", "ready": true, "restarts": 0,
+       "image": "redis:7.2.5-alpine", "last_state": null}
+    ],
+    "ci": [
+      {"name": "deploy-pdf-exporter-28591340-wq7mz", "status": "Error", "ready": false, "restarts": 0,
+       "image": "registry.internal/ci/kubectl-deployer:1.30.2", "last_state": "Terminated (Error), exit code 1"},
+      {"name": "deploy-billing-28591322-hb5rd", "status": "Completed", "ready": false, "restarts": 0,
+       "image": "registry.internal/ci/kubectl-deployer:1.30.2", "last_state": "Terminated (Completed), exit code 0"}
+    ]
+  },
+  "logs": {
+    "deploy-pdf-exporter-28591340-wq7mz": "2026-05-13T14:20:03Z + kubectl -n documents set image deployment/pdf-exporter exporter=registry.internal/docs/pdf-exporter:1.5.0\n2026-05-13T14:20:04Z deployment.apps/pdf-exporter image updated\n2026-05-13T14:20:04Z + kubectl -n documents rollout status deployment/pdf-exporter --timeout=10m\n2026-05-13T14:20:05Z Waiting for deployment \"pdf-exporter\" rollout to finish: 0 out of 2 new replicas have been updated...\n2026-05-13T14:30:05Z error: timed out waiting for the condition\n2026-05-13T14:30:05Z + kubectl -n documents get events --field-selector involvedObject.kind=ReplicaSet\n2026-05-13T14:30:06Z LAST SEEN   TYPE      REASON         OBJECT                              MESSAGE\n2026-05-13T14:30:06Z 2m11s       Warning   FailedCreate   replicaset/pdf-exporter-5f6b8d9c47   Error creating: pods \"pdf-exporter-5f6b8d9c47-8xq2d\" is forbidden: violates PodSecurity \"restricted:latest\": allowPrivilegeEscalation != false (container \"exporter\" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container \"exporter\" must set securityContext.capabilities.drop=[\"ALL\"]), runAsNonRoot != true (pod or container \"exporter\" must set securityContext.runAsNonRoot=true), seccompProfile (pod or container \"exporter\" must set securityContext.seccompProfile.type to \"RuntimeDefault\" or \"Localhost\")\n2026-05-13T14:30:06Z + exit 1",
+    "deploy-billing-28591322-hb5rd": "2026-05-13T14:02:11Z + kubectl -n billing set image deployment/invoice-worker worker=registry.internal/billing/invoice-worker:3.7.3\n2026-05-13T14:02:12Z deployment.apps/invoice-worker image updated\n2026-05-13T14:03:40Z deployment \"invoice-worker\" successfully rolled out",
+    "pdf-exporter-7d9c6b5f84-2ntkx": "2026-05-06T11:02:17Z INFO pdf-exporter 1.4.2 listening on :8000\n2026-05-13T14:28:51Z INFO export job 99121 done in 1.8s",
+    "pdf-exporter-7d9c6b5f84-v8lqc": "2026-05-06T11:02:20Z INFO pdf-exporter 1.4.2 listening on :8000\n2026-05-13T14:29:13Z INFO export job 99124 done in 2.2s",
+    "pdf-exporter-redis-0": "1:M 06 May 2026 11:00:02.114 * Ready to accept connections tcp"
+  }
+}

@@ -1,0 +1,38 @@
+# Multi-hop: the pod list shows liveness-probe kills (connection refused); the logs show the app is still loading
+# a 3x larger index when SIGTERM arrives. Resolved: add a startup probe (or longer delay) per the probe docs.
+id: wl-liveness-kills-slow-start
+category: multi_hop
+ticket:
+  id: T-2003
+  title: catalog-search stuck restarting since this morning
+  body: >-
+    Both catalog-search pods in the search namespace have been restarting in a loop since about
+    9am and product search is down. We didn't ship a new version today, it's the same 5.2.0 that
+    ran fine all last week.
+cluster_fixture: fixtures/wl-liveness-kills-slow-start.json
+expected:
+  final_status: resolved
+  required_tools: [list_pods, get_pod_logs, search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: search}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/workloads/pods/probes#liveness-probe-0
+    - concepts/workloads/pods/pod-lifecycle#liveness-probe-0
+    - concepts/workloads/pods/probes#startup-probe-0
+    - concepts/workloads/pods/pod-lifecycle#startup-probe-0
+    - concepts/workloads/pods/probes#when-should-you-use-a-startup-probe-0
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-1
+    - concepts/workloads/pods/probes#configure-probes-1
+    - concepts/workloads/pods/probes#configure-probes-2
+    - concepts/workloads/pods/probes#probe-results-0
+    - concepts/workloads/pods/pod-lifecycle#container-restarts-1
+  must_cite_any_of:
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0
+    - concepts/workloads/pods/probes#when-should-you-use-a-startup-probe-0
+    - concepts/workloads/pods/probes#liveness-probe-0
+  answer_must_mention:
+    - [liveness, livenessProbe]
+    - [startupProbe, startup probe, initialDelaySeconds, failureThreshold]
+faults: []

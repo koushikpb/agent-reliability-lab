@@ -1,0 +1,41 @@
+# Pods are evicted for node ephemeral-storage pressure from a 38Gi spool in the container layer; the eviction
+# message in list_pods is enough. The logs also hold loud SMTP auth errors, which are unrelated. Resolved: set
+# ephemeral-storage requests/limits and move the spool to a sized volume.
+id: sch-ephemeral-storage-eviction
+category: easy_lookup
+ticket:
+  id: T-3005
+  title: nightly reports die halfway and start over
+  body: >-
+    The report-generator runs in the reporting namespace keep dying partway through the nightly
+    build and a fresh pod starts from scratch, so the finance reports were late twice this week.
+    Can you take a look and tell us what to fix?
+cluster_fixture: fixtures/sch-ephemeral-storage-eviction.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: reporting}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/storage/ephemeral-storage#intro-0
+    - concepts/storage/ephemeral-storage#requests-limits-0
+    - concepts/storage/ephemeral-storage#requests-limits-1
+    - concepts/storage/ephemeral-storage#requests-limits-2
+    - concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-0
+    - concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-1
+    - concepts/scheduling-eviction/node-pressure-eviction#intro-0
+    - concepts/scheduling-eviction/node-pressure-eviction#pod-selection-for-kubelet-eviction-0
+    - concepts/scheduling-eviction/node-pressure-eviction#reclaim-node-resources-0
+    - concepts/configuration/manage-resources-containers#local-ephemeral-storage-0
+    - concepts/storage/volumes#emptydir-2
+    - concepts/storage/volumes#emptydir-4
+  must_cite_any_of:
+    - concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-0
+    - concepts/storage/ephemeral-storage#requests-limits-0
+    - concepts/scheduling-eviction/node-pressure-eviction#intro-0
+  answer_must_mention:
+    - [ephemeral-storage, ephemeral storage]
+    - [evicted, eviction, evictions, DiskPressure, disk pressure]
+# decoy: SMTP (judged in M10, not by a word check)
+faults: []

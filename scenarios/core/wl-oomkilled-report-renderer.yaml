@@ -1,0 +1,36 @@
+# Easy lookup: the pod list shows OOMKilled / exit 137 against a 512Mi limit while rendering a large report.
+# Resolved: the documented fix is a higher memory limit (or a smaller workload), which the owner can apply.
+id: wl-oomkilled-report-renderer
+category: easy_lookup
+ticket:
+  id: T-2001
+  title: report-renderer restarts when we generate quarterly statements
+  body: >-
+    Every time a customer requests a quarterly statement, the report-renderer pods in the reports
+    namespace restart and the job gets retried until it gives up. Small reports work fine. We
+    haven't deployed anything new this week.
+cluster_fixture: fixtures/wl-oomkilled-report-renderer.json
+expected:
+  final_status: resolved
+  required_tools: [list_pods, search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: reports}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/configuration/manage-resources-containers#my-container-is-terminated-0
+    - concepts/configuration/manage-resources-containers#my-container-is-terminated-1
+    - concepts/configuration/manage-resources-containers#my-container-is-terminated-3
+    - concepts/configuration/manage-resources-containers#requests-and-limits-1
+    - tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-0
+    - tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-2
+    - tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-3
+    - tasks/configure-pod-container/assign-memory-resource#specify-a-memory-request-and-a-memory-limit-0
+    - concepts/workloads/pods/pod-lifecycle#container-restarts-1
+  must_cite_any_of:
+    - concepts/configuration/manage-resources-containers#my-container-is-terminated-3
+    - tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-0
+    - concepts/configuration/manage-resources-containers#requests-and-limits-1
+  answer_must_mention:
+    - [OOMKilled, out of memory, OOM, "137"]
+    - [limit, limits, limits.memory]
+faults: []

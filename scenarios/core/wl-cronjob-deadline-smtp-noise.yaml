@@ -1,0 +1,30 @@
+# Misleading logs: every run (including the one that succeeded) logs SMTP connection errors, but the failed runs
+# are killed exactly at the 3600s activeDeadlineSeconds after row counts nearly doubled. Resolved: raise the deadline.
+id: wl-cronjob-deadline-smtp-noise
+category: misleading_logs
+ticket:
+  id: T-2005
+  title: nightly ledger export failing
+  body: >-
+    The ledger-export cronjob in the finance namespace has failed the last two nights and finance
+    is missing their morning CSVs. It was fine last week and we
+    haven't changed the job.
+cluster_fixture: fixtures/wl-cronjob-deadline-smtp-noise.json
+expected:
+  final_status: resolved
+  required_tools: [list_pods, search_docs]
+  required_calls:
+    - {tool: get_pod_logs, args: {pod: ledger-export-29637420-k4x9d}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/workloads/controllers/job#job-termination-and-cleanup-1
+    - concepts/workloads/controllers/job#job-termination-and-cleanup-2
+    - concepts/workloads/controllers/job#job-termination-and-cleanup-3
+    - concepts/workloads/controllers/job#terminal-job-conditions-1
+  must_cite_any_of:
+    - concepts/workloads/controllers/job#job-termination-and-cleanup-1
+    - concepts/workloads/controllers/job#terminal-job-conditions-1
+  answer_must_mention:
+    - [activeDeadlineSeconds, active deadline, DeadlineExceeded]
+# decoy: SMTP (judged in M10, not by a word check)
+faults: []

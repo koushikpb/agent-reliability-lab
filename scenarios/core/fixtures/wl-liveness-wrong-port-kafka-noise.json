@@ -1,0 +1,25 @@
+{
+  "pods": {
+    "orders": [
+      {"name": "orders-consumer-6f7b9c4d8-b5nqx", "status": "CrashLoopBackOff", "ready": false, "restarts": 17,
+       "image": "registry.internal/orders/orders-consumer:2.0.1",
+       "ports": [{"name": "http", "containerPort": 8080}],
+       "liveness_probe": "http-get http://:8080/healthz delay=10s timeout=1s period=10s #success=1 #failure=3",
+       "last_state": "Terminated (Error), exit code 143",
+       "message": "Liveness probe failed: Get \"http://10.42.3.17:8080/healthz\": dial tcp 10.42.3.17:8080: connect: connection refused. Container consumer failed liveness probe, will be restarted"},
+      {"name": "orders-consumer-6f7b9c4d8-hw8rj", "status": "CrashLoopBackOff", "ready": false, "restarts": 17,
+       "image": "registry.internal/orders/orders-consumer:2.0.1",
+       "ports": [{"name": "http", "containerPort": 8080}],
+       "liveness_probe": "http-get http://:8080/healthz delay=10s timeout=1s period=10s #success=1 #failure=3",
+       "last_state": "Terminated (Error), exit code 143",
+       "message": "Liveness probe failed: Get \"http://10.42.1.44:8080/healthz\": dial tcp 10.42.1.44:8080: connect: connection refused. Container consumer failed liveness probe, will be restarted"},
+      {"name": "orders-api-58c6d9f7b-tk4mz", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/orders/orders-api:4.6.2", "last_state": null}
+    ]
+  },
+  "logs": {
+    "orders-consumer-6f7b9c4d8-b5nqx": "2026-05-18T10:22:01Z INFO orders-consumer 2.0.1 starting\n2026-05-18T10:22:01Z INFO config: HTTP_PORT unset, using default 9090 (default changed from 8080 in 2.0.0)\n2026-05-18T10:22:01Z INFO health and metrics server listening on 0.0.0.0:9090 (/healthz, /metrics)\n2026-05-18T10:22:02Z INFO joining consumer group orders-fulfillment on kafka-0.kafka:9092,kafka-1.kafka:9092\n2026-05-18T10:22:04Z ERROR kafka: [thrd:main]: kafka-1.kafka:9092/1: Broker: Leader not available for orders.created [3], retrying\n2026-05-18T10:22:06Z ERROR kafka: Group rebalance in progress, commit of offsets for orders.created [0..5] failed: Broker: Group rebalance in progress\n2026-05-18T10:22:09Z ERROR kafka: [thrd:main]: kafka-1.kafka:9092/1: Broker: Leader not available for orders.created [3], retrying\n2026-05-18T10:22:12Z INFO partitions assigned: orders.created [0,1,2]\n2026-05-18T10:22:15Z INFO processed 412 messages (lag 18,220)\n2026-05-18T10:22:19Z ERROR kafka: Group rebalance in progress, commit of offsets for orders.created [0..2] failed: Broker: Group rebalance in progress\n2026-05-18T10:22:25Z INFO processed 1,377 messages (lag 17,301)\n2026-05-18T10:22:31Z INFO received SIGTERM, leaving consumer group\n2026-05-18T10:22:31Z ERROR kafka: Group rebalance in progress, commit of offsets for orders.created [0..2] failed: Broker: Group rebalance in progress",
+    "orders-consumer-6f7b9c4d8-hw8rj": "2026-05-18T10:23:40Z INFO orders-consumer 2.0.1 starting\n2026-05-18T10:23:40Z INFO config: HTTP_PORT unset, using default 9090 (default changed from 8080 in 2.0.0)\n2026-05-18T10:23:40Z INFO health and metrics server listening on 0.0.0.0:9090 (/healthz, /metrics)\n2026-05-18T10:23:41Z INFO joining consumer group orders-fulfillment on kafka-0.kafka:9092,kafka-1.kafka:9092\n2026-05-18T10:23:43Z ERROR kafka: Group rebalance in progress, commit of offsets for orders.created [3..5] failed: Broker: Group rebalance in progress\n2026-05-18T10:23:47Z ERROR kafka: [thrd:main]: kafka-1.kafka:9092/1: Broker: Leader not available for orders.created [3], retrying\n2026-05-18T10:23:52Z INFO processed 903 messages (lag 17,940)\n2026-05-18T10:24:10Z INFO received SIGTERM, leaving consumer group",
+    "orders-api-58c6d9f7b-tk4mz": "2026-05-18T10:24:02Z INFO POST /v1/orders 201 48ms\n2026-05-18T10:24:03Z INFO GET /healthz 200 0ms ua=kube-probe/1.30"
+  }
+}

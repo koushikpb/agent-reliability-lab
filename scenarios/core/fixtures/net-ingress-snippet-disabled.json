@@ -1,0 +1,22 @@
+{
+  "pods": {
+    "legacy": [
+      {"name": "legacy-portal-74b9c6d8f5-8dkzw", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/legacy/portal:2019.11.4", "last_state": null},
+      {"name": "legacy-portal-74b9c6d8f5-pj6mx", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/legacy/portal:2019.11.4", "last_state": null}
+    ],
+    "ingress-nginx": [
+      {"name": "ingress-nginx-controller-5c8f9d7b6-qh4tn", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.k8s.io/ingress-nginx/controller:v1.12.1", "last_state": null},
+      {"name": "ingress-nginx-controller-5c8f9d7b6-w2rfs", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.k8s.io/ingress-nginx/controller:v1.12.1", "last_state": null}
+    ]
+  },
+  "logs": {
+    "legacy-portal-74b9c6d8f5-8dkzw": "[16/May/2026:23:10:02 +0000] \"GET /portal/ HTTP/1.1\" 200 18233\n[18/May/2026:08:14:40 +0000] \"GET /portal/reports HTTP/1.1\" 200 4410",
+    "legacy-portal-74b9c6d8f5-pj6mx": "[18/May/2026:08:15:12 +0000] \"GET /portal/ HTTP/1.1\" 200 18233",
+    "ingress-nginx-controller-5c8f9d7b6-qh4tn": "-------------------------------------------------------------------------------\nNGINX Ingress controller\n  Release:       v1.12.1\n  Build:         51c2b819690bbf1709b844dbf321a9acf6eda5a7\n  Repository:    https://github.com/kubernetes/ingress-nginx\n  nginx version: nginx/1.25.5\n-------------------------------------------------------------------------------\nI0517 02:03:11.402117       7 main.go:205] \"Creating API client\" host=\"https://10.96.0.1:443\"\nI0517 02:03:12.881902       7 store.go:440] \"Found valid IngressClass\" ingress=\"legacy/legacy-portal\" ingressclass=\"nginx\"\nE0517 02:03:12.882410       7 store.go:950] annotation group ConfigurationSnippet contains risky annotation based on ingress configuration\nW0517 02:03:12.882455       7 store.go:951] skipping annotation nginx.ingress.kubernetes.io/configuration-snippet on ingress legacy/legacy-portal: Snippet directives are disabled by the Ingress administrator (allow-snippet-annotations=false)\nI0517 02:03:12.991004       7 controller.go:210] \"Backend successfully reloaded\"\n198.51.100.40 - - [18/May/2026:08:16:02 +0000] \"GET /old/reports/2024 HTTP/1.1\" 404 548 \"-\" \"Mozilla/5.0\" 312 0.004 [legacy-legacy-portal-80] [] 10.244.4.19:80 548 0.004 404 c1f0a93b",
+    "ingress-nginx-controller-5c8f9d7b6-w2rfs": "I0517 02:03:14.120044       7 store.go:440] \"Found valid IngressClass\" ingress=\"legacy/legacy-portal\" ingressclass=\"nginx\"\nE0517 02:03:14.120589       7 store.go:950] annotation group ConfigurationSnippet contains risky annotation based on ingress configuration"
+  }
+}

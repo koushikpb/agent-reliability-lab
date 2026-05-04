@@ -1,0 +1,34 @@
+# Misleading logs: the gateway logs are full of Redis timeouts, but the logs also show the limits file never changed after the
+# ConfigMap edit, and list_pods shows it mounted with subPath, which never receives ConfigMap updates. Resolved: restart or remount.
+# Either gateway pod's logs carry the evidence, so get_pod_logs is required as a tool rather than on one pod.
+id: m6a-configmap-subpath-redis-noise
+category: misleading_logs
+ticket:
+  id: T-5004
+  title: partner still rate limited after we raised their limit
+  body: >-
+    Our partner acme-logistics is still getting HTTP 429 from the API gateway. At 09:10 today we raised
+    their limit in the gateway-limits ConfigMap from 100 to 500 requests per second, and it's now 11:30,
+    but their requests are still being rejected far below 500/s. The gateway runs in the edge namespace. The gateway is
+    supposed to pick up limit changes without a restart.
+cluster_fixture: fixtures/m6a-configmap-subpath-redis-noise.json
+expected:
+  final_status: resolved
+  required_tools: [get_pod_logs, search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: edge}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-2
+    - concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-3
+    - concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4
+    - concepts/storage/volumes#configmap-2
+    - tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0
+  must_cite_any_of:
+    - concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4
+    - concepts/storage/volumes#configmap-2
+    - tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0
+  answer_must_mention:
+    - [subPath, sub path, sub-path]
+# decoy: Redis timeouts on the rate-counter sync (judged in M10, not by a word check)
+faults: []

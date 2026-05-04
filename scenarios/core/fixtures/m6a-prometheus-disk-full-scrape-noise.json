@@ -1,0 +1,65 @@
+{
+ "pods": {
+  "monitoring": [
+   {
+    "name": "prometheus-k8s-0",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "quay.io/prometheus/prometheus:v2.53.1",
+    "node": "ip-10-0-72-40.ec2.internal",
+    "args": [
+     "--storage.tsdb.path=/prometheus",
+     "--storage.tsdb.retention.time=30d",
+     "--config.file=/etc/prometheus/config_out/prometheus.env.yaml"
+    ],
+    "volumes": [
+     {
+      "name": "prometheus-k8s-db",
+      "persistentVolumeClaim": "prometheus-k8s-db-prometheus-k8s-0",
+      "claim_status": "Bound",
+      "capacity": "100Gi",
+      "storage_class": "gp3-resizable",
+      "storage_class_spec": {
+       "provisioner": "ebs.csi.aws.com",
+       "allowVolumeExpansion": true,
+       "reclaimPolicy": "Retain"
+      },
+      "fs_type": "ext4",
+      "mountPath": "/prometheus"
+     }
+    ]
+   },
+   {
+    "name": "grafana-6f5d8c9b7-k8vzt",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "grafana/grafana:11.1.0",
+    "node": "ip-10-0-72-40.ec2.internal"
+   },
+   {
+    "name": "alertmanager-main-0",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "quay.io/prometheus/alertmanager:v0.27.0",
+    "node": "ip-10-0-73-9.ec2.internal"
+   },
+   {
+    "name": "node-exporter-4hq7w",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "quay.io/prometheus/node-exporter:v1.8.1",
+    "node": "ip-10-0-71-14.ec2.internal"
+   }
+  ]
+ },
+ "logs": {
+  "prometheus-k8s-0": "ts=2026-05-21T22:00:01.112Z caller=main.go:1239 level=info msg=\"Completed loading of configuration file\" filename=/etc/prometheus/config_out/prometheus.env.yaml\nts=2026-05-22T01:00:03.871Z caller=compact.go:576 level=info component=tsdb msg=\"write block\" mint=1779400800000 maxt=1779408000000 duration=41.2s\nts=2026-05-22T02:47:12.009Z caller=scrape.go:1400 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/monitoring/node-exporter/0 target=http://10.0.71.14:9100/metrics msg=\"Scrape failed\" err=\"Get \\\"http://10.0.71.14:9100/metrics\\\": context deadline exceeded\"\nts=2026-05-22T02:47:19.440Z caller=scrape.go:1400 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/kafka/kafka-brokers/0 target=http://10.244.8.31:9308/metrics msg=\"Scrape failed\" err=\"Get \\\"http://10.244.8.31:9308/metrics\\\": context deadline exceeded\"\nts=2026-05-22T03:02:44.518Z caller=head.go:1120 level=error component=tsdb msg=\"Failed to write to WAL\" err=\"write /prometheus/wal/00004812: no space left on device\"\nts=2026-05-22T03:02:44.518Z caller=scrape.go:1456 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/payments/payments-api/0 target=http://10.244.2.17:8080/metrics msg=\"Append failed\" err=\"log samples: write /prometheus/wal/00004812: no space left on device\"\nts=2026-05-22T03:02:51.006Z caller=scrape.go:1400 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/monitoring/node-exporter/0 target=http://10.0.71.14:9100/metrics msg=\"Scrape failed\" err=\"Get \\\"http://10.0.71.14:9100/metrics\\\": context deadline exceeded\"\nts=2026-05-22T03:02:58.774Z caller=scrape.go:1400 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/monitoring/node-exporter/0 target=http://10.0.73.9:9100/metrics msg=\"Scrape failed\" err=\"Get \\\"http://10.0.73.9:9100/metrics\\\": context deadline exceeded\"\nts=2026-05-22T03:03:04.219Z caller=scrape.go:1400 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/kafka/kafka-brokers/0 target=http://10.244.8.31:9308/metrics msg=\"Scrape failed\" err=\"Get \\\"http://10.244.8.31:9308/metrics\\\": context deadline exceeded\"\nts=2026-05-22T03:03:04.602Z caller=scrape.go:1400 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/kafka/kafka-brokers/0 target=http://10.244.9.12:9308/metrics msg=\"Scrape failed\" err=\"Get \\\"http://10.244.9.12:9308/metrics\\\": context deadline exceeded\"\nts=2026-05-22T05:00:02.330Z caller=compact.go:580 level=error component=tsdb msg=\"compaction failed\" err=\"persist head block: write chunks: write /prometheus/01HZ8K3V4R6M2TQ9WX5B7N1C0D.tmp-for-creation/chunks/000001: no space left on device\"\nts=2026-05-22T07:41:15.882Z caller=scrape.go:1400 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/monitoring/node-exporter/0 target=http://10.0.71.14:9100/metrics msg=\"Scrape failed\" err=\"Get \\\"http://10.0.71.14:9100/metrics\\\": context deadline exceeded\"\nts=2026-05-22T07:41:22.107Z caller=scrape.go:1400 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/kafka/kafka-brokers/0 target=http://10.244.8.31:9308/metrics msg=\"Scrape failed\" err=\"Get \\\"http://10.244.8.31:9308/metrics\\\": context deadline exceeded\"\nts=2026-05-22T07:41:30.445Z caller=scrape.go:1456 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/checkout/checkout-web/0 target=http://10.244.4.55:3000/metrics msg=\"Append failed\" err=\"log samples: write /prometheus/wal/00004812: no space left on device\"\nts=2026-05-22T07:41:37.913Z caller=scrape.go:1400 level=warn component=\"scrape manager\" scrape_pool=serviceMonitor/monitoring/node-exporter/0 target=http://10.0.73.9:9100/metrics msg=\"Scrape failed\" err=\"Get \\\"http://10.0.73.9:9100/metrics\\\": context deadline exceeded\"",
+  "grafana-6f5d8c9b7-k8vzt": "logger=context userId=4 orgId=1 uname=dana t=2026-05-22T07:40:12Z level=info msg=\"Request Completed\" method=GET path=/api/ds/query status=200 duration=184ms",
+  "alertmanager-main-0": "ts=2026-05-22T02:59:30.004Z caller=dispatch.go:353 level=debug component=dispatcher msg=\"Received alert\" alert=Watchdog[3a1f2c4][active]",
+  "node-exporter-4hq7w": "ts=2026-05-21T22:00:00.512Z caller=node_exporter.go:117 level=info msg=\"Listening on\" address=[::]:9100"
+ }
+}

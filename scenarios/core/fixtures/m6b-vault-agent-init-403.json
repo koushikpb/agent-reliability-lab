@@ -1,0 +1,38 @@
+{
+  "pods": {
+    "orders": [
+      {"name": "orders-api-7c9f8d6b5-tq4lm", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/orders/orders-api:3.8.0", "node": "ip-10-0-61-33.ec2.internal",
+       "service_account": "orders-api",
+       "annotations": {"vault.hashicorp.com/agent-inject": "true", "vault.hashicorp.com/role": "orders-api",
+         "vault.hashicorp.com/auth-path": "auth/kubernetes-prod",
+         "vault.hashicorp.com/agent-inject-secret-db": "kv/data/orders/db"},
+       "init_containers": [{"name": "vault-agent-init", "state": "Terminated (Completed), exit code 0"}],
+       "containers": [{"name": "orders-api", "state": "Running"}, {"name": "vault-agent", "state": "Running"}],
+       "age": "6d"},
+      {"name": "orders-api-7c9f8d6b5-zr8wc", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/orders/orders-api:3.8.0", "node": "ip-10-0-62-05.ec2.internal",
+       "service_account": "orders-api",
+       "annotations": {"vault.hashicorp.com/agent-inject": "true", "vault.hashicorp.com/role": "orders-api",
+         "vault.hashicorp.com/auth-path": "auth/kubernetes-prod",
+         "vault.hashicorp.com/agent-inject-secret-db": "kv/data/orders/db"},
+       "init_containers": [{"name": "vault-agent-init", "state": "Terminated (Completed), exit code 0"}],
+       "containers": [{"name": "orders-api", "state": "Running"}, {"name": "vault-agent", "state": "Running"}],
+       "age": "6d"},
+      {"name": "orders-api-5b4d7c8f9-hn6wd", "status": "Init:0/1", "ready": false, "restarts": 0,
+       "image": "registry.internal/orders/orders-api:3.9.0", "node": "ip-10-0-63-18.ec2.internal",
+       "service_account": "orders-api",
+       "annotations": {"vault.hashicorp.com/agent-inject": "true", "vault.hashicorp.com/role": "orders-api",
+         "vault.hashicorp.com/auth-path": "auth/kubernetes-prod",
+         "vault.hashicorp.com/agent-inject-secret-db": "kv/data/orders/db"},
+       "init_containers": [{"name": "vault-agent-init", "state": "Running"}],
+       "containers": [{"name": "orders-api", "state": "Waiting (PodInitializing)"}, {"name": "vault-agent", "state": "Waiting (PodInitializing)"}],
+       "age": "41m"}
+    ]
+  },
+  "logs": {
+    "orders-api-7c9f8d6b5-tq4lm": "2026-05-20T13:38:44Z INFO POST /v1/orders 201 48ms\n2026-05-20T13:39:02Z INFO vault-agent: renewed token, ttl=1h0m0s\n2026-05-20T13:39:05Z INFO POST /v1/orders 201 51ms",
+    "orders-api-7c9f8d6b5-zr8wc": "2026-05-20T13:38:51Z INFO GET /v1/orders/884120 200 9ms\n2026-05-20T13:39:11Z INFO vault-agent: renewed token, ttl=1h0m0s",
+    "orders-api-5b4d7c8f9-hn6wd": "[vault-agent-init] ==> Vault Agent started! Log data will stream in below:\n[vault-agent-init] 2026-05-20T13:00:41.204Z [INFO]  agent.auth.handler: authenticating\n[vault-agent-init] 2026-05-20T13:00:41.391Z [ERROR] agent.auth.handler: error authenticating: error=\"Error making API request.\n\nURL: PUT https://vault.sec.internal:8200/v1/auth/kubernetes-prod/login\nCode: 403. Errors:\n\n* permission denied\" backoff=1s\n[vault-agent-init] 2026-05-20T13:00:42.588Z [ERROR] agent.auth.handler: error authenticating: error=\"Error making API request.\n\nURL: PUT https://vault.sec.internal:8200/v1/auth/kubernetes-prod/login\nCode: 403. Errors:\n\n* permission denied\" backoff=2.1s\n[vault-agent-init] 2026-05-20T13:36:12.007Z [ERROR] agent.auth.handler: error authenticating: error=\"Error making API request.\n\nURL: PUT https://vault.sec.internal:8200/v1/auth/kubernetes-prod/login\nCode: 403. Errors:\n\n* permission denied\" backoff=5m0s\n[orders-api] Error from server (BadRequest): container \"orders-api\" in pod \"orders-api-5b4d7c8f9-hn6wd\" is waiting to start: PodInitializing"
+  }
+}

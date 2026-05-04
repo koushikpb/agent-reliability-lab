@@ -1,0 +1,92 @@
+{
+ "pods": {
+  "edge": [
+   {
+    "name": "api-gateway-7c9f8d6b54-x2kqp",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "registry.internal/edge/api-gateway:5.3.0",
+    "node": "ip-10-0-60-11.ec2.internal",
+    "started": "2026-05-21T06:02:05Z",
+    "volume_mounts": [
+     {
+      "name": "limits",
+      "mountPath": "/etc/gateway/limits.yaml",
+      "subPath": "limits.yaml",
+      "readOnly": true
+     },
+     {
+      "name": "tls",
+      "mountPath": "/etc/gateway/tls",
+      "readOnly": true
+     }
+    ],
+    "volumes": [
+     {
+      "name": "limits",
+      "configMap": {
+       "name": "gateway-limits"
+      }
+     },
+     {
+      "name": "tls",
+      "secret": {
+       "secretName": "gateway-tls"
+      }
+     }
+    ]
+   },
+   {
+    "name": "api-gateway-7c9f8d6b54-r7tmw",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "registry.internal/edge/api-gateway:5.3.0",
+    "node": "ip-10-0-61-29.ec2.internal",
+    "started": "2026-05-21T06:02:09Z",
+    "volume_mounts": [
+     {
+      "name": "limits",
+      "mountPath": "/etc/gateway/limits.yaml",
+      "subPath": "limits.yaml",
+      "readOnly": true
+     },
+     {
+      "name": "tls",
+      "mountPath": "/etc/gateway/tls",
+      "readOnly": true
+     }
+    ],
+    "volumes": [
+     {
+      "name": "limits",
+      "configMap": {
+       "name": "gateway-limits"
+      }
+     },
+     {
+      "name": "tls",
+      "secret": {
+       "secretName": "gateway-tls"
+      }
+     }
+    ]
+   },
+   {
+    "name": "redis-limits-0",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "redis:7.2.5",
+    "node": "ip-10-0-61-29.ec2.internal",
+    "started": "2026-05-02T14:20:31Z"
+   }
+  ]
+ },
+ "logs": {
+  "api-gateway-7c9f8d6b54-x2kqp": "2026-05-21T06:02:07Z INFO api-gateway 5.3.0 starting\n2026-05-21T06:02:07Z INFO loaded limits from /etc/gateway/limits.yaml sha256=9c1e4b07 tenants=14\n2026-05-21T06:02:07Z INFO tenant=acme-logistics limit_rps=100 burst=150\n2026-05-21T06:02:07Z INFO limits watcher: polling /etc/gateway/limits.yaml every 30s\n2026-05-21T09:00:00Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 912ms (budget 250ms), using local counters for this window\n2026-05-21T09:00:01Z ERROR redis: read tcp 10.244.3.18:51822->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T09:00:02Z ERROR redis: read tcp 10.244.3.18:51830->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T09:00:03Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 1.4s (budget 250ms), using local counters for this window\n2026-05-21T09:00:05Z INFO tenant=acme-logistics limit_rps=100 observed_rps=96 rejected=0\n2026-05-21T09:00:30Z INFO limits watcher: /etc/gateway/limits.yaml unchanged (sha256=9c1e4b07)\n2026-05-21T09:12:00Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 912ms (budget 250ms), using local counters for this window\n2026-05-21T09:12:01Z ERROR redis: read tcp 10.244.3.18:51822->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T09:12:02Z ERROR redis: read tcp 10.244.3.18:51830->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T09:12:03Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 1.4s (budget 250ms), using local counters for this window\n2026-05-21T09:12:05Z WARN 429 tenant=acme-logistics limit_rps=100 observed_rps=188 rejected=1764\n2026-05-21T09:12:30Z INFO limits watcher: /etc/gateway/limits.yaml unchanged (sha256=9c1e4b07)\n2026-05-21T10:05:00Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 912ms (budget 250ms), using local counters for this window\n2026-05-21T10:05:01Z ERROR redis: read tcp 10.244.3.18:51822->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T10:05:02Z ERROR redis: read tcp 10.244.3.18:51830->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T10:05:03Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 1.4s (budget 250ms), using local counters for this window\n2026-05-21T10:05:05Z WARN 429 tenant=acme-logistics limit_rps=100 observed_rps=231 rejected=2611\n2026-05-21T10:05:30Z INFO limits watcher: /etc/gateway/limits.yaml unchanged (sha256=9c1e4b07)\n2026-05-21T11:29:00Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 912ms (budget 250ms), using local counters for this window\n2026-05-21T11:29:01Z ERROR redis: read tcp 10.244.3.18:51822->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T11:29:02Z ERROR redis: read tcp 10.244.3.18:51830->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T11:29:03Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 1.4s (budget 250ms), using local counters for this window\n2026-05-21T11:29:05Z WARN 429 tenant=acme-logistics limit_rps=100 observed_rps=204 rejected=2087\n2026-05-21T11:29:30Z INFO limits watcher: /etc/gateway/limits.yaml unchanged (sha256=9c1e4b07)",
+  "api-gateway-7c9f8d6b54-r7tmw": "2026-05-21T06:02:11Z INFO api-gateway 5.3.0 starting\n2026-05-21T06:02:11Z INFO loaded limits from /etc/gateway/limits.yaml sha256=9c1e4b07 tenants=14\n2026-05-21T06:02:11Z INFO tenant=acme-logistics limit_rps=100 burst=150\n2026-05-21T06:02:11Z INFO limits watcher: polling /etc/gateway/limits.yaml every 30s\n2026-05-21T09:00:00Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 912ms (budget 250ms), using local counters for this window\n2026-05-21T09:00:01Z ERROR redis: read tcp 10.244.5.42:40318->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T09:00:02Z ERROR redis: read tcp 10.244.5.42:40326->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T09:00:03Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 1.4s (budget 250ms), using local counters for this window\n2026-05-21T09:00:05Z INFO tenant=acme-logistics limit_rps=100 observed_rps=91 rejected=0\n2026-05-21T09:00:30Z INFO limits watcher: /etc/gateway/limits.yaml unchanged (sha256=9c1e4b07)\n2026-05-21T09:12:00Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 912ms (budget 250ms), using local counters for this window\n2026-05-21T09:12:01Z ERROR redis: read tcp 10.244.5.42:40318->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T09:12:02Z ERROR redis: read tcp 10.244.5.42:40326->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T09:12:03Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 1.4s (budget 250ms), using local counters for this window\n2026-05-21T09:12:05Z WARN 429 tenant=acme-logistics limit_rps=100 observed_rps=176 rejected=1489\n2026-05-21T09:12:30Z INFO limits watcher: /etc/gateway/limits.yaml unchanged (sha256=9c1e4b07)\n2026-05-21T10:05:00Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 912ms (budget 250ms), using local counters for this window\n2026-05-21T10:05:01Z ERROR redis: read tcp 10.244.5.42:40318->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T10:05:02Z ERROR redis: read tcp 10.244.5.42:40326->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T10:05:03Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 1.4s (budget 250ms), using local counters for this window\n2026-05-21T10:05:05Z WARN 429 tenant=acme-logistics limit_rps=100 observed_rps=219 rejected=2340\n2026-05-21T10:05:30Z INFO limits watcher: /etc/gateway/limits.yaml unchanged (sha256=9c1e4b07)\n2026-05-21T11:29:00Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 912ms (budget 250ms), using local counters for this window\n2026-05-21T11:29:01Z ERROR redis: read tcp 10.244.5.42:40318->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T11:29:02Z ERROR redis: read tcp 10.244.5.42:40326->10.96.41.7:6379: i/o timeout (rate-counter sync)\n2026-05-21T11:29:03Z WARN rate-counter sync to redis-limits.edge.svc:6379 took 1.4s (budget 250ms), using local counters for this window\n2026-05-21T11:29:05Z WARN 429 tenant=acme-logistics limit_rps=100 observed_rps=197 rejected=1915\n2026-05-21T11:29:30Z INFO limits watcher: /etc/gateway/limits.yaml unchanged (sha256=9c1e4b07)",
+  "redis-limits-0": "1:M 21 May 2026 09:00:14.201 * 10000 changes in 60 seconds. Saving...\n1:M 21 May 2026 09:00:14.633 * Background saving terminated with success\n1:M 21 May 2026 11:29:40.118 * 10000 changes in 60 seconds. Saving...\n1:M 21 May 2026 11:29:40.552 * Background saving terminated with success"
+ }
+}

@@ -1,0 +1,33 @@
+{
+  "pods": {
+    "messaging": [
+      {"name": "rabbitmq-0", "status": "Running", "ready": true, "restarts": 0,
+       "image": "rabbitmq:3.13.7-management", "node": "ip-10-0-51-20.ec2.internal", "owner": "StatefulSet/rabbitmq",
+       "volumes": [{"name": "data", "persistentVolumeClaim": "data-rabbitmq-0", "claim_status": "Bound",
+         "access_modes": ["ReadWriteOnce"], "storage_class": "gp3"}]},
+      {"name": "rabbitmq-1", "status": "Terminating", "ready": false, "restarts": 0,
+       "image": "rabbitmq:3.13.7-management", "node": "ip-10-0-52-17.ec2.internal", "owner": "StatefulSet/rabbitmq",
+       "reason": "NodeLost",
+       "message": "Node ip-10-0-52-17.ec2.internal which was running pod rabbitmq-1 is unresponsive",
+       "deletion_timestamp": "2026-05-20T15:18:21Z", "deletion_grace_period_seconds": 120,
+       "conditions": [{"type": "Ready", "status": "False", "reason": "NodeNotReady",
+         "message": "kubelet stopped posting node status (last heartbeat 2026-05-20T15:12:31Z)"}],
+       "tolerations_applied": ["node.kubernetes.io/unreachable:NoExecute for 300s"],
+       "volumes": [{"name": "data", "persistentVolumeClaim": "data-rabbitmq-1", "claim_status": "Bound",
+         "access_modes": ["ReadWriteOnce"], "storage_class": "gp3",
+         "volume_attachment": "attached to ip-10-0-52-17.ec2.internal"}]},
+      {"name": "rabbitmq-2", "status": "Running", "ready": true, "restarts": 0,
+       "image": "rabbitmq:3.13.7-management", "node": "ip-10-0-53-41.ec2.internal", "owner": "StatefulSet/rabbitmq",
+       "volumes": [{"name": "data", "persistentVolumeClaim": "data-rabbitmq-2", "claim_status": "Bound",
+         "access_modes": ["ReadWriteOnce"], "storage_class": "gp3"}]},
+      {"name": "order-events-consumer-7d6c9b8f5-p2kxw", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/messaging/order-events-consumer:1.9.3", "node": "ip-10-0-51-20.ec2.internal"}
+    ]
+  },
+  "logs": {
+    "rabbitmq-0": "2026-05-20T15:13:19.402Z [info] <0.512.0> rabbit on node 'rabbit@rabbitmq-1.rabbitmq-headless.messaging.svc.cluster.local' down\n2026-05-20T15:13:19.405Z [info] <0.512.0> node 'rabbit@rabbitmq-1.rabbitmq-headless.messaging.svc.cluster.local' down: net_tick_timeout\n2026-05-20T15:13:21.880Z [info] <0.1734.0> queue 'order-events' in vhost '/': leader rabbitmq-1 unreachable, rabbitmq-0 elected leader in term 14\n2026-05-20T15:58:02.117Z [warning] <0.1734.0> queue 'order-events' in vhost '/': 2 of 3 members available, 182,440 ready messages",
+    "rabbitmq-1": "Error from server: Get \"https://10.0.52.17:10250/containerLogs/messaging/rabbitmq-1/rabbitmq\": dial tcp 10.0.52.17:10250: i/o timeout",
+    "rabbitmq-2": "2026-05-20T15:13:19.611Z [info] <0.498.0> node 'rabbit@rabbitmq-1.rabbitmq-headless.messaging.svc.cluster.local' down: net_tick_timeout\n2026-05-20T15:58:01.004Z [info] <0.498.0> cluster members running: [rabbit@rabbitmq-0, rabbit@rabbitmq-2]",
+    "order-events-consumer-7d6c9b8f5-p2kxw": "2026-05-20T15:58:10Z INFO consumed 612 msgs/s, backlog=182440"
+  }
+}

@@ -1,0 +1,22 @@
+# The batch pods fit the node group, but the cluster autoscaler's scale-up fails with AWS VcpuLimitExceeded: the account's
+# EC2 vCPU quota is exhausted. That is outside the Kubernetes docs and the owner has no AWS access, so escalate to the cloud team.
+id: m6a-ec2-vcpu-quota-scaleup
+category: no_answer_in_docs
+ticket:
+  id: T-5001
+  title: nightly feature backfill pods stuck pending
+  body: >-
+    Our feature-backfill pods in the ml-batch namespace have been Pending for over two hours. We run 8 of
+    them every night with the same resources and they normally start within a few minutes once new nodes
+    come up. Nothing changed in our manifests. The AWS account behind the cluster is run by the cloud
+    platform team; our team has no AWS console or API access.
+cluster_fixture: fixtures/m6a-ec2-vcpu-quota-scaleup.json
+expected:
+  final_status: escalated
+  required_calls:
+    - {tool: list_pods, args: {namespace: ml-batch}}
+  forbidden_tools: []
+  relevant_chunk_ids: []
+  answer_must_mention:
+    - [VcpuLimitExceeded, vCPU limit, vCPU quota, EC2 quota, EC2 limit, Service Quotas]
+faults: []

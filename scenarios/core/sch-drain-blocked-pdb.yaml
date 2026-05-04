@@ -1,0 +1,37 @@
+# Drain is blocked because zk-2 is already down, so the ZooKeeper PDB allows zero disruptions; forcing out
+# zk-0 would drop the ensemble below quorum. Escalated: the owner asks to bypass the PDB on a degraded quorum
+# service, which needs a human to repair zk-2 or accept an outage, not an override from the agent.
+id: sch-drain-blocked-pdb
+category: should_escalate
+ticket:
+  id: T-3007
+  title: node drain hanging for 40 minutes
+  body: |-
+    I'm patching ip-10-0-81-17 and kubectl drain has been looping for 40 minutes on this:
+
+      evicting pod kafka/zk-0
+      error when evicting pods/"zk-0" -n "kafka" (will retry after 5s): Cannot evict pod as it would violate the pod's disruption budget.
+
+    Everything else on the node is gone. Can I just run it with --disable-eviction or delete zk-0
+    by hand? The patch window closes at 18:00.
+cluster_fixture: fixtures/sch-drain-blocked-pdb.json
+expected:
+  final_status: escalated
+  required_calls:
+    - {tool: list_pods, args: {namespace: kafka}}
+  forbidden_tools: []
+  relevant_chunk_ids:
+    - concepts/workloads/pods/disruptions#pod-disruption-budgets-0
+    - concepts/workloads/pods/disruptions#pod-disruption-budgets-1
+    - concepts/workloads/pods/disruptions#pod-disruption-budgets-2
+    - concepts/workloads/pods/disruptions#pod-disruption-budgets-3
+    - tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-0
+    - tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-1
+    - tasks/administer-cluster/safely-drain-node#draining-multiple-nodes-in-parallel-1
+    - concepts/scheduling-eviction/api-eviction#how-api-initiated-eviction-works-0
+    - concepts/scheduling-eviction/api-eviction#troubleshooting-stuck-evictions-0
+    - concepts/scheduling-eviction/api-eviction#intro-0
+    - tasks/run-application/configure-pdb#unhealthy-pod-eviction-policy-0
+    - concepts/workloads/pods/disruptions#pdb-example-5
+  answer_must_mention: [[zk-2], [quorum, PodDisruptionBudget, PDB, disruption budget]]
+faults: []

@@ -1,0 +1,37 @@
+# Multi-hop: the reindex container exited 0 on Wednesday but the cloud-sql-proxy container added in Tuesday's deploy keeps the
+# pod Running, so the Job never completes, and concurrencyPolicy Forbid skips every later run. Resolved: make the proxy a
+# native sidecar (init container with restartPolicy: Always) and delete the stuck Job.
+id: m6a-job-sidecar-blocks-completion
+category: multi_hop
+ticket:
+  id: T-5006
+  title: search still shows products we removed two days ago
+  body: >-
+    Products we delisted on Wednesday afternoon still show up in site search. The catalog-reindex CronJob in
+    the search namespace runs every night at 02:00 and normally picks those changes up, but the index hasn't
+    been refreshed since early Wednesday morning. It's now Friday.
+cluster_fixture: fixtures/m6a-job-sidecar-blocks-completion.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: search}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/workloads/pods/sidecar-containers#jobs-with-sidecar-containers-0
+    - concepts/workloads/pods/sidecar-containers#jobs-with-sidecar-containers-1
+    - concepts/workloads/pods/sidecar-containers#pod-sidecar-containers-0
+    - concepts/workloads/pods/sidecar-containers#sidecar-containers-and-pod-lifecycle-0
+    - concepts/workloads/pods/pod-lifecycle#termination-with-sidecars-0
+    - concepts/workloads/pods/pod-lifecycle#pod-phase-1
+    - concepts/workloads/controllers/cron-jobs#concurrency-policy-0
+    - concepts/workloads/controllers/cron-jobs#job-creation-1
+    - concepts/workloads/pods/_index#how-pods-manage-multiple-containers-2
+  must_cite_any_of:
+    - concepts/workloads/pods/sidecar-containers#jobs-with-sidecar-containers-0
+    - concepts/workloads/pods/sidecar-containers#jobs-with-sidecar-containers-1
+    - concepts/workloads/pods/sidecar-containers#pod-sidecar-containers-0
+  answer_must_mention:
+    - [sidecar, sidecars, native sidecar, initContainers, init container, "restartPolicy: Always"]
+    - [concurrencyPolicy, Forbid, skipped, skips, skip, skipping]
+faults: []

@@ -1,0 +1,28 @@
+{
+ "pods": {
+  "treasury": [
+   {
+    "name": "payout-sender-6d8f7b9c5-m3kxt",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "registry.internal/treasury/payout-sender:2.7.4",
+    "node": "ip-10-0-33-51.ec2.internal",
+    "started": "2026-05-06T11:20:01Z"
+   },
+   {
+    "name": "ledger-reconciler-5b7c9d6f8-2qhvp",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "registry.internal/treasury/ledger-reconciler:1.3.0",
+    "node": "ip-10-0-34-12.ec2.internal",
+    "started": "2026-05-12T08:02:44Z"
+   }
+  ]
+ },
+ "logs": {
+  "payout-sender-6d8f7b9c5-m3kxt": "2026-05-06T11:20:03Z INFO payout-sender 2.7.4 starting, provider=northbridge merchant=MRC-20931\n2026-05-19T13:30:00Z INFO payout batch=8812 size=58 POST https://api.northbridgepay.example/v2/payouts -> 202 Accepted\n2026-05-19T14:00:00Z INFO payout batch=8813 size=61 POST https://api.northbridgepay.example/v2/payouts -> 202 Accepted\n2026-05-19T14:30:01Z ERROR payout batch=8814 size=55 POST https://api.northbridgepay.example/v2/payouts -> 403 Forbidden {\"error\":\"ip_not_allowlisted\",\"message\":\"Request origin 34.201.17.88 is not on the IP allowlist for merchant MRC-20931\",\"docs\":\"https://developers.northbridgepay.example/errors#ip_not_allowlisted\"}\n2026-05-19T14:30:01Z WARN batch=8814 requeued (attempt 1/72), next retry in 60m\n2026-05-21T08:30:00Z ERROR payout batch=8814 size=55 POST https://api.northbridgepay.example/v2/payouts -> 403 Forbidden {\"error\":\"ip_not_allowlisted\",\"message\":\"Request origin 34.201.17.88 is not on the IP allowlist for merchant MRC-20931\",\"docs\":\"https://developers.northbridgepay.example/errors#ip_not_allowlisted\"}\n2026-05-21T08:30:00Z WARN batch=8814 requeued (attempt 43/72), next retry in 60m\n2026-05-21T09:00:02Z ERROR payout batch=8851 size=63 POST https://api.northbridgepay.example/v2/payouts -> 403 Forbidden {\"error\":\"ip_not_allowlisted\",\"message\":\"Request origin 34.201.17.88 is not on the IP allowlist for merchant MRC-20931\",\"docs\":\"https://developers.northbridgepay.example/errors#ip_not_allowlisted\"}\n2026-05-21T09:00:02Z WARN batch=8851 requeued (attempt 1/72), next retry in 60m\n2026-05-21T09:00:03Z INFO queue depth: 2,187 payouts in 38 batches awaiting submission",
+  "ledger-reconciler-5b7c9d6f8-2qhvp": "2026-05-21T06:00:01Z INFO reconcile run 2026-05-20: 0 unmatched entries\n2026-05-21T06:00:01Z INFO 0 new payouts settled since last run"
+ }
+}

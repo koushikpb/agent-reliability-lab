@@ -1,0 +1,63 @@
+{
+ "pods": {
+  "settlements": [
+   {
+    "name": "ledger-queue-0",
+    "status": "Pending",
+    "ready": false,
+    "restarts": 0,
+    "image": "redis:7.2.5",
+    "node": null,
+    "owner": "StatefulSet/ledger-queue (replicas: 1)",
+    "message": "0/9 nodes are available: 1 node(s) had untolerated taint {node.kubernetes.io/unreachable: }, 8 node(s) had volume node affinity conflict. preemption: 0/9 nodes are available: 9 Preemption is not helpful for scheduling.",
+    "args": [
+     "redis-server",
+     "--appendonly",
+     "yes",
+     "--appendfsync",
+     "everysec",
+     "--dir",
+     "/data"
+    ],
+    "volumes": [
+     {
+      "name": "data",
+      "persistentVolumeClaim": "data-ledger-queue-0",
+      "claim_status": "Bound",
+      "storage_class": "local-nvme",
+      "volume": "local-pv-ip-10-0-7-21-nvme1",
+      "volume_spec": {
+       "local": {
+        "path": "/mnt/nvme1"
+       },
+       "capacity": "200Gi",
+       "persistentVolumeReclaimPolicy": "Delete",
+       "nodeAffinity": "kubernetes.io/hostname In [ip-10-0-7-21.ec2.internal]"
+      }
+     }
+    ]
+   },
+   {
+    "name": "settlement-worker-7d9c6b8f5-p4lnx",
+    "status": "Running",
+    "ready": false,
+    "restarts": 0,
+    "image": "registry.internal/settlements/settlement-worker:3.4.2",
+    "node": "ip-10-0-8-44.ec2.internal"
+   },
+   {
+    "name": "settlement-worker-7d9c6b8f5-v2qkd",
+    "status": "Running",
+    "ready": false,
+    "restarts": 0,
+    "image": "registry.internal/settlements/settlement-worker:3.4.2",
+    "node": "ip-10-0-9-16.ec2.internal"
+   }
+  ]
+ },
+ "logs": {
+  "ledger-queue-0": "Error from server (BadRequest): container \"redis\" in pod \"ledger-queue-0\" is waiting to start: pod has not been scheduled",
+  "settlement-worker-7d9c6b8f5-p4lnx": "2026-05-21T06:39:58Z INFO acked 1,204 messages from stream settlements:pending (backlog 18,422)\n2026-05-21T06:40:31Z ERROR redis: dial tcp 10.96.88.14:6379: connect: connection refused (ledger-queue)\n2026-05-21T09:12:31Z ERROR redis: dial tcp 10.96.88.14:6379: connect: connection refused (ledger-queue)\n2026-05-21T09:12:31Z WARN readiness: queue unavailable for 2h32m",
+  "settlement-worker-7d9c6b8f5-v2qkd": "2026-05-21T06:39:59Z INFO acked 1,187 messages from stream settlements:pending (backlog 17,235)\n2026-05-21T06:40:31Z ERROR redis: dial tcp 10.96.88.14:6379: connect: connection refused (ledger-queue)\n2026-05-21T09:12:33Z ERROR redis: dial tcp 10.96.88.14:6379: connect: connection refused (ledger-queue)\n2026-05-21T09:12:33Z WARN readiness: queue unavailable for 2h32m"
+ }
+}

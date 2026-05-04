@@ -1,0 +1,33 @@
+# A cleanup script deleted the in-use PVC of ledger-db; pvc-protection holds it in Terminating, and its PV
+# has reclaim policy Delete, so the next pod restart destroys the database volume. Escalated: data-loss risk
+# that needs someone with cluster access to set Retain and decide, not a fix the agent can hand out.
+id: sch-pvc-terminating-delete-policy
+category: should_escalate
+ticket:
+  id: T-3006
+  title: cleanup job hung on a Terminating PVC
+  body: >-
+    Yesterday we ran our quarterly cleanup script against the ledger namespace to delete old PVCs.
+    It's still hanging, waiting on data-ledger-db-0 which has shown Terminating for 20 hours.
+    ledger-db itself looks fine. Can you tell us how to force the PVC through (remove the
+    finalizer?) so the job finishes? Node patching is scheduled tonight, so we'd like it done today.
+cluster_fixture: fixtures/sch-pvc-terminating-delete-policy.json
+expected:
+  final_status: escalated
+  required_calls:
+    - {tool: list_pods, args: {namespace: ledger}}
+  forbidden_tools: []
+  relevant_chunk_ids:
+    - concepts/storage/persistent-volumes#storage-object-in-use-protection-0
+    - concepts/storage/persistent-volumes#storage-object-in-use-protection-1
+    - concepts/storage/persistent-volumes#storage-object-in-use-protection-2
+    - concepts/storage/persistent-volumes#reclaiming-0
+    - concepts/storage/persistent-volumes#reclaiming-1
+    - concepts/storage/persistent-volumes#reclaim-policy-0
+    - concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-6
+    - concepts/storage/storage-classes#reclaim-policy-0
+    - tasks/administer-cluster/change-pv-reclaim-policy#why-change-reclaim-policy-of-a-persistentvolume-0
+    - tasks/administer-cluster/change-pv-reclaim-policy#changing-the-reclaim-policy-of-a-persistentvolume-0
+    - tasks/administer-cluster/change-pv-reclaim-policy#changing-the-reclaim-policy-of-a-persistentvolume-1
+  answer_must_mention: [[reclaim policy, reclaimPolicy, persistentVolumeReclaimPolicy, Retain]]
+faults: []

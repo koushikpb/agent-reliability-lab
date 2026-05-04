@@ -1,0 +1,32 @@
+{
+  "pods": {
+    "finance": [
+      {"name": "ledger-export-29637420-k4x9d", "status": "Failed", "ready": false, "restarts": 0,
+       "image": "registry.internal/finance/ledger-export:2.4.3",
+       "owner": "Job/ledger-export-29637420 (CronJob/ledger-export, schedule \"0 1 * * *\")",
+       "job_spec": {"activeDeadlineSeconds": 3600, "backoffLimit": 2},
+       "job_status": "Failed: DeadlineExceeded (Job was active longer than specified deadline)",
+       "last_state": "Terminated (Error), exit code 143"},
+      {"name": "ledger-export-29636980-7wqzt", "status": "Failed", "ready": false, "restarts": 0,
+       "image": "registry.internal/finance/ledger-export:2.4.3",
+       "owner": "Job/ledger-export-29636980 (CronJob/ledger-export, schedule \"0 1 * * *\")",
+       "job_spec": {"activeDeadlineSeconds": 3600, "backoffLimit": 2},
+       "job_status": "Failed: DeadlineExceeded (Job was active longer than specified deadline)",
+       "last_state": "Terminated (Error), exit code 143"},
+      {"name": "ledger-export-29635540-p2mcs", "status": "Succeeded", "ready": false, "restarts": 0,
+       "image": "registry.internal/finance/ledger-export:2.4.3",
+       "owner": "Job/ledger-export-29635540 (CronJob/ledger-export, schedule \"0 1 * * *\")",
+       "job_spec": {"activeDeadlineSeconds": 3600, "backoffLimit": 2},
+       "job_status": "Complete",
+       "last_state": "Terminated (Completed), exit code 0"},
+      {"name": "ledger-api-7b8d6c5f4-vn3qk", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/finance/ledger-api:2.4.3", "last_state": null}
+    ]
+  },
+  "logs": {
+    "ledger-export-29637420-k4x9d": "2026-05-20T01:00:04Z INFO ledger-export 2.4.3 run=29637420 range=2026-05-19\n2026-05-20T01:00:05Z INFO 9,412,770 ledger rows to export in 95 batches of 100000\n2026-05-20T01:00:06Z ERROR notify: smtp dial tcp 10.20.4.18:587: connect: connection refused (progress email not sent)\n2026-05-20T01:08:41Z INFO batch 10/95 written to s3://acme-ledger-exports/2026-05-19/part-0010.csv.gz\n2026-05-20T01:08:41Z ERROR notify: smtp dial tcp 10.20.4.18:587: connect: connection refused (progress email not sent)\n2026-05-20T01:17:20Z INFO batch 20/95 written to s3://acme-ledger-exports/2026-05-19/part-0020.csv.gz\n2026-05-20T01:17:20Z ERROR notify: smtp dial tcp 10.20.4.18:587: connect: connection refused (progress email not sent)\n2026-05-20T01:34:39Z INFO batch 40/95 written to s3://acme-ledger-exports/2026-05-19/part-0040.csv.gz\n2026-05-20T01:34:39Z ERROR notify: smtp dial tcp 10.20.4.18:587: connect: connection refused (progress email not sent)\n2026-05-20T01:51:57Z INFO batch 60/95 written to s3://acme-ledger-exports/2026-05-19/part-0060.csv.gz\n2026-05-20T01:51:57Z ERROR notify: smtp dial tcp 10.20.4.18:587: connect: connection refused (progress email not sent)\n2026-05-20T02:00:04Z INFO received SIGTERM at batch 69/95, flushing partial file\n2026-05-20T02:00:05Z ERROR notify: smtp dial tcp 10.20.4.18:587: connect: connection refused (failure email not sent)",
+    "ledger-export-29636980-7wqzt": "2026-05-19T01:00:03Z INFO ledger-export 2.4.3 run=29636980 range=2026-05-18\n2026-05-19T01:00:04Z INFO 9,286,104 ledger rows to export in 93 batches of 100000\n2026-05-19T01:00:05Z ERROR notify: smtp dial tcp 10.20.4.18:587: connect: connection refused (progress email not sent)\n2026-05-19T01:42:10Z INFO batch 50/93 written to s3://acme-ledger-exports/2026-05-18/part-0050.csv.gz\n2026-05-19T01:42:10Z ERROR notify: smtp dial tcp 10.20.4.18:587: connect: connection refused (progress email not sent)\n2026-05-19T02:00:03Z INFO received SIGTERM at batch 71/93, flushing partial file",
+    "ledger-export-29635540-p2mcs": "2026-05-17T01:00:02Z INFO ledger-export 2.4.3 run=29635540 range=2026-05-16\n2026-05-17T01:00:03Z INFO 5,104,388 ledger rows to export in 52 batches of 100000\n2026-05-17T01:00:04Z ERROR notify: smtp dial tcp 10.20.4.18:587: connect: connection refused (progress email not sent)\n2026-05-17T01:44:51Z INFO batch 52/52 written, export complete in 44m49s\n2026-05-17T01:44:51Z ERROR notify: smtp dial tcp 10.20.4.18:587: connect: connection refused (completion email not sent)",
+    "ledger-api-7b8d6c5f4-vn3qk": "2026-05-20T08:02:11Z INFO GET /v1/ledger/summary 200 31ms"
+  }
+}

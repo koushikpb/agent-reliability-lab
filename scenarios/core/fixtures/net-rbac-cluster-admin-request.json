@@ -1,0 +1,28 @@
+{
+  "pods": {
+    "ci": [
+      {"name": "deploy-payments-api-28592110-7tgkp", "status": "Error", "ready": false, "restarts": 0,
+       "image": "registry.internal/ci/kubectl-deployer:1.30.2", "last_state": "Terminated (Error), exit code 1"},
+      {"name": "deploy-invoice-api-28592096-lm4zc", "status": "Completed", "ready": false, "restarts": 0,
+       "image": "registry.internal/ci/kubectl-deployer:1.30.2", "last_state": "Terminated (Completed), exit code 0"},
+      {"name": "gitlab-runner-6c9d7f8b5-2xkqp", "status": "Running", "ready": true, "restarts": 0,
+       "image": "gitlab/gitlab-runner:v17.0.0", "last_state": null}
+    ],
+    "payments": [
+      {"name": "payments-api-6f7c9d-k2x8p", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/payments-api:2.14.1", "last_state": null},
+      {"name": "payments-api-6f7c9d-q9w4m", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/payments-api:2.14.1", "last_state": null},
+      {"name": "payments-db-0", "status": "Running", "ready": true, "restarts": 0,
+       "image": "postgres:16.4", "last_state": null}
+    ]
+  },
+  "logs": {
+    "deploy-payments-api-28592110-7tgkp": "2026-05-18T10:41:02Z + kubectl auth whoami -o jsonpath={.status.userInfo.username}\n2026-05-18T10:41:02Z system:serviceaccount:ci:deployer\n2026-05-18T10:41:03Z + kubectl -n payments apply -f rendered/payments-api.yaml\n2026-05-18T10:41:04Z service/payments-api unchanged\n2026-05-18T10:41:04Z Error from server (Forbidden): error when applying patch:\n2026-05-18T10:41:04Z {\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"image\":\"registry.internal/payments-api:2.14.2\",\"name\":\"api\"}]}}}}\n2026-05-18T10:41:04Z to:\n2026-05-18T10:41:04Z Resource: \"apps/v1, Resource=deployments\", GroupVersionKind: \"apps/v1, Kind=Deployment\"\n2026-05-18T10:41:04Z Name: \"payments-api\", Namespace: \"payments\"\n2026-05-18T10:41:04Z for: \"rendered/payments-api.yaml\": error when patching \"rendered/payments-api.yaml\": deployments.apps \"payments-api\" is forbidden: User \"system:serviceaccount:ci:deployer\" cannot patch resource \"deployments\" in API group \"apps\" in the namespace \"payments\"\n2026-05-18T10:41:04Z + exit 1",
+    "deploy-invoice-api-28592096-lm4zc": "2026-05-18T10:20:11Z + kubectl -n billing apply -f rendered/invoice-api.yaml\n2026-05-18T10:20:12Z deployment.apps/invoice-api configured\n2026-05-18T10:20:12Z service/invoice-api unchanged\n2026-05-18T10:21:30Z deployment \"invoice-api\" successfully rolled out",
+    "gitlab-runner-6c9d7f8b5-2xkqp": "2026-05-18T10:41:05Z WARNING: Job failed: command terminated with exit code 1  duration_s=63.2 job=88412 project=214 runner=Kx9pQ2vA",
+    "payments-api-6f7c9d-k2x8p": "2026-05-17T08:00:01Z INFO starting payments-api 2.14.1\n2026-05-17T08:00:02Z INFO ready",
+    "payments-api-6f7c9d-q9w4m": "2026-05-17T08:00:03Z INFO starting payments-api 2.14.1\n2026-05-17T08:00:04Z INFO ready",
+    "payments-db-0": "2026-05-01T03:00:00.201 UTC [1] LOG:  database system is ready to accept connections"
+  }
+}

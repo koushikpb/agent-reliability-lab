@@ -1,0 +1,29 @@
+{
+  "pods": {
+    "ledger": [
+      {"name": "ledger-db-0", "status": "Running", "ready": true, "restarts": 0,
+       "image": "postgres:16.4", "node": "ip-10-0-71-12.ec2.internal",
+       "volumes": [{"name": "data", "persistentVolumeClaim": "data-ledger-db-0", "claim_status": "Terminating",
+         "finalizers": ["kubernetes.io/pvc-protection"],
+         "deletion_timestamp": "2026-04-27T14:02:37Z",
+         "volume": "pvc-9b1e4c27-5f3a-4d8e-a6c2-71f0b3e9d5a4", "storage_class": "gp3",
+         "reclaim_policy": "Delete", "capacity": "200Gi"}]},
+      {"name": "ledger-api-7c9d8f6b5-b3nqk", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/finance/ledger-api:6.4.0", "node": "ip-10-0-72-40.ec2.internal"},
+      {"name": "ledger-api-7c9d8f6b5-l8xwm", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/finance/ledger-api:6.4.0", "node": "ip-10-0-73-9.ec2.internal"},
+      {"name": "ledger-db-backup-29621280-h7kpd", "status": "Error", "ready": false, "restarts": 0,
+       "image": "registry.internal/platform/pg-backup:2.1.0", "node": "ip-10-0-72-40.ec2.internal",
+       "last_state": "Terminated (Error), exit code 1"},
+      {"name": "pvc-cleanup-29622560-r5vzt", "status": "Running", "ready": true, "restarts": 0,
+       "image": "bitnami/kubectl:1.30.4", "node": "ip-10-0-73-9.ec2.internal"}
+    ]
+  },
+  "logs": {
+    "ledger-db-0": "2026-04-28T09:55:01.221 UTC [41] LOG:  checkpoint starting: time\n2026-04-28T09:55:31.874 UTC [41] LOG:  checkpoint complete: wrote 3127 buffers (19.1%); write=29.6 s, sync=0.012 s, total=30.653 s",
+    "ledger-api-7c9d8f6b5-b3nqk": "2026-04-28T10:01:12Z INFO POST /v1/journal 201 12ms\n2026-04-28T10:01:13Z INFO GET /v1/accounts/40021/balance 200 4ms",
+    "ledger-api-7c9d8f6b5-l8xwm": "2026-04-28T10:01:14Z INFO GET /v1/accounts/18877/balance 200 3ms",
+    "ledger-db-backup-29621280-h7kpd": "2026-04-25T02:00:03Z INFO starting pg_dump of ledger to s3://backups-prod/ledger/\n2026-04-25T02:00:04Z ERROR upload: AccessDenied: User arn:aws:sts::4417:assumed-role/pg-backup/... is not authorized to perform s3:PutObject\n2026-04-25T02:00:04Z FATAL backup failed, no artifact written",
+    "pvc-cleanup-29622560-r5vzt": "2026-04-27T14:02:35Z INFO selecting PVCs in ledger older than 90d\n2026-04-27T14:02:36Z INFO deleting persistentvolumeclaim/data-ledger-db-0 (age 412d)\n2026-04-27T14:02:37Z INFO persistentvolumeclaim \"data-ledger-db-0\" deleted\n2026-04-27T14:02:37Z INFO waiting for deletion to complete (timeout none)\n2026-04-28T10:00:37Z INFO still waiting: persistentvolumeclaim/data-ledger-db-0 Terminating"
+  }
+}

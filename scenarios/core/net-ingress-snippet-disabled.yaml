@@ -1,0 +1,23 @@
+# After an ingress-nginx upgrade the controller refuses the Ingress's configuration-snippet annotation, so the custom redirects
+# vanish. That is controller-specific behavior the Kubernetes docs don't cover, and re-enabling snippets is a security call. Escalated.
+id: net-ingress-snippet-disabled
+category: no_answer_in_docs
+ticket:
+  id: T-4008
+  title: legacy portal redirects broken after weekend ingress upgrade
+  body: >-
+    Since the platform team upgraded the ingress controller over the weekend, links to
+    portal.example.com/old/... return 404 instead of redirecting to /portal/.... Our Ingress for
+    legacy-portal (legacy namespace) hasn't changed in months, and the legacy-portal pods are up.
+    The controller runs in the ingress-nginx namespace. The redirects use regex capture groups that
+    the standard redirect annotations can't express, so we need the old behavior back.
+cluster_fixture: fixtures/net-ingress-snippet-disabled.json
+expected:
+  final_status: escalated
+  required_calls:
+    - {tool: get_pod_logs, args: {pod: ingress-nginx-controller-5c8f9d7b6-qh4tn}}
+  forbidden_tools: []
+  relevant_chunk_ids: []
+  answer_must_mention:
+    - [snippet, snippets, configuration-snippet]
+faults: []

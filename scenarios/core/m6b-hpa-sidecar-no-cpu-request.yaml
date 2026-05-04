@@ -1,0 +1,31 @@
+# Easy lookup: release 4.8.0 added a log-forwarder sidecar with no CPU request, so the HPA can't compute pod CPU
+# utilization (<unknown>) and never scales. Resolved: list_pods shows it; give the sidecar a request or scale on the api container.
+id: m6b-hpa-sidecar-no-cpu-request
+category: easy_lookup
+ticket:
+  id: T-6001
+  title: search-api no longer scales up at lunch
+  body: >-
+    The HPA on search-api in the catalog namespace hasn't scaled since last Tuesday's 4.8.0 release.
+    kubectl get hpa search-api shows cpu <unknown>/60% and it sits at the 3-replica minimum while
+    p99 latency climbs every lunchtime. Before 4.8.0 it went up to 8 or 9 replicas at peak. We
+    haven't touched the HPA object.
+cluster_fixture: fixtures/m6b-hpa-sidecar-no-cpu-request.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: catalog}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-3
+    - concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0
+    - concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0
+    - concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-1
+  must_cite_any_of:
+    - concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-3
+    - concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0
+  answer_must_mention:
+    - [CPU request, CPU requests, resource request, resource requests, requests.cpu, resources.requests, ContainerResource]
+    - [log-forwarder, sidecar]
+faults: []

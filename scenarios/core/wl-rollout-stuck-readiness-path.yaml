@@ -1,0 +1,40 @@
+# Multi-hop: the pod list shows the one 3.1.0 pod never Ready (readiness 404), the logs show 3.1.0 removed /healthz
+# in favor of /readyz. Resolved: point the readinessProbe at /readyz (or roll back); the Deployment docs list
+# readiness probe failures as a cause of a stalled rollout.
+id: wl-rollout-stuck-readiness-path
+category: multi_hop
+ticket:
+  id: T-2004
+  title: accounts-api 3.1.0 rollout hasn't finished after 30 minutes
+  body: >-
+    We started rolling out accounts-api 3.1.0 in the accounts namespace about half an hour ago.
+    The pipeline is still waiting on the rollout and only one new pod exists, the three old pods
+    are still serving. The new pod isn't crashing and nothing looks broken in it.
+cluster_fixture: fixtures/wl-rollout-stuck-readiness-path.json
+expected:
+  final_status: resolved
+  required_tools: [list_pods, get_pod_logs, search_docs]
+  required_calls:
+    - {tool: get_pod_logs, args: {pod: accounts-api-8f4b6d7c9-m7zjn}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/workloads/controllers/deployment#failed-deployment-0
+    - concepts/workloads/controllers/deployment#failed-deployment-1
+    - concepts/workloads/controllers/deployment#failed-deployment-2
+    - concepts/workloads/controllers/deployment#progress-deadline-seconds-0
+    - tasks/run-application/update-deployment-rolling#detecting-a-stalled-rollout-0
+    - concepts/workloads/controllers/deployment#rolling-back-a-deployment-0
+    - concepts/workloads/pods/probes#readiness-probe-0
+    - concepts/workloads/pods/pod-lifecycle#readiness-probe-0
+    - concepts/workloads/pods/probes#probe-results-0
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-readiness-probes-0
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-readiness-probes-1
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-http-request-1
+  must_cite_any_of:
+    - concepts/workloads/controllers/deployment#failed-deployment-0
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-readiness-probes-0
+    - concepts/workloads/pods/probes#readiness-probe-0
+  answer_must_mention:
+    - [readiness, readinessProbe]
+    - [readyz]
+faults: []

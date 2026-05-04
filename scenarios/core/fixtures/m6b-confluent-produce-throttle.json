@@ -1,0 +1,40 @@
+{
+  "pods": {
+    "ingest": [
+      {"name": "clickstream-ingest-6f9d8c7b4-2kqvx", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ingest/clickstream-ingest:2.7.1", "node": "ip-10-0-71-14.ec2.internal", "age": "9d",
+       "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"memory": "1Gi"}}},
+      {"name": "clickstream-ingest-6f9d8c7b4-8wn5r", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ingest/clickstream-ingest:2.7.1", "node": "ip-10-0-72-30.ec2.internal", "age": "9d",
+       "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"memory": "1Gi"}}},
+      {"name": "clickstream-ingest-6f9d8c7b4-d4jtm", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ingest/clickstream-ingest:2.7.1", "node": "ip-10-0-73-02.ec2.internal", "age": "9d",
+       "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"memory": "1Gi"}}},
+      {"name": "clickstream-ingest-6f9d8c7b4-hx7pl", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ingest/clickstream-ingest:2.7.1", "node": "ip-10-0-71-14.ec2.internal", "age": "9d",
+       "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"memory": "1Gi"}}},
+      {"name": "clickstream-ingest-6f9d8c7b4-k9vzs", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ingest/clickstream-ingest:2.7.1", "node": "ip-10-0-72-30.ec2.internal", "age": "2h",
+       "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"memory": "1Gi"}}},
+      {"name": "clickstream-ingest-6f9d8c7b4-mq3rd", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ingest/clickstream-ingest:2.7.1", "node": "ip-10-0-73-02.ec2.internal", "age": "2h",
+       "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"memory": "1Gi"}}},
+      {"name": "clickstream-ingest-6f9d8c7b4-t6bwx", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ingest/clickstream-ingest:2.7.1", "node": "ip-10-0-71-55.ec2.internal", "age": "2h",
+       "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"memory": "1Gi"}}},
+      {"name": "clickstream-ingest-6f9d8c7b4-zp2fc", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ingest/clickstream-ingest:2.7.1", "node": "ip-10-0-72-88.ec2.internal", "age": "2h",
+       "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"memory": "1Gi"}}}
+    ]
+  },
+  "logs": {
+    "clickstream-ingest-6f9d8c7b4-2kqvx": "2026-05-12T10:31:07Z INFO producer config: compression.type=zstd linger.ms=50 batch.size=1048576 acks=all\n2026-05-21T10:41:02Z INFO consumer clickstream-raw: assigned partitions [0,1,2,3] (8 members in group clickstream-ingest)\n2026-05-21T10:41:05Z WARN %4|1779360065.118|THROTTLE|rdkafka#producer-1| [thrd:sasl_ssl://b2-pkc-4r297.us-east-1.aws.confluent.cloud:9092/2]: sasl_ssl://b2-pkc-4r297.us-east-1.aws.confluent.cloud:9092/2: throttled for 2910ms by broker\n2026-05-21T10:41:09Z WARN %4|1779360069.402|THROTTLE|rdkafka#producer-1| [thrd:sasl_ssl://b5-pkc-4r297.us-east-1.aws.confluent.cloud:9092/5]: sasl_ssl://b5-pkc-4r297.us-east-1.aws.confluent.cloud:9092/5: throttled for 3040ms by broker\n2026-05-21T10:42:00Z INFO stats: consumed=41,880/min produced=41,610/min to clickstream-enriched, producer queue=96% full, avg produce throttle_time=2.8s, cpu=0.11 cores\n2026-05-21T10:42:00Z INFO stats: consumer lag clickstream-raw (group total)=31,204,551, growing\n2026-05-21T10:42:04Z WARN %4|1779360124.770|THROTTLE|rdkafka#producer-1| [thrd:sasl_ssl://b0-pkc-4r297.us-east-1.aws.confluent.cloud:9092/0]: sasl_ssl://b0-pkc-4r297.us-east-1.aws.confluent.cloud:9092/0: throttled for 2760ms by broker",
+    "clickstream-ingest-6f9d8c7b4-8wn5r": "2026-05-12T10:31:07Z INFO producer config: compression.type=zstd linger.ms=50 batch.size=1048576 acks=all\n2026-05-21T10:42:00Z INFO stats: consumed=41,120/min produced=40,980/min to clickstream-enriched, producer queue=95% full, avg produce throttle_time=2.9s, cpu=0.10 cores\n2026-05-21T10:42:03Z WARN %4|1779360123.551|THROTTLE|rdkafka#producer-1| [thrd:sasl_ssl://b3-pkc-4r297.us-east-1.aws.confluent.cloud:9092/3]: sasl_ssl://b3-pkc-4r297.us-east-1.aws.confluent.cloud:9092/3: throttled for 2880ms by broker",
+    "clickstream-ingest-6f9d8c7b4-d4jtm": "2026-05-12T10:31:07Z INFO producer config: compression.type=zstd linger.ms=50 batch.size=1048576 acks=all\n2026-05-21T10:42:00Z INFO stats: consumed=40,770/min produced=40,700/min to clickstream-enriched, producer queue=97% full, avg produce throttle_time=2.8s, cpu=0.12 cores",
+    "clickstream-ingest-6f9d8c7b4-hx7pl": "2026-05-12T10:31:07Z INFO producer config: compression.type=zstd linger.ms=50 batch.size=1048576 acks=all\n2026-05-21T10:42:00Z INFO stats: consumed=41,530/min produced=41,400/min to clickstream-enriched, producer queue=96% full, avg produce throttle_time=2.7s, cpu=0.11 cores",
+    "clickstream-ingest-6f9d8c7b4-k9vzs": "2026-05-21T08:40:09Z INFO producer config: compression.type=zstd linger.ms=50 batch.size=1048576 acks=all\n2026-05-21T08:40:12Z INFO consumer clickstream-raw: joined group clickstream-ingest\n2026-05-21T10:42:00Z INFO stats: consumed=40,990/min produced=40,870/min to clickstream-enriched, producer queue=96% full, avg produce throttle_time=2.9s, cpu=0.10 cores",
+    "clickstream-ingest-6f9d8c7b4-mq3rd": "2026-05-21T08:40:09Z INFO producer config: compression.type=zstd linger.ms=50 batch.size=1048576 acks=all\n2026-05-21T10:42:00Z INFO stats: consumed=41,300/min produced=41,150/min to clickstream-enriched, producer queue=95% full, avg produce throttle_time=2.8s, cpu=0.11 cores",
+    "clickstream-ingest-6f9d8c7b4-t6bwx": "2026-05-21T08:40:09Z INFO producer config: compression.type=zstd linger.ms=50 batch.size=1048576 acks=all\n2026-05-21T10:42:00Z INFO stats: consumed=41,060/min produced=40,940/min to clickstream-enriched, producer queue=97% full, avg produce throttle_time=2.9s, cpu=0.10 cores",
+    "clickstream-ingest-6f9d8c7b4-zp2fc": "2026-05-21T08:40:09Z INFO producer config: compression.type=zstd linger.ms=50 batch.size=1048576 acks=all\n2026-05-21T10:42:00Z INFO stats: consumed=41,410/min produced=41,290/min to clickstream-enriched, producer queue=96% full, avg produce throttle_time=2.8s, cpu=0.11 cores"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "pods": {
+    "warehouse": [
+      {"name": "stock-sync-29656215-wq7fz", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/warehouse/stock-sync:1.12.0", "node": "ip-10-0-41-23.ec2.internal",
+       "owner": "Job/stock-sync-29656215 (CronJob/stock-sync, schedule \"*/15 * * * *\", concurrencyPolicy: Forbid)",
+       "job_spec": {"backoffLimit": 1, "activeDeadlineSeconds": null},
+       "start_time": "2026-05-21T14:15:01Z", "age": "19h22m"},
+      {"name": "stock-sync-29656200-4mbxd", "status": "Completed", "ready": false, "restarts": 0,
+       "image": "registry.internal/warehouse/stock-sync:1.12.0", "node": "ip-10-0-42-09.ec2.internal",
+       "owner": "Job/stock-sync-29656200 (CronJob/stock-sync, schedule \"*/15 * * * *\", concurrencyPolicy: Forbid)",
+       "job_spec": {"backoffLimit": 1, "activeDeadlineSeconds": null},
+       "start_time": "2026-05-21T14:00:02Z", "last_state": "Terminated (Completed), exit code 0"},
+      {"name": "stock-sync-29656185-tz2lp", "status": "Completed", "ready": false, "restarts": 0,
+       "image": "registry.internal/warehouse/stock-sync:1.12.0", "node": "ip-10-0-41-23.ec2.internal",
+       "owner": "Job/stock-sync-29656185 (CronJob/stock-sync, schedule \"*/15 * * * *\", concurrencyPolicy: Forbid)",
+       "job_spec": {"backoffLimit": 1, "activeDeadlineSeconds": null},
+       "start_time": "2026-05-21T13:45:01Z", "last_state": "Terminated (Completed), exit code 0"},
+      {"name": "inventory-api-5f8b7c6d9-xv3nr", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/warehouse/inventory-api:3.4.2", "node": "ip-10-0-42-09.ec2.internal"}
+    ]
+  },
+  "logs": {
+    "stock-sync-29656215-wq7fz": "2026-05-21T14:15:03Z INFO stock-sync 1.12.0 run=29656215\n2026-05-21T14:15:03Z ERROR metrics: push to http://pushgateway.monitoring:9091/metrics/job/stock-sync failed: dial tcp 10.0.3.44:9091: connect: connection refused\n2026-05-21T14:15:04Z INFO sftp: connected to sftp.northwind-supply.example:22 as warehouse-sync\n2026-05-21T14:15:05Z INFO sftp: downloading /outbound/stock_20260521_1415.csv (38.4 MB)\n2026-05-21T14:15:41Z INFO sftp: 11.2 MB / 38.4 MB\n2026-05-21T14:16:02Z INFO sftp: 11.2 MB / 38.4 MB\n2026-05-21T14:16:02Z ERROR metrics: push to http://pushgateway.monitoring:9091/metrics/job/stock-sync failed: dial tcp 10.0.3.44:9091: connect: connection refused",
+    "stock-sync-29656200-4mbxd": "2026-05-21T14:00:04Z INFO stock-sync 1.12.0 run=29656200\n2026-05-21T14:00:04Z ERROR metrics: push to http://pushgateway.monitoring:9091/metrics/job/stock-sync failed: dial tcp 10.0.3.44:9091: connect: connection refused\n2026-05-21T14:00:05Z INFO sftp: connected to sftp.northwind-supply.example:22 as warehouse-sync\n2026-05-21T14:00:06Z INFO sftp: downloading /outbound/stock_20260521_1400.csv (38.1 MB)\n2026-05-21T14:00:44Z INFO sftp: download complete in 38s\n2026-05-21T14:03:12Z INFO applied 48,211 stock updates to inventory-api\n2026-05-21T14:03:12Z ERROR metrics: push to http://pushgateway.monitoring:9091/metrics/job/stock-sync failed: dial tcp 10.0.3.44:9091: connect: connection refused\n2026-05-21T14:03:12Z INFO done in 3m08s",
+    "stock-sync-29656185-tz2lp": "2026-05-21T13:45:03Z INFO stock-sync 1.12.0 run=29656185\n2026-05-21T13:45:03Z ERROR metrics: push to http://pushgateway.monitoring:9091/metrics/job/stock-sync failed: dial tcp 10.0.3.44:9091: connect: connection refused\n2026-05-21T13:45:04Z INFO sftp: connected to sftp.northwind-supply.example:22 as warehouse-sync\n2026-05-21T13:45:05Z INFO sftp: downloading /outbound/stock_20260521_1345.csv (37.9 MB)\n2026-05-21T13:45:42Z INFO sftp: download complete in 37s\n2026-05-21T13:48:31Z INFO applied 47,906 stock updates to inventory-api\n2026-05-21T13:48:31Z ERROR metrics: push to http://pushgateway.monitoring:9091/metrics/job/stock-sync failed: dial tcp 10.0.3.44:9091: connect: connection refused\n2026-05-21T13:48:31Z INFO done in 3m28s",
+    "inventory-api-5f8b7c6d9-xv3nr": "2026-05-22T09:36:40Z INFO GET /v1/stock/sku/88-1204 200 3ms (last_update=2026-05-21T14:03:12Z)"
+  }
+}

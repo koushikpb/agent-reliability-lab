@@ -1,0 +1,24 @@
+{
+  "pods": {
+    "reports": [
+      {"name": "report-renderer-5d8f6b7c4-h7tqz", "status": "CrashLoopBackOff", "ready": false, "restarts": 9,
+       "image": "registry.internal/reports/report-renderer:3.7.1",
+       "resources": {"requests": {"cpu": "250m", "memory": "256Mi"}, "limits": {"cpu": "1", "memory": "512Mi"}},
+       "last_state": "Terminated (OOMKilled), exit code 137"},
+      {"name": "report-renderer-5d8f6b7c4-wm2xk", "status": "Running", "ready": true, "restarts": 4,
+       "image": "registry.internal/reports/report-renderer:3.7.1",
+       "resources": {"requests": {"cpu": "250m", "memory": "256Mi"}, "limits": {"cpu": "1", "memory": "512Mi"}},
+       "last_state": "Terminated (OOMKilled), exit code 137"},
+      {"name": "report-scheduler-7c9b5d8d9-p4lrn", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/reports/report-scheduler:1.12.0", "last_state": null},
+      {"name": "reports-redis-0", "status": "Running", "ready": true, "restarts": 0,
+       "image": "redis:7.2.5", "last_state": null}
+    ]
+  },
+  "logs": {
+    "report-renderer-5d8f6b7c4-h7tqz": "2026-05-04T09:41:07Z INFO report-renderer 3.7.1 listening on :8080\n2026-05-04T09:41:12Z INFO job 88213 picked up: tenant=4411 report=quarterly-statement period=2026-Q1\n2026-05-04T09:41:12Z INFO loading 1,846 line-item pages into layout engine\n2026-05-04T09:41:19Z INFO layout pass 1/3 complete (pages=1846, images=3920)\n2026-05-04T09:41:26Z WARN rasterizing embedded charts at 300dpi, heap_in_use=431MiB\n2026-05-04T09:41:29Z INFO layout pass 2/3 started",
+    "report-renderer-5d8f6b7c4-wm2xk": "2026-05-04T09:30:02Z INFO report-renderer 3.7.1 listening on :8080\n2026-05-04T09:33:40Z INFO job 88207 picked up: tenant=1093 report=monthly-summary period=2026-04\n2026-05-04T09:33:42Z INFO job 88207 rendered 14 pages in 1.9s\n2026-05-04T09:44:51Z INFO job 88219 picked up: tenant=2207 report=invoice-batch period=2026-04\n2026-05-04T09:44:52Z INFO job 88219 rendered 6 pages in 0.8s",
+    "report-scheduler-7c9b5d8d9-p4lrn": "2026-05-04T09:41:11Z INFO enqueued job 88213 tenant=4411 report=quarterly-statement\n2026-05-04T09:44:12Z WARN job 88213 lost worker (renderer restarted), requeueing attempt 4/5",
+    "reports-redis-0": "1:M 04 May 2026 07:00:00.112 * Ready to accept connections tcp"
+  }
+}

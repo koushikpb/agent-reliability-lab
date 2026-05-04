@@ -1,0 +1,38 @@
+# Multi-hop: the worker looks up the bare name "smtp-relay" (no such host) while same-namespace names resolve, and the ticket
+# places smtp-relay in shared-infra. Resolved: short names only search the pod's own namespace; use smtp-relay.shared-infra.
+id: net-dns-short-name-cross-namespace
+category: multi_hop
+ticket:
+  id: T-4004
+  title: notification-worker email jobs all failing with DNS errors
+  body: >-
+    Every email job from notification-worker in the notify namespace has failed since Monday morning
+    with DNS errors. CoreDNS looks healthy to us. The smtp-relay that the platform team runs in
+    shared-infra is up, and other teams are sending mail through it without problems. We haven't
+    deployed notification-worker since last Thursday. The platform team mentioned they moved
+    smtp-relay out of our namespace into shared-infra on Sunday night.
+cluster_fixture: fixtures/net-dns-short-name-cross-namespace.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: get_pod_logs, args: {pod: notification-worker-5b7d6c9f48-jq2vx}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/services-networking/dns-pod-service#namespaces-of-services-0
+    - concepts/services-networking/dns-pod-service#namespaces-of-services-1
+    - concepts/services-networking/dns-pod-service#intro-0
+    - concepts/services-networking/dns-pod-service#a-aaaa-records-0
+    - tasks/debug/debug-application/debug-service#does-the-service-work-by-dns-name-0
+    - tasks/debug/debug-application/debug-service#does-the-service-work-by-dns-name-1
+    - tasks/administer-cluster/dns-debugging-resolution#are-you-in-the-right-namespace-for-the-service-0
+    - tasks/administer-cluster/namespaces#understanding-namespaces-and-dns-0
+  must_cite_any_of:
+    - concepts/services-networking/dns-pod-service#namespaces-of-services-0
+    - concepts/services-networking/dns-pod-service#namespaces-of-services-1
+    - tasks/debug/debug-application/debug-service#does-the-service-work-by-dns-name-1
+    - tasks/administer-cluster/dns-debugging-resolution#are-you-in-the-right-namespace-for-the-service-0
+    - tasks/administer-cluster/namespaces#understanding-namespaces-and-dns-0
+  answer_must_mention:
+    - [smtp-relay.shared-infra, fully qualified, fully-qualified, FQDN, namespace-qualified, cross-namespace]
+faults: []

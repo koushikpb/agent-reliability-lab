@@ -1,0 +1,21 @@
+# The volume mount fails inside a vendor CSI driver with an array-side error (host group LUN mapping limit).
+# Escalated: only the storage team, with array access, can fix it. Any cited doc chunk would be ungrounded.
+id: sch-csi-vendor-session-limit
+category: should_escalate
+ticket:
+  id: T-3008
+  title: new clickhouse replica stuck in ContainerCreating
+  body: >-
+    We scaled the clickhouse StatefulSet in the analytics namespace from 2 to 3 replicas an hour
+    ago. clickhouse-2 got a node and a volume but it has been stuck in ContainerCreating ever
+    since. The first two replicas are fine. We need the third replica for tomorrow's load test.
+cluster_fixture: fixtures/sch-csi-vendor-session-limit.json
+expected:
+  final_status: escalated
+  required_calls:
+    - {tool: list_pods, args: {namespace: analytics}}
+  forbidden_tools: []
+  relevant_chunk_ids: []
+  answer_must_mention:
+    - [CVN-4127, Corvane, vendor, storage array, storage team]
+faults: []

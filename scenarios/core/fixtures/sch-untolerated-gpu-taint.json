@@ -1,0 +1,37 @@
+{
+  "pods": {
+    "vision": [
+      {"name": "doc-embedder-6f9b8d7c5-r4tkq", "status": "Pending", "ready": false, "restarts": 0,
+       "image": "registry.internal/vision/doc-embedder:2.3.0", "node": null,
+       "node_selector": {"pool": "gpu"},
+       "resources": {"requests": {"cpu": "2", "memory": "12Gi"}, "limits": {"memory": "12Gi", "nvidia.com/gpu": "1"}},
+       "tolerations": [
+         {"key": "node.kubernetes.io/not-ready", "operator": "Exists", "effect": "NoExecute", "tolerationSeconds": 300},
+         {"key": "node.kubernetes.io/unreachable", "operator": "Exists", "effect": "NoExecute", "tolerationSeconds": 300},
+         {"key": "nvidia.com/gpu", "operator": "Exists", "effect": "NoSchedule"}
+       ],
+       "conditions": [{"type": "PodScheduled", "status": "False", "reason": "Unschedulable",
+         "message": "0/9 nodes are available: 3 node(s) had untolerated taint {dedicated: gpu}, 6 node(s) didn't match Pod's node affinity/selector. preemption: 0/9 nodes are available: 9 Preemption is not helpful for scheduling."}]},
+      {"name": "label-studio-7c5d9f8b6-mx2pl", "status": "Running", "ready": true, "restarts": 0,
+       "image": "heartexlabs/label-studio:1.13.1", "node": "ip-10-0-21-14.ec2.internal"},
+      {"name": "ocr-worker-84b6c7d9f-9zqwe", "status": "Running", "ready": true, "restarts": 2,
+       "image": "registry.internal/vision/ocr-worker:0.18.2", "node": "ip-10-0-22-63.ec2.internal"}
+    ],
+    "ml-serving": [
+      {"name": "llm-gateway-5b7f6d8c9-h3vnp", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ml/llm-gateway:1.4.2", "node": "ip-10-0-40-11.ec2.internal",
+       "node_selector": {"pool": "gpu"},
+       "resources": {"limits": {"nvidia.com/gpu": "1", "memory": "24Gi"}},
+       "tolerations": [
+         {"key": "dedicated", "operator": "Equal", "value": "gpu", "effect": "NoSchedule"},
+         {"key": "nvidia.com/gpu", "operator": "Exists", "effect": "NoSchedule"}
+       ]}
+    ]
+  },
+  "logs": {
+    "doc-embedder-6f9b8d7c5-r4tkq": "Error from server (BadRequest): container \"embedder\" in pod \"doc-embedder-6f9b8d7c5-r4tkq\" is waiting to start: pod has not been scheduled",
+    "label-studio-7c5d9f8b6-mx2pl": "[2026-04-17 10:02:11,431] [INFO] [label_studio::server] Starting Label Studio on 0.0.0.0:8080",
+    "ocr-worker-84b6c7d9f-9zqwe": "2026-04-17T10:01:55Z INFO processed batch 4412 (64 pages) in 8.1s\n2026-04-17T10:02:03Z WARN page 17 of doc 99812 had low confidence (0.41), queued for review",
+    "llm-gateway-5b7f6d8c9-h3vnp": "2026-04-17T10:02:00Z INFO CUDA device 0: NVIDIA A10G, 22.5 GiB free\n2026-04-17T10:02:01Z INFO serving on :8000"
+  }
+}

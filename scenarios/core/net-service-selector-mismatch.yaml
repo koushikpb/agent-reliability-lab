@@ -1,0 +1,33 @@
+# The ticket says the Service selects app=cart-service; list_pods shows the 4.2 pods only carry app.kubernetes.io/name
+# labels. Resolved: the selector matches no pods, so the Service has no endpoints.
+id: net-service-selector-mismatch
+category: easy_lookup
+ticket:
+  id: T-4003
+  title: cart broken on storefront since cart-service 4.2
+  body: >-
+    Since we shipped cart-service 4.2 yesterday (moved it to the new platform Helm chart template), the
+    storefront shows "cart unavailable" for everyone. All cart-service pods in the shop namespace are
+    Running and Ready and their logs look clean. We did not touch the cart-service Service, it still has
+    selector app: cart-service and port 8080.
+cluster_fixture: fixtures/net-service-selector-mismatch.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: shop}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - tasks/debug/debug-application/debug-pods#debugging-services-0
+    - tasks/debug/debug-application/debug-pods#debugging-services-1
+    - tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-0
+    - tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-1
+    - tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-2
+    - concepts/services-networking/service#defining-a-service-0
+    - concepts/services-networking/service#defining-a-service-1
+  must_cite_any_of:
+    - tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-2
+    - tasks/debug/debug-application/debug-pods#debugging-services-0
+    - concepts/services-networking/service#defining-a-service-1
+  answer_must_mention: [[selector, selectors], [label, labels]]
+faults: []

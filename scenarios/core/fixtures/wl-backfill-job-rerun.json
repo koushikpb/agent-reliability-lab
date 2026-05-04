@@ -1,0 +1,21 @@
+{
+  "pods": {
+    "billing": [
+      {"name": "invoice-charge-backfill-2026-04-6qz8t", "status": "Failed", "ready": false, "restarts": 0,
+       "image": "registry.internal/billing/invoice-tools:7.9.2",
+       "owner": "Job/invoice-charge-backfill-2026-04",
+       "job_spec": {"backoffLimit": 0, "completions": 1, "parallelism": 1},
+       "job_status": "Failed: BackoffLimitExceeded (Job has reached the specified backoff limit)",
+       "last_state": "Terminated (Error), exit code 1"},
+      {"name": "billing-api-5b7c9d6f8-qm4vz", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/billing/billing-api:7.9.2", "last_state": null},
+      {"name": "billing-api-5b7c9d6f8-x2hkp", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/billing/billing-api:7.9.2", "last_state": null}
+    ]
+  },
+  "logs": {
+    "invoice-charge-backfill-2026-04-6qz8t": "2026-05-22T18:00:04Z INFO invoice-tools 7.9.2 backfill-charges period=2026-04 mode=full\n2026-05-22T18:00:04Z WARN no resume checkpoint configured; a restart begins again from the first unpaid invoice in the period\n2026-05-22T18:00:05Z WARN payment gateway client v1 does not send idempotency keys\n2026-05-22T18:00:06Z INFO 9,950 invoices selected (status=unpaid at snapshot 2026-05-22T17:55:00Z)\n2026-05-22T18:21:40Z INFO charged 2,500/9,950 invoices (total EUR 1,184,220.15)\n2026-05-22T18:43:02Z INFO charged 4,800/9,950 invoices (total EUR 2,301,977.40)\n2026-05-22T18:43:19Z ERROR gateway: POST /v1/charges 429 Too Many Requests (retry budget exhausted) invoice=INV-2026-04-118204\n2026-05-22T18:43:19Z ERROR aborting backfill after 4,812 successful charges; invoice status updates for the last batch were not committed\n2026-05-22T18:43:19Z INFO exit 1",
+    "billing-api-5b7c9d6f8-qm4vz": "2026-05-22T18:50:02Z INFO GET /v1/invoices?status=unpaid 200 88ms",
+    "billing-api-5b7c9d6f8-x2hkp": "2026-05-22T18:50:07Z INFO GET /v1/invoices/INV-2026-04-117990 200 12ms"
+  }
+}

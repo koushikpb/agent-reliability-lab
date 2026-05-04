@@ -1,0 +1,31 @@
+{
+  "pods": {
+    "ml-training": [
+      {"name": "trainer-q3-full-5d8f7c4b9-jw2rx", "status": "Pending", "ready": false, "restarts": 0,
+       "image": "registry.internal/ml/trainer:5.2.0", "node": null,
+       "resources": {"requests": {"cpu": "16", "memory": "24Gi"}, "limits": {"cpu": "16", "memory": "24Gi"}},
+       "conditions": [{"type": "PodScheduled", "status": "False", "reason": "Unschedulable",
+         "message": "0/6 nodes are available: 6 Insufficient cpu. preemption: 0/6 nodes are available: 6 No preemption victims found for incoming pod."}]},
+      {"name": "trainer-q2-full-7b4c9d6f8-pl4mz", "status": "Completed", "ready": false, "restarts": 0,
+       "image": "registry.internal/ml/trainer:5.1.3", "node": "ip-10-0-12-41.ec2.internal",
+       "resources": {"requests": {"cpu": "6", "memory": "20Gi"}, "limits": {"cpu": "6", "memory": "20Gi"}}},
+      {"name": "feature-store-api-6c7d5b9f4-x8k2n", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ml/feature-store-api:1.9.4", "node": "ip-10-0-13-7.ec2.internal",
+       "resources": {"requests": {"cpu": "500m", "memory": "1Gi"}, "limits": {"memory": "1Gi"}}},
+      {"name": "mlflow-tracking-0", "status": "Running", "ready": true, "restarts": 1,
+       "image": "ghcr.io/mlflow/mlflow:v2.16.2", "node": "ip-10-0-14-90.ec2.internal",
+       "resources": {"requests": {"cpu": "250m", "memory": "512Mi"}, "limits": {"memory": "1Gi"}}}
+    ],
+    "ml-serving": [
+      {"name": "recsys-ranker-58f9c7d6b-2tqvw", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/ml/recsys-ranker:3.0.7", "node": "ip-10-0-12-41.ec2.internal"}
+    ]
+  },
+  "logs": {
+    "trainer-q3-full-5d8f7c4b9-jw2rx": "Error from server (BadRequest): container \"trainer\" in pod \"trainer-q3-full-5d8f7c4b9-jw2rx\" is waiting to start: pod has not been scheduled",
+    "trainer-q2-full-7b4c9d6f8-pl4mz": "2026-04-09T01:00:04Z INFO trainer 5.1.3 starting, workers=6\n2026-04-09T01:00:31Z INFO loaded 18.2M rows from s3://ml-datasets/q2/full\n2026-04-09T04:47:12Z INFO epoch 12/12 val_auc=0.8714\n2026-04-09T04:47:40Z INFO model registered: recsys-ranker/42\n2026-04-09T04:47:41Z INFO done",
+    "feature-store-api-6c7d5b9f4-x8k2n": "2026-04-16T09:12:03Z INFO GET /features/user/88123 200 4ms\n2026-04-16T09:12:04Z INFO GET /features/user/10457 200 3ms",
+    "mlflow-tracking-0": "2026-04-16T06:00:11Z INFO Listening at: http://0.0.0.0:5000\n2026-04-16T09:10:52Z INFO POST /api/2.0/mlflow/runs/log-metric 200",
+    "recsys-ranker-58f9c7d6b-2tqvw": "2026-04-16T09:12:00Z INFO served 1203 requests in last 60s, p99=41ms"
+  }
+}

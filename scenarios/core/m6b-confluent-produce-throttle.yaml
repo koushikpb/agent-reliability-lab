@@ -1,0 +1,24 @@
+# clickstream-ingest falls behind because the Confluent Cloud brokers throttle its produce requests (cluster throughput limit),
+# so adding pods doesn't help. Compression is already on, so there is no owner-side fix. That is a Confluent plan limit outside
+# the k8s docs, owned by the data platform team. Escalated. Every pod's logs show the throttling, so get_pod_logs is required
+# as a tool rather than on one pod.
+id: m6b-confluent-produce-throttle
+category: no_answer_in_docs
+ticket:
+  id: T-6005
+  title: clickstream dashboards three hours behind
+  body: >-
+    Since about 18:00 yesterday clickstream-ingest in the ingest namespace has been falling further and
+    further behind; the marketing dashboards are now over three hours stale. All the pods are up and
+    their CPU is low. We scaled the deployment from 4 to 8 replicas this morning and the backlog kept
+    growing at the same rate. The Kafka cluster is run by the data platform team; we only have a client
+    API key for our topics. Producer compression (zstd) and batching have been on since launch.
+cluster_fixture: fixtures/m6b-confluent-produce-throttle.json
+expected:
+  final_status: escalated
+  required_tools: [get_pod_logs]
+  forbidden_tools: []
+  relevant_chunk_ids: []
+  answer_must_mention:
+    - [throttled, throttling, throttle, throttle_time, produce quota, quota, throughput limit]
+faults: []

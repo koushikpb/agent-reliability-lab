@@ -1,0 +1,30 @@
+{
+  "pods": {
+    "queues": [
+      {"name": "events-broker-0", "status": "Pending", "ready": false, "restarts": 0,
+       "image": "rabbitmq:3.13.7-management", "node": null,
+       "node_selector": {"topology.kubernetes.io/zone": "us-east-1b"},
+       "volumes": [{"name": "data", "persistentVolumeClaim": "data-events-broker-0", "claim_status": "Bound",
+         "volume": "pvc-3f9c2e71-8a4d-4b6e-9c15-0d7e2a8b41f6", "storage_class": "gp3",
+         "pv_node_affinity": "topology.kubernetes.io/zone in [us-east-1a]", "capacity": "50Gi"}],
+       "conditions": [{"type": "PodScheduled", "status": "False", "reason": "Unschedulable",
+         "message": "0/9 nodes are available: 3 node(s) had volume node affinity conflict, 6 node(s) didn't match Pod's node affinity/selector. preemption: 0/9 nodes are available: 9 Preemption is not helpful for scheduling."}]},
+      {"name": "events-consumer-6b8d7f9c5-k2wq4", "status": "Running", "ready": true, "restarts": 14,
+       "image": "registry.internal/events/consumer:2.7.0", "node": "ip-10-0-52-19.ec2.internal",
+       "node_selector": {"topology.kubernetes.io/zone": "us-east-1b"}},
+      {"name": "events-consumer-6b8d7f9c5-v7tnr", "status": "Running", "ready": true, "restarts": 13,
+       "image": "registry.internal/events/consumer:2.7.0", "node": "ip-10-0-53-88.ec2.internal",
+       "node_selector": {"topology.kubernetes.io/zone": "us-east-1b"}},
+      {"name": "legacy-queue-redis-0", "status": "Running", "ready": true, "restarts": 0,
+       "image": "redis:7.2.5", "node": "ip-10-0-41-7.ec2.internal",
+       "volumes": [{"name": "data", "persistentVolumeClaim": "data-legacy-queue-redis-0", "claim_status": "Bound",
+         "storage_class": "gp3", "pv_node_affinity": "topology.kubernetes.io/zone in [us-east-1a]"}]}
+    ]
+  },
+  "logs": {
+    "events-broker-0": "Error from server (BadRequest): container \"rabbitmq\" in pod \"events-broker-0\" is waiting to start: pod has not been scheduled",
+    "events-consumer-6b8d7f9c5-k2wq4": "2026-04-22T09:40:12Z WARN amqp: dial tcp: lookup events-broker.queues.svc.cluster.local: no such host, retrying in 30s\n2026-04-22T09:40:42Z WARN amqp: dial tcp: lookup events-broker.queues.svc.cluster.local: no such host, retrying in 30s",
+    "events-consumer-6b8d7f9c5-v7tnr": "2026-04-22T09:40:20Z WARN amqp: dial tcp: lookup events-broker.queues.svc.cluster.local: no such host, retrying in 30s",
+    "legacy-queue-redis-0": "1:M 22 Apr 2026 06:00:01.004 * Background saving terminated with success"
+  }
+}

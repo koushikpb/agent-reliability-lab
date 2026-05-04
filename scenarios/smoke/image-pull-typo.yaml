@@ -1,4 +1,4 @@
-# Smoke scenario for milestone 3 (executor works end to end). Not one of the hand-labeled 25.
+# Smoke scenario: checks the executor end to end. Not part of the core suite.
 id: image-pull-typo
 category: easy_lookup
 ticket:

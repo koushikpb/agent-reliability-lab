@@ -1,0 +1,27 @@
+{
+  "pods": {
+    "inventory": [
+      {"name": "inventory-db-0", "status": "CrashLoopBackOff", "ready": false, "restarts": 23,
+       "image": "postgres:15.6",
+       "owner": "StatefulSet/inventory-db",
+       "volumes": [{"name": "pgdata", "persistentVolumeClaim": "pgdata-inventory-db-0", "claim_status": "Bound"}],
+       "last_state": "Terminated (Error), exit code 1"},
+      {"name": "inventory-api-7c5f8d9b6-gk2xs", "status": "Running", "ready": false, "restarts": 41,
+       "image": "registry.internal/inventory/inventory-api:6.3.0",
+       "last_state": "Terminated (Error), exit code 1"},
+      {"name": "inventory-api-7c5f8d9b6-r9tfm", "status": "Running", "ready": false, "restarts": 40,
+       "image": "registry.internal/inventory/inventory-api:6.3.0",
+       "last_state": "Terminated (Error), exit code 1"},
+      {"name": "inventory-backup-29637180-w2hcd", "status": "Succeeded", "ready": false, "restarts": 0,
+       "image": "registry.internal/platform/pg-backup:1.4.0",
+       "owner": "Job/inventory-backup-29637180 (CronJob/inventory-backup, schedule \"0 21 * * *\")",
+       "last_state": "Terminated (Completed), exit code 0"}
+    ]
+  },
+  "logs": {
+    "inventory-db-0": "2026-05-21T06:40:12.118 UTC [1] LOG:  starting PostgreSQL 15.6 (Debian 15.6-1.pgdg120+2) on x86_64-pc-linux-gnu\n2026-05-21T06:40:12.121 UTC [1] LOG:  listening on IPv4 address \"0.0.0.0\", port 5432\n2026-05-21T06:40:12.130 UTC [27] LOG:  database system was interrupted; last known up at 2026-05-21 02:14:51 UTC\n2026-05-21T06:40:12.402 UTC [27] LOG:  invalid primary checkpoint record\n2026-05-21T06:40:12.402 UTC [27] LOG:  invalid resource manager ID in checkpoint record at 3/1A0000A0\n2026-05-21T06:40:12.402 UTC [27] PANIC:  could not locate a valid checkpoint record\n2026-05-21T06:40:12.611 UTC [1] LOG:  startup process (PID 27) was terminated by signal 6: Aborted\n2026-05-21T06:40:12.611 UTC [1] LOG:  aborting startup due to startup process failure\n2026-05-21T06:40:12.618 UTC [1] LOG:  database system is shut down",
+    "inventory-api-7c5f8d9b6-gk2xs": "2026-05-21T06:41:03Z ERROR db: dial tcp 10.43.88.12:5432: connect: connection refused\n2026-05-21T06:41:03Z FATAL could not connect to inventory-db after 5 attempts, exiting",
+    "inventory-api-7c5f8d9b6-r9tfm": "2026-05-21T06:42:19Z ERROR db: dial tcp 10.43.88.12:5432: connect: connection refused\n2026-05-21T06:42:19Z FATAL could not connect to inventory-db after 5 attempts, exiting",
+    "inventory-backup-29637180-w2hcd": "2026-05-20T21:00:03Z INFO pg_dump inventory -> s3://acme-db-backups/inventory/2026-05-20T2100.dump\n2026-05-20T21:06:47Z INFO backup complete (2.8 GiB)"
+  }
+}

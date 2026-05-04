@@ -1,0 +1,34 @@
+# Misleading logs: Prometheus logs many scrape timeouts for a few targets, but the gaps come from TSDB writes failing with
+# "no space left on device" on its 100Gi volume. Resolved: the storage class allows expansion, so the owner grows the PVC.
+id: m6a-prometheus-disk-full-scrape-noise
+category: misleading_logs
+ticket:
+  id: T-5005
+  title: grafana dashboards have gaps since last night
+  body: >-
+    Since roughly 03:00 our Grafana dashboards show gaps for every service, and for the last few hours most
+    panels are nearly empty. Alerts that should have fired overnight didn't. Prometheus runs in the
+    monitoring namespace. We're the observability team and own that namespace and everything in it.
+cluster_fixture: fixtures/m6a-prometheus-disk-full-scrape-noise.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: monitoring}}
+    - {tool: get_pod_logs, args: {pod: prometheus-k8s-0}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-0
+    - concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-1
+    - concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-2
+    - concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-3
+    - concepts/storage/storage-classes#allow-volume-expansion-0
+  must_cite_any_of:
+    - concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-0
+    - concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-1
+    - concepts/storage/storage-classes#allow-volume-expansion-0
+  answer_must_mention:
+    - [no space left, disk full, disk is full, out of disk, out of space, disk space, volume is full, volume full, full disk]
+    - [expand, expansion, resize, resizing, allowVolumeExpansion]
+# decoy: scrape timeouts (context deadline exceeded) for a few node-exporter and kafka targets (judged in M10, not by a word check)
+faults: []

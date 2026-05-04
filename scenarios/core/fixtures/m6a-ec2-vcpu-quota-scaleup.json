@@ -1,0 +1,241 @@
+{
+ "pods": {
+  "ml-batch": [
+   {
+    "name": "feature-backfill-0522-2b7xk",
+    "status": "Pending",
+    "ready": false,
+    "restarts": 0,
+    "image": "registry.internal/ml/feature-backfill:1.9.2",
+    "node": null,
+    "owner": "Job/feature-backfill-0522 (completions 8, parallelism 8)",
+    "resources": {
+     "requests": {
+      "cpu": "12",
+      "memory": "24Gi"
+     },
+     "limits": {
+      "memory": "24Gi"
+     }
+    },
+    "node_selector": {
+     "eks.amazonaws.com/nodegroup": "batch-c6i-4xl"
+    },
+    "message": "0/12 nodes are available: 2 Insufficient cpu, 10 node(s) didn't match Pod's node affinity/selector. preemption: 0/12 nodes are available: 2 No preemption victims found for incoming pod, 10 Preemption is not helpful for scheduling.",
+    "events": [
+     "00:02:11Z Normal TriggeredScaleUp (cluster-autoscaler): pod triggered scale-up: [{eks-batch-c6i-4xl 2->10 (max: 16)}]",
+     "00:04:37Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed.",
+     "02:11:52Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed."
+    ]
+   },
+   {
+    "name": "feature-backfill-0522-4dq9m",
+    "status": "Pending",
+    "ready": false,
+    "restarts": 0,
+    "image": "registry.internal/ml/feature-backfill:1.9.2",
+    "node": null,
+    "owner": "Job/feature-backfill-0522 (completions 8, parallelism 8)",
+    "resources": {
+     "requests": {
+      "cpu": "12",
+      "memory": "24Gi"
+     },
+     "limits": {
+      "memory": "24Gi"
+     }
+    },
+    "node_selector": {
+     "eks.amazonaws.com/nodegroup": "batch-c6i-4xl"
+    },
+    "message": "0/12 nodes are available: 2 Insufficient cpu, 10 node(s) didn't match Pod's node affinity/selector. preemption: 0/12 nodes are available: 2 No preemption victims found for incoming pod, 10 Preemption is not helpful for scheduling.",
+    "events": [
+     "00:02:11Z Normal TriggeredScaleUp (cluster-autoscaler): pod triggered scale-up: [{eks-batch-c6i-4xl 2->10 (max: 16)}]",
+     "00:04:37Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed.",
+     "02:11:52Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed."
+    ]
+   },
+   {
+    "name": "feature-backfill-0522-7hkzs",
+    "status": "Pending",
+    "ready": false,
+    "restarts": 0,
+    "image": "registry.internal/ml/feature-backfill:1.9.2",
+    "node": null,
+    "owner": "Job/feature-backfill-0522 (completions 8, parallelism 8)",
+    "resources": {
+     "requests": {
+      "cpu": "12",
+      "memory": "24Gi"
+     },
+     "limits": {
+      "memory": "24Gi"
+     }
+    },
+    "node_selector": {
+     "eks.amazonaws.com/nodegroup": "batch-c6i-4xl"
+    },
+    "message": "0/12 nodes are available: 2 Insufficient cpu, 10 node(s) didn't match Pod's node affinity/selector. preemption: 0/12 nodes are available: 2 No preemption victims found for incoming pod, 10 Preemption is not helpful for scheduling.",
+    "events": [
+     "00:02:11Z Normal TriggeredScaleUp (cluster-autoscaler): pod triggered scale-up: [{eks-batch-c6i-4xl 2->10 (max: 16)}]",
+     "00:04:37Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed.",
+     "02:11:52Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed."
+    ]
+   },
+   {
+    "name": "feature-backfill-0522-9pw2c",
+    "status": "Pending",
+    "ready": false,
+    "restarts": 0,
+    "image": "registry.internal/ml/feature-backfill:1.9.2",
+    "node": null,
+    "owner": "Job/feature-backfill-0522 (completions 8, parallelism 8)",
+    "resources": {
+     "requests": {
+      "cpu": "12",
+      "memory": "24Gi"
+     },
+     "limits": {
+      "memory": "24Gi"
+     }
+    },
+    "node_selector": {
+     "eks.amazonaws.com/nodegroup": "batch-c6i-4xl"
+    },
+    "message": "0/12 nodes are available: 2 Insufficient cpu, 10 node(s) didn't match Pod's node affinity/selector. preemption: 0/12 nodes are available: 2 No preemption victims found for incoming pod, 10 Preemption is not helpful for scheduling.",
+    "events": [
+     "00:02:11Z Normal TriggeredScaleUp (cluster-autoscaler): pod triggered scale-up: [{eks-batch-c6i-4xl 2->10 (max: 16)}]",
+     "00:04:37Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed.",
+     "02:11:52Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed."
+    ]
+   },
+   {
+    "name": "feature-backfill-0522-c5t8n",
+    "status": "Pending",
+    "ready": false,
+    "restarts": 0,
+    "image": "registry.internal/ml/feature-backfill:1.9.2",
+    "node": null,
+    "owner": "Job/feature-backfill-0522 (completions 8, parallelism 8)",
+    "resources": {
+     "requests": {
+      "cpu": "12",
+      "memory": "24Gi"
+     },
+     "limits": {
+      "memory": "24Gi"
+     }
+    },
+    "node_selector": {
+     "eks.amazonaws.com/nodegroup": "batch-c6i-4xl"
+    },
+    "message": "0/12 nodes are available: 2 Insufficient cpu, 10 node(s) didn't match Pod's node affinity/selector. preemption: 0/12 nodes are available: 2 No preemption victims found for incoming pod, 10 Preemption is not helpful for scheduling.",
+    "events": [
+     "00:02:11Z Normal TriggeredScaleUp (cluster-autoscaler): pod triggered scale-up: [{eks-batch-c6i-4xl 2->10 (max: 16)}]",
+     "00:04:37Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed.",
+     "02:11:52Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed."
+    ]
+   },
+   {
+    "name": "feature-backfill-0522-fm3vd",
+    "status": "Pending",
+    "ready": false,
+    "restarts": 0,
+    "image": "registry.internal/ml/feature-backfill:1.9.2",
+    "node": null,
+    "owner": "Job/feature-backfill-0522 (completions 8, parallelism 8)",
+    "resources": {
+     "requests": {
+      "cpu": "12",
+      "memory": "24Gi"
+     },
+     "limits": {
+      "memory": "24Gi"
+     }
+    },
+    "node_selector": {
+     "eks.amazonaws.com/nodegroup": "batch-c6i-4xl"
+    },
+    "message": "0/12 nodes are available: 2 Insufficient cpu, 10 node(s) didn't match Pod's node affinity/selector. preemption: 0/12 nodes are available: 2 No preemption victims found for incoming pod, 10 Preemption is not helpful for scheduling.",
+    "events": [
+     "00:02:11Z Normal TriggeredScaleUp (cluster-autoscaler): pod triggered scale-up: [{eks-batch-c6i-4xl 2->10 (max: 16)}]",
+     "00:04:37Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed.",
+     "02:11:52Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed."
+    ]
+   },
+   {
+    "name": "feature-backfill-0522-jr6lq",
+    "status": "Pending",
+    "ready": false,
+    "restarts": 0,
+    "image": "registry.internal/ml/feature-backfill:1.9.2",
+    "node": null,
+    "owner": "Job/feature-backfill-0522 (completions 8, parallelism 8)",
+    "resources": {
+     "requests": {
+      "cpu": "12",
+      "memory": "24Gi"
+     },
+     "limits": {
+      "memory": "24Gi"
+     }
+    },
+    "node_selector": {
+     "eks.amazonaws.com/nodegroup": "batch-c6i-4xl"
+    },
+    "message": "0/12 nodes are available: 2 Insufficient cpu, 10 node(s) didn't match Pod's node affinity/selector. preemption: 0/12 nodes are available: 2 No preemption victims found for incoming pod, 10 Preemption is not helpful for scheduling.",
+    "events": [
+     "00:02:11Z Normal TriggeredScaleUp (cluster-autoscaler): pod triggered scale-up: [{eks-batch-c6i-4xl 2->10 (max: 16)}]",
+     "00:04:37Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed.",
+     "02:11:52Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed."
+    ]
+   },
+   {
+    "name": "feature-backfill-0522-x8zn4",
+    "status": "Pending",
+    "ready": false,
+    "restarts": 0,
+    "image": "registry.internal/ml/feature-backfill:1.9.2",
+    "node": null,
+    "owner": "Job/feature-backfill-0522 (completions 8, parallelism 8)",
+    "resources": {
+     "requests": {
+      "cpu": "12",
+      "memory": "24Gi"
+     },
+     "limits": {
+      "memory": "24Gi"
+     }
+    },
+    "node_selector": {
+     "eks.amazonaws.com/nodegroup": "batch-c6i-4xl"
+    },
+    "message": "0/12 nodes are available: 2 Insufficient cpu, 10 node(s) didn't match Pod's node affinity/selector. preemption: 0/12 nodes are available: 2 No preemption victims found for incoming pod, 10 Preemption is not helpful for scheduling.",
+    "events": [
+     "00:02:11Z Normal TriggeredScaleUp (cluster-autoscaler): pod triggered scale-up: [{eks-batch-c6i-4xl 2->10 (max: 16)}]",
+     "00:04:37Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed.",
+     "02:11:52Z Warning FailedScaleUp (cluster-autoscaler): Node scale up in zones us-east-1a associated with this pod failed: Could not launch On-Demand Instances. VcpuLimitExceeded - You have requested more vCPU capacity than your current vCPU limit of 256 allows for the instance bucket that the specified instance type belongs to. Please visit http://aws.amazon.com/contact-us/ec2-request to request an adjustment to this limit. Launching EC2 instance failed."
+    ]
+   },
+   {
+    "name": "feature-store-api-6b9d4c7f8-tq2lm",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "registry.internal/ml/feature-store-api:3.2.0",
+    "node": "ip-10-0-41-77.ec2.internal"
+   }
+  ]
+ },
+ "logs": {
+  "feature-backfill-0522-2b7xk": "Error from server (BadRequest): container \"backfill\" in pod \"feature-backfill-0522-2b7xk\" is waiting to start: pod has not been scheduled",
+  "feature-backfill-0522-4dq9m": "Error from server (BadRequest): container \"backfill\" in pod \"feature-backfill-0522-4dq9m\" is waiting to start: pod has not been scheduled",
+  "feature-backfill-0522-7hkzs": "Error from server (BadRequest): container \"backfill\" in pod \"feature-backfill-0522-7hkzs\" is waiting to start: pod has not been scheduled",
+  "feature-backfill-0522-9pw2c": "Error from server (BadRequest): container \"backfill\" in pod \"feature-backfill-0522-9pw2c\" is waiting to start: pod has not been scheduled",
+  "feature-backfill-0522-c5t8n": "Error from server (BadRequest): container \"backfill\" in pod \"feature-backfill-0522-c5t8n\" is waiting to start: pod has not been scheduled",
+  "feature-backfill-0522-fm3vd": "Error from server (BadRequest): container \"backfill\" in pod \"feature-backfill-0522-fm3vd\" is waiting to start: pod has not been scheduled",
+  "feature-backfill-0522-jr6lq": "Error from server (BadRequest): container \"backfill\" in pod \"feature-backfill-0522-jr6lq\" is waiting to start: pod has not been scheduled",
+  "feature-backfill-0522-x8zn4": "Error from server (BadRequest): container \"backfill\" in pod \"feature-backfill-0522-x8zn4\" is waiting to start: pod has not been scheduled",
+  "feature-store-api-6b9d4c7f8-tq2lm": "2026-05-22T02:10:44Z INFO GET /v1/features/user_ltv 200 12ms"
+ }
+}

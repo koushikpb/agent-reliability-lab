@@ -1,0 +1,31 @@
+{
+  "pods": {
+    "search": [
+      {"name": "docindex-0", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/search/docindex:2.3.1", "node": "ip-10-0-31-12.ec2.internal",
+       "owner": "StatefulSet/docindex", "age": "12d"},
+      {"name": "docindex-1", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/search/docindex:2.3.1", "node": "ip-10-0-32-40.ec2.internal",
+       "owner": "StatefulSet/docindex", "age": "12d"},
+      {"name": "docindex-2", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/search/docindex:2.3.1", "node": "ip-10-0-33-77.ec2.internal",
+       "owner": "StatefulSet/docindex", "age": "12d"},
+      {"name": "docindex-3", "status": "Running", "ready": false, "restarts": 0,
+       "image": "registry.internal/search/docindex:2.3.1", "node": "ip-10-0-31-58.ec2.internal",
+       "owner": "StatefulSet/docindex", "age": "49m",
+       "conditions": [{"type": "Ready", "status": "False", "reason": "ContainersNotReady",
+         "message": "containers with unready status: [docindex]"}],
+       "events": ["Warning  Unhealthy  kubelet  Readiness probe failed: HTTP probe failed with statuscode: 503 (x290 over 48m)"]},
+      {"name": "search-gateway-84c6d7f9b5-tl7wp", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/search/search-gateway:1.6.0", "node": "ip-10-0-32-40.ec2.internal",
+       "owner": "ReplicaSet/search-gateway-84c6d7f9b5 (Deployment/search-gateway)", "age": "5d"}
+    ]
+  },
+  "logs": {
+    "docindex-0": "2026-05-18T09:12:40Z INFO cluster: ordinal=0 cluster_size=3 role=member shards=[0,3,6,9]\n2026-05-18T10:02:11Z INFO query p99=38ms qps=210",
+    "docindex-1": "2026-05-18T09:12:41Z INFO cluster: ordinal=1 cluster_size=3 role=member shards=[1,4,7,10]\n2026-05-18T10:02:11Z INFO query p99=41ms qps=204",
+    "docindex-2": "2026-05-18T09:12:41Z INFO cluster: ordinal=2 cluster_size=3 role=member shards=[2,5,8,11]\n2026-05-18T10:02:12Z INFO query p99=36ms qps=199",
+    "docindex-3": "2026-05-18T09:13:05Z INFO docindex 2.3.1 starting, hostname=docindex-3 ordinal=3\n2026-05-18T09:13:05Z INFO cluster: CLUSTER_SIZE=3 (from env), peers=[docindex-0.docindex, docindex-1.docindex, docindex-2.docindex]\n2026-05-18T09:13:06Z WARN cluster: own ordinal 3 is outside the configured cluster (CLUSTER_SIZE=3); joining as standby, no shards assigned\n2026-05-18T09:13:06Z INFO http: listening on :8080 (/ready returns 503 while standby)\n2026-05-18T09:43:06Z WARN cluster: still standby after 30m; set CLUSTER_SIZE to include ordinal 3 to receive shards\n2026-05-18T10:01:58Z INFO http: GET /ready 503 standby",
+    "search-gateway-84c6d7f9b5-tl7wp": "2026-05-18T10:02:10Z INFO upstreams healthy=3/3 (docindex-0, docindex-1, docindex-2)"
+  }
+}

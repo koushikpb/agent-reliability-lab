@@ -1,0 +1,35 @@
+# Misleading logs: the 14:15 stock-sync run has hung on an SFTP download for 19h (logs), and with concurrencyPolicy Forbid every
+# later run is skipped. The loud Pushgateway errors also appear in healthy runs. Resolved: delete the stuck Job, add a deadline/timeout.
+id: m6b-cronjob-forbid-hung-sftp
+category: misleading_logs
+ticket:
+  id: T-6003
+  title: stock levels stopped updating yesterday afternoon
+  body: >-
+    Stock levels on the storefront haven't changed since around 14:00 yesterday. They come from the
+    stock-sync cronjob in the warehouse namespace, which runs every 15 minutes and usually finishes in
+    3 or 4 minutes. Nobody has changed the job or its image this week.
+cluster_fixture: fixtures/m6b-cronjob-forbid-hung-sftp.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: warehouse}}
+    - {tool: get_pod_logs, args: {pod: stock-sync-29656215-wq7fz}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/workloads/controllers/cron-jobs#concurrency-policy-0
+    - concepts/workloads/controllers/cron-jobs#job-creation-1
+    - concepts/workloads/controllers/cron-jobs#job-creation-2
+    - concepts/workloads/controllers/job#job-termination-and-cleanup-0
+    - concepts/workloads/controllers/job#job-termination-and-cleanup-1
+    - concepts/workloads/controllers/job#job-termination-and-cleanup-2
+  must_cite_any_of:
+    - concepts/workloads/controllers/cron-jobs#concurrency-policy-0
+    - concepts/workloads/controllers/cron-jobs#job-creation-1
+    - concepts/workloads/controllers/cron-jobs#job-creation-2
+  answer_must_mention:
+    - [Forbid, concurrencyPolicy, concurrency policy]
+    - [sftp]
+# decoy: Pushgateway connection-refused errors (present in the successful runs too)
+faults: []

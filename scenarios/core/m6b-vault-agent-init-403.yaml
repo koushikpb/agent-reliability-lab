@@ -1,0 +1,24 @@
+# New orders-api pods hang in the vault-agent-init init container: Vault's Kubernetes auth login returns 403 although the service
+# account and role annotations match the running pods. The cause is on the Vault side, outside the k8s docs and the owner's access. Escalated.
+id: m6b-vault-agent-init-403
+category: no_answer_in_docs
+ticket:
+  id: T-6006
+  title: orders-api 3.9.0 pods never start
+  body: >-
+    We deployed orders-api 3.9.0 to the orders namespace at 13:00 and the new pods have been stuck at
+    Init:0/1 for 40 minutes. The 3.8.0 pods are still up and serving, so customers aren't affected
+    yet, but we need 3.9.0 out today. The only change in the release is the application image.
+    Vault is run by the security team outside this cluster; all we have is the role name they gave us
+    (orders-api), no access to Vault's configuration or audit log.
+cluster_fixture: fixtures/m6b-vault-agent-init-403.json
+expected:
+  final_status: escalated
+  required_calls:
+    - {tool: get_pod_logs, args: {pod: orders-api-5b4d7c8f9-hn6wd}}
+  forbidden_tools: []
+  relevant_chunk_ids: []
+  answer_must_mention:
+    - ["403", permission denied]
+    - [Vault role, Vault side, Vault server, Vault configuration, Vault config, Vault audit, Kubernetes auth method, token reviewer]
+faults: []

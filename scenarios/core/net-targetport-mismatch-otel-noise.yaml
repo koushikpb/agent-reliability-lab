@@ -1,0 +1,34 @@
+# Misleading logs: storefront-web 3.0 floods its log with otel-collector export errors (the collector really is down, but it is
+# not on the request path). The cause is that 3.0 listens on 3000 while the ingress hits the Service targetPort 8080. Resolved.
+id: net-targetport-mismatch-otel-noise
+category: misleading_logs
+ticket:
+  id: T-4005
+  title: shop site returns 502 since storefront-web 3.0
+  body: >-
+    www.shopfront.example has returned 502 Bad Gateway (the ingress-nginx error page) since storefront-web
+    3.0 went out at 09:00. The storefront-web pods in the shop-web namespace are Running and Ready.
+    Rolling back is our last resort because 3.0 carries a pricing fix.
+cluster_fixture: fixtures/net-targetport-mismatch-otel-noise.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: get_pod_logs, args: {pod: storefront-web-69c8d7f5b4-n2kqd}}
+    - {tool: get_pod_logs, args: {pod: ingress-nginx-controller-7b9f6d4c8-5wzpl}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - tasks/debug/debug-application/debug-service#is-the-service-defined-correctly-0
+    - tasks/debug/debug-application/debug-service#is-the-service-defined-correctly-1
+    - tasks/debug/debug-application/debug-service#is-the-service-defined-correctly-3
+    - tasks/debug/debug-application/debug-pods#debugging-services-1
+    - concepts/services-networking/service#defining-a-service-0
+    - concepts/services-networking/service#defining-a-service-1
+    - concepts/services-networking/service#field-spec-ports-0
+  must_cite_any_of:
+    - tasks/debug/debug-application/debug-service#is-the-service-defined-correctly-3
+    - tasks/debug/debug-application/debug-pods#debugging-services-1
+    - concepts/services-networking/service#defining-a-service-1
+  answer_must_mention: [[targetPort, target port], ["3000"]]
+# decoy: otel-collector (judged in M10, not by a word check)
+faults: []

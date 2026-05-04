@@ -1,0 +1,27 @@
+{
+  "pods": {
+    "shop-web": [
+      {"name": "storefront-web-69c8d7f5b4-n2kqd", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/shop/storefront-web:3.0.0", "last_state": null, "ip": "10.244.3.18"},
+      {"name": "storefront-web-69c8d7f5b4-tq8vb", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/shop/storefront-web:3.0.0", "last_state": null, "ip": "10.244.1.42"},
+      {"name": "pricing-api-5c4f7d8b96-hk3wm", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/shop/pricing-api:1.12.0", "last_state": null, "ip": "10.244.2.77"}
+    ],
+    "ingress-nginx": [
+      {"name": "ingress-nginx-controller-7b9f6d4c8-5wzpl", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.k8s.io/ingress-nginx/controller:v1.10.1", "last_state": null, "ip": "10.244.0.12"}
+    ],
+    "observability": [
+      {"name": "otel-collector-6f8b7c9d5-x7r2j", "status": "CrashLoopBackOff", "ready": false, "restarts": 37,
+       "image": "otel/opentelemetry-collector-contrib:0.102.1", "last_state": "Terminated (Error), exit code 1"}
+    ]
+  },
+  "logs": {
+    "storefront-web-69c8d7f5b4-n2kqd": "2026-05-15T09:00:41Z INFO storefront-web 3.0.0 (node 20.14.0) starting\n2026-05-15T09:00:42Z INFO http server listening on 0.0.0.0:3000\n2026-05-15T09:00:42Z ERROR [otel] failed to export spans to otel-collector.observability.svc:4317: 14 UNAVAILABLE: connect ECONNREFUSED 10.96.201.9:4317\n2026-05-15T09:00:47Z ERROR [otel] failed to export spans to otel-collector.observability.svc:4317: 14 UNAVAILABLE: connect ECONNREFUSED 10.96.201.9:4317\n2026-05-15T09:00:52Z ERROR [otel] failed to export metrics to otel-collector.observability.svc:4317: 14 UNAVAILABLE: connect ECONNREFUSED 10.96.201.9:4317\n2026-05-15T09:00:52Z ERROR [otel] dropping 512 spans: export queue full\n2026-05-15T09:00:55Z INFO GET /healthz 200 1ms\n2026-05-15T09:00:57Z ERROR [otel] failed to export spans to otel-collector.observability.svc:4317: 14 UNAVAILABLE: connect ECONNREFUSED 10.96.201.9:4317\n2026-05-15T09:01:02Z ERROR [otel] failed to export spans to otel-collector.observability.svc:4317: 14 UNAVAILABLE: connect ECONNREFUSED 10.96.201.9:4317\n2026-05-15T09:01:05Z INFO GET /healthz 200 1ms\n2026-05-15T09:01:07Z ERROR [otel] dropping 512 spans: export queue full",
+    "storefront-web-69c8d7f5b4-tq8vb": "2026-05-15T09:01:10Z INFO storefront-web 3.0.0 (node 20.14.0) starting\n2026-05-15T09:01:11Z INFO http server listening on 0.0.0.0:3000\n2026-05-15T09:01:11Z ERROR [otel] failed to export spans to otel-collector.observability.svc:4317: 14 UNAVAILABLE: connect ECONNREFUSED 10.96.201.9:4317\n2026-05-15T09:01:16Z ERROR [otel] failed to export spans to otel-collector.observability.svc:4317: 14 UNAVAILABLE: connect ECONNREFUSED 10.96.201.9:4317\n2026-05-15T09:01:25Z INFO GET /healthz 200 1ms",
+    "pricing-api-5c4f7d8b96-hk3wm": "2026-05-14T17:30:02Z INFO pricing-api 1.12.0 listening on :8080\n2026-05-15T08:58:40Z INFO GET /v1/prices?sku=sku-4410 200 4ms",
+    "ingress-nginx-controller-7b9f6d4c8-5wzpl": "I0515 09:01:20.114201       7 controller.go:210] \"Backend successfully reloaded\"\n2026/05/15 09:02:03 [error] 412#412: *88213 connect() failed (111: Connection refused) while connecting to upstream, client: 198.51.100.23, server: www.shopfront.example, request: \"GET / HTTP/2.0\", upstream: \"http://10.244.3.18:8080/\", host: \"www.shopfront.example\"\n2026/05/15 09:02:03 [error] 412#412: *88213 connect() failed (111: Connection refused) while connecting to upstream, client: 198.51.100.23, server: www.shopfront.example, request: \"GET / HTTP/2.0\", upstream: \"http://10.244.1.42:8080/\", host: \"www.shopfront.example\"\n198.51.100.23 - - [15/May/2026:09:02:03 +0000] \"GET / HTTP/2.0\" 502 552 \"-\" \"Mozilla/5.0\" 41 0.002 [shop-web-storefront-web-8080] [] 10.244.3.18:8080, 10.244.1.42:8080 0, 0 0.001, 0.001 502, 502 a81c3f7e\n2026/05/15 09:02:09 [error] 413#413: *88240 connect() failed (111: Connection refused) while connecting to upstream, client: 203.0.113.77, server: www.shopfront.example, request: \"GET /cart HTTP/2.0\", upstream: \"http://10.244.1.42:8080/cart\", host: \"www.shopfront.example\"",
+    "otel-collector-6f8b7c9d5-x7r2j": "2026-05-15T08:55:12.402Z\terror\tcollector@v0.102.1/main.go:89\tinvalid configuration: exporters::otlphttp/vendor: endpoint must be a valid URL\nError: invalid configuration: exporters::otlphttp/vendor: endpoint must be a valid URL"
+  }
+}

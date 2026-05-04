@@ -1,0 +1,35 @@
+# Two pieces of evidence: the scheduler reports a volume node affinity conflict, and the PV was provisioned
+# in us-east-1a (Immediate binding) while the pod is pinned to us-east-1b. Resolved: the volume is new and
+# empty, so the owner aligns the zone or recreates the claim with a WaitForFirstConsumer class.
+id: sch-pv-zone-conflict
+category: multi_hop
+ticket:
+  id: T-3004
+  title: new events-broker statefulset stuck in Pending
+  body: >-
+    We created the events-broker StatefulSet in the queues namespace this morning (brand new, no
+    data on it yet). We pinned it to us-east-1b so it sits next to the consumers. The first pod has
+    been Pending ever since. Other workloads schedule fine.
+cluster_fixture: fixtures/sch-pv-zone-conflict.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: queues}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/storage/storage-classes#volume-binding-mode-0
+    - concepts/storage/storage-classes#volume-binding-mode-1
+    - concepts/storage/storage-classes#volume-binding-mode-2
+    - concepts/storage/storage-classes#allowed-topologies-0
+    - concepts/storage/persistent-volumes#node-affinity-0
+    - concepts/storage/persistent-volumes#binding-0
+    - concepts/scheduling-eviction/assign-pod-node#nodeselector-0
+  must_cite_any_of:
+    - concepts/storage/storage-classes#volume-binding-mode-0
+    - concepts/storage/storage-classes#volume-binding-mode-1
+    - concepts/storage/persistent-volumes#node-affinity-0
+  answer_must_mention:
+    - [zone, us-east-1a, topology]
+    - [WaitForFirstConsumer, volumeBindingMode, binding mode, volume node affinity, node affinity]
+faults: []

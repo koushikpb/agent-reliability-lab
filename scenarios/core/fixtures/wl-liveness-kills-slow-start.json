@@ -1,0 +1,25 @@
+{
+  "pods": {
+    "search": [
+      {"name": "catalog-search-7d6f9b8c5-4kxpw", "status": "CrashLoopBackOff", "ready": false, "restarts": 11,
+       "image": "registry.internal/search/catalog-search:5.2.0",
+       "liveness_probe": "http-get http://:8080/healthz delay=30s timeout=1s period=10s #success=1 #failure=3",
+       "readiness_probe": "http-get http://:8080/ready delay=0s timeout=1s period=5s #success=1 #failure=3",
+       "last_state": "Terminated (Error), exit code 143",
+       "message": "Liveness probe failed: Get \"http://10.42.2.31:8080/healthz\": dial tcp 10.42.2.31:8080: connect: connection refused. Container search failed liveness probe, will be restarted"},
+      {"name": "catalog-search-7d6f9b8c5-s9m2t", "status": "CrashLoopBackOff", "ready": false, "restarts": 10,
+       "image": "registry.internal/search/catalog-search:5.2.0",
+       "liveness_probe": "http-get http://:8080/healthz delay=30s timeout=1s period=10s #success=1 #failure=3",
+       "readiness_probe": "http-get http://:8080/ready delay=0s timeout=1s period=5s #success=1 #failure=3",
+       "last_state": "Terminated (Error), exit code 143",
+       "message": "Liveness probe failed: Get \"http://10.42.5.12:8080/healthz\": dial tcp 10.42.5.12:8080: connect: connection refused. Container search failed liveness probe, will be restarted"},
+      {"name": "catalog-indexer-5f8c7d9b6-zr4hn", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/search/catalog-indexer:5.2.0", "last_state": null}
+    ]
+  },
+  "logs": {
+    "catalog-search-7d6f9b8c5-4kxpw": "2026-05-12T09:14:02Z INFO catalog-search 5.2.0 starting (pid 1)\n2026-05-12T09:14:02Z INFO index snapshot catalog-2026-05-12T03 has 48 shards (12.4 GiB), loading into memory before opening HTTP listener\n2026-05-12T09:14:11Z INFO loaded shard 4/48\n2026-05-12T09:14:20Z INFO loaded shard 8/48\n2026-05-12T09:14:29Z INFO loaded shard 12/48\n2026-05-12T09:14:38Z INFO loaded shard 16/48\n2026-05-12T09:14:47Z INFO loaded shard 20/48\n2026-05-12T09:14:54Z INFO loaded shard 23/48\n2026-05-12T09:14:55Z INFO received SIGTERM, aborting shard load\n2026-05-12T09:14:55Z INFO shutdown complete",
+    "catalog-search-7d6f9b8c5-s9m2t": "2026-05-12T09:15:40Z INFO catalog-search 5.2.0 starting (pid 1)\n2026-05-12T09:15:40Z INFO index snapshot catalog-2026-05-12T03 has 48 shards (12.4 GiB), loading into memory before opening HTTP listener\n2026-05-12T09:15:49Z INFO loaded shard 4/48\n2026-05-12T09:15:58Z INFO loaded shard 8/48\n2026-05-12T09:16:07Z INFO loaded shard 12/48\n2026-05-12T09:16:16Z INFO loaded shard 16/48\n2026-05-12T09:16:25Z INFO loaded shard 20/48\n2026-05-12T09:16:33Z INFO received SIGTERM, aborting shard load\n2026-05-12T09:16:33Z INFO shutdown complete",
+    "catalog-indexer-5f8c7d9b6-zr4hn": "2026-05-12T03:00:00Z INFO building snapshot catalog-2026-05-12T03\n2026-05-12T03:41:18Z INFO snapshot catalog-2026-05-12T03 published: 48 shards, 12.4 GiB (previous: 16 shards, 4.1 GiB) after merging the marketplace catalog"
+  }
+}

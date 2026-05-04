@@ -1,0 +1,66 @@
+{
+ "pods": {
+  "batch": [
+   {
+    "name": "job-dispatcher-7b6f9c4d8-zk5np",
+    "status": "CrashLoopBackOff",
+    "ready": false,
+    "restarts": 219, "created": "2026-05-20T15:12:40Z",
+    "image": "registry.internal/batch/job-dispatcher:2.3.1",
+    "node": "ip-10-0-90-17.ec2.internal",
+    "labels": {
+     "app.kubernetes.io/name": "job-dispatcher",
+     "helm.sh/chart": "platform-base-2.0.3"
+    },
+    "serviceAccountName": "job-dispatcher",
+    "automountServiceAccountToken": false,
+    "volume_mounts": [
+     {
+      "name": "tmp",
+      "mountPath": "/tmp"
+     }
+    ],
+    "last_state": "Terminated (Error), exit code 1"
+   },
+   {
+    "name": "job-dispatcher-5d8b7c9f6d-q7m2x",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "registry.internal/batch/job-dispatcher:2.3.1",
+    "node": "ip-10-0-91-5.ec2.internal",
+    "labels": {
+     "app.kubernetes.io/name": "job-dispatcher",
+     "helm.sh/chart": "platform-base-1.8.0"
+    },
+    "serviceAccountName": "job-dispatcher",
+    "volume_mounts": [
+     {
+      "name": "tmp",
+      "mountPath": "/tmp"
+     },
+     {
+      "name": "kube-api-access-7xq2d",
+      "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+      "readOnly": true
+     }
+    ],
+    "last_state": null
+   },
+   {
+    "name": "report-builder-6c4f8d9b7-w3rjn",
+    "status": "Running",
+    "ready": true,
+    "restarts": 0,
+    "image": "registry.internal/batch/report-builder:1.12.0",
+    "node": "ip-10-0-90-17.ec2.internal",
+    "last_state": null
+   }
+  ]
+ },
+ "logs": {
+  "job-dispatcher-7b6f9c4d8-zk5np": "2026-05-21T09:47:02Z INFO job-dispatcher 2.3.1 starting\n2026-05-21T09:47:02Z FATAL unable to load in-cluster configuration: open /var/run/secrets/kubernetes.io/serviceaccount/token: no such file or directory",
+  "job-dispatcher-5d8b7c9f6d-q7m2x": "2026-05-14T10:02:11Z INFO job-dispatcher 2.3.1 starting\n2026-05-14T10:02:11Z INFO leader election: lease batch/job-dispatcher-leader, identity job-dispatcher-5d8b7c9f6d-q7m2x\n2026-05-14T10:02:13Z INFO became leader\n2026-05-21T09:45:00Z INFO dispatched 212 jobs from queue nightly-etl",
+  "report-builder-6c4f8d9b7-w3rjn": "2026-05-21T09:40:00Z INFO built report weekly-usage in 3.2s"
+ }
+}

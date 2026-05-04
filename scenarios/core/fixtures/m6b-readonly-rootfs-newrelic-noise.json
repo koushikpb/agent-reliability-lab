@@ -1,0 +1,28 @@
+{
+  "pods": {
+    "marketing": [
+      {"name": "docs-site-7f6c5d4b8-h2mqr", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/marketing/docs-site:4.2.0", "node": "ip-10-0-81-19.ec2.internal",
+       "owner": "ReplicaSet/docs-site-7f6c5d4b8 (Deployment/docs-site)", "age": "16d",
+       "securityContext": {"runAsNonRoot": true, "runAsUser": 1001},
+       "volumeMounts": []},
+      {"name": "docs-site-7f6c5d4b8-v9xtn", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/marketing/docs-site:4.2.0", "node": "ip-10-0-82-44.ec2.internal",
+       "owner": "ReplicaSet/docs-site-7f6c5d4b8 (Deployment/docs-site)", "age": "16d",
+       "securityContext": {"runAsNonRoot": true, "runAsUser": 1001},
+       "volumeMounts": []},
+      {"name": "docs-site-5c7b9d8f6-wk4pz", "status": "CrashLoopBackOff", "ready": false, "restarts": 11,
+       "image": "registry.internal/marketing/docs-site:4.3.0", "node": "ip-10-0-83-07.ec2.internal",
+       "owner": "ReplicaSet/docs-site-5c7b9d8f6 (Deployment/docs-site)", "age": "38m",
+       "securityContext": {"runAsNonRoot": true, "runAsUser": 1001, "allowPrivilegeEscalation": false,
+         "readOnlyRootFilesystem": true, "capabilities": {"drop": ["ALL"]}},
+       "volumeMounts": [],
+       "last_state": "Terminated (Error), exit code 1"}
+    ]
+  },
+  "logs": {
+    "docs-site-7f6c5d4b8-h2mqr": "2026-05-03T14:02:31Z newrelic ERROR: New Relic for Node.js was unable to start: license key is invalid or expired (HTTP 401 from collector.newrelic.com). The application will continue without APM.\n2026-05-19T09:20:15Z next  GET /docs/getting-started 200 in 38ms\n2026-05-19T09:20:17Z next  GET /docs/api/webhooks 200 in 52ms",
+    "docs-site-7f6c5d4b8-v9xtn": "2026-05-03T14:02:36Z newrelic ERROR: New Relic for Node.js was unable to start: license key is invalid or expired (HTTP 401 from collector.newrelic.com). The application will continue without APM.\n2026-05-19T09:20:16Z next  GET /pricing 200 in 41ms",
+    "docs-site-5c7b9d8f6-wk4pz": "2026-05-19T09:19:52Z newrelic ERROR: New Relic for Node.js was unable to start: license key is invalid or expired (HTTP 401 from collector.newrelic.com). The application will continue without APM.\n2026-05-19T09:19:52Z newrelic ERROR: agent shutdown: unable to connect to collector.newrelic.com, retrying disabled\n2026-05-19T09:19:53Z   ▲ Next.js 14.2.15\n2026-05-19T09:19:53Z   - Local: http://0.0.0.0:3000\n2026-05-19T09:19:53Z  ✓ Starting...\n2026-05-19T09:19:53Z Error: EROFS: read-only file system, mkdir '/app/.next/cache'\n2026-05-19T09:19:53Z     at Object.mkdirSync (node:fs:1372:26)\n2026-05-19T09:19:53Z     at ImageOptimizerCache.init (/app/node_modules/next/dist/server/image-optimizer.js:201:22)\n2026-05-19T09:19:53Z     at NextNodeServer.prepareImpl (/app/node_modules/next/dist/server/next-server.js:283:9) {\n2026-05-19T09:19:53Z   errno: -30,\n2026-05-19T09:19:53Z   code: 'EROFS',\n2026-05-19T09:19:53Z   syscall: 'mkdir',\n2026-05-19T09:19:53Z   path: '/app/.next/cache'\n2026-05-19T09:19:53Z }\n2026-05-19T09:19:53Z newrelic ERROR: failed to send error event: agent not started"
+  }
+}

@@ -1,0 +1,32 @@
+# Multi-hop: after scaling docindex 3->5, docindex-3 never turns Ready, so OrderedReady holds back docindex-4 (list_pods + docs);
+# its logs show why: CLUSTER_SIZE is still 3, so ordinal 3 runs as standby with /ready 503. Resolved: set CLUSTER_SIZE=5.
+id: m6b-statefulset-scale-stuck-ordinal
+category: multi_hop
+ticket:
+  id: T-6002
+  title: docindex scale-up only half happened
+  body: >-
+    We scaled the docindex StatefulSet in the search namespace from 3 to 5 replicas about 50 minutes
+    ago to get ready for Thursday's catalog import. One new pod showed up but it isn't taking traffic,
+    and the fifth one never appeared at all. kubectl get sts docindex still says 3/5 ready. The three
+    original replicas look healthy.
+cluster_fixture: fixtures/m6b-statefulset-scale-stuck-ordinal.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: search}}
+    - {tool: get_pod_logs, args: {pod: docindex-3}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0
+    - concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-1
+    - concepts/workloads/controllers/statefulset#pod-management-policies-0
+  must_cite_any_of:
+    - concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0
+    - concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-1
+    - concepts/workloads/controllers/statefulset#pod-management-policies-0
+  answer_must_mention:
+    - [CLUSTER_SIZE]
+    - [OrderedReady, podManagementPolicy, sequentially, predecessor, predecessors, "Running and Ready", one at a time]
+faults: []

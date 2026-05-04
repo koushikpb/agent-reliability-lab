@@ -1,0 +1,38 @@
+# Misleading logs: loud Kafka rebalance errors are a symptom of the restarts, not the cause. The 2.0 image serves
+# /healthz on 9090 while the liveness probe still hits 8080, so the kubelet kills it every ~30s. Resolved: fix the port.
+id: wl-liveness-wrong-port-kafka-noise
+category: misleading_logs
+ticket:
+  id: T-2006
+  title: orders-consumer restarting nonstop after upgrade
+  body: >-
+    After upgrading orders-consumer to 2.0.1 this morning, both pods in the orders namespace keep
+    restarting and the order backlog keeps growing. Please help, the
+    fulfillment team is blocked.
+cluster_fixture: fixtures/wl-liveness-wrong-port-kafka-noise.json
+expected:
+  final_status: resolved
+  # Either consumer pod's logs show the 9090 listener, so any get_pod_logs call counts.
+  required_tools: [list_pods, get_pod_logs, search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: orders}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/workloads/pods/probes#liveness-probe-0
+    - concepts/workloads/pods/probes#liveness-probe-1
+    - concepts/workloads/pods/pod-lifecycle#liveness-probe-0
+    - concepts/workloads/pods/probes#probe-results-0
+    - concepts/workloads/pods/probes#configure-probes-2
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-http-request-0
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-http-request-1
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#use-a-named-port-0
+    - concepts/workloads/pods/pod-lifecycle#container-restarts-1
+  must_cite_any_of:
+    - concepts/workloads/pods/probes#liveness-probe-0
+    - tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-http-request-1
+    - concepts/workloads/pods/probes#probe-results-0
+  answer_must_mention:
+    - [liveness, livenessProbe]
+    - ["9090"]
+# decoy: Kafka (judged in M10, not by a word check)
+faults: []

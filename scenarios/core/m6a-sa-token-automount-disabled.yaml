@@ -1,0 +1,31 @@
+# Multi-hop: the logs show the in-cluster client can't find the ServiceAccount token file; list_pods shows the new pod spec sets
+# automountServiceAccountToken: false (the old pod doesn't). Resolved: the owner sets it to true in the pod spec, which takes precedence.
+id: m6a-sa-token-automount-disabled
+category: multi_hop
+ticket:
+  id: T-5007
+  title: job-dispatcher rollout stuck, new pod keeps crashing
+  body: >-
+    We moved job-dispatcher in the batch namespace onto version 2 of the platform base Helm chart yesterday.
+    Same image (2.3.1), same ServiceAccount, but the new pod crashes right after startup and the rollout
+    never finishes. The old pod is still running for now. We own the chart values for job-dispatcher.
+cluster_fixture: fixtures/m6a-sa-token-automount-disabled.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: list_pods, args: {namespace: batch}}
+    - {tool: get_pod_logs, args: {pod: job-dispatcher-7b6f9c4d8-zk5np}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - tasks/configure-pod-container/configure-service-account#opt-out-of-api-credential-automounting-0
+    - tasks/configure-pod-container/configure-service-account#opt-out-of-api-credential-automounting-1
+    - concepts/security/service-accounts#assign-to-pod-0
+    - tasks/run-application/access-api-from-pod#directly-accessing-the-rest-api-1
+  must_cite_any_of:
+    - tasks/configure-pod-container/configure-service-account#opt-out-of-api-credential-automounting-0
+    - tasks/configure-pod-container/configure-service-account#opt-out-of-api-credential-automounting-1
+    - concepts/security/service-accounts#assign-to-pod-0
+  answer_must_mention:
+    - [automountServiceAccountToken, automount, automounting, automounted]
+faults: []

@@ -1,0 +1,31 @@
+# Misleading logs: docs-site 4.3 crashes because its new securityContext sets readOnlyRootFilesystem and Next.js must create
+# /app/.next/cache (EROFS in the logs); New Relic license errors are loud but also in healthy 4.2 pods. Resolved: mount an emptyDir there.
+id: m6b-readonly-rootfs-newrelic-noise
+category: misleading_logs
+ticket:
+  id: T-6007
+  title: docs-site 4.3 pods keep crashing
+  body: >-
+    We shipped docs-site 4.3 to the marketing namespace this morning and the new pods crash right
+    after they start, over and over. The rollout is stuck with the 4.2 pods still serving, so the site
+    is up but the new pages aren't. 4.3 was mostly a content release plus the deployment changes from
+    our quarterly platform review.
+cluster_fixture: fixtures/m6b-readonly-rootfs-newrelic-noise.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: get_pod_logs, args: {pod: docs-site-5c7b9d8f6-wk4pz}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - tasks/configure-pod-container/security-context#intro-2
+    - concepts/security/application-security-checklist#security-context-container-0
+    - concepts/storage/volumes#emptydir-0
+    - concepts/storage/volumes#emptydir-1
+  must_cite_any_of:
+    - tasks/configure-pod-container/security-context#intro-2
+    - concepts/storage/volumes#emptydir-0
+  answer_must_mention:
+    - [readOnlyRootFilesystem, read-only root filesystem, read-only root file system, read-only filesystem, read-only file system, EROFS]
+# decoy: New Relic license key errors (also logged by the healthy 4.2 pods)
+faults: []

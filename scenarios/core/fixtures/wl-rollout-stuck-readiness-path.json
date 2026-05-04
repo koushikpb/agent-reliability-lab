@@ -1,0 +1,33 @@
+{
+  "pods": {
+    "accounts": [
+      {"name": "accounts-api-6c9d7f5b8-2hrkd", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/accounts/accounts-api:3.0.4",
+       "readiness_probe": "http-get http://:8080/healthz delay=5s timeout=1s period=10s #success=1 #failure=3",
+       "last_state": null},
+      {"name": "accounts-api-6c9d7f5b8-x8vlm", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/accounts/accounts-api:3.0.4",
+       "readiness_probe": "http-get http://:8080/healthz delay=5s timeout=1s period=10s #success=1 #failure=3",
+       "last_state": null},
+      {"name": "accounts-api-6c9d7f5b8-qt5wp", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/accounts/accounts-api:3.0.4",
+       "readiness_probe": "http-get http://:8080/healthz delay=5s timeout=1s period=10s #success=1 #failure=3",
+       "last_state": null},
+      {"name": "accounts-api-8f4b6d7c9-m7zjn", "status": "Running", "ready": false, "restarts": 0,
+       "image": "registry.internal/accounts/accounts-api:3.1.0",
+       "readiness_probe": "http-get http://:8080/healthz delay=5s timeout=1s period=10s #success=1 #failure=3",
+       "message": "Readiness probe failed: HTTP probe failed with statuscode: 404",
+       "last_state": null},
+      {"name": "accounts-worker-55d8b9c6f-rk2tv", "status": "Running", "ready": true, "restarts": 2,
+       "image": "registry.internal/accounts/accounts-worker:3.0.4",
+       "last_state": "Terminated (Error), exit code 1"}
+    ]
+  },
+  "logs": {
+    "accounts-api-6c9d7f5b8-2hrkd": "2026-05-14T13:58:10Z INFO GET /v1/accounts/88123 200 12ms\n2026-05-14T13:58:11Z INFO GET /healthz 200 0ms ua=kube-probe/1.30",
+    "accounts-api-6c9d7f5b8-x8vlm": "2026-05-14T13:58:12Z INFO GET /v1/accounts/1209 200 9ms\n2026-05-14T13:58:14Z INFO GET /healthz 200 0ms ua=kube-probe/1.30",
+    "accounts-api-6c9d7f5b8-qt5wp": "2026-05-14T13:58:15Z INFO GET /healthz 200 0ms ua=kube-probe/1.30",
+    "accounts-api-8f4b6d7c9-m7zjn": "2026-05-14T13:31:02Z INFO accounts-api 3.1.0 starting\n2026-05-14T13:31:02Z INFO health endpoints moved to the standard split: /livez, /readyz (legacy /healthz removed, see CHANGELOG 3.1.0)\n2026-05-14T13:31:03Z INFO connected to postgres accounts-db.accounts.svc:5432\n2026-05-14T13:31:03Z INFO routes: GET /v1/accounts/{id}, POST /v1/accounts, GET /livez, GET /readyz, GET /metrics\n2026-05-14T13:31:03Z INFO listening on :8080\n2026-05-14T13:31:08Z INFO GET /healthz 404 0ms ua=kube-probe/1.30\n2026-05-14T13:31:18Z INFO GET /healthz 404 0ms ua=kube-probe/1.30\n2026-05-14T13:31:28Z INFO GET /healthz 404 0ms ua=kube-probe/1.30\n2026-05-14T13:57:58Z INFO GET /healthz 404 0ms ua=kube-probe/1.30\n2026-05-14T13:58:08Z INFO GET /healthz 404 0ms ua=kube-probe/1.30",
+    "accounts-worker-55d8b9c6f-rk2tv": "2026-05-14T09:12:40Z ERROR lost connection to rabbitmq accounts-mq:5672, exiting\n2026-05-14T09:12:52Z INFO accounts-worker 3.0.4 started, consuming accounts.events"
+  }
+}

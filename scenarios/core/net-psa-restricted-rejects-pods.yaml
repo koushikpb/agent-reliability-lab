@@ -1,0 +1,41 @@
+# The documents namespace now enforces the restricted Pod Security Standard, so new pdf-exporter pods are rejected at
+# admission (old pods keep running). Resolved: the deploy job's event dump names the violations; fix the pod securityContext.
+id: net-psa-restricted-rejects-pods
+category: easy_lookup
+ticket:
+  id: T-4002
+  title: pdf-exporter 1.5.0 deploy times out in the pipeline
+  body: >-
+    Our deploy-pdf-exporter pipeline job (runs in the ci namespace) times out waiting for pdf-exporter
+    1.5.0 to roll out in the documents namespace. No 1.5.0 pods ever show up; the 1.4.2 pods are still
+    serving. The only thing we changed in the manifest is the image tag.
+cluster_fixture: fixtures/net-psa-restricted-rejects-pods.json
+expected:
+  final_status: resolved
+  required_tools: [search_docs]
+  required_calls:
+    - {tool: get_pod_logs, args: {pod: deploy-pdf-exporter-28591340-wq7mz}}
+  forbidden_tools: [escalate]
+  relevant_chunk_ids:
+    - concepts/security/pod-security-admission#intro-0
+    - concepts/security/pod-security-admission#pod-security-admission-labels-for-namespaces-0
+    - concepts/security/pod-security-admission#pod-security-admission-labels-for-namespaces-1
+    - concepts/security/pod-security-standards#restricted-0
+    - concepts/security/pod-security-standards#restricted-3
+    - concepts/security/pod-security-standards#restricted-4
+    - concepts/security/pod-security-standards#restricted-5
+    - concepts/security/pod-security-standards#restricted-7
+    - concepts/security/pod-security-standards#restricted-8
+    - concepts/security/pod-security-standards#restricted-9
+    - concepts/workloads/pods/advanced-pod-config#container-level-security-context-0
+    - concepts/security/application-security-checklist#security-context-container-0
+    - concepts/security/application-security-checklist#security-context-pod-0
+    - concepts/security/security-checklist#pod-security-2
+  must_cite_any_of:
+    - concepts/security/pod-security-standards#restricted-0
+    - concepts/security/pod-security-admission#pod-security-admission-labels-for-namespaces-0
+    - concepts/workloads/pods/advanced-pod-config#container-level-security-context-0
+  answer_must_mention:
+    - [PodSecurity, Pod Security, restricted]
+    - [securityContext, security context, allowPrivilegeEscalation, seccompProfile, runAsNonRoot]
+faults: []

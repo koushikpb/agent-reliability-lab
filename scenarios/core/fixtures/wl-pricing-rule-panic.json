@@ -1,0 +1,23 @@
+{
+  "pods": {
+    "pricing": [
+      {"name": "pricing-engine-74d9c6b8f-5tnwh", "status": "CrashLoopBackOff", "ready": false, "restarts": 12,
+       "image": "registry.internal/pricing/pricing-engine:4.11.3",
+       "image_age": "deployed 2026-04-27",
+       "resources": {"requests": {"cpu": "500m", "memory": "512Mi"}, "limits": {"cpu": "2", "memory": "1Gi"}},
+       "last_state": "Terminated (Error), exit code 2"},
+      {"name": "pricing-engine-74d9c6b8f-jq7lc", "status": "CrashLoopBackOff", "ready": false, "restarts": 12,
+       "image": "registry.internal/pricing/pricing-engine:4.11.3",
+       "image_age": "deployed 2026-04-27",
+       "resources": {"requests": {"cpu": "500m", "memory": "512Mi"}, "limits": {"cpu": "2", "memory": "1Gi"}},
+       "last_state": "Terminated (Error), exit code 2"},
+      {"name": "pricing-rules-admin-6b8f7d5c9-wd3pk", "status": "Running", "ready": true, "restarts": 0,
+       "image": "registry.internal/pricing/rules-admin:1.6.0", "last_state": null}
+    ]
+  },
+  "logs": {
+    "pricing-engine-74d9c6b8f-5tnwh": "2026-05-22T14:07:31Z INFO pricing-engine 4.11.3 starting\n2026-05-22T14:07:31Z INFO fetched 1,204 active rules from rules-admin (revision 8841)\n2026-05-22T14:07:31Z INFO compiling rule BF-2026-STACKED (tiers=3, stacking=true)\npanic: runtime error: index out of range [3] with length 3\n\ngoroutine 1 [running]:\ngithub.com/acme/pricing/internal/rules.(*TierTable).Lookup(0xc0001a6f00, 0x3)\n\t/src/internal/rules/tiers.go:88 +0x1d4\ngithub.com/acme/pricing/internal/rules.(*Compiler).compileStacked(0xc00012e1e0, 0xc0003b2a80)\n\t/src/internal/rules/compile.go:214 +0x2b6\ngithub.com/acme/pricing/internal/rules.(*Compiler).Compile(0xc00012e1e0, {0xc000420000, 0x4b4, 0x4b4})\n\t/src/internal/rules/compile.go:97 +0x11a\nmain.main()\n\t/src/cmd/pricing-engine/main.go:63 +0x3f8",
+    "pricing-engine-74d9c6b8f-jq7lc": "2026-05-22T14:08:02Z INFO pricing-engine 4.11.3 starting\n2026-05-22T14:08:02Z INFO fetched 1,204 active rules from rules-admin (revision 8841)\n2026-05-22T14:08:02Z INFO compiling rule BF-2026-STACKED (tiers=3, stacking=true)\npanic: runtime error: index out of range [3] with length 3\n\ngoroutine 1 [running]:\ngithub.com/acme/pricing/internal/rules.(*TierTable).Lookup(0xc0001b2000, 0x3)\n\t/src/internal/rules/tiers.go:88 +0x1d4\ngithub.com/acme/pricing/internal/rules.(*Compiler).compileStacked(0xc000130000, 0xc0003c0000)\n\t/src/internal/rules/compile.go:214 +0x2b6\nmain.main()\n\t/src/cmd/pricing-engine/main.go:63 +0x3f8",
+    "pricing-rules-admin-6b8f7d5c9-wd3pk": "2026-05-22T14:04:55Z INFO rule BF-2026-STACKED created by m.okafor (revision 8841)\n2026-05-22T14:04:55Z INFO publishing revision 8841 to subscribers"
+  }
+}
