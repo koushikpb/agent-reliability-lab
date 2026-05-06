@@ -1,0 +1,10 @@
+model: claude-sonnet-4-6
+# No temperature: the API rejects sampling parameters. Effort is the remaining knob.
+effort: medium
+prompt_version: v1
+retriever: hybrid_rerank
+retriever_params:
+  k: 8
+agent:
+  max_steps: 12
+  max_tokens: 16000

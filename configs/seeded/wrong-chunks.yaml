@@ -1,0 +1,13 @@
+# Seeded bug: search returns ranks 9-16 instead of 1-8, an off-by-one-page bug.
+model: claude-haiku-4-5
+# Haiku 4.5 takes neither adaptive thinking nor effort, so this config runs without thinking.
+# Used for fault injection and seeded bugs, which compare the same model with and without one.
+effort: null
+prompt_version: v1
+retriever: hybrid_rerank
+retriever_params:
+  k: 8
+agent:
+  max_steps: 12
+  max_tokens: 16000
+seeded_bug: wrong_chunks

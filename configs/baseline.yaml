@@ -1,4 +1,4 @@
-model: claude-opus-5-5
+model: claude-opus-4-7
 # No temperature: the API rejects sampling parameters. Effort is the remaining knob.
 effort: medium
 prompt_version: v1

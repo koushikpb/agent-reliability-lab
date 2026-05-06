@@ -7,9 +7,12 @@ from typing import Any, Protocol
 
 # USD per million tokens, from the Anthropic pricing page (2026-10). Thinking tokens bill as output.
 PRICES = {
+    "claude-opus-4-7": (5.00, 25.00),
     "claude-opus-5-5": (4.00, 20.00),
     "claude-sonnet-5-5": (2.00, 10.00),
+    "claude-sonnet-4-6": (3.00, 15.00),
     "claude-haiku-5-5": (0.10, 0.50),
+    "claude-haiku-4-5": (1.00, 5.00),
 }
 
 
@@ -36,7 +39,7 @@ def cost_usd(response: ModelResponse) -> float:
 
 
 class AnthropicProvider:
-    def __init__(self, model: str, effort: str, max_tokens: int = 16000) -> None:
+    def __init__(self, model: str, effort: str | None, max_tokens: int = 16000) -> None:
         import anthropic
 
         if model not in PRICES:
@@ -53,15 +56,22 @@ class AnthropicProvider:
         # settings alone. Recorded responses are what make a suite repeatable.
         # No refusal fallbacks: a silent switch to another model would score that model's answer
         # under this config's hash. A refusal is recorded as its own failure class instead.
+        # Thinking is explicit because Opus 4.7 runs without it when the field is omitted, while
+        # newer models default to adaptive; omitting it would make the same config mean different
+        # things on different models.
         # Plain dicts stand in for the SDK's TypedDict params; the API accepts both.
-        response = self.client.messages.create(  # type: ignore[call-overload]
-            model=self.model,
-            max_tokens=self.max_tokens,
-            system=system,
-            messages=messages,
-            tools=tools,
-            output_config={"effort": self.effort},
-        )
+        params: dict[str, Any] = {
+            "model": self.model,
+            "max_tokens": self.max_tokens,
+            "system": system,
+            "messages": messages,
+            "tools": tools,
+        }
+        # No effort means a model without adaptive thinking (Haiku 4.5): neither field is sent.
+        if self.effort is not None:
+            params["thinking"] = {"type": "adaptive"}
+            params["output_config"] = {"effort": self.effort}
+        response = self.client.messages.create(**params)
         return ModelResponse(
             content=[block.to_dict() for block in response.content],
             stop_reason=str(response.stop_reason),

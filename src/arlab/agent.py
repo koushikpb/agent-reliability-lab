@@ -75,6 +75,7 @@ def run_agent(
     ticket_id: str,
     max_steps: int,
     tracer: Tracer | None = None,
+    schemas: list[dict[str, Any]] = TOOLS,
 ) -> AgentResult:
     tracer = tracer or NoOpTracer()
     result = AgentResult()
@@ -83,7 +84,7 @@ def run_agent(
         with tracer.start_as_current_span("model_call") as span:
             # Recorded before the call too, so a call that raises still leaves an event.
             record(span, "model_call", {"model": provider.model})
-            response = provider.complete(system, messages, TOOLS)
+            response = provider.complete(system, messages, schemas)
             record(
                 span,
                 "model_call",
