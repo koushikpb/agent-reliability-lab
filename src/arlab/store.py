@@ -8,8 +8,9 @@ import psycopg
 import yaml
 from psycopg.types.json import Jsonb
 
+from arlab.checks import Expected
 from arlab.config import RunConfig, config_hash, resolved_params
-from arlab.results import ScenarioRow
+from arlab.results import ScenarioRow, row_from_events
 from arlab.tracing import Event
 
 
@@ -65,11 +66,12 @@ def start_run(
     config: RunConfig,
     index_version: str,
     mode: str,
+    source_run_id: str | None = None,
 ) -> str:
     run_id = uuid.uuid4().hex
     conn.execute(
         "INSERT INTO runs (id, batch_id, suite, suite_hash, config_hash, index_version, git_sha,"
-        " mode) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+        " mode, source_run_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             run_id,
             batch_id,
@@ -79,6 +81,7 @@ def start_run(
             index_version,
             git_sha(),
             mode,
+            source_run_id,
         ),
     )
     return run_id
@@ -192,3 +195,45 @@ def write_store_meta(root: Path, index_version: str) -> None:
 def read_store_meta(root: Path) -> str | None:
     path = root / "meta.json"
     return json.loads(path.read_text())["index_version"] if path.exists() else None
+
+
+def rescore_run(
+    conn: psycopg.Connection,
+    source_run_id: str,
+    expected: dict[str, Expected],
+    *,
+    batch_id: str,
+    suite: Path,
+    config: RunConfig,
+) -> tuple[str, list[str]]:
+    """Re-score a finished run's traces under the current expectations, as a new replay run.
+    Returns the new run id and the suite scenarios the source run has no trace for."""
+    source = conn.execute(
+        "SELECT config_hash, index_version FROM runs WHERE id = %s AND status IN ('finished', 'interrupted')",
+        (source_run_id,),
+    ).fetchone()
+    if source is None:
+        raise LookupError(f"no finished run {source_run_id}")
+    if source[0] != config_hash(config):
+        raise ValueError(f"run {source_run_id} used config {source[0]}, not {config_hash(config)}")
+    stored = conn.execute(
+        "SELECT scenario_id, fault FROM scenario_results WHERE run_id = %s", (source_run_id,)
+    ).fetchall()
+    run_id = start_run(
+        conn,
+        batch_id=batch_id,
+        suite=suite.name,
+        suite_hash=suite_hash(suite),
+        config=config,
+        index_version=source[1],
+        mode="replay",
+        source_run_id=source_run_id,
+    )
+    for scenario_id, fault in stored:
+        if scenario_id not in expected:
+            continue
+        events = load_events(conn, source_run_id, scenario_id, fault)
+        row = row_from_events(scenario_id, fault, expected[scenario_id], events)
+        record_scenario(conn, run_id, row, events)
+    finish_run(conn, run_id, "finished")
+    return run_id, sorted(set(expected) - {sid for sid, _ in stored})

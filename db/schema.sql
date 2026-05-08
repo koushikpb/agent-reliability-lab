@@ -68,10 +68,16 @@ CREATE TABLE IF NOT EXISTS runs (
     -- their cost_usd is the recorded cost, not new spend. Filter by mode before summing spend.
     mode          text NOT NULL CHECK (mode IN ('live', 'record', 'replay')),
     -- Without status, a crashed run and a run in progress both look like finished_at IS NULL.
-    status        text NOT NULL DEFAULT 'running' CHECK (status IN ('running', 'finished', 'failed')),
+    -- interrupted: the process was killed between scenarios; its stored rows are complete and count
+    -- in reports, and the missing scenarios are run again as a separate run in the same batch.
+    status        text NOT NULL DEFAULT 'running' CHECK (status IN ('running', 'finished', 'interrupted', 'failed')),
     started_at    timestamptz NOT NULL DEFAULT now(),
     finished_at   timestamptz
 );
+
+-- A replay run made by `arlab rescore` points at the run whose events it re-scored. Old rows are
+-- never updated in place, so every stored score still matches the suite hash of its own run.
+ALTER TABLE runs ADD COLUMN IF NOT EXISTS source_run_id text REFERENCES runs (id);
 
 CREATE TABLE IF NOT EXISTS scenario_results (
     run_id          text NOT NULL REFERENCES runs (id),

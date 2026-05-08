@@ -12,6 +12,7 @@ TABLES = {
     "runs",
     "scenario_results",
     "events",
+    "judgments",
 }
 
 
