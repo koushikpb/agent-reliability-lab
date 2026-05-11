@@ -91,3 +91,68 @@ def test_every_tool_schema_is_strict():
         schema = tool["input_schema"]
         assert tool["strict"] and schema["additionalProperties"] is False
         assert set(schema["required"]) == set(schema["properties"])
+
+
+def faulty(fault):
+    events = []
+    server = create_tool_server(FIXTURE, fake_search, fault, events.append)
+    return ToolClient.in_process(server), server, events
+
+
+def test_timeout_applies_the_write_then_loses_the_response():
+    client, server, events = faulty("timeout")
+    args = {"id": "T-1", "status": "resolved", "note": "done"}
+    assert client.call("update_ticket", args).status == 0
+    assert events == [{"fault": "timeout", "tool": "update_ticket", "applied_status": "resolved"}]
+    # A blind retry writes the note a second time: update_ticket is not idempotent.
+    assert client.call("update_ticket", args).status == 200
+    assert server.state.cluster["tickets"]["T-1"]["notes"] == ["done", "done"]
+
+
+def test_rate_limit_tells_the_model_when_to_retry():
+    client, _, events = faulty("rate_limit")
+    first = client.call("list_pods", {"namespace": "shop"})
+    assert (first.status, first.text) == (429, "error 429: rate limited (retry after 2s)")
+    assert client.call("list_pods", {"namespace": "shop"}).status == 200
+    assert len(events) == 1
+
+
+def test_malformed_body_fires_once():
+    client, _, _ = faulty("malformed")
+    assert client.call("get_pod_logs", {"pod": "web-1"}).text.startswith("error: malformed")
+    assert "configmap" in client.call("get_pod_logs", {"pod": "web-1"}).text
+
+
+def test_stale_snapshot_hides_the_incident_once():
+    client, _, _ = faulty("stale")
+    stale = json.loads(client.call("list_pods", {"namespace": "shop"}).text)
+    assert stale == [{"name": "web-1", "status": "Running", "restarts": 0, "ready": True}]
+    fresh = json.loads(client.call("list_pods", {"namespace": "shop"}).text)
+    assert fresh[0]["status"] == "CrashLoopBackOff"
+
+
+def test_empty_search_is_empty_on_every_call():
+    client, _, events = faulty("empty_search")
+    assert client.call("search_docs", {"query": "a"}).text == "[]"
+    assert client.call("search_docs", {"query": "b"}).text == "[]"
+    assert len(events) == 2
+
+
+def test_fault_leaves_other_tools_alone():
+    client, _, events = faulty("malformed")
+    assert client.call("list_pods", {"namespace": "shop"}).status == 200
+    assert events == []
+
+
+def test_unknown_fault_is_rejected():
+    with pytest.raises(ValueError):
+        create_tool_server(FIXTURE, fake_search, "flood")
+
+
+def test_stale_fault_waits_for_a_real_namespace():
+    client, _, events = faulty("stale")
+    assert client.call("list_pods", {"namespace": "nope"}).status == 404
+    assert (
+        json.loads(client.call("list_pods", {"namespace": "shop"}).text)[0]["status"] == "Running"
+    )
+    assert len(events) == 1

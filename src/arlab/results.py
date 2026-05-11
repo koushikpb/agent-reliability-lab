@@ -93,26 +93,37 @@ def row_from_result(
     )
 
 
-def row_from_events(
-    scenario_id: str, fault: str, expected: Expected, events: list[Event]
-) -> ScenarioRow:
-    """Rebuilds a result row from the trace alone. Must agree with row_from_result; a test checks
-    that, which proves the events hold everything needed to explain a run."""
+def calls_and_answer(events: list[Event]) -> tuple[list[ToolCall], str]:
+    """The tool calls and the final answer text, from the trace alone."""
     calls = [
         ToolCall(e.payload["name"], e.payload["args"], e.payload["result"], e.payload["status"])
         for e in events
         if e.kind == "tool_call"
     ]
     model_calls = [e.payload for e in events if e.kind == "model_call"]
-    final_status = "open"
-    for c in calls:
-        if c.name in STATUS_TOOLS and not c.is_error:
-            final_status = json.loads(c.result)["status"]
     # The final answer is the text of the terminal model call only (see AgentResult.final_text).
     last = model_calls[-1] if model_calls else None
     final_text = ""
     if last and last["stop_reason"] not in ("tool_use", "pause_turn"):
         final_text = "\n".join(b["text"] for b in last["content"] if b["type"] == "text")
+    return calls, final_text
+
+
+def row_from_events(
+    scenario_id: str, fault: str, expected: Expected, events: list[Event]
+) -> ScenarioRow:
+    """Rebuilds a result row from the trace alone. Must agree with row_from_result; a test checks
+    that, which proves the events hold everything needed to explain a run."""
+    calls, final_text = calls_and_answer(events)
+    model_calls = [e.payload for e in events if e.kind == "model_call"]
+    final_status = "open"
+    for e in events:
+        if e.kind == "tool_call" and e.payload["name"] in STATUS_TOOLS:
+            if 0 < e.payload["status"] < 400:  # the same test as ToolCall.is_error
+                final_status = json.loads(e.payload["result"])["status"]
+        # A write applied before an injected timeout changed the ticket though the agent saw an error.
+        elif e.kind == "fault" and e.payload.get("applied_status"):
+            final_status = e.payload["applied_status"]
     [scenario] = [e for e in events if e.kind == "scenario"]
     return _row(
         scenario_id,

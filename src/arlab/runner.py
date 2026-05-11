@@ -9,7 +9,7 @@ import yaml
 
 from arlab.agent import AgentResult, run_agent
 from arlab.checks import Expected
-from arlab.config import RunConfig, system_prompt
+from arlab.config import RunConfig, system_prompt, tool_schemas
 from arlab.llm import Provider, RecordingProvider, RecordingStore, ReplayMiss, ReplayProvider
 from arlab.results import ScenarioRow, row_from_result
 from arlab.retrieval import search
@@ -75,7 +75,11 @@ def run_scenario(
             record(span, "retrieval", {"query": query, "chunk_ids": [h["chunk_id"] for h in hits]})
         return hits
 
-    server = create_tool_server(scenario.cluster, traced_search)
+    def traced_fault(payload: dict[str, Any]) -> None:
+        with tracer.start_as_current_span("fault") as span:
+            record(span, "fault", payload)
+
+    server = create_tool_server(scenario.cluster, traced_search, fault, traced_fault)
     try:
         with tracer.start_as_current_span("scenario") as span:
             record(span, "scenario", {"scenario_id": scenario.id, "ticket_id": scenario.ticket_id})
@@ -86,6 +90,7 @@ def run_scenario(
                 scenario.ticket_id,
                 config.agent.max_steps,
                 tracer,
+                tool_schemas(config),
             )
             record(
                 span,
@@ -109,9 +114,11 @@ def _search_key(index_version: str, retriever: str, k: int, query: str) -> str:
     return "search-" + hashlib.sha256(raw.encode()).hexdigest()
 
 
-def db_search(conn: psycopg.Connection, retriever: str, k: int) -> SearchFn:
+def db_search(conn: psycopg.Connection, retriever: str, k: int, skip: int = 0) -> SearchFn:
+    """`skip` drops the top results; only the wrong_chunks seeded bug sets it."""
+
     def search_docs(query: str) -> list[dict[str, str]]:
-        hits = search(conn, retriever, query, k)
+        hits = search(conn, retriever, query, k + skip)[skip:]
         rows = conn.execute(
             "SELECT id, heading, text FROM chunks WHERE id = ANY(%s)", ([h.chunk_id for h in hits],)
         ).fetchall()
@@ -151,7 +158,7 @@ def replay_search(store: RecordingStore, index_version: str, retriever: str, k: 
 def scenario_io(
     mode: str,
     store_root: Path,
-    scenario_id: str,
+    store_key: str,
     config: RunConfig,
     index_version: str,
     live: Provider | None,
@@ -159,8 +166,8 @@ def scenario_io(
 ) -> tuple[Provider, SearchFn]:
     """Provider and search for one scenario. Each scenario records into its own directory: the
     first request is the same for every scenario with the same ticket id, so a shared store would
-    let one scenario replay another's responses."""
-    store = RecordingStore(store_root / scenario_id)
+    let one scenario replay another's responses. A faulted run is keyed `<scenario>@<fault>`."""
+    store = RecordingStore(store_root / store_key)
     retriever, k = config.retriever, config.retriever_params.k
     if mode == "replay":
         return ReplayProvider(config.model, store), replay_search(
@@ -168,7 +175,7 @@ def scenario_io(
         )
     if live is None or conn is None:
         raise ValueError(f"mode {mode} needs a live provider and a database connection")
-    search_docs = db_search(conn, retriever, k)
+    search_docs = db_search(conn, retriever, k, k if config.seeded_bug == "wrong_chunks" else 0)
     if mode == "live":
         return live, search_docs
     return (

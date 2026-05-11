@@ -148,3 +148,92 @@ def test_escalation_and_step_limit_rebuild_from_events(conn):
     assert stored.redundant_calls == 1
     # Latency in the row is the scenario span; check it against wall time, not against itself.
     assert 0 <= stored.latency_ms < 10_000
+
+
+def test_rescore_writes_a_new_run_and_leaves_the_source(conn):
+    from arlab.checks import Expected
+    from arlab.store import rescore_run
+
+    apply_schema(conn)
+    scenario = {s.id: s for s in load_suite(Path("scenarios/smoke"))}["crashloop-missing-configmap"]
+    outcome = run_scenario(scenario, ScriptedProvider(messy_script()), fake_search, CONFIG)
+    source = start_run(
+        conn,
+        batch_id="b",
+        suite="smoke",
+        suite_hash="s",
+        config=CONFIG,
+        index_version="i",
+        mode="replay",
+    )
+    record_scenario(conn, source, outcome.row, outcome.events)
+    finish_run(conn, source, "finished")
+    stricter = Expected(final_status="resolved", answer_must_mention=["ConfigMap"])
+
+    new, missing = rescore_run(
+        conn,
+        source,
+        {scenario.id: stricter, "never-ran": stricter},
+        batch_id="b-rescored",
+        suite=Path("scenarios/smoke"),
+        config=CONFIG,
+    )
+
+    assert load_row(conn, source, scenario.id, "none").success
+    assert load_row(conn, new, scenario.id, "none").failure_class == "incomplete_answer"
+    assert missing == ["never-ran"]
+    assert conn.execute("SELECT source_run_id FROM runs WHERE id = %s", (new,)).fetchone() == (
+        source,
+    )
+
+
+def test_timed_out_write_rebuilds_from_events(conn):
+    # The agent sees an error, but the ticket was resolved: the stored row reads that from the
+    # server, and the rebuilt row must read it from the fault event.
+    apply_schema(conn)
+    scenario = {s.id: s for s in load_suite(Path("scenarios/smoke"))}["crashloop-missing-configmap"]
+    script = resolve_script(scenario.ticket_id, "payments")
+    outcome = run_scenario(scenario, ScriptedProvider(script), fake_search, CONFIG, "timeout")
+    assert outcome.final_status == "resolved"
+    assert outcome.row.tool_errors == 1
+    assert [e.payload["fault"] for e in outcome.events if e.kind == "fault"] == ["timeout"]
+    run_id = start_run(
+        conn,
+        batch_id="b",
+        suite="smoke",
+        suite_hash="s",
+        config=CONFIG,
+        index_version="i",
+        mode="replay",
+    )
+    record_scenario(conn, run_id, outcome.row, outcome.events)
+    stored = load_row(conn, run_id, scenario.id, "timeout")
+    events = load_events(conn, run_id, scenario.id, "timeout")
+    assert row_from_events(scenario.id, "timeout", scenario.expected, events) == stored
+
+
+def test_batch_loads_interrupted_runs_but_not_failed_ones(conn):
+    from arlab.compare import compare, gate_failures
+    from arlab.report import load_batch
+
+    apply_schema(conn)
+    scenario = {s.id: s for s in load_suite(Path("scenarios/smoke"))}["crashloop-missing-configmap"]
+    for status in ("interrupted", "failed"):
+        outcome = run_scenario(scenario, ScriptedProvider(messy_script()), fake_search, CONFIG)
+        run_id = start_run(
+            conn,
+            batch_id="b",
+            suite="smoke",
+            suite_hash="s",
+            config=CONFIG,
+            index_version="i",
+            mode="replay",
+        )
+        record_scenario(conn, run_id, outcome.row, outcome.events)
+        finish_run(conn, run_id, status)
+
+    rows, hashes = load_batch(conn, "b")
+    assert len(rows) == 1 and hashes == {"s"}
+    # Postgres numeric would come back as Decimal and break the cost arithmetic in the gate.
+    assert isinstance(rows[0].cost_usd, float)
+    gate_failures(compare(rows, rows, {}), max_drop=0.0, max_cost_increase=0.25)
