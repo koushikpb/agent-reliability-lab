@@ -1,0 +1,629 @@
+[
+  {
+    "item": 1,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "net-secret-missing-key",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 2,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "sch-cpu-request-too-big",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 3,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "m6b-cronjob-forbid-hung-sftp",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": false,
+    "notes": "The cited startingDeadlineSeconds section does not substantiate the advice about Job activeDeadlineSeconds."
+  },
+  {
+    "item": 4,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6a-prometheus-disk-full-scrape-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 5,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6a-sa-token-automount-disabled",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "The cited Pod-spec precedence rule makes setting only the ServiceAccount flag non-equivalent when the Pod explicitly disables automount."
+  },
+  {
+    "item": 6,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "wl-liveness-kills-slow-start",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 7,
+    "run_id": "9c1b249915f04f31ad478ac461ec992c",
+    "scenario_id": "m6a-partner-egress-allowlist",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 8,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "net-ingress-snippet-disabled",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 9,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "net-rbac-cluster-admin-request",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 10,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "sch-drain-blocked-pdb",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 11,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "net-secret-missing-key",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "The cited environment-variable section does not state that a missing Secret key prevents container startup."
+  },
+  {
+    "item": 12,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6b-hpa-sidecar-no-cpu-request",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 13,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "wl-liveness-wrong-port-kafka-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 14,
+    "run_id": "9c1b249915f04f31ad478ac461ec992c",
+    "scenario_id": "m6a-prometheus-disk-full-scrape-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 15,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "sch-limitrange-default-oom",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 16,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "wl-rollout-stuck-readiness-path",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 17,
+    "run_id": "9c1b249915f04f31ad478ac461ec992c",
+    "scenario_id": "m6b-vault-agent-init-403",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "The cited Kubernetes JWT information does not establish which claims an external Vault receiver validates."
+  },
+  {
+    "item": 18,
+    "run_id": "8db9b7519d054cf586e9a0cb419e8024",
+    "scenario_id": "m6a-ec2-vcpu-quota-scaleup",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 19,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "sch-csi-vendor-session-limit",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "The cited CSI volume sections do not support the claimed automatic retry and timing of the vendor attachment failure."
+  },
+  {
+    "item": 20,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6a-local-pv-dead-node-delete-request",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 21,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "net-psa-restricted-rejects-pods",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 22,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "net-secret-missing-key",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "The cited examples show secretKeyRef usage, not the missing-key startup failure attributed to them."
+  },
+  {
+    "item": 23,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6b-readonly-rootfs-newrelic-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 24,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "wl-cronjob-deadline-smtp-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 25,
+    "run_id": "b90114e226464d319324361891a3e3aa",
+    "scenario_id": "wl-pricing-rule-panic",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "The cited debugging section does not support deleting pods as a way to bypass CrashLoopBackOff delay."
+  },
+  {
+    "item": 26,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "wl-liveness-kills-slow-start",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 27,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "m6b-vault-agent-init-403",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 28,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6a-ec2-vcpu-quota-scaleup",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 29,
+    "run_id": "22ba62e3a2b64fbfb5d59277e34bc243",
+    "scenario_id": "net-rbac-cluster-admin-request",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 30,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "wl-postgres-wal-corruption",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 31,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "sch-untolerated-gpu-taint",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 32,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "wl-oomkilled-report-renderer",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "The cited memory demo does not substantiate a Job retry-budget stopping condition."
+  },
+  {
+    "item": 33,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "m6a-prometheus-disk-full-scrape-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": false,
+    "notes": "The generic metrics-pipeline diagram does not support the cited Prometheus-specific alert recommendation."
+  },
+  {
+    "item": 34,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "wl-cronjob-deadline-smtp-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 35,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "sch-limitrange-default-oom",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 36,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "sch-limitrange-default-oom",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "The cited documentation says memory limit enforcement is reactive and a container is not necessarily killed immediately upon exceeding it."
+  },
+  {
+    "item": 37,
+    "run_id": "8db9b7519d054cf586e9a0cb419e8024",
+    "scenario_id": "m6a-entra-client-secret-expired",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 38,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6b-vault-agent-init-403",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 39,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "sch-drain-blocked-pdb",
+    "fault": "none",
+    "diagnosis_correct": false,
+    "grounded": true,
+    "notes": "The answer recommends directly editing ZooKeeper epoch files rather than escalating the risky recovery to a human."
+  },
+  {
+    "item": 40,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "sch-pvc-terminating-delete-policy",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 41,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "sch-ephemeral-storage-eviction",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 42,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "sch-ephemeral-storage-eviction",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": false,
+    "notes": "The cited documentation explicitly allows the decimal G suffix, contrary to the answer."
+  },
+  {
+    "item": 43,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "net-targetport-mismatch-otel-noise",
+    "fault": "none",
+    "diagnosis_correct": false,
+    "blames_decoy": true,
+    "notes": "The answer blames OpenTelemetry connectivity instead of the actual targetPort mismatch."
+  },
+  {
+    "item": 44,
+    "run_id": "22ba62e3a2b64fbfb5d59277e34bc243",
+    "scenario_id": "wl-liveness-wrong-port-kafka-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 45,
+    "run_id": "8db9b7519d054cf586e9a0cb419e8024",
+    "scenario_id": "m6b-statefulset-scale-stuck-ordinal",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 46,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "net-dns-short-name-cross-namespace",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 47,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6a-partner-egress-allowlist",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 48,
+    "run_id": "22ba62e3a2b64fbfb5d59277e34bc243",
+    "scenario_id": "net-ingress-snippet-disabled",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 49,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "sch-drain-blocked-pdb",
+    "fault": "none",
+    "diagnosis_correct": false,
+    "grounded": false,
+    "notes": "The answer presents bypassing/removing the PDB as a time-critical fix without the required human risk decision; the drain citation does not establish all bypass semantics claimed."
+  },
+  {
+    "item": 50,
+    "run_id": "22ba62e3a2b64fbfb5d59277e34bc243",
+    "scenario_id": "wl-postgres-wal-corruption",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 51,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "sch-cpu-request-too-big",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 52,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "net-secret-missing-key",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "The cited Secret env-var instructions do not establish the missing-key startup requirement."
+  },
+  {
+    "item": 53,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6b-readonly-rootfs-newrelic-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 54,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "wl-cronjob-deadline-smtp-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 55,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6a-sa-token-automount-disabled",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 56,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6b-statefulset-scale-stuck-ordinal",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 57,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6a-ec2-vcpu-quota-scaleup",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "The cited Kubernetes scheduling advice does not document the AWS quota explanation attributed to it."
+  },
+  {
+    "item": 58,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6a-partner-egress-allowlist",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 59,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "sch-drain-blocked-pdb",
+    "fault": "none",
+    "diagnosis_correct": false,
+    "grounded": false,
+    "notes": "The answer treats recovery as resolved without human escalation. The cited PDB guidance explicitly discusses CrashLoopBackOff pods under AlwaysAllow, contrary to the answer."
+  },
+  {
+    "item": 60,
+    "run_id": "22ba62e3a2b64fbfb5d59277e34bc243",
+    "scenario_id": "wl-backfill-job-rerun",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 61,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "net-service-selector-mismatch",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 62,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "sch-cpu-request-too-big",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 63,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "m6a-prometheus-disk-full-scrape-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": false,
+    "notes": ""
+  },
+  {
+    "item": 64,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "m6a-configmap-subpath-redis-noise",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "blames_decoy": true,
+    "grounded": true,
+    "notes": "Although called separate, Redis timeouts are presented as increasing the number of rejected requests."
+  },
+  {
+    "item": 65,
+    "run_id": "9cd325c8ef12465fb8234db98ef66d0e",
+    "scenario_id": "wl-rollout-stuck-readiness-path",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 66,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "net-dns-short-name-cross-namespace",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": true,
+    "notes": ""
+  },
+  {
+    "item": 67,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "net-ingress-snippet-disabled",
+    "fault": "none",
+    "diagnosis_correct": false,
+    "notes": "The answer recommends an unverified rewrite workaround and closes the ticket instead of handing the controller-security decision to the platform team."
+  },
+  {
+    "item": 68,
+    "run_id": "9c1b249915f04f31ad478ac461ec992c",
+    "scenario_id": "m6a-ec2-vcpu-quota-scaleup",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  },
+  {
+    "item": 69,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "m6b-statefulset-force-delete-lost-node",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "grounded": false,
+    "notes": "Both cited chunks are marked as never retrieved and therefore cannot substantiate the claims."
+  },
+  {
+    "item": 70,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "sch-csi-vendor-session-limit",
+    "fault": "none",
+    "diagnosis_correct": true,
+    "notes": ""
+  }
+]

@@ -1,0 +1,629 @@
+[
+  {
+    "item": 1,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "net-secret-missing-key",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 2,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "sch-cpu-request-too-big",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 3,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "m6b-cronjob-forbid-hung-sftp",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 4,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6a-prometheus-disk-full-scrape-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 5,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6a-sa-token-automount-disabled",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 6,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "wl-liveness-kills-slow-start",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 7,
+    "run_id": "9c1b249915f04f31ad478ac461ec992c",
+    "scenario_id": "m6a-partner-egress-allowlist",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 8,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "net-ingress-snippet-disabled",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 9,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "net-rbac-cluster-admin-request",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 10,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "sch-drain-blocked-pdb",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 11,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "net-secret-missing-key",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 12,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6b-hpa-sidecar-no-cpu-request",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 13,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "wl-liveness-wrong-port-kafka-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 14,
+    "run_id": "9c1b249915f04f31ad478ac461ec992c",
+    "scenario_id": "m6a-prometheus-disk-full-scrape-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 15,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "sch-limitrange-default-oom",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 16,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "wl-rollout-stuck-readiness-path",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 17,
+    "run_id": "9c1b249915f04f31ad478ac461ec992c",
+    "scenario_id": "m6b-vault-agent-init-403",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 18,
+    "run_id": "8db9b7519d054cf586e9a0cb419e8024",
+    "scenario_id": "m6a-ec2-vcpu-quota-scaleup",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 19,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "sch-csi-vendor-session-limit",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 20,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6a-local-pv-dead-node-delete-request",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 21,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "net-psa-restricted-rejects-pods",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 22,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "net-secret-missing-key",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 23,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6b-readonly-rootfs-newrelic-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 24,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "wl-cronjob-deadline-smtp-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 25,
+    "run_id": "b90114e226464d319324361891a3e3aa",
+    "scenario_id": "wl-pricing-rule-panic",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 26,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "wl-liveness-kills-slow-start",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 27,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "m6b-vault-agent-init-403",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 28,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6a-ec2-vcpu-quota-scaleup",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 29,
+    "run_id": "22ba62e3a2b64fbfb5d59277e34bc243",
+    "scenario_id": "net-rbac-cluster-admin-request",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 30,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "wl-postgres-wal-corruption",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 31,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "sch-untolerated-gpu-taint",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 32,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "wl-oomkilled-report-renderer",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 33,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "m6a-prometheus-disk-full-scrape-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 34,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "wl-cronjob-deadline-smtp-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 35,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "sch-limitrange-default-oom",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 36,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "sch-limitrange-default-oom",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 37,
+    "run_id": "8db9b7519d054cf586e9a0cb419e8024",
+    "scenario_id": "m6a-entra-client-secret-expired",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 38,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6b-vault-agent-init-403",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 39,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "sch-drain-blocked-pdb",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 40,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "sch-pvc-terminating-delete-policy",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 41,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "sch-ephemeral-storage-eviction",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 42,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "sch-ephemeral-storage-eviction",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 43,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "net-targetport-mismatch-otel-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "notes": ""
+  },
+  {
+    "item": 44,
+    "run_id": "22ba62e3a2b64fbfb5d59277e34bc243",
+    "scenario_id": "wl-liveness-wrong-port-kafka-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 45,
+    "run_id": "8db9b7519d054cf586e9a0cb419e8024",
+    "scenario_id": "m6b-statefulset-scale-stuck-ordinal",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 46,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "net-dns-short-name-cross-namespace",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 47,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6a-partner-egress-allowlist",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 48,
+    "run_id": "22ba62e3a2b64fbfb5d59277e34bc243",
+    "scenario_id": "net-ingress-snippet-disabled",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 49,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "sch-drain-blocked-pdb",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 50,
+    "run_id": "22ba62e3a2b64fbfb5d59277e34bc243",
+    "scenario_id": "wl-postgres-wal-corruption",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 51,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "sch-cpu-request-too-big",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 52,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "net-secret-missing-key",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 53,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6b-readonly-rootfs-newrelic-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 54,
+    "run_id": "438e5798b01345a0be7c95ea041a3ce0",
+    "scenario_id": "wl-cronjob-deadline-smtp-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 55,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6a-sa-token-automount-disabled",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 56,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6b-statefulset-scale-stuck-ordinal",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 57,
+    "run_id": "2307d1deb7594d10b7f2fb6714540f0c",
+    "scenario_id": "m6a-ec2-vcpu-quota-scaleup",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 58,
+    "run_id": "3a6b5ee5e44442cea3aa248f06f27070",
+    "scenario_id": "m6a-partner-egress-allowlist",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 59,
+    "run_id": "06c595a6c27d41469d1b4018ecfe4ba8",
+    "scenario_id": "sch-drain-blocked-pdb",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 60,
+    "run_id": "22ba62e3a2b64fbfb5d59277e34bc243",
+    "scenario_id": "wl-backfill-job-rerun",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 61,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "net-service-selector-mismatch",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 62,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "sch-cpu-request-too-big",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 63,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "m6a-prometheus-disk-full-scrape-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "notes": ""
+  },
+  {
+    "item": 64,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "m6a-configmap-subpath-redis-noise",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "blames_decoy": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 65,
+    "run_id": "9cd325c8ef12465fb8234db98ef66d0e",
+    "scenario_id": "wl-rollout-stuck-readiness-path",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 66,
+    "run_id": "37c85703e79648d297d97e9396d10d1f",
+    "scenario_id": "net-dns-short-name-cross-namespace",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 67,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "net-ingress-snippet-disabled",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 68,
+    "run_id": "9c1b249915f04f31ad478ac461ec992c",
+    "scenario_id": "m6a-ec2-vcpu-quota-scaleup",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  },
+  {
+    "item": 69,
+    "run_id": "f65e0d8302464e5e8d388f30ad79b717",
+    "scenario_id": "m6b-statefulset-force-delete-lost-node",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "grounded": null,
+    "notes": ""
+  },
+  {
+    "item": 70,
+    "run_id": "6250090d26f14a7eb1e0a795859a621a",
+    "scenario_id": "sch-csi-vendor-session-limit",
+    "fault": "none",
+    "diagnosis_correct": null,
+    "notes": ""
+  }
+]

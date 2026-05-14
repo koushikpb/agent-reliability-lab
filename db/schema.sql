@@ -121,3 +121,20 @@ CREATE TABLE IF NOT EXISTS events (
     duration_ms    integer,
     PRIMARY KEY (run_id, scenario_id, fault, seq)
 );
+
+-- One LLM-judge verdict per scenario result and judge version (model + prompt + schema hash).
+-- The raw response is kept so verdicts can be re-read without paying for them again.
+CREATE TABLE IF NOT EXISTS judgments (
+    run_id            text NOT NULL REFERENCES runs (id),
+    scenario_id       text NOT NULL,
+    fault             text NOT NULL DEFAULT 'none',
+    judge_hash        text NOT NULL,
+    diagnosis_correct boolean NOT NULL,
+    blames_decoy      boolean,
+    grounded          boolean,
+    reason            text NOT NULL,
+    raw               jsonb NOT NULL,
+    cost_usd          numeric(10, 6) NOT NULL,
+    created_at        timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (run_id, scenario_id, fault, judge_hash)
+);
