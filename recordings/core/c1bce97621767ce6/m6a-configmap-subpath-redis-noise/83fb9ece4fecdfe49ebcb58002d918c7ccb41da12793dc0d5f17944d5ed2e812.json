@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the exact issue. The documentation clearly states:\n\n[cite: concepts/storage/volumes#configmap-2]: \"A container using a ConfigMap as a `subPath` volume mount will not receive updates when the ConfigMap changes.\"\n\n[cite: tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0]: \"A container using a ConfigMap as a subPath volume will not receive ConfigMap updates.\"\n\nLooking at the pod specification from earlier, the api-gateway pods are mounting the ConfigMap with `subPath: \"limits.yaml\"`:\n```\n\"subPath\": \"limits.yaml\"\n```\n\nThis is why the limit changes are not being picked up. The gateway application is checking for file changes via the sha256 hash, but because of the subPath limitation, the file content is never updated in the pod.\n\nNow I can resolve the ticket:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01A2iCKTqT8mvKc34hoCx3UA",
+   "input": {
+    "id": "T-5004",
+    "note": "ROOT CAUSE: The api-gateway pods are mounting the gateway-limits ConfigMap using a subPath: \"limits.yaml\". According to Kubernetes documentation, [cite: concepts/storage/volumes#configmap-2] \"A container using a ConfigMap as a subPath volume mount will not receive updates when the ConfigMap changes.\" This prevents the updated rate limits from reaching the gateway pods.\n\nEVIDENCE: \n1. Pod logs show the limits watcher polling every 30 seconds, but the file sha256 hash remains at 9c1e4b07 even after the ConfigMap was updated at 09:10.\n2. Latest log entry at 11:29:30 still shows the original hash with limit_rps=100.\n3. Pod volume mounts confirm subPath usage: volumeMounts[name=limits] has subPath: \"limits.yaml\"\n\nSOLUTION: Remove the subPath from the api-gateway pod's volume mount. Update the deployment to mount the entire ConfigMap directory instead:\n- Change mountPath from \"/etc/gateway/limits.yaml\" to \"/etc/gateway\" \n- Remove the subPath: \"limits.yaml\" from the volumeMount\n- Ensure the gateway reads from \"/etc/gateway/gateway-limits\" (the key name in ConfigMap)\n\nOnce the subPath is removed, ConfigMap updates will propagate to the pods [cite: tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0] \"When a mounted ConfigMap is updated, the projected content is eventually updated too\" with the kubelet sync period (1 minute by default) + TTL cache (1 minute by default).\n\nAfter making this change, the gateway pods will automatically pick up the new 500 rps limit without requiring a restart.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6835,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 693,
+ "stop_reason": "tool_use"
+}

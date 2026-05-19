@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_015ShPiURyn3RYYp9U2YpRq2",
+   "input": {
+    "namespace": "finance"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1807,
+ "model": "claude-opus-4-7",
+ "output_tokens": 67,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-2005 by identifying that the nightly ledger-export cronjob is failing due to a **1-hour active deadline timeout** that's too short for the job workload. The job is processing 9.4 million ledger rows and takes approximately 1 hour 20 minutes to complete, causing it to receive SIGTERM exactly at the `activeDeadlineSeconds: 3600` limit.\n\n**What I did:**\n1. Reviewed the failed pod statuses and found two consecutive \"DeadlineExceeded\" failures\n2. Examined job logs to identify the exact failure mechanism (SIGTERM at 02:00:04Z, exactly 1 hour after start)\n3. Searched Kubernetes documentation to confirm the activeDeadlineSeconds behavior\n4. Provided a clear root cause analysis and recommended increasing the timeout to at least 7200 seconds (2 hours) to accommodate the data volume\n\nThe fix is for the team to update the CronJob's `activeDeadlineSeconds` to allow the full export to complete within the deadline.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5770,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 245,
+ "stop_reason": "end_turn"
+}

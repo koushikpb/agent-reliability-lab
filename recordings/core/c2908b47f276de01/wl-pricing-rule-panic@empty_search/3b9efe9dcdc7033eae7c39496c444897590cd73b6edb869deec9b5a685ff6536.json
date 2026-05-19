@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try a different search:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016vFAcv7vDV7UX7idCBkf2J",
+   "input": {
+    "query": "pod restart behavior crash exit code"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2432,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 66,
+ "stop_reason": "tool_use"
+}

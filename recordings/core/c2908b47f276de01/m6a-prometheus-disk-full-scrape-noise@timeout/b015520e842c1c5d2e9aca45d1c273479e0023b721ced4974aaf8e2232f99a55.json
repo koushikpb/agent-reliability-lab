@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Let me try updating the ticket again:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01H67GjJUJQ24zPY5ntaZfAn",
+   "input": {
+    "id": "T-5005",
+    "note": "Root Cause: Prometheus persistent volume filled up at 03:02:44 causing \"no space left on device\" write failures to the WAL.\n\nEvidence: Prometheus logs show \"Failed to write to WAL\" and \"Append failed\" errors starting at 03:02:44, matching the reported dashboard gaps since ~03:00. The PVC (prometheus-k8s-db-prometheus-k8s-0) is 100Gi.\n\nFix: Expand the PVC by editing it to request more storage (e.g., 200Gi). The storage class gp3-resizable supports volume expansion [cite: concepts/storage/storage-classes#allow-volume-expansion-0], so you can resize by updating the PVC spec. Since Prometheus is in-use with an ext4 filesystem, the expansion will happen automatically without pod restart [cite: concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-2].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6334,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 309,
+ "stop_reason": "tool_use"
+}

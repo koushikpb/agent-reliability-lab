@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-0",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "To update an existing Ingress to add a new Host, you can update it by editing the resource:\n\n```shell\nkubectl describe ingress test\n```\n\n```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     35s                loadbalancer-controller  default/test\n```\n\n```shell\nkubectl edit ingress test\n```\n\nThis pops up an editor with the existing configuration in YAML format.\nModify it to include the new Host:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-2",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\n  bar.baz.com\n               /foo   service2:80 (10.8.0.91:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     45s                loadbalancer-controller  default/test\n```\n\nYou can achieve the same outcome by invoking `kubectl replace -f` on a modified Ingress YAML file."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-1",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "```yaml\nspec:\n  rules:\n  - host: foo.bar.com\n    http:\n      paths:\n      - backend:\n          service:\n            name: service1\n            port:\n              number: 80\n        path: /foo\n        pathType: Prefix\n  - host: bar.baz.com\n    http:\n      paths:\n      - backend:\n          service:\n            name: service2\n            port:\n              number: 80\n        path: /foo\n        pathType: Prefix\n..\n```\n\nAfter you save your changes, kubectl updates the resource in the API server, which tells the\nIngress controller to reconfigure the load balancer.\n\nVerify this:\n\n```shell\nkubectl describe ingress test\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#ingress-rules-0",
+  "heading": "Ingress > The Ingress resource > Ingress rules",
+  "text": "Each HTTP rule contains the following information:\n\n* An optional host. In this example, no host is specified, so the rule applies to all inbound\n  HTTP traffic through the IP address specified. If a host is provided (for example,\n  foo.bar.com), the rules apply to that host.\n* A list of paths (for example, `/testpath`), each of which has an associated\n  backend defined with a `service.name` and a `service.port.name` or\n  `service.port.number`. Both the host and path must match the content of an\n  incoming request before the load balancer directs traffic to the referenced\n  Service.\n* A backend is a combination of Service and port names as described in the\n  [Service doc](/docs/concepts/services-networking/service/) or a [custom resource backend](#resource-backend)\n  by way of a CRD. HTTP (and HTTPS) requests to the\n  Ingress that match the host and path of the rule are sent to the listed backend."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#default-backend-0",
+  "heading": "Ingress > The Ingress resource > DefaultBackend",
+  "text": "An Ingress with no rules sends all traffic to a single default backend and `.spec.defaultBackend`\nis the backend that should handle requests in that case.\nThe `defaultBackend` is conventionally a configuration option of the\n[Ingress controller](/docs/concepts/services-networking/ingress-controllers) and\nis not specified in your Ingress resources.\nIf no `.spec.rules` are specified, `.spec.defaultBackend` must be specified.\nIf `defaultBackend` is not set, the handling of requests that do not match any of the rules will be up to the\ningress controller (consult the documentation for your ingress controller to find out how it handles this case).\n\nIf none of the hosts or paths match the HTTP request in the Ingress objects, the traffic is\nrouted to your default backend."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#ingress-rules-1",
+  "heading": "Ingress > The Ingress resource > Ingress rules",
+  "text": "A `defaultBackend` is often configured in an Ingress controller to service any requests that do not\nmatch a path in the spec."
+ },
+ {
+  "chunk_id": "concepts/services-networking/network-policies#networkpolicy-resource-3",
+  "heading": "Network Policies > The NetworkPolicy resource",
+  "text": "**ingress**: Each NetworkPolicy may include a list of allowed `ingress` rules. Each rule allows\ntraffic which matches both the `from` and `ports` sections. The example policy contains a single\nrule, which matches traffic on a single port, from one of three sources, the first specified via\nan `ipBlock`, the second via a `namespaceSelector` and the third via a `podSelector`.\n\n**egress**: Each NetworkPolicy may include a list of allowed `egress` rules. Each rule allows\ntraffic which matches both the `to` and `ports` sections. The example policy contains a single\nrule, which matches traffic on a single port to any destination in `10.0.0.0/24`.\n\nSo, the example NetworkPolicy:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-2",
+  "heading": "Ingress > The Ingress resource",
+  "text": "The [Ingress spec](/docs/reference/kubernetes-api/service-resources/ingress-v1/#IngressSpec)\nhas all the information needed to configure a load balancer or proxy server. Most importantly, it\ncontains a list of rules matched against all incoming requests. Ingress resource only supports rules\nfor directing HTTP(S) traffic.\n\nIf the `ingressClassName` is omitted, a [default Ingress class](#default-ingress-class)\nshould be defined.\n\nSome ingress controllers work even without the definition of a\ndefault IngressClass. Even if you use an ingress controller that is able\nto operate without any IngressClass, the Kubernetes project still recommends\nthat you define a default IngressClass."
+ }
+]

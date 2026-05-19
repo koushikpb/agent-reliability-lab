@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#built-in-node-labels-0",
+  "heading": "Assigning Pods to Nodes > Node labels",
+  "text": "Like many other Kubernetes objects, nodes have\n[labels](/docs/concepts/overview/working-with-objects/labels/). You can\n[attach labels manually](/docs/tasks/configure-pod-container/assign-pods-nodes/#add-a-label-to-a-node).\nKubernetes also populates a [standard set of labels](/docs/reference/node/node-labels/)\non all nodes in a cluster.\n\nThe value of these labels is cloud provider specific and is not guaranteed to be reliable.\nFor example, the value of `kubernetes.io/hostname` may be the same as the node name in some environments\nand a different value in other environments."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#defining-controller-selectors-and-podtemplate-labels-0",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > Defining controller selectors and PodTemplate labels",
+  "text": "Updating selectors on controllers is strongly discouraged.\n\nThe recommended approach is to define a single, immutable PodTemplate label\nused only by the controller selector with no other semantic meaning.\n\n**Example:**\n\n```yaml\nselector:\n  matchLabels:\n      controller-selector: \"apps/v1/deployment/nginx\"\ntemplate:\n  metadata:\n    labels:\n      controller-selector: \"apps/v1/deployment/nginx\"\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/imperative-config#defining-controller-selectors-and-podtemplate-labels-0",
+  "heading": "Imperative Management of Kubernetes Objects Using Configuration Files > Defining controller selectors and PodTemplate labels",
+  "text": "Updating selectors on controllers is strongly discouraged.\n\nThe recommended approach is to define a single, immutable PodTemplate label\nused only by the controller selector with no other semantic meaning.\n\nExample label:\n\n```yaml\nselector:\n  matchLabels:\n      controller-selector: \"apps/v1/deployment/nginx\"\ntemplate:\n  metadata:\n    labels:\n      controller-selector: \"apps/v1/deployment/nginx\"\n```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/web-ui-dashboard#specifying-application-details-3",
+  "heading": "Deploy and Access the Kubernetes Dashboard > Deploying containerized applications > Specifying application details",
+  "text": "- **Labels**: Default [labels](/docs/concepts/overview/working-with-objects/labels/) to be used\n  for your application are application name and version.\n  You can specify additional labels to be applied to the Deployment, Service (if any), and Pods,\n  such as release, environment, tier, partition, and release track.\n\n  Example:\n\n  ```conf\n  release=1.0\n  tier=frontend\n  environment=pod\n  track=stable\n  ```\n\n- **Namespace**: Kubernetes supports multiple virtual clusters backed by the same physical cluster.\n  These virtual clusters are called [namespaces](/docs/tasks/administer-cluster/namespaces/).\n  They let you partition resources into logically named groups."
+ },
+ {
+  "chunk_id": "concepts/services-networking/network-policies#targeting-a-namespace-by-its-name-0",
+  "heading": "Network Policies > Targeting a Namespace by its name",
+  "text": "The Kubernetes control plane sets an immutable label `kubernetes.io/metadata.name` on all\nnamespaces, the value of the label is the namespace name.\n\nWhile NetworkPolicy cannot target a namespace by its name with some object field, you can use the\nstandardized label to target a specific namespace."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#pod-name-label-0",
+  "heading": "StatefulSets > Pod Identity > Pod Name Label",
+  "text": "When the StatefulSet controller creates a Pod,\nit adds a label, `statefulset.kubernetes.io/pod-name`, that is set to the name of\nthe Pod. This label allows you to attach a Service to a specific Pod in\nthe StatefulSet."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#writing-a-deployment-spec-0",
+  "heading": "Deployments > Writing a Deployment Spec",
+  "text": "As with all other Kubernetes configs, a Deployment needs `.apiVersion`, `.kind`, and `.metadata` fields.\nFor general information about working with config files, see\n[deploying applications](/docs/tasks/run-application/run-stateless-application-deployment/),\nconfiguring containers, and [using kubectl to manage resources](/docs/concepts/overview/working-with-objects/object-management/) documents.\n\nWhen the control plane creates new Pods for a Deployment, the `.metadata.name` of the\nDeployment is part of the basis for naming those Pods. The name of a Deployment must be a valid\n[DNS subdomain](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)\nvalue, but this can produce unexpected results for the Pod hostnames. For best compatibility,\nthe name should follow the more restrictive rules for a\n[DNS label](/docs/concepts/overview/working-with-objects/names#dns-label-names)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/network-policies#targeting-multiple-namespaces-by-label-0",
+  "heading": "Network Policies > Targeting multiple namespaces by label",
+  "text": "In this scenario, your `Egress` NetworkPolicy targets more than one namespace using their\nlabel names. For this to work, you need to label the target namespaces. For example:\n\n```shell\nkubectl label namespace frontend namespace=frontend\nkubectl label namespace backend namespace=backend\n```\n\nAdd the labels under `namespaceSelector` in your NetworkPolicy document. For example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: egress-namespaces\nspec:\n  podSelector:\n    matchLabels:\n      app: myapp\n  policyTypes:\n  - Egress\n  egress:\n  - to:\n    - namespaceSelector:\n        matchExpressions:\n        - key: namespace\n          operator: In\n          values: [\"frontend\", \"backend\"]\n```"
+ }
+]

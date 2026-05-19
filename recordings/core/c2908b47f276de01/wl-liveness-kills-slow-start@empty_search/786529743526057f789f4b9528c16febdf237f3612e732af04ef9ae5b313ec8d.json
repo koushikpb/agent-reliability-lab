@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I can see the issue - the pod is receiving SIGTERM while still loading the index shards into memory. The readiness probe is configured with a 0s delay (it starts immediately), but the pod takes about 9-15+ seconds to load the shards and start the HTTP listener. Since the readiness probe fails before the application is ready, Kubernetes terminates the pod, and the cycle repeats.\n\nLet me search the documentation to confirm the expected behavior for readiness probes:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DVgENdhx2EkzbWScvP8TN5",
+   "input": {
+    "query": "readiness probe delay initialDelaySeconds"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2353,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 165,
+ "stop_reason": "tool_use"
+}

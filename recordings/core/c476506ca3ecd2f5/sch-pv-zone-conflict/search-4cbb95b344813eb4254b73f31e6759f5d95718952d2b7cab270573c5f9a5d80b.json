@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/storage-classes#volume-binding-mode-1",
+  "heading": "Storage Classes > Volume binding mode",
+  "text": "A cluster administrator can address this issue by specifying the `WaitForFirstConsumer` mode which\nwill delay the binding and provisioning of a PersistentVolume until a Pod using the PersistentVolumeClaim is created.\nPersistentVolumes will be selected or provisioned conforming to the topology that is\nspecified by the Pod's scheduling constraints. These include, but are not limited to, [resource\nrequirements](/docs/concepts/configuration/manage-resources-containers/),\n[node selectors](/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector),\n[pod affinity and\nanti-affinity](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity),\nand [taints and tolerations](/docs/concepts/scheduling-eviction/taint-and-toleration).\n\nThe following plugins support `WaitForFirstConsumer` with dynamic provisioning:\n\n- CSI volumes, provided that the specific CSI driver supports this"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#node-affinity-1",
+  "heading": "Persistent Volumes > Persistent Volumes > Node Affinity",
+  "text": "If the `MutablePVNodeAffinity` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) is enabled in your cluster,\nthe `.spec.nodeAffinity` field of a PersistentVolume is mutable.\nThis allows cluster administrators or external storage controller to update the node affinity of a PersistentVolume when the data is migrated,\nwithout interrupting the running pods.\n\nWhen updating the node affinity, you should ensure that the new node affinity still matches the nodes where the volume is currently in use.\nFor the pods violating the new affinity, if the pod is already running, it may continue to run. But Kubernetes does not support this configuration.\nYou should terminate the violating pods soon.\nDue to in memory caching, the pods created after the update may still be scheduled according to the old node affinity for a short period of time.\n\nTo use this feature, you should enable the `MutablePVNodeAffinity` feature gate on the following components:\n\n- `kube-apiserver`\n- `kubelet`"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#node-affinity-0",
+  "heading": "Assigning Pods to Nodes > Affinity and anti-affinity > Node affinity",
+  "text": "Node affinity is conceptually similar to `nodeSelector`, allowing you to constrain which nodes your\nPod can be scheduled on based on node labels. There are two types of node\naffinity:\n\n- `requiredDuringSchedulingIgnoredDuringExecution`: The scheduler can't\n  schedule the Pod unless the rule is met. This functions like `nodeSelector`,\n  but with a more expressive syntax.\n- `preferredDuringSchedulingIgnoredDuringExecution`: The scheduler tries to\n  find a node that meets the rule. If a matching node is not available, the\n  scheduler still schedules the Pod.\n\nIn the preceding types, `IgnoredDuringExecution` means that if the node labels\nchange after Kubernetes schedules the Pod, the Pod continues to run.\n\nYou can specify node affinities using the `.spec.affinity.nodeAffinity` field in\nyour Pod spec.\n\nFor example, consider the following Pod spec:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#inter-pod-affinity-and-anti-affinity-7",
+  "heading": "Assigning Pods to Nodes > Affinity and anti-affinity > Inter-pod affinity and anti-affinity",
+  "text": "The affinity rule specifies that the scheduler is allowed to place the example Pod\non a node only if that node belongs to a specific [zone](/docs/concepts/scheduling-eviction/topology-spread-constraints/)\nwhere other Pods have been labeled with `security=S1`.\nFor instance, if we have a cluster with a designated zone, let's call it \"Zone V,\"\nconsisting of nodes labeled with `topology.kubernetes.io/zone=V`, the scheduler can\nassign the Pod to any node within Zone V, as long as there is at least one Pod within\nZone V already labeled with `security=S1`. Conversely, if there are no Pods with `security=S1`\nlabels in Zone V, the scheduler will not assign the example Pod to any node in that zone."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#node-affinity-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Node Affinity",
+  "text": "For most volume types, you do not need to set this field.\nYou need to explicitly set this for [local](/docs/concepts/storage/volumes/#local) volumes.\n\nA PV can specify node affinity to define constraints that limit what nodes this\nvolume can be accessed from. Pods that use a PV will only be scheduled to nodes\nthat are selected by the node affinity. To specify node affinity, set\n`nodeAffinity` in the `.spec` of a PV. The\n[PersistentVolume](/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1/#PersistentVolumeSpec)\nAPI reference has more details on this field.\n\n#### Updates to node affinity"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#inter-pod-affinity-and-anti-affinity-2",
+  "heading": "Assigning Pods to Nodes > Affinity and anti-affinity > Inter-pod affinity and anti-affinity",
+  "text": "For example, you could use\n`requiredDuringSchedulingIgnoredDuringExecution` affinity to tell the scheduler to\nco-locate Pods of two services in the same cloud provider zone because they\ncommunicate with each other a lot. Similarly, you could use\n`preferredDuringSchedulingIgnoredDuringExecution` anti-affinity to spread Pods\nfrom a service across multiple cloud provider zones.\n\nTo use inter-pod affinity, use the `affinity.podAffinity` field in the Pod spec.\nFor inter-pod anti-affinity, use the `affinity.podAntiAffinity` field in the Pod\nspec.\n\n#### Scheduling Behavior\n\nWhen scheduling a new Pod, the Kubernetes scheduler evaluates the Pod's affinity/anti-affinity rules in the context of the current cluster state:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reserving-a-persistentvolume-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reserving a PersistentVolume",
+  "text": "The control plane can [bind PersistentVolumeClaims to matching PersistentVolumes](#binding)\nin the cluster. However, if you want a PVC to bind to a specific PV, you need to pre-bind them.\n\nBy specifying a PersistentVolume in a PersistentVolumeClaim, you declare a binding\nbetween that specific PV and PVC. If the PersistentVolume exists and has not reserved\nPersistentVolumeClaims through its `claimRef` field, then the PersistentVolume and\nPersistentVolumeClaim will be bound.\n\nThe binding happens regardless of some volume matching criteria, including node affinity.\nThe control plane still checks that [storage class](/docs/concepts/storage/storage-classes/),\naccess modes, and requested storage size are valid.\n\n```yaml\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: foo-pvc\n  namespace: foo\nspec:\n  storageClassName: \"\" # Empty string must be explicitly set otherwise default StorageClass will be set\n  volumeName: foo-pv\n  ...\n```"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#inter-pod-affinity-and-anti-affinity-4",
+  "heading": "Assigning Pods to Nodes > Affinity and anti-affinity > Inter-pod affinity and anti-affinity",
+  "text": "3. Ignored Fields:\n   - Existing Pods' `podAffinity.preferredDuringSchedulingIgnoredDuringExecution`:\n     - These preferred affinity rules are not considered during the scheduling decision for new Pods.\n   - Existing Pods' `podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution`:\n     - Similarly, preferred anti-affinity rules of existing Pods are ignored during scheduling.\n\n#### Scheduling a Group of Pods with Inter-pod Affinity to Themselves\n\nIf the current Pod being scheduled is the first in a series that have affinity to themselves,\nit is allowed to be scheduled if it passes all other affinity checks. This is determined by\nverifying that no other Pod in the cluster matches the namespace and selector of this Pod,\nthat the Pod matches its own terms, and the chosen node matches all requested topologies.\nThis ensures that there will not be a deadlock even if all the Pods have inter-pod affinity\nspecified.\n\n#### Pod Affinity Example {#an-example-of-a-pod-that-uses-pod-affinity}\n\nConsider the following Pod spec:"
+ }
+]

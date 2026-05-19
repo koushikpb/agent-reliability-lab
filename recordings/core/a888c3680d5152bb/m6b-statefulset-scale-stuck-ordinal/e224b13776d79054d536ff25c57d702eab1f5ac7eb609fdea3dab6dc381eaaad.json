@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try the correct format:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01XDQwmNgFk9BeJaa2Tcp57u",
+   "input": {
+    "pod_name": "docindex-3"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2126,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 68,
+ "stop_reason": "tool_use"
+}

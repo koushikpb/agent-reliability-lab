@@ -1,0 +1,45 @@
+{
+ "content": [
+  {
+   "text": "Let me search the Kubernetes documentation for information about Kafka consumer lag and performance issues:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01QpKt84hQuG2hrq78xSscAx",
+   "input": {
+    "query": "Kafka consumer lag performance backlog"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KaPG46RtpsNrN4mTFxgoRq",
+   "input": {
+    "query": "Kafka producer throughput CPU memory limits"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01TwV9Syv39r3r3wxiZitBn6",
+   "input": {
+    "query": "Kubernetes resource limits throttling memory"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2785,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 163,
+ "stop_reason": "tool_use"
+}

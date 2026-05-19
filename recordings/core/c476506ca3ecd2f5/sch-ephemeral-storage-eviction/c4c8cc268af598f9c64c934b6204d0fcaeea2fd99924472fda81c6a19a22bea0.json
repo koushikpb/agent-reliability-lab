@@ -1,0 +1,39 @@
+{
+ "content": [
+  {
+   "signature": "EuICCqgBCBMYAipAVn2o23ZPXCqs0gEDEX8BK6pnZ/6YY4wwnZ6tZXSrat1TgoRZp97+QE+h0c8YFV8EfLlb+tlxCDAt7iBg5IPR6DIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAcqC8tYGEgxmtlQ3YFS8qr6O5ngaDDaOrmS/rmUzbOGwaSIwnmP1F6eFjfdq9LcSsepIBbQIemPSSQqAkVDsATFjAPXu9SRVeHT8P/be+cxh4ntdKmcsdwqbEtQ+yzOsVYVmLJj1HTeaWj6s77ePgfAQrKsm1Yozzlo4EImKTEzJj2hMoPm9jHLqC3VEUWJVcl/7ljpdnei8tcsOGssbHZPr7URU6MJY2NCmzKXpm8MM7Xn6ip1faABBERRMGAE=",
+   "thinking": "Let me look at the pods in the reporting namespace and search the docs simultaneously.",
+   "type": "thinking"
+  },
+  {
+   "text": "Let me now look at the pods in the `reporting` namespace and search the docs in parallel!",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01HbczkYmyDNf6vRUrEJ3Ja2",
+   "input": {
+    "namespace": "reporting"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0178b1iujvsMSkNmhQTW8AEd",
+   "input": {
+    "query": "pod restarting dying partway through job crash"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1355,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 150,
+ "stop_reason": "tool_use"
+}

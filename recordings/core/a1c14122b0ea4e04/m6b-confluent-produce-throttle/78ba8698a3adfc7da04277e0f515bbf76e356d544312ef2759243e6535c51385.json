@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:** Read T-6005, inspected the `ingest` namespace (8 healthy pods, low CPU) and sampled producer logs. The logs showed broker-side THROTTLE warnings and a 96%-full producer queue (quota cap on the API key), and the consumer group assigned only partitions 0\u20133 across 8 members \u2014 meaning the topic has 4 partitions, so the 4\u21928 replica scale-up left 4 pods idle. Resolved the ticket with instructions to scale back to 4 replicas and open a request to the data platform team to raise the producer quota and increase partitions on `clickstream-raw`. (No Kubernetes-doc citations were needed; the evidence and fix are entirely Kafka/client-side and come from the pod logs.)",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 12283,
+ "model": "claude-opus-4-7",
+ "output_tokens": 255,
+ "stop_reason": "end_turn"
+}

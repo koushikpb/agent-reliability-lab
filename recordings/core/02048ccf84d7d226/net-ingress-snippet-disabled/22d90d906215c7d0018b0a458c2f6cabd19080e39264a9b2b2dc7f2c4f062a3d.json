@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary of what I did:**\n\n1. **Read the ticket** \u2014 `legacy-portal` redirects returning 404 after a weekend ingress-nginx upgrade.\n2. **Listed pods** \u2014 Both `legacy-portal` pods (namespace `legacy`) are healthy (Running, Ready, 0 restarts). The controller (namespace `ingress-nginx`) is running v1.12.1.\n3. **Read the controller logs** \u2014 Found two definitive log lines: an `ERROR` that the `configuration-snippet` annotation on `legacy/legacy-portal` is \"risky,\" and a `WARNING` that it is being **skipped entirely** because `allow-snippet-annotations=false`. The access log confirms the resulting 404 for `/old/...` requests.\n4. **Identified the cause** \u2014 ingress-nginx v1.12.1 defaults `allow-snippet-annotations` to `false` (a security hardening change), which silently drops the `nginx.ingress.kubernetes.io/configuration-snippet` annotation the Ingress was relying on for regex-based redirects.\n5. **Resolved the ticket** with the evidence and two fix options: (A) migrate to the built-in `use-regex` + `rewrite-target` annotations (preferred, no security downside), or (B) re-enable snippets in the controller ConfigMap (security trade-off that should be a conscious platform-team decision).",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 12203,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 325,
+ "stop_reason": "end_turn"
+}

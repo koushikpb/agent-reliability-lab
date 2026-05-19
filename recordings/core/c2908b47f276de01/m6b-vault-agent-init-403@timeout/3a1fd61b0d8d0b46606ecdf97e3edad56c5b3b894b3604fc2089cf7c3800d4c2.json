@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "text": "Let me try the escalation again:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01HQEdC87Gptyuix6YE97p2h",
+   "input": {
+    "id": "T-6006",
+    "reason": "Vault authentication 403 error requires security team access to Vault configuration that platform team cannot modify."
+   },
+   "name": "escalate",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7727,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 100,
+ "stop_reason": "tool_use"
+}

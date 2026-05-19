@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the pods in the ci namespace to see the deployment job and understand the issue better.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01JT7YeeMo4KdJS69M79kLiY",
+   "input": {
+    "namespace": "ci"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1324,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 75,
+ "stop_reason": "tool_use"
+}

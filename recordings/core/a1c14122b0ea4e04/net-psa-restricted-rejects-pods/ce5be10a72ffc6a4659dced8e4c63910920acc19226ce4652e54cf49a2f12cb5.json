@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01EK4N3xE1KB8opvmdVKSYgz",
+   "input": {
+    "pod": "deploy-pdf-exporter-28591340-wq7mz"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2486,
+ "model": "claude-opus-4-7",
+ "output_tokens": 88,
+ "stop_reason": "tool_use"
+}

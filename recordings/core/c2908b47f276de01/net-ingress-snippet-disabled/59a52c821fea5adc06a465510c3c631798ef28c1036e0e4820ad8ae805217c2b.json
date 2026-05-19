@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Based on my investigation, I have identified the root cause and can now provide a resolution. The issue is clear from the ingress controller logs.\n\n**Summary of findings:**\n\n1. **Root Cause**: The ingress-nginx controller has been upgraded to v1.12.1 with snippet annotations disabled (`allow-snippet-annotations=false`). The controller logs show a warning: \"skipping annotation nginx.ingress.kubernetes.io/configuration-snippet on ingress legacy/legacy-portal: Snippet directives are disabled by the Ingress administrator\"\n\n2. **Impact**: The legacy-portal Ingress was using the `nginx.ingress.kubernetes.io/configuration-snippet` annotation with regex capture groups to implement the URL redirects from `/old/...` to `/portal/...`. When snippet directives were disabled in the upgrade, these redirects stopped working, resulting in 404 errors.\n\n3. **Solution**: Since the configuration-snippet annotation is now disabled and regex capture groups cannot be expressed with standard redirect annotations, the ticket owner needs to work with the platform team to either:\n   - Re-enable snippet annotations in the ingress-nginx controller configuration (if security policy allows)\n   - Refactor the Ingress to use alternative methods supported by the new controller version\n   - Or roll back to the previous ingress-nginx version\n\nLet me update the ticket:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0143gvtweeGw5kBYXbujTFVT",
+   "input": {
+    "id": "T-4008",
+    "note": "Root Cause: The ingress-nginx controller upgrade to v1.12.1 disabled snippet annotations with the configuration parameter `allow-snippet-annotations=false`. The controller logs show the warning: \"skipping annotation nginx.ingress.kubernetes.io/configuration-snippet on ingress legacy/legacy-portal: Snippet directives are disabled by the Ingress administrator.\"\n\nEvidence: Controller logs from ingress-nginx-controller-5c8f9d7b6-qh4tn show the Ingress was found but the configuration-snippet annotation was skipped due to disabled snippets. The legacy-portal pods are running normally (2 replicas, ready), so the issue is purely in the ingress routing layer.\n\nFix: The legacy-portal Ingress uses nginx.ingress.kubernetes.io/configuration-snippet with regex capture groups to perform the /old/* to /portal/* redirects. Since snippet directives are now disabled for security reasons in the upgraded controller, you have two options:\n\n1. Work with the platform team to re-enable snippet annotations in the ingress-nginx controller configuration if your security policy allows it.\n2. Refactor the Ingress resource to use alternative redirect methods supported by ingress-nginx v1.12.1 that don't require regex captures (though this may require application-level changes if the standard annotations cannot fully express your redirect logic).\n\nRecommend coordinating with the platform team on which approach aligns with your security and operational requirements.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 11301,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 710,
+ "stop_reason": "tool_use"
+}

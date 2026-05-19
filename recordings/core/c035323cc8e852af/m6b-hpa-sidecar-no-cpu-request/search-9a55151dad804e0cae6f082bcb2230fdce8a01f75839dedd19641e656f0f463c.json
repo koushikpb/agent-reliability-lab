@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#autoscaling-on-multiple-metrics-and-custom-metrics-2",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Autoscaling on multiple metrics and custom metrics",
+  "text": "Notice that the `targetCPUUtilizationPercentage` field has been replaced with an array called `metrics`.\nThe CPU utilization metric is a *resource metric*, since it is represented as a percentage of a resource\nspecified on pod containers.  Notice that you can specify other resource metrics besides CPU.  By default,\nthe only other supported resource metric is `memory`.  These resources do not change names from cluster\nto cluster, and should always be available, as long as the `metrics.k8s.io` API is available.\n\nYou can also specify resource metrics in terms of direct values, instead of as percentages of the\nrequested value, by using a `target.type` of `AverageValue` instead of `Utilization`, and\nsetting the corresponding `target.averageValue` field instead of the `target.averageUtilization`.\n\n```\n  metrics:\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: AverageValue\n        averageValue: 500Mi\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/vertical-pod-autoscale#how-does-a-verticalpodautoscaler-work-3",
+  "heading": "Vertical Pod Autoscaling > How does a VerticalPodAutoscaler work?",
+  "text": "The VerticalPodAutoscaler requires a metrics source, such as Kubernetes' Metrics Server add-on,\nto be installed in the cluster.\nThe VPA components fetch metrics from the `metrics.k8s.io` API. The Metrics Server needs to be launched separately as it is not deployed by default in most clusters. For more information about resource metrics, see [Metrics Server](/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/#metrics-server)."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-metrics-apis-0",
+  "heading": "Horizontal Pod Autoscaling > Support for metrics APIs",
+  "text": "By default, the HorizontalPodAutoscaler controller retrieves metrics from a series of APIs.\nIn order for it to access these APIs, cluster administrators must ensure that:\n\n- The [API aggregation layer](/docs/tasks/extend-kubernetes/configure-aggregation-layer/) is enabled.\n\n- The corresponding APIs are registered:\n\n  - For resource metrics, this is the `metrics.k8s.io` [API](/docs/reference/external-api/metrics.v1beta1/),\n    generally provided by [metrics-server](https://github.com/kubernetes-sigs/metrics-server).\n    It can be launched as a cluster add-on.\n\n    The HorizontalPodAutoscaler currently supports the `metrics.k8s.io/v1beta1`\n    API for resource metrics. It does not support `metrics.k8s.io/v1` yet."
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#autoscaling-on-multiple-metrics-and-custom-metrics-4",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Autoscaling on multiple metrics and custom metrics",
+  "text": "The second alternative metric type is *object metrics*. These metrics describe a different\nobject in the same namespace, instead of describing Pods. The metrics are not necessarily\nfetched from the object; they only describe it. Object metrics support `target` types of\nboth `Value` and `AverageValue`.  With `Value`, the target is compared directly to the returned\nmetric from the API. With `AverageValue`, the value returned from the custom metrics API is divided\nby the number of Pods before being compared to the target. The following example is the YAML\nrepresentation of the `requests-per-second` metric.\n\n```yaml\ntype: Object\nobject:\n  metric:\n    name: requests-per-second\n  describedObject:\n    apiVersion: networking.k8s.io/v1\n    kind: Ingress\n    name: main-route\n  target:\n    type: Value\n    value: 2k\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#autoscaling-on-more-specific-metrics-0",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Autoscaling on multiple metrics and custom metrics > Autoscaling on more specific metrics",
+  "text": "Many metrics pipelines allow you to describe metrics either by name or by a set of additional\ndescriptors called _labels_. For all non-resource metric types (pod, object, and external,\ndescribed below), you can specify an additional label selector which is passed to your metric\npipeline. For instance, if you collect a metric `http_requests` with the `verb`\nlabel, you can specify the following metric block to scale only on GET requests:\n\n```yaml\ntype: Object\nobject:\n  metric:\n    name: http_requests\n    selector: {matchLabels: {verb: GET}}\n```\n\nThis selector uses the same syntax as the full Kubernetes label selectors. The monitoring pipeline\ndetermines how to collapse multiple series into a single value, if the name and selector\nmatch multiple series. The selector is additive, and cannot select metrics\nthat describe objects that are **not** the target object (the target pods in the case of the `Pods`\ntype, and the described object in the case of the `Object` type)."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/vertical-pod-autoscale#how-does-a-verticalpodautoscaler-work-1",
+  "heading": "Vertical Pod Autoscaling > How does a VerticalPodAutoscaler work?",
+  "text": "The Recommender analyzes both current and historical resource usage data (CPU and memory) for each Pod targeted by the VerticalPodAutoscaler. It examines:\n- Historical consumption patterns over time to identify trends\n- Peak usage and variance to ensure sufficient headroom\n- Out-of-memory (OOM) events and other resource-related incidents\n\nBased on this analysis, the Recommender calculates three types of recommendations:\n- Target recommendation (optimal resources for typical usage)\n- Lower bound (minimum viable resources)\n- Upper bound (maximum reasonable resources).\n\nThese recommendations are stored in the VerticalPodAutoscaler resource's `.status.recommendation` field.\n\nThe _updater_ component monitors the VerticalPodAutoscaler resources and compares current Pod resource requests with the recommendations. When the difference exceeds configured thresholds and the update policy allows it, the updater can either:\n\n- Evict Pods, triggering their recreation with new resource requests (traditional approach)\n- Update Pod resources in place without eviction, when the cluster supports in-place Pod resource updates"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#intro-0",
+  "heading": "Horizontal Pod Autoscaling",
+  "text": "In Kubernetes, a _HorizontalPodAutoscaler_ automatically updates a workload resource (such as\na Deployment or\nStatefulSet), with the\naim of automatically scaling capacity to match demand.\n\nHorizontal scaling means that the response to increased load is to deploy more\nPods.\nThis is different from _vertical_ scaling, which for Kubernetes would mean\nassigning more resources (for example: memory or CPU) to the Pods that are already\nrunning for the workload.\n\nIf the load decreases, and the number of Pods is above the configured minimum,\nthe HorizontalPodAutoscaler instructs the workload resource (the Deployment, StatefulSet,\nor other similar resource) to scale back down.\n\nHorizontal pod autoscaling does not apply to objects that can't be scaled (for example:\na DaemonSet.)"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#scaling-to-and-from-zero-0",
+  "heading": "Horizontal Pod Autoscaling > Scaling to and from zero",
+  "text": "For HorizontalPodAutoscalers that scale on [custom](#scaling-on-custom-metrics) (object) or\nexternal metrics, you can set `spec.minReplicas` to `0`. The workload is then scaled all the way\ndown to zero replicas when there is no load, and scaled back up when the metric indicates that at\nleast one replica is needed. This is useful for workloads that are idle for long periods and\nexpensive to keep running, such as consumers of an occasionally used queue or jobs that require\ndedicated hardware like GPUs.\n\nScaling to zero is only supported for object and external metrics. It is not available for\nresource metrics (such as CPU or memory utilization), because those can only be measured on\nrunning Pods. Setting `minReplicas: 0` requires at least one object or external metric to be\nconfigured; the API server rejects the HorizontalPodAutoscaler otherwise."
+ }
+]

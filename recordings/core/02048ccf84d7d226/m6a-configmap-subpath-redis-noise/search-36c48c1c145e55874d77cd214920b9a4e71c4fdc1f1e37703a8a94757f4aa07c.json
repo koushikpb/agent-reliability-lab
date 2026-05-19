@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "ConfigMaps consumed as environment variables are not updated automatically and require a pod restart. \n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes#using-subpath) volume mount will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#configmaps-and-pods-1",
+  "heading": "ConfigMaps > ConfigMaps and Pods",
+  "text": "There are four different ways that you can use a ConfigMap to configure\na container inside a Pod:\n\n1. Inside a container command and args\n1. Environment variables for a container\n1. Add a file in read-only volume, for the application to read\n1. Write code to run inside the Pod that uses the Kubernetes API to read a ConfigMap\n\nThese different methods lend themselves to different ways of modeling\nthe data being consumed.\nFor the first three methods, the\nkubelet uses the data from\nthe ConfigMap when it launches container(s) for a Pod.\n\nThe fourth method means you have to write code to read the ConfigMap and its data.\nHowever, because you're using the Kubernetes API directly, your application can\nsubscribe to get updates whenever the ConfigMap changes, and react\nwhen that happens. By accessing the Kubernetes API directly, this\ntechnique also lets you access a ConfigMap in a different namespace.\n\nHere's an example Pod that uses values from `game-demo` to configure a Pod:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#optional-configmaps-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Optional ConfigMaps",
+  "text": "You can mark a reference to a ConfigMap as _optional_ in a Pod specification.\nIf the ConfigMap doesn't exist, the configuration for which it provides data in the Pod\n(for example: environment variable, mounted volume) will be empty.\nIf the ConfigMap exists, but the referenced key is non-existent the data is also empty.\n\nFor example, the following Pod specification marks an environment variable from a ConfigMap\nas optional:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: dapi-test-pod\nspec:\n  containers:\n    - name: test-container\n      image: gcr.io/google_containers/busybox\n      command: [\"/bin/sh\", \"-c\", \"env\"]\n      env:\n        - name: SPECIAL_LEVEL_KEY\n          valueFrom:\n            configMapKeyRef:\n              name: a-config\n              key: akey\n              optional: true # mark the variable as optional\n  restartPolicy: Never\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Mounted ConfigMaps are updated automatically",
+  "text": "When a mounted ConfigMap is updated, the projected content is eventually updated too.\nThis applies in the case where an optionally referenced ConfigMap comes into\nexistence after a pod has started.\n\nKubelet checks whether the mounted ConfigMap is fresh on every periodic sync. However,\nit uses its local TTL-based cache for getting the current value of the ConfigMap. As a\nresult, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the pod can be as long as kubelet sync period (1\nminute by default) + TTL of ConfigMaps cache (1 minute by default) in kubelet. You\ncan trigger an immediate refresh by updating one of the pod's annotations.\n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes/#using-subpath)\nvolume will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-environment-variables-0",
+  "heading": "ConfigMaps > Using ConfigMaps > Using Configmaps as environment variables",
+  "text": "To use a Configmap in an environment variable\nin a Pod:\n\n1. For each container in your Pod specification, add an environment variable\n   for each Configmap key that you want to use to the\n   `env[].valueFrom.configMapKeyRef` field.\n1. Modify your image and/or command line so that the program looks for values\n   in the specified environment variables.\n\nThis is an example of defining a ConfigMap as a pod environment variable:\n\nThe following ConfigMap (myconfigmap.yaml) stores two properties: username and access_level:\n\n```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: myconfigmap\ndata:\n  username: k8s-admin\n  access_level: \"1\"\n```\n\nThe following command will create the ConfigMap object:\n\n```shell\nkubectl apply -f myconfigmap.yaml\n```\n\nThe following Pod consumes the content of the ConfigMap as environment variables:"
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#configmaps-and-pods-2",
+  "heading": "ConfigMaps > ConfigMaps and Pods",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: configmap-demo-pod\nspec:\n  containers:\n    - name: demo\n      image: alpine\n      command: [\"sleep\", \"3600\"]\n      env:\n        # Define the environment variable\n        - name: PLAYER_INITIAL_LIVES # Notice that the case is different here\n                                     # from the key name in the ConfigMap.\n          valueFrom:\n            configMapKeyRef:\n              name: game-demo           # The ConfigMap this value comes from.\n              key: player_initial_lives # The key to fetch.\n        - name: UI_PROPERTIES_FILE_NAME\n          valueFrom:\n            configMapKeyRef:\n              name: game-demo\n              key: ui_properties_file_name\n      volumeMounts:\n      - name: config\n        mountPath: \"/config\"\n        readOnly: true\n  volumes:\n  # You set volumes at the Pod level, then mount them into containers inside that Pod\n  - name: config\n    configMap:\n      # Provide the name of the ConfigMap you want to mount.\n      name: game-demo\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#define-container-environment-variables-with-data-from-multiple-configmaps-2",
+  "heading": "Configure a Pod to Use a ConfigMap > Define container environment variables using ConfigMap data > Define container environment variables with data from multiple ConfigMaps",
+  "text": "  Now, the Pod's output includes environment variables `SPECIAL_LEVEL_KEY=very` and `LOG_LEVEL=INFO`.\n\n  Once you're happy to move on, delete that Pod and ConfigMap:\n  ```shell\n  kubectl delete pod dapi-test-pod --now\n  kubectl delete configmap special-config\n  kubectl delete configmap env-config\n  ```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#populate-a-volume-with-data-stored-in-a-configmap-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Populate a Volume with data stored in a ConfigMap",
+  "text": "Add the ConfigMap name under the `volumes` section of the Pod specification.\nThis adds the ConfigMap data to the directory specified as `volumeMounts.mountPath` (in this\ncase, `/etc/config`). The `command` section lists directory files with names that match the\nkeys in ConfigMap."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/system-traces#trace-collection-0",
+  "heading": "Traces For Kubernetes System Components > Trace Collection",
+  "text": "Kubernetes components have built-in gRPC exporters for OTLP to export traces, either with an OpenTelemetry Collector, \nor without an OpenTelemetry Collector.\n\nFor a complete guide to collecting traces and using the collector, see\n[Getting Started with the OpenTelemetry Collector](https://opentelemetry.io/docs/collector/getting-started/).\nHowever, there are a few things to note that are specific to Kubernetes components.\n\nBy default, Kubernetes components export traces using the grpc exporter for OTLP on the\n[IANA OpenTelemetry port](https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?search=opentelemetry), 4317.\nAs an example, if the collector is running as a sidecar to a Kubernetes component,\nthe following receiver configuration will collect spans and log them to standard output:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#traces-0",
+  "heading": "Observability > Traces",
+  "text": "Traces capture how requests moves across Kubernetes components and applications, linking latency, timing and relationships between operations.By collecting traces, you can visualize end-to-end request flow, diagnose performance issues, and identify bottlenecks or unexpected interactions in the control plane, add-ons, or applications.\n\nKubernetes  can export spans over the [OpenTelemetry Protocol](/docs/concepts/cluster-administration/system-traces/) (OTLP), either directly via built-in gRPC exporters or by forwarding them through an OpenTelemetry Collector.\n\nThe OpenTelemetry Collector receives spans from components and applications, processes them (for example by applying sampling or redaction), and forwards them to a tracing backend for storage and analysis.\n\nFigure 4 outlines a typical distributed tracing pipeline.\n\nflowchart LR\n    subgraph Sources\n        A[Control plane spans]\n        B[Application spans]\n    end\n    A --> X[OTLP exporter]\n    B --> X\n    X --> COL[OpenTelemetry Collector]\n    COL --> TS[(Tracing backend)]\n    TS --> V[Visualization and analysis]"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-traces#intro-0",
+  "heading": "Traces For Kubernetes System Components",
+  "text": "System component traces record the latency of and relationships between operations in the cluster.\n\nKubernetes components emit traces using the\n[OpenTelemetry Protocol](https://opentelemetry.io/docs/specs/otlp/)\nwith the gRPC exporter and can be collected and routed to tracing backends using an\n[OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector#-opentelemetry-collector)."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-traces#kubelet-traces-0",
+  "heading": "Traces For Kubernetes System Components > Component traces > kubelet traces",
+  "text": "The kubelet CRI interface and authenticated http servers are instrumented to generate\ntrace spans. As with the apiserver, the endpoint and sampling rate are configurable.\nTrace context propagation is also configured. A parent span's sampling decision is always respected.\nA provided tracing configuration sampling rate will apply to spans without a parent.\nEnabled without a configured endpoint, the default OpenTelemetry Collector receiver address of \"localhost:4317\" is set.\n\n#### Enabling tracing in the kubelet\n\nTo enable tracing, apply the [tracing configuration](https://github.com/kubernetes/component-base/blob/release-1.27/tracing/api/v1/types.go).\nThis is an example snippet of a kubelet config that records spans for 1 in 10000 requests, and uses the default OpenTelemetry endpoint:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#traces-1",
+  "heading": "Observability > Traces",
+  "text": "*Figure 4. Components of a typical Kubernetes traces pipeline.*\n\nSee [Common observability tools - tracing tools](#tracing-tools) for tracing collectors and backends.\n\n#### See also\n\n- [System traces for Kubernetes components](/docs/concepts/cluster-administration/system-traces/)\n- [OpenTelemetry Collector getting started guide](https://opentelemetry.io/docs/collector/getting-started/)\n- [Monitoring and tracing tasks](/docs/tasks/debug/monitoring/)"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/topology#TopologyAffinityError-0",
+  "heading": "Troubleshooting Topology Management > Troubleshoot `TopologyAffinityError`",
+  "text": "This error typically occurs in the following situations:\n\n* a node has not enough resources available to satisfy the pod's request\n* the pod's request is rejected due to particular Topology Manager policy constraints\n\nThe error appears in the status of a pod:\n\n```shell\nkubectl get pods\n```\n\n```none\nNAME         READY   STATUS                  RESTARTS   AGE\nguaranteed   0/1     TopologyAffinityError   0          113s\n```\n\nUse `kubectl describe pod <id>` or `kubectl events` to obtain a detailed error message:\n\n```none\nWarning  TopologyAffinityError  10m   kubelet, dell8  Resources cannot be allocated with Topology locality\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/troubleshooting-cni-plugin-related-errors#failed-to-destroy-network-for-sandbox-error-0",
+  "heading": "Troubleshooting CNI plugin-related errors > About the \"Incompatible CNI versions\" and \"Failed to destroy network for sandbox\" errors > Failed to destroy network for sandbox error",
+  "text": "If the version of the plugin is missing in the CNI plugin config, the pod may\nrun. However, stopping the pod generates an error similar to:\n\n```\nERROR[2022-04-26T00:43:24.518165483Z] StopPodSandbox for \"b\" failed\nerror=\"failed to destroy network for sandbox \\\"bbc85f891eaf060c5a879e27bba9b6b06450210161dfdecfbb2732959fb6500a\\\": invalid version \\\"\\\": the version is empty\"\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#http-probes-7",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe mechanism details > HTTP probes",
+  "text": "If you probe an endpoint that returns a response body larger than **10KiB**,\nthe kubelet will still mark the probe as successful based on the status code,\nbut it will close the connection after reaching the 10KiB limit.\nThis abrupt closure can cause **connection reset by peer** or **broken pipe errors** to appear in your application's logs,\nwhich can be difficult to distinguish from legitimate network issues.\n\nFor reliable `httpGet` probes, it is strongly recommended to use dedicated health check endpoints\nthat return a minimal response body. If you must use an existing endpoint with a large payload,\nconsider using an `exec` probe to perform a HEAD request instead."
+ }
+]

@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_014Mkrt3kd6oXAqZS5tfa7Rt",
+   "input": {
+    "namespace": "edge"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01477idrx3u2EzzdDJj8uHw2",
+   "input": {
+    "query": "ConfigMap updates propagation to pods subPath mounted"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1886,
+ "model": "claude-opus-4-7",
+ "output_tokens": 131,
+ "stop_reason": "tool_use"
+}

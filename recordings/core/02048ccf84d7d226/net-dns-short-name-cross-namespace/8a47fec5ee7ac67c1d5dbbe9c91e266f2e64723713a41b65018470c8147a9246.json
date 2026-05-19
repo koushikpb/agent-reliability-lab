@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary of what I did:**\n\n1. **Read the ticket** \u2014 email jobs failing with DNS errors since Monday; smtp-relay was moved to `shared-infra` on Sunday night.\n2. **Listed pods** in both `notify` and `shared-infra` \u2014 both notification-worker replicas and both smtp-relay pods are healthy and running.\n3. **Read notification-worker logs** \u2014 confirmed the worker uses the unqualified hostname `smtp-relay` and every job fails with `lookup smtp-relay \u2026 no such host`.\n4. **Read smtp-relay logs** \u2014 confirmed the relay is working fine and serving other namespaces.\n5. **Searched docs** \u2014 confirmed that unqualified DNS names are scoped to the pod's own namespace; cross-namespace lookups require the `<service>.<namespace>` form.\n6. **Resolved the ticket** with the root cause (short DNS name became invalid after the Service moved namespaces), the supporting evidence, and the fix (change `SMTP_HOST` to `smtp-relay.shared-infra` and re-roll the Deployment).",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 6303,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 249,
+ "stop_reason": "end_turn"
+}

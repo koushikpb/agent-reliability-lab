@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Resolved T-2005.\n\n**Summary:** The ledger-export CronJob is hitting its 1-hour `activeDeadlineSeconds` because the dataset has grown. The failed pods report `DeadlineExceeded` with SIGTERM (exit 143) at exactly T+60m, while last week's successful run (half the row count) finished in 45m. Fix: raise `activeDeadlineSeconds` on the CronJob's jobTemplate (e.g. to 10800s) and backfill the two missed days. The SMTP errors in the logs are unrelated \u2014 they appeared in the successful run too \u2014 and should be a separate ticket.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9122,
+ "model": "claude-opus-4-7",
+ "output_tokens": 212,
+ "stop_reason": "end_turn"
+}

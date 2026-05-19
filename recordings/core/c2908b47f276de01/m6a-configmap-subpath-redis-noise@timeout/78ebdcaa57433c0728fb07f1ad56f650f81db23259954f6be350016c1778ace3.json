@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "This is very revealing! I can see the problem. Let me search the Kubernetes documentation to understand ConfigMap update behavior:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01QyMcfWpRA8155qzW3nvSqP",
+   "input": {
+    "query": "ConfigMap update mounted volume refresh timing"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3402,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 85,
+ "stop_reason": "tool_use"
+}

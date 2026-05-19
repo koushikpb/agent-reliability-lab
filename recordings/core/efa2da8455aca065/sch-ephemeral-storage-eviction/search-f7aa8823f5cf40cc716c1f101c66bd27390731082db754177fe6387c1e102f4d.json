@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-0",
+  "heading": "Local ephemeral storage > Ephemeral storage consumption management",
+  "text": "If the kubelet is managing local ephemeral storage as a resource, then the\nkubelet measures storage use in:\n\n- `emptyDir` volumes, except _tmpfs_ `emptyDir` volumes\n- directories holding node-level logs\n- writeable container layers\n\nIf a Pod is using more ephemeral storage than you allow it to, the kubelet\nsets an eviction signal that triggers Pod eviction.\n\nFor container-level isolation, if a container's writable layer and log\nusage exceeds its storage limit, the kubelet marks the Pod for eviction.\n\nFor pod-level isolation the kubelet works out an overall Pod storage limit by\nsumming the limits for the containers in that Pod. In this case, if the sum of\nthe local ephemeral storage usage from all containers and also the Pod's `emptyDir`\nvolumes exceeds the overall Pod storage limit, then the kubelet also marks the Pod\nfor eviction.\n\nIf the kubelet is not measuring local ephemeral storage, then a Pod\nthat exceeds its local storage limit will not be evicted for breaching\nlocal storage resource limits."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#requests-limits-1",
+  "heading": "Local ephemeral storage > Setting requests and limits for local ephemeral storage",
+  "text": "Pay attention to the case of the suffixes. If you request `400m` of ephemeral-storage, this is a request\nfor 0.4 bytes. Someone who types that probably meant to ask for 400 mebibytes (`400Mi`)\nor 400 megabytes (`400M`).\n\nIn the following example, the Pod has two containers. Each container has a request of\n2GiB of local ephemeral storage. Each container has a limit of 4GiB of local ephemeral\nstorage. Therefore, the Pod has a request of 4GiB of local ephemeral storage, and\na limit of 8GiB of local ephemeral storage. 500Mi of that limit could be\nconsumed by the `emptyDir` volume."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/reserve-compute-resources#eviction-thresholds-1",
+  "heading": "Reserve Compute Resources for System Daemons > Node Allocatable > Eviction Thresholds",
+  "text": "Memory pressure at the node level leads to System OOMs which affects the entire\nnode and all pods running on it. Nodes can go offline temporarily until memory\nhas been reclaimed. To avoid (or reduce the probability of) system OOMs kubelet\nprovides [out of resource](/docs/concepts/scheduling-eviction/node-pressure-eviction/)\nmanagement. Evictions are\nsupported for `memory` and `ephemeral-storage` only. By reserving some memory via\n`evictionHard` setting, the `kubelet` attempts to evict pods whenever memory\navailability on the node drops below the reserved value. Hypothetically, if\nsystem daemons did not exist on a node, pods cannot use more than `capacity -\neviction-hard`. For this reason, resources reserved for evictions are not\navailable for pods."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-qos#burstable-0",
+  "heading": "Pod Quality of Service Classes > Quality of Service classes > Burstable",
+  "text": "Pods that are `Burstable` have some lower-bound resource guarantees based on the request, but\ndo not require a specific limit. If a limit is not specified, it defaults to a\nlimit equivalent to the capacity of the Node, which allows the Pods to flexibly increase\ntheir resources if resources are available. In the event of Pod eviction due to Node\nresource pressure, these Pods are evicted only after all `BestEffort` Pods are evicted.\nBecause a `Burstable` Pod can include a Container that has no resource limits or requests, a Pod\nthat is `Burstable` can try to use any amount of node resources.\n\n#### Criteria\n\nA Pod is given a QoS class of `Burstable` if:\n\n* The Pod does not meet the criteria for QoS class `Guaranteed`.\n* At least one Container in the Pod has a memory or CPU request or limit,\n  or the Pod has a Pod-level memory or CPU request or limit."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#requests-limits-0",
+  "heading": "Local ephemeral storage > Setting requests and limits for local ephemeral storage",
+  "text": "You can specify `ephemeral-storage` for managing local ephemeral storage. Each\ncontainer of a Pod can specify either or both of the following:\n\n* `spec.containers[].resources.limits.ephemeral-storage`\n* `spec.containers[].resources.requests.ephemeral-storage`\n\nLimits and requests for `ephemeral-storage` are measured in byte quantities.\nYou can express storage as a plain integer or as a fixed-point number using one of these suffixes:\nE, P, T, G, M, k. You can also use the power-of-two equivalents: Ei, Pi, Ti, Gi,\nMi, Ki. For example, the following quantities all represent roughly the same value:\n\n- `128974848`\n- `129e6`\n- `129M`\n- `123Mi`"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#pod-selection-for-kubelet-eviction-2",
+  "heading": "Node-pressure Eviction > Node conditions > Pod selection for kubelet eviction",
+  "text": "`Guaranteed` pods are guaranteed only when requests and limits are specified for\nall the containers and they are equal. These pods will never be evicted because\nof another pod's resource consumption. If a system daemon (such as `kubelet`\nand `journald`) is consuming more resources than were reserved via\n`system-reserved` or `kube-reserved` allocations, and the node only has\n`Guaranteed` or `Burstable` pods using less resources than requests left on it,\nthen the kubelet must choose to evict one of these pods to preserve node stability\nand to limit the impact of resource starvation on other pods. In this case, it\nwill choose to evict pods of lowest Priority first.\n\nIf you are running a [static pod](/docs/concepts/workloads/pods/#static-pods)\nand want to avoid having it evicted under resource pressure, set the\n`priority` field for that Pod directly. Static pods do not support the\n`priorityClassName` field."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#pod-selection-for-kubelet-eviction-1",
+  "heading": "Node-pressure Eviction > Node conditions > Pod selection for kubelet eviction",
+  "text": "The kubelet does not use the pod's [QoS class](/docs/concepts/workloads/pods/pod-qos/) to determine the eviction order.\nYou can use the QoS class to estimate the most likely pod eviction order when\nreclaiming resources like memory. QoS classification does not apply to EphemeralStorage requests,\nso the above scenario will not apply if the node is, for example, under `DiskPressure`."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#how-pods-with-ephemeral-storage-requests-are-scheduled-0",
+  "heading": "Local ephemeral storage > How Pods with ephemeral-storage requests are scheduled",
+  "text": "When you create a Pod, the Kubernetes scheduler selects a node for the Pod to\nrun on. Each node has a maximum amount of local ephemeral storage it can provide for Pods.\nFor more information, see\n[Node Allocatable](/docs/tasks/administer-cluster/reserve-compute-resources/#node-allocatable).\n\nThe scheduler ensures that the sum of the resource requests of the scheduled containers is less than the capacity of the node."
+ }
+]

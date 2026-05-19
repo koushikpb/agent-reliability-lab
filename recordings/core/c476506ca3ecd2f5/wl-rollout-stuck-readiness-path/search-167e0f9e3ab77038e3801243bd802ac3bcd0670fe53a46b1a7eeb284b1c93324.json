@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#use-case-2",
+  "heading": "Deployments > Use Case",
+  "text": "* [Use the status of the Deployment](#deployment-status) as an indicator that a rollout has stuck.\n* [Clean up older ReplicaSets](#clean-up-policy) that you don't need anymore."
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#pausing-and-resuming-a-rollout-0",
+  "heading": "Update a Deployment Without Downtime > Pausing and resuming a rollout",
+  "text": "You can pause a rollout to inspect a partial update or to batch multiple changes\ninto a single rollout."
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#detecting-a-stalled-rollout-0",
+  "heading": "Update a Deployment Without Downtime > Configuring rolling update strategy > Detecting a stalled rollout",
+  "text": "If a rollout does not make progress within the time specified by\n`.spec.progressDeadlineSeconds` (default: 600 seconds), Kubernetes marks the Deployment condition `Progressing` as `False`. You can check for this condition by describing the Deployment:\n\n```shell\nkubectl describe deployment nginx-deployment\n```\n\nLook for the `Progressing` condition in the `Conditions` section of the output. A stalled rollout usually indicates that new Pods are failing to start. The `Events` section of the output can help diagnose the issue."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-0",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "Your Deployment may get stuck trying to deploy its newest ReplicaSet without ever completing. This can occur\ndue to some of the following factors:\n\n* Insufficient quota\n* Readiness probe failures\n* Image pull errors\n* Insufficient permissions\n* Limit ranges\n* Application runtime misconfiguration\n\nOne way you can detect this condition is to specify a deadline parameter in your Deployment spec:\n([`.spec.progressDeadlineSeconds`](#progress-deadline-seconds)). `.spec.progressDeadlineSeconds` denotes the\nnumber of seconds the Deployment controller waits before indicating (in the Deployment status) that the\nDeployment progress has stalled.\n\nThe following `kubectl` command sets the spec with `progressDeadlineSeconds` to make the controller report\nlack of progress of a rollout for a Deployment after 10 minutes:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rolling-back-a-deployment-1",
+  "heading": "Deployments > Rolling Back a Deployment",
+  "text": "  ```shell\n  kubectl set image deployment/nginx-deployment nginx=nginx:1.161\n  ```\n\n  The output is similar to this:\n  ```\n  deployment.apps/nginx-deployment image updated\n  ```\n\n* The rollout gets stuck. You can verify it by checking the rollout status:\n\n  ```shell\n  kubectl rollout status deployment/nginx-deployment\n  ```\n\n  The output is similar to this:\n  ```\n  Waiting for rollout to finish: 1 out of 3 new replicas have been updated...\n  ```\n\n* Press Ctrl-C to stop the above rollout status watch. For more information on stuck rollouts,\n[read more here](#deployment-status).\n\n* You see that the number of old replicas (adding the replica count from\n  `nginx-deployment-1564180365` and `nginx-deployment-2035384211`) is 3, and the number of\n  new replicas (from `nginx-deployment-3066724191`) is 1."
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#monitoring-rollout-progress-0",
+  "heading": "Update a Deployment Without Downtime > Monitoring rollout progress",
+  "text": "Use `kubectl rollout status` to watch the progress of a rolling update:\n\n```shell\nkubectl rollout status deployment/nginx-deployment\n```\n\nThe output is similar to:\n\n```\nWaiting for deployment \"nginx-deployment\" rollout to finish: 1 out of 2 new replicas have been updated...\nWaiting for deployment \"nginx-deployment\" rollout to finish: 1 out of 2 new replicas have been updated...\nWaiting for deployment \"nginx-deployment\" rollout to finish: 1 old replicas are pending termination...\ndeployment \"nginx-deployment\" successfully rolled out\n```\n\nAfter the rollout completes, verify the Deployment:\n\n```shell\nkubectl get deployment nginx-deployment\n```\n\nThe output is similar to:\n\n```\nNAME               READY   UP-TO-DATE   AVAILABLE   AGE\nnginx-deployment   2/2     2            2           2m\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#objectives-0",
+  "heading": "Update a Deployment Without Downtime > Objectives",
+  "text": "- Trigger a rolling update on a Deployment.\n- Monitor rollout progress.\n- Pause and resume the rollout.\n- Configure rolling update strategy parameters.\n- (If required) Roll back to a previous revision."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#pausing-and-resuming-a-deployment-1",
+  "heading": "Deployments > Pausing and Resuming a rollout of a Deployment",
+  "text": "* Then update the image of the Deployment:\n  ```shell\n  kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1\n  ```\n\n  The output is similar to this:\n  ```\n  deployment.apps/nginx-deployment image updated\n  ```\n\n* Notice that no new rollout started:\n  ```shell\n  kubectl rollout history deployment/nginx-deployment\n  ```\n\n  The output is similar to this:\n  ```\n  deployments \"nginx\"\n  REVISION  CHANGE-CAUSE\n  1   <none>\n  ```\n* Get the rollout status to verify that the existing ReplicaSet has not changed:\n  ```shell\n  kubectl get rs\n  ```\n\n  The output is similar to this:\n  ```\n  NAME               DESIRED   CURRENT   READY     AGE\n  nginx-2142116321   3         3         3         2m\n  ```"
+ }
+]

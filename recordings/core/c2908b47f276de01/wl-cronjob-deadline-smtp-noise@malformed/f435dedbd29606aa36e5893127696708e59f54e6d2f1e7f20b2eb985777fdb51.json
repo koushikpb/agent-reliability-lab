@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-2005 by identifying that the ledger-export cronjob failures are caused by the `activeDeadlineSeconds: 3600` timeout being exceeded. The pod logs revealed the job is processing 9.3 million rows and takes approximately 70 minutes to complete, exceeding the 1-hour deadline. The fix is to increase the `activeDeadlineSeconds` value in the CronJob spec to at least 1.5-2 hours to allow the export to complete successfully.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5436,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 118,
+ "stop_reason": "end_turn"
+}

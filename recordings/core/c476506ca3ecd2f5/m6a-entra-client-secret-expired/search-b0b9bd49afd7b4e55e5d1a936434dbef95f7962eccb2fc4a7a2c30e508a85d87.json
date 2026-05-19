@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-projected-volume-storage#configure-a-projected-volume-for-a-pod-0",
+  "heading": "Configure a Pod to Use a Projected Volume for Storage > Configure a projected volume for a pod",
+  "text": "In this exercise, you create username and password Secrets from local files. You then create a Pod that runs one container, using a [`projected`](/docs/concepts/storage/volumes/#projected) Volume to mount the Secrets into the same shared directory.\n\nHere is the configuration file for the Pod:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-projected-volume\nspec:\n  containers:\n  - name: test-projected-volume\n    image: busybox:1.28\n    args:\n    - sleep\n    - \"86400\"\n    volumeMounts:\n    - name: all-in-one\n      mountPath: \"/projected-volume\"\n      readOnly: true\n  volumes:\n  - name: all-in-one\n    projected:\n      sources:\n      - secret:\n          name: user\n      - secret:\n          name: pass\n```\n\n1. Create the Secrets:"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#secret-0",
+  "heading": "Volumes > Types of volumes > secret",
+  "text": "A `secret` volume is used to pass sensitive information, such as passwords, to\nPods. You can store secrets in the Kubernetes API and mount them as files for\nuse by Pods without coupling to Kubernetes directly. `secret` volumes are\nbacked by tmpfs (a RAM-backed filesystem), so they are never written to\nnon-volatile storage.\n\n* You must create a Secret in the Kubernetes API before you can use it.\n\n* A Secret is always mounted as `readOnly`.\n\n* A container using a Secret as a [`subPath`](#using-subpath) volume mount will not\n  receive Secret updates.\n\nFor more details, see [Configuring Secrets](/docs/concepts/configuration/secret/)."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-secrets-as-files-from-a-pod-0",
+  "heading": "Secrets > Working with Secrets > Using Secrets as files from a Pod",
+  "text": "If you want to access data from a Secret in a Pod, one way to do that is to\nhave Kubernetes make the value of that Secret be available as a file inside\nthe filesystem of one or more of the Pod's containers.\n\nFor instructions, refer to\n[Create a Pod that has access to the secret data through a Volume](/docs/tasks/inject-data-application/distribute-credentials-secure/#create-a-pod-that-has-access-to-the-secret-data-through-a-volume).\n\nWhen a volume contains data from a Secret, and that Secret is updated, Kubernetes tracks\nthis and updates the data in the volume, using an eventually-consistent approach.\n\nA container using a Secret as a\n[subPath](/docs/concepts/storage/volumes#using-subpath) volume mount does not receive\nautomated Secret updates."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#provide-prod-test-creds-2",
+  "heading": "Distribute Credentials Securely Using Secrets > Example: Provide prod/test credentials to Pods using Secrets",
+  "text": "   ```shell\n   cat <<EOF > pod.yaml\n   apiVersion: v1\n   kind: List\n   items:\n   - kind: Pod\n     apiVersion: v1\n     metadata:\n       name: prod-db-client-pod\n       labels:\n         name: prod-db-client\n     spec:\n       volumes:\n       - name: secret-volume\n         secret:\n           secretName: prod-db-secret\n       containers:\n       - name: db-client-container\n         image: myClientImage\n         volumeMounts:\n         - name: secret-volume\n           readOnly: true\n           mountPath: \"/etc/secret-volume\"\n   - kind: Pod\n     apiVersion: v1\n     metadata:\n       name: test-db-client-pod\n       labels:\n         name: test-db-client\n     spec:\n       volumes:\n       - name: secret-volume\n         secret:\n           secretName: test-db-secret\n       containers:\n       - name: db-client-container\n         image: myClientImage\n         volumeMounts:\n         - name: secret-volume\n           readOnly: true\n           mountPath: \"/etc/secret-volume\"\n   EOF\n   ```"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#project-secret-keys-to-specific-file-paths-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Create a Pod that has access to the secret data through a Volume > Project Secret keys to specific file paths",
+  "text": "You can also control the paths within the volume where Secret keys are projected. Use the\n`.spec.volumes[].secret.items` field to change the target path of each key:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: mypod\n    image: redis\n    volumeMounts:\n    - name: foo\n      mountPath: \"/etc/foo\"\n      readOnly: true\n  volumes:\n  - name: foo\n    secret:\n      secretName: mysecret\n      items:\n      - key: username\n        path: my-group/my-username\n```\n\nWhen you deploy this Pod, the following happens:\n\n- The `username` key from `mysecret` is available to the container at the path\n  `/etc/foo/my-group/my-username` instead of at `/etc/foo/username`.\n- The `password` key from that Secret object is not projected.\n\nIf you list keys explicitly using `.spec.volumes[].secret.items`, consider the\nfollowing:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-projected-volume-storage#clean-up-0",
+  "heading": "Configure a Pod to Use a Projected Volume for Storage > Clean up",
+  "text": "Delete the Pod and the Secrets:\n\n```shell\nkubectl delete pod test-projected-volume\nkubectl delete secret user pass\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-bind-mount-options#intro-0",
+  "heading": "Set Bind Mount Options on Volume Mounts",
+  "text": "This page shows how to apply security-related bind mount options (`noexec`,\n`nodev`, `nosuid`) to volume mounts in a Pod."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#project-secret-keys-to-specific-file-paths-1",
+  "heading": "Distribute Credentials Securely Using Secrets > Create a Pod that has access to the secret data through a Volume > Project Secret keys to specific file paths",
+  "text": "- Only keys specified in `items` are projected.\n- To consume all keys from the Secret, all of them must be listed in the\n  `items` field.\n- All listed keys must exist in the corresponding Secret. Otherwise, the volume\n  is not created."
+ }
+]

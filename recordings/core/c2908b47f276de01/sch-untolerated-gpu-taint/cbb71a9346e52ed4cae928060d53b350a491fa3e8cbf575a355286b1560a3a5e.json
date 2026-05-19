@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:** Resolved T-3002 by identifying that the doc-embedder pod was missing a toleration for the `dedicated: gpu` taint on the GPU nodes. The pod had a nodeSelector to match the GPU pool but lacked the corresponding taint toleration needed for scheduling. The fix is to add a toleration matching the `dedicated: gpu` taint to the deployment spec.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5137,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 87,
+ "stop_reason": "end_turn"
+}

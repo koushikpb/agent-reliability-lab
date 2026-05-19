@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try with the correct parameter format:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_014Z2G2M5LfryCjmJp1qPzc5",
+   "input": {
+    "pod_name": "ledger-export-29637420-k4x9d"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2058,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 80,
+ "stop_reason": "tool_use"
+}

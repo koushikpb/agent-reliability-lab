@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "This is a critical database corruption issue. Let me search the documentation for information on PostgreSQL checkpoint recovery and crash scenarios:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01PsPAaMpfTcVykB74iWGf5M",
+   "input": {
+    "query": "PostgreSQL checkpoint recovery data corruption"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2353,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 83,
+ "stop_reason": "tool_use"
+}

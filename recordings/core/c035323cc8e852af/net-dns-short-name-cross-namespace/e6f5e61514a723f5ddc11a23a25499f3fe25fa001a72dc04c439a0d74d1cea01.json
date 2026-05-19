@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more specifically for the DNS naming convention for services in different namespaces.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011xfZGJKfumwhtNt4Pv6jAP",
+   "input": {
+    "query": "service name namespace svc cluster local FQDN"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5989,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 82,
+ "stop_reason": "tool_use"
+}

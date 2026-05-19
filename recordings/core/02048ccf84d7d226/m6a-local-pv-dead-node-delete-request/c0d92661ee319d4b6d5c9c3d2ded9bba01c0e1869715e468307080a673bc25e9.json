@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Ticket T-5008 has been escalated. Here's a summary of everything found:\n\n---\n\n### What I found\n\n**Root cause \u2014 volume node affinity conflict:**\n`ledger-queue-0` (StatefulSet, Redis with AOF) is permanently stuck in `Pending`. Its PVC `data-ledger-queue-0` is bound to a `local`-type PersistentVolume (`local-pv-ip-10-0-7-21-nvme1`) with a hard node affinity requiring `kubernetes.io/hostname = ip-10-0-7-21.ec2.internal` \u2014 the failed node. Because local volumes are physically tied to the node they live on, the scheduler rejects all 8 healthy nodes with `volume node affinity conflict` and cannot schedule the pod on the failed node either (it carries the `node.kubernetes.io/unreachable` taint) [cite: concepts/storage/volumes#local-0] [cite: concepts/storage/persistent-volumes#node-affinity-0].\n\n**Why escalation was necessary \u2014 data loss risk:**\nThe only path to rescheduling on a healthy node is deleting the PVC and creating a new local PV elsewhere. However, the PV's `persistentVolumeReclaimPolicy` is `Delete`, which means deleting the PVC would immediately destroy the physical NVMe data at `/mnt/nvme1` \u2014 including the Redis AOF containing unacknowledged settlement messages [cite: concepts/storage/persistent-volumes#reclaiming-0]. This is irreversible and requires human judgement and infra access.\n\n**Recommended path for the human engineer:**\n1. **Wait for infra's assessment of `ip-10-0-7-21`.** If the node recovers, the pod will reschedule automatically once the taint clears \u2014 no data loss.\n2. **If the node is confirmed dead:** First change the PV's `reclaimPolicy` to `Retain` [cite: tasks/administer-cluster/change-pv-reclaim-policy#why-change-reclaim-policy-of-a-persistentvolume-0] before touching the PVC, attempt to extract AOF data from the physical NVMe, then provision a new local PV on a healthy node and restore data before bringing the StatefulSet back up.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 10965,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 539,
+ "stop_reason": "end_turn"
+}

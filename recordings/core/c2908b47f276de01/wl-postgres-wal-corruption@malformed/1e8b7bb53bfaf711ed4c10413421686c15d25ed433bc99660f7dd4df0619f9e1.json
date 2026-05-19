@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search the Kubernetes documentation to understand what might cause a CrashLoopBackOff after a node reboot, particularly with a StatefulSet and persistent volume:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_013NMojbCjjRfmwbQQuuGV1y",
+   "input": {
+    "query": "CrashLoopBackOff pod restart after node reboot StatefulSet"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2030,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 107,
+ "stop_reason": "tool_use"
+}

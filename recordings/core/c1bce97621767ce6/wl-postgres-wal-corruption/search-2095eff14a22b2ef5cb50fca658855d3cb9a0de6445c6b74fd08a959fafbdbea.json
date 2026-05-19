@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/cpu-management-policies#changing-the-cpu-manager-policy-1",
+  "heading": "Control CPU Management Policies on the Node > Changing the CPU Manager Policy",
+  "text": "```\ncould not restore state from checkpoint: configured policy \"static\" differs from state checkpoint policy \"none\", please drain this node and delete the CPU manager checkpoint file \"/var/lib/kubelet/cpu_manager_state\" before restarting Kubelet\n```\n\nif the set of online CPUs changes on the node, the node must be drained and CPU manager manually reset by deleting the\nstate file `cpu_manager_state` in the kubelet root directory.\n\n`none` policy configuration\nThis policy has no extra configuration items."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/configure-upgrade-etcd#restoring-an-etcd-cluster-3",
+  "heading": "Operating etcd clusters for Kubernetes > Restoring an etcd cluster",
+  "text": "   If `<data-dir-location>` is the same folder as before, delete it and stop the etcd process before restoring the cluster. \n   Otherwise, change etcd configuration and restart the etcd process after restoration to have it use the new data directory:\n   first change  `/etc/kubernetes/manifests/etcd.yaml`'s `volumes.hostPath.path` for `name: etcd-data`  to `<data-dir-location>`,\n   then execute `kubectl -n kube-system delete pod <name-of-etcd-pod>` or `systemctl restart kubelet.service` (or both).\n\nFor more information and examples on restoring a cluster from a snapshot file, see\n[etcd disaster recovery documentation](https://etcd.io/docs/current/op-guide/recovery/#restoring-a-cluster)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#specific-scenarios-0",
+  "heading": "Troubleshooting Clusters > Cluster failure modes > Specific scenarios",
+  "text": "- API server VM shutdown or apiserver crashing\n  - Results\n    - unable to stop, update, or start new pods, services, replication controller\n    - existing pods and services should continue to work normally unless they depend on the Kubernetes API\n- API server backing storage lost\n  - Results\n    - the kube-apiserver component fails to start successfully and become healthy\n    - kubelets will not be able to reach it but will continue to run the same pods and provide the same service proxying\n    - manual recovery or recreation of apiserver state necessary before apiserver is restarted\n- Supporting services (node controller, replication controller manager, scheduler, etc) VM shutdown or crashes\n  - currently those are colocated with the apiserver, and their unavailability has similar consequences as apiserver\n  - in future, these will be replicated as well and may not be co-located\n  - they do not have their own persistent state\n- Individual node (VM or physical machine) shuts down\n  - Results\n    - pods on that Node stop running\n- Network partition\n  - Results\n    - partition A thinks the nodes in partition B are down; partition B thinks the apiserver is down."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-fault-recovery-0",
+  "heading": "Pod Lifecycle > Pod lifetime > Pods and fault recovery",
+  "text": "If one of the containers in the Pod fails, then Kubernetes may try to restart that\nspecific container.\nRead [How Pods handle problems with containers](#container-restarts) to learn more.\n\nPods can however fail in a way that the cluster cannot recover from, and in that case\nKubernetes does not attempt to heal the Pod further; instead, Kubernetes deletes the\nPod and relies on other components to provide automatic healing.\n\nIf a Pod is scheduled to a node and that\nnode then fails, the Pod is treated as unhealthy and Kubernetes eventually deletes the Pod.\nA Pod won't survive an eviction due to\na lack of resources or Node maintenance.\n\nKubernetes uses a higher-level abstraction, called a\ncontroller, that handles the work of\nmanaging the relatively disposable Pod instances."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-0",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "For a Pod that defines an `emptyDir` volume, the volume is created when the Pod is assigned to a node.\nAs the name says, the `emptyDir` volume is initially empty. All containers in the Pod can read and write the same\nfiles in the `emptyDir` volume, though that volume can be mounted at the same\nor different paths in each container. When a Pod is removed from a node for\nany reason, the data in the `emptyDir` is deleted permanently.\n\nA container crashing does *not* remove a Pod from a node. The data in an `emptyDir` volume\nis safe across container crashes.\n\nSome uses for an `emptyDir` are:\n\n* scratch space, such as for a disk-based merge sort\n* checkpointing a long computation for recovery from crashes\n* holding files that a content-manager container fetches while a webserver\n  container serves the data"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/kubectl-node-debug#cleaning-up-0",
+  "heading": "Debugging Kubernetes Nodes With Kubectl > Cleaning up",
+  "text": "When you finish using the debugging Pod, delete it:\n\n```shell\nkubectl get pods\n```\n\n```none\nNAME                          READY   STATUS       RESTARTS   AGE\nnode-debugger-mynode-pdx84    0/1     Completed    0          8m1s\n```\t\n\n```shell\n# Change the pod name accordingly\nkubectl delete pod node-debugger-mynode-pdx84 --now\n```\t\n\n```none\npod \"node-debugger-mynode-pdx84\" deleted\n```\n\nThe `kubectl debug node` command won't work if the Node is down (disconnected\nfrom the network, or kubelet dies and won't restart, etc.).\nCheck [debugging a down/unreachable node ](/docs/tasks/debug/debug-cluster/#example-debugging-a-down-unreachable-node)\nin that case."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#example-debugging-a-down-unreachable-node-4",
+  "heading": "Troubleshooting Clusters > Listing your cluster > Example: debugging a down/unreachable node",
+  "text": "```none\n  PIDPressure          Unknown   Thu, 17 Feb 2022 17:12:40 -0500   Thu, 17 Feb 2022 17:13:52 -0500   NodeStatusUnknown   Kubelet stopped posting node status.\n  Ready                Unknown   Thu, 17 Feb 2022 17:12:40 -0500   Thu, 17 Feb 2022 17:13:52 -0500   NodeStatusUnknown   Kubelet stopped posting node status.\nAddresses:\n  InternalIP:  192.168.0.113\n  Hostname:    kube-worker-1\nCapacity:\n  cpu:                2\n  ephemeral-storage:  15372232Ki\n  hugepages-2Mi:      0\n  memory:             2025188Ki\n  pods:               110\nAllocatable:\n  cpu:                2\n  ephemeral-storage:  14167048988\n  hugepages-2Mi:      0\n  memory:             1922788Ki\n  pods:               110\nSystem Info:\n  Machine ID:                 9384e2927f544209b5d7b67474bbf92b\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-17",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "- When an `init` container sets up an environment that can become corrupted, this feature ensures\n  the setup process is re-executed.\n- A sidecar container can monitor the health of a main application and trigger a full Pod restart\n  if the application enters an unrecoverable state.\n\nConsider a workload where a watcher sidecar is responsible for restarting the main application\nfrom a known-good state if it encounters an error. The watcher can exit with a specific code\nto trigger a full, in-place restart of the worker Pod."
+ }
+]

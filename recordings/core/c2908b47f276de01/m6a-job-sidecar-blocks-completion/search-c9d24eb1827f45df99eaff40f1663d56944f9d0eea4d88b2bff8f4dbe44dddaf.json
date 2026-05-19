@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#differences-from-sidecar-containers-0",
+  "heading": "Init Containers > Understanding init containers > Differences from sidecar containers",
+  "text": "Init containers run and complete their tasks before the main application container starts.\nUnlike [sidecar containers](/docs/concepts/workloads/pods/sidecar-containers),\ninit containers are not continuously running alongside the main containers.\n\nInit containers run to completion sequentially, and the main container does not start\nuntil all the init containers have successfully completed.\n\ninit containers do not support `lifecycle`, `livenessProbe`, `readinessProbe`, or\n`startupProbe` whereas sidecar containers support all these [probes](/docs/concepts/workloads/pods/pod-lifecycle/#types-of-probe) to control their lifecycle.\n\nInit containers share the same resources (CPU, memory, network) with the main application\ncontainers but do not interact directly with them. They can, however, use shared volumes\nfor data exchange."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#pod-sidecar-containers-0",
+  "heading": "Sidecar Containers > Sidecar containers in Kubernetes",
+  "text": "Kubernetes implements sidecar containers as a special case of\n[init containers](/docs/concepts/workloads/pods/init-containers/); sidecar containers remain\nrunning after Pod startup. This document uses the term _regular init containers_ to clearly\nrefer to containers that only run during Pod startup.\n\nProvided that your cluster has the `SidecarContainers`\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) enabled\n(the feature is active by default since Kubernetes v1.29), you can specify a `restartPolicy`\nfor containers listed in a Pod's `initContainers` field.\nThese restartable _sidecar_ containers are independent from other init containers and from\nthe main application container(s) within the same pod.\nThese can be started, stopped, or restarted without affecting the main application container\nand other init containers."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#sidecar-containers-and-pod-lifecycle-1",
+  "heading": "Sidecar Containers > Sidecar containers and Pod lifecycle",
+  "text": "Compared to regular init containers, sidecars defined within `initContainers` continue to\nrun after they have started. This is important when there is more than one entry inside\n`.spec.initContainers` for a Pod. After a sidecar-style init container is running (the kubelet\nhas set the `started` status for that init container to true), the kubelet then starts the\nnext init container from the ordered `.spec.initContainers` list.\nThat status either becomes true because there is a process running in the\ncontainer and no startup probe defined, or as a result of its `startupProbe` succeeding.\n\nUpon Pod [termination](/docs/concepts/workloads/pods/pod-lifecycle/#termination-with-sidecars),\nthe kubelet postpones terminating sidecar containers until the main application container has fully stopped.\nThe sidecar containers are then shut down in the opposite order of their appearance in the Pod specification.\nThis approach ensures that the sidecars remain operational, supporting other containers within the Pod,\nuntil their service is no longer required."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#jobs-with-sidecar-containers-0",
+  "heading": "Sidecar Containers > Sidecar containers and Pod lifecycle > Jobs with sidecar containers",
+  "text": "If you define a Job that uses sidecar using Kubernetes-style init containers,\nthe sidecar container in each Pod does not prevent the Job from completing after the\nmain container has finished.\n\nHere's an example of a Job with two containers, one of which is a sidecar:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#sidecar-containers-and-pod-lifecycle-0",
+  "heading": "Sidecar Containers > Sidecar containers and Pod lifecycle",
+  "text": "If an init container is created with its `restartPolicy` set to `Always`, it will\nstart and remain running during the entire life of the Pod. This can be helpful for\nrunning supporting services separated from the main application containers.\n\nIf a `readinessProbe` is specified for this init container, its result will be used\nto determine the `ready` state of the Pod.\n\nSince these containers are defined as init containers, they benefit from the same\nordering and sequential guarantees as regular init containers, allowing you to mix\nsidecar containers with regular init containers for complex Pod initialization flows."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#differences-from-regular-containers-0",
+  "heading": "Init Containers > Understanding init containers > Differences from regular containers",
+  "text": "Init containers support all the fields and features of app containers,\nincluding resource limits, [volumes](/docs/concepts/storage/volumes/), and security settings. However, the\nresource requests and limits for an init container are handled differently,\nas documented in [Resource sharing within containers](#resource-sharing-within-containers).\n\nRegular init containers (in other words: excluding sidecar containers) do not support the\n`lifecycle`, `livenessProbe`, `readinessProbe`, or `startupProbe` fields. Init containers\nmust run to completion before the Pod can be ready; sidecar containers continue running\nduring a Pod's lifetime, and _do_ support some probes. See [sidecar container](/docs/concepts/workloads/pods/sidecar-containers/)\nfor further details about sidecar containers."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/_index#how-pods-manage-multiple-containers-2",
+  "heading": "Pods > Pods with multiple containers",
+  "text": "Some Pods have init containers\nas well as app containers.\nBy default, init containers run and complete before the app containers are started.\n\nYou can also have [sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/)\nthat provide auxiliary services to the main application Pod (for example: a service mesh).\n\nEnabled by default, the `SidecarContainers` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)\nallows you to specify `restartPolicy: Always` for init containers.\nSetting the `Always` restart policy ensures that the containers where you set it are\ntreated as _sidecars_ that are kept running during the entire lifetime of the Pod.\nContainers that you explicitly define as sidecar containers\nstart up before the main application Pod and remain running until the Pod is\nshut down."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#jobs-with-sidecar-containers-1",
+  "heading": "Sidecar Containers > Sidecar containers and Pod lifecycle > Jobs with sidecar containers",
+  "text": "```yaml\napiVersion: batch/v1\nkind: Job\nmetadata:\n  name: myjob\nspec:\n  template:\n    spec:\n      containers:\n        - name: myjob\n          image: alpine:latest\n          command: ['sh', '-c', 'echo \"logging\" > /opt/logs.txt']\n          volumeMounts:\n            - name: data\n              mountPath: /opt\n      initContainers:\n        - name: logshipper\n          image: alpine:latest\n          # Setting restartPolicy: Always makes this a sidecar container.\n          restartPolicy: Always\n          command: ['sh', '-c', 'tail -F /opt/logs.txt']\n          volumeMounts:\n            - name: data\n              mountPath: /opt\n      restartPolicy: Never\n      volumes:\n        - name: data\n          emptyDir: {}\n```"
+ }
+]

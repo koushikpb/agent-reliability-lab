@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for more information about job specs and deadlines.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019WN7kwYLN9qMckcSAahKBV",
+   "input": {
+    "query": "Job spec activeDeadlineSeconds"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2868,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 73,
+ "stop_reason": "tool_use"
+}

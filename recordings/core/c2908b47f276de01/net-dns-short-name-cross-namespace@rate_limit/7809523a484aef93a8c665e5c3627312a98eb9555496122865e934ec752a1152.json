@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-4004 by investigating the notification-worker DNS failures. The root cause was that the smtp-relay service was moved to the shared-infra namespace on Sunday, but the notification-worker is still configured to connect to `smtp-relay` (unqualified name), which only works within the same namespace. The fix is to update the SMTP_HOST configuration to use the namespace-qualified name `smtp-relay.shared-infra` so the pod can reach the service across namespaces.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5096,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 115,
+ "stop_reason": "end_turn"
+}

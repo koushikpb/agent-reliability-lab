@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-pods-2",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Pods",
+  "text": "If a Pod is stuck in the `Waiting` state, then it has been scheduled to a worker node, \nbut it can't run on that machine. Again, the information from `kubectl describe ...`\nshould be informative. The most common cause of `Waiting` pods is a failure to pull the image.\nThere are three things to check:\n\n* Make sure that you have the name of the image correct.\n* Have you pushed the image to the registry?\n* Try to manually pull the image to see if the image can be pulled. For example,\n  if you use Docker on your PC, run `docker pull <image>`.\n\n#### My pod stays terminating\n\nIf a Pod is stuck in the `Terminating` state, it means that a deletion has been\nissued for the Pod, but the control plane is unable to delete the Pod object."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-1",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "Value       | Description\n:-----------|:-----------\n`Pending`   | The Pod has been accepted by the Kubernetes cluster, but one or more of the containers has not been set up and made ready to run. This includes time a Pod spends waiting to be scheduled as well as the time spent downloading container images over the network.\n`Running`   | The Pod has been bound to a node, and all of the containers have been created. At least one container is still running, or is in the process of starting or restarting.\n`Succeeded` | All containers in the Pod have terminated in success, and will not be restarted.\n`Failed`    | All containers in the Pod have terminated, and at least one container has terminated in failure. That is, the container either exited with non-zero status or was terminated by the system, and is not set for automatic restarting.\n`Unknown`   | For some reason the state of the Pod could not be obtained. This phase typically occurs due to an error in communicating with the node where the Pod should be running."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-pods-0",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Pods",
+  "text": "The first step in debugging a Pod is taking a look at it. Check the current\nstate of the Pod and recent events with the following command:\n\n```shell\nkubectl describe pods ${POD_NAME}\n```\n\nLook at the state of the containers in the pod. Are they all `Running`?\nHave there been recent restarts?\n\nContinue debugging depending on the state of the pods.\n\n#### My pod stays pending\n\nIf a Pod is stuck in `Pending` it means that it can not be scheduled onto a node.\nGenerally this is because there are insufficient resources of one type or another\nthat prevent scheduling. Look at the output of the `kubectl describe ...` command above.\nThere should be messages from the scheduler about why it can not schedule your pod.\nReasons include:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/windows#troubleshooting-node-0",
+  "heading": "Windows debugging tips > Node-level troubleshooting",
+  "text": "1. My Pods are stuck at \"Container Creating\" or restarting over and over\n\n   Ensure that your pause image is compatible with your Windows OS version.\n   See [Pause container](/docs/concepts/windows/intro/#pause-container)\n   to see the latest / recommended pause image and/or get more information.\n\n   If using containerd as your container runtime the pause image is specified in the\n   `plugins.plugins.cri.sandbox_image` field of the of config.toml configuration file.\n\n1. My pods show status as `ErrImgPull` or `ImagePullBackOff`\n\n   Ensure that your Pod is getting scheduled to a\n   [compatible](https://docs.microsoft.com/virtualization/windowscontainers/deploy-containers/version-compatibility)\n   Windows Node.\n\n   More information on how to specify a compatible node for your Pod can be found in\n   [this guide](/docs/concepts/windows/user-guide/#ensuring-os-specific-workloads-land-on-the-appropriate-container-host)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-lifetime-1",
+  "heading": "Pod Lifecycle > Pod lifetime",
+  "text": "Pods are only [scheduled](/docs/concepts/scheduling-eviction/) once in their lifetime;\nassigning a Pod to a specific node is called _binding_, and the process of selecting\nwhich node to use is called _scheduling_.\nOnce a Pod has been scheduled and is bound to a node, Kubernetes tries\nto run that Pod on the node. The Pod runs on that node until it stops, or until the Pod\nis [terminated](#pod-termination); if Kubernetes isn't able to start the Pod on the selected\nnode (for example, if the node crashes before the Pod starts), then that particular Pod\nnever starts.\n\nYou can use [Pod Scheduling Readiness](/docs/concepts/scheduling-eviction/pod-scheduling-readiness/)\nto delay scheduling for a Pod until all its _scheduling gates_ are removed. For example,\nyou might want to define a set of Pods but only trigger scheduling once all the Pods\nhave been created."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-2",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "When a pod is failing to start repeatedly, `CrashLoopBackOff` may appear in the `Status` field of some kubectl commands.\nSimilarly, when a pod is being deleted, `Terminating` may appear in the `Status` field of some kubectl commands.\n\nMake sure not to confuse _Status_, a kubectl display field for user intuition, with the pod's `phase`.\nPod phase is an explicit part of the Kubernetes data model and of the\n[Pod API](/docs/reference/kubernetes-api/workload-resources/pod-v1/). \n\n```\n  NAMESPACE               NAME               READY   STATUS             RESTARTS   AGE\n  alessandras-namespace   alessandras-pod    0/1     CrashLoopBackOff   200        2d9h\n```\n\nA Pod is granted a term to terminate gracefully, which defaults to 30 seconds.\nYou can use the flag `--force` to [terminate a Pod by force](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#handling-pod-and-container-failures-1",
+  "heading": "Jobs > Handling Pod and container failures",
+  "text": "An entire Pod can also fail, for a number of reasons, such as when the pod is kicked off the node\n(node is upgraded, rebooted, deleted, etc.), or if a container of the Pod fails and the\n`.spec.template.spec.restartPolicy = \"Never\"`. When a Pod fails, then the Job controller\nstarts a new Pod. This means that your application needs to handle the case when it is restarted in a new\npod. In particular, it needs to handle temporary files, locks, incomplete output and the like\ncaused by previous runs.\n\nBy default, each pod failure is counted towards the `.spec.backoffLimit` limit,\nsee [pod backoff failure policy](#pod-backoff-failure-policy). However, you can\ncustomize handling of pod failures by setting the Job's [pod failure policy](#pod-failure-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-16",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "   * Pod UID, IP address, and network namespace\n   * Pod sandbox and any attached devices\n   * All volumes, including `emptyDir` and mounted volumes\n\n1. **Pod Status Update**: The Pod's status is updated with a `PodRestartInPlace` condition set to `True`.\n   This makes the restart process observable.\n1. **Full Restart Sequence**: Once all containers are terminated, the `PodRestartInPlace` condition\n   is set to `False`, and the Pod begins the standard startup process:\n\n   * **Init containers are re-run** in order.\n   * Sidecar and regular containers are started.\n\nA key aspect of this feature is that **all** containers are restarted, including those that\npreviously completed successfully or failed. The `RestartAllContainers` action overrides\nany configured container-level or Pod-level `restartPolicy`.\n\nThis mechanism is useful in scenarios where a clean slate for all containers is necessary, such as:"
+ }
+]

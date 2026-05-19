@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/volumes#how-volumes-work-0",
+  "heading": "Volumes > How volumes work",
+  "text": "Kubernetes supports many types of volumes. A Pod\ncan use any number of volume types simultaneously.\n[Ephemeral volume](/docs/concepts/storage/ephemeral-volumes/) types have a lifetime linked to a specific Pod,\nbut [persistent volumes](/docs/concepts/storage/persistent-volumes/) exist beyond\nthe lifetime of any individual Pod. When a Pod ceases to exist, Kubernetes destroys ephemeral volumes;\nhowever, Kubernetes does not destroy persistent volumes.\nFor any kind of volume in a given Pod, data is preserved across container restarts.\n\nAt its core, a volume is a directory, possibly with some data in it, which\nis accessible to the containers in a pod. How that directory comes to be, the\nmedium that backs it, and the contents of it are determined by the particular\nvolume type used.\n\nTo use a volume, specify the volumes to provide for the Pod in `.spec.volumes`\nand declare where to mount those volumes into containers in `.spec.containers[*].volumeMounts`."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-secrets-as-files-from-a-pod-0",
+  "heading": "Secrets > Working with Secrets > Using Secrets as files from a Pod",
+  "text": "If you want to access data from a Secret in a Pod, one way to do that is to\nhave Kubernetes make the value of that Secret be available as a file inside\nthe filesystem of one or more of the Pod's containers.\n\nFor instructions, refer to\n[Create a Pod that has access to the secret data through a Volume](/docs/tasks/inject-data-application/distribute-credentials-secure/#create-a-pod-that-has-access-to-the-secret-data-through-a-volume).\n\nWhen a volume contains data from a Secret, and that Secret is updated, Kubernetes tracks\nthis and updates the data in the volume, using an eventually-consistent approach.\n\nA container using a Secret as a\n[subPath](/docs/concepts/storage/volumes#using-subpath) volume mount does not receive\nautomated Secret updates."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#secret-0",
+  "heading": "Volumes > Types of volumes > secret",
+  "text": "A `secret` volume is used to pass sensitive information, such as passwords, to\nPods. You can store secrets in the Kubernetes API and mount them as files for\nuse by Pods without coupling to Kubernetes directly. `secret` volumes are\nbacked by tmpfs (a RAM-backed filesystem), so they are never written to\nnon-volatile storage.\n\n* You must create a Secret in the Kubernetes API before you can use it.\n\n* A Secret is always mounted as `readOnly`.\n\n* A container using a Secret as a [`subPath`](#using-subpath) volume mount will not\n  receive Secret updates.\n\nFor more details, see [Configuring Secrets](/docs/concepts/configuration/secret/)."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-7",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "#### CSI raw block volume support\n\nVendors with external CSI drivers can implement raw block volume support\nin Kubernetes workloads.\n\nYou can set up your\n[PersistentVolume/PersistentVolumeClaim with raw block volume support](/docs/concepts/storage/persistent-volumes/#raw-block-volume-support)\nas usual, without any CSI-specific changes.\n\n#### CSI ephemeral volumes\n\nYou can directly configure CSI volumes within the Pod\nspecification. Volumes specified in this way are ephemeral and do not\npersist across Pod restarts. See\n[Ephemeral Volumes](/docs/concepts/storage/ephemeral-volumes/#csi-ephemeral-volumes)\nfor more information.\n\nFor more information on how to develop a CSI driver, refer to the\n[kubernetes-csi documentation](https://kubernetes-csi.github.io/docs/)\n\n#### Windows CSI proxy"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#node-affinity-1",
+  "heading": "Persistent Volumes > Persistent Volumes > Node Affinity",
+  "text": "If the `MutablePVNodeAffinity` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) is enabled in your cluster,\nthe `.spec.nodeAffinity` field of a PersistentVolume is mutable.\nThis allows cluster administrators or external storage controller to update the node affinity of a PersistentVolume when the data is migrated,\nwithout interrupting the running pods.\n\nWhen updating the node affinity, you should ensure that the new node affinity still matches the nodes where the volume is currently in use.\nFor the pods violating the new affinity, if the pod is already running, it may continue to run. But Kubernetes does not support this configuration.\nYou should terminate the violating pods soon.\nDue to in memory caching, the pods created after the update may still be scheduled according to the old node affinity for a short period of time.\n\nTo use this feature, you should enable the `MutablePVNodeAffinity` feature gate on the following components:\n\n- `kube-apiserver`\n- `kubelet`"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-0",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "When a container in your Pod stops, or experiences failure, Kubernetes can restart it.\nA restart isn't always appropriate; for example,\ninit containers run only once (if successful),\nduring Pod startup.\nYou can configure restarts as a policy that applies to all Pods, or using container-level configuration (for example: when you define a\nsidecar container) or define container-level override.\n\n#### Container restarts and resilience {#container-restart-resilience}\n\nThe Kubernetes project recommends following cloud-native principles, including resilient\ndesign that accounts for unannounced or arbitrary restarts. You can achieve this either\nby failing the Pod and relying on automatic\n[replacement](/docs/concepts/workloads/controllers/), or you can design for container-level resilience.\nEither approach helps to ensure that your overall workload remains available despite\npartial failure.\n\n#### Pod-level container restart policy"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/kubeadm/kubeadm-certs#manual-certificate-renewal-1",
+  "heading": "Certificate Management with kubeadm > Manual certificate renewal",
+  "text": "After running the command you should restart the control plane Pods. This is required since\ndynamic certificate reload is currently not supported for all components and certificates.\n[Static Pods](/docs/tasks/configure-pod-container/static-pod/) are managed by the local kubelet\nand not by the API Server, thus kubectl cannot be used to delete and restart them.\nTo restart a static Pod you can temporarily remove its manifest file from `/etc/kubernetes/manifests/`\nand wait for 20 seconds (see the `fileCheckFrequency` value in [KubeletConfiguration struct](/docs/reference/config-api/kubelet-config.v1beta1/)).\nThe kubelet will terminate the Pod if it's no longer in the manifest directory.\nYou can then move the file back and after another `fileCheckFrequency` period, the kubelet will recreate\nthe Pod and the certificate renewal for the component can complete."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-fault-recovery-0",
+  "heading": "Pod Lifecycle > Pod lifetime > Pods and fault recovery",
+  "text": "If one of the containers in the Pod fails, then Kubernetes may try to restart that\nspecific container.\nRead [How Pods handle problems with containers](#container-restarts) to learn more.\n\nPods can however fail in a way that the cluster cannot recover from, and in that case\nKubernetes does not attempt to heal the Pod further; instead, Kubernetes deletes the\nPod and relies on other components to provide automatic healing.\n\nIf a Pod is scheduled to a node and that\nnode then fails, the Pod is treated as unhealthy and Kubernetes eventually deletes the Pod.\nA Pod won't survive an eviction due to\na lack of resources or Node maintenance.\n\nKubernetes uses a higher-level abstraction, called a\ncontroller, that handles the work of\nmanaging the relatively disposable Pod instances."
+ }
+]

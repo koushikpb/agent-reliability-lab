@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Let me search the Kubernetes documentation to understand RBAC best practices and what permissions a deployer would need:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_013pwdAY5osN895Di1SXcXyQ",
+   "input": {
+    "query": "RBAC role-based access control best practices permissions deployer"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01FtBmv1qxGXM7A3rT7LY8ki",
+   "input": {
+    "query": "cluster-admin clusterrole permissions"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1915,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 132,
+ "stop_reason": "tool_use"
+}

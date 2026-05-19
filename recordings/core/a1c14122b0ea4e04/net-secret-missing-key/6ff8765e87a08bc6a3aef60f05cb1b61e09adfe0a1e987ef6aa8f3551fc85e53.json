@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WzAZAMP1ycNTGMdqinaKam",
+   "input": {
+    "query": "CreateContainerConfigError missing key in Secret envFrom"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2493,
+ "model": "claude-opus-4-7",
+ "output_tokens": 84,
+ "stop_reason": "tool_use"
+}

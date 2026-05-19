@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Summary: Read T-4002, checked both namespaces, and pulled the pipeline pod's logs. The `kubectl set image` succeeded but the new ReplicaSet's pods were rejected by PodSecurity \"restricted\" admission in the `documents` namespace (missing `allowPrivilegeEscalation=false`, `runAsNonRoot=true`, `capabilities.drop=[ALL]`, and `seccompProfile`). Old 1.4.2 pods keep running since no new pod can be admitted. Resolved the ticket with the cause, event evidence, and a securityContext snippet the owner can add to the Deployment manifest.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8284,
+ "model": "claude-opus-4-7",
+ "output_tokens": 217,
+ "stop_reason": "end_turn"
+}

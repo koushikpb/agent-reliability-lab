@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-2003. The catalog-search pods were stuck in a restart loop because the liveness probe was failing before the application completed its startup sequence. The app loads a 48-shard index snapshot (taking 50+ seconds), but the liveness probe was configured to start checking after only 30 seconds when the HTTP server wasn't yet running.\n\nThe fix is to add a startup probe that allows sufficient time for initialization before the liveness probe takes over. This is a common pattern for applications with long startup times, as documented in the Kubernetes probes documentation.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7759,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 129,
+ "stop_reason": "end_turn"
+}

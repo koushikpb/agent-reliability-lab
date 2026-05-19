@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/system-logs#intro-0",
+  "heading": "System Logs",
+  "text": "System component logs record events happening in cluster, which can be very useful for debugging.\nYou can configure log verbosity to see more or less detail.\nLogs can be as coarse-grained as showing errors within a component, or as fine-grained as showing\nstep-by-step traces of events (like HTTP access logs, pod state changes, controller actions, or\nscheduler decisions).\n\nIn contrast to the command line flags described here, the *log\noutput* itself does *not* fall under the Kubernetes API stability guarantees:\nindividual log entries and their formatting may change from one release\nto the next!"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-logs#log-verbosity-level-0",
+  "heading": "System Logs > Klog > Log verbosity level",
+  "text": "The `-v` flag controls log verbosity. Increasing the value increases the number of logged events.\nDecreasing the value decreases the number of logged events.  Increasing verbosity settings logs\nincreasingly less severe events. A verbosity setting of 0 logs only critical events."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/securing-a-cluster#enable-audit-logging-0",
+  "heading": "Securing a Cluster > Protecting cluster components from compromise > Enable audit logging",
+  "text": "The [audit logger](/docs/tasks/debug/debug-cluster/audit/) is a beta feature that records actions taken by the\nAPI for later analysis in the event of a compromise. It is recommended to enable audit logging\nand archive the audit file on a secure server."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/kubectl-node-debug#debugging-a-node-using-kubectl-debug-node-2",
+  "heading": "Debugging Kubernetes Nodes With Kubectl > Debugging a Node using `kubectl debug node`",
+  "text": "`/host/var/log/kube-proxy.log`\n: Logs from `kube-proxy`, which is responsible for directing traffic to Service endpoints.\n\n`/host/var/log/containerd.log`\n: Logs from the `containerd` process running on the node.\n\n`/host/var/log/syslog`\n: Shows general messages and information regarding the system.\n\n`/host/var/log/kern.log`\n: Shows kernel logs.\n\nWhen creating a debugging session on a Node, keep in mind that:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/logging#sidecar-container-with-logging-agent-1",
+  "heading": "Logging Architecture > Cluster-level logging architectures > Using a sidecar container with the logging agent",
+  "text": "This approach allows you to separate several log streams from different\nparts of your application, some of which can lack support\nfor writing to `stdout` or `stderr`. The logic behind redirecting logs\nis minimal, so it's not a significant overhead. Additionally, because\n`stdout` and `stderr` are handled by the kubelet, you can use built-in tools\nlike `kubectl logs`.\n\nFor example, a pod runs a single container, and the container\nwrites to two different log files using two different formats. Here's a\nmanifest for the Pod:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-logs#log-query-0",
+  "heading": "System Logs > Log query",
+  "text": "The Log Query feature can help debugging issues in both Linux and Windows \nnodes. Introduced in Kubernetes v1.27, the feature allows viewing logs of \nservices running on the node. To use the feature, ensure that the kubelet \nconfiguration options `enableSystemLogHandler` and `enableSystemLogQuery` \nare both set to _true_ for the target node.\n\nIn Kubernetes v1.36 this feature graduated to stable and the `NodeLogQuery`[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) \nis now locked to _true_, hence the feature gate is enabled by default, leaving\n`enableSystemLogHandler` as the only option required to enable or disable the\nLog Query feature. \n\n`enableSystemLogHandler` defaults to _false_ and is recommended to be left \ndisabled unless actively debugging."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/logging#intro-0",
+  "heading": "Logging Architecture",
+  "text": "Application logs can help you understand what is happening inside your application. The\nlogs are particularly useful for debugging problems and monitoring cluster activity. Most\nmodern applications have some kind of logging mechanism. Likewise, container engines\nare designed to support logging. The easiest and most adopted logging method for\ncontainerized applications is writing to standard output and standard error streams.\n\nHowever, the native functionality provided by a container engine or runtime is usually\nnot enough for a complete logging solution.\n\nFor example, you may want to access your application's logs if a container crashes,\na pod gets evicted, or a node dies.\n\nIn a cluster, logs should have a separate storage and lifecycle independent of nodes,\npods, or containers. This concept is called\n[cluster-level logging](#cluster-level-logging-architectures).\n\nCluster-level logging architectures require a separate backend to store, analyze, and\nquery logs. Kubernetes does not provide a native storage solution for log data. Instead,\nthere are many logging solutions that integrate with Kubernetes. The following sections\ndescribe how to handle and store logs on nodes."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#logs-0",
+  "heading": "Observability > Logs",
+  "text": "Logs provide a chronological record of events inside applications, Kubernetes system components, and security-related activities such as audit logging.\n\nContainer runtimes capture a containerized application\u2019s output from standard output (`stdout`) and standard error (`stderr`) streams. While runtimes implement this differently, the integration with the kubelet is standardized through the _CRI logging format_, and the kubelet makes these logs available through `kubectl logs`.\n\n![Node-level logging](/images/docs/user-guide/logging/logging-node-level.png)\n\n*Figure 3a. Node-level logging architecture.*\n\nSystem component logs capture events from the cluster and are often useful for debugging and troubleshooting. These components are classified in two different ways: those that run in a container and those that do not. For example, the `kube-scheduler` and `kube-proxy` usually run in containers, whereas the `kubelet` and the container runtime run directly on the host."
+ }
+]

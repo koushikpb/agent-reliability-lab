@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for more information about ConfigMap updates:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01RqzzrZk4DxW72gWq1w4kLR",
+   "input": {
+    "query": "ConfigMap changes hot reload watch"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5115,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 70,
+ "stop_reason": "tool_use"
+}

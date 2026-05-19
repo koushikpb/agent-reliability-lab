@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "The key information is that HPA requires the Metrics API to report CPU metrics. Let me search for more information about what causes the \"unknown\" metric status:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Pwh8owUetwWjatmNKZv5zj",
+   "input": {
+    "query": "metrics API metrics server container resource metrics missing"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Bp3NrC55uvS1wbEWcJVvX3",
+   "input": {
+    "query": "HPA algorithm missing metrics cannot convert desired replicas"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7036,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 139,
+ "stop_reason": "tool_use"
+}

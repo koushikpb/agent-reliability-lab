@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the pods in the ingest namespace to see their current status:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_013mZret4pLCVMLbABVGVzqZ",
+   "input": {
+    "namespace": "ingest"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1396,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 72,
+ "stop_reason": "tool_use"
+}

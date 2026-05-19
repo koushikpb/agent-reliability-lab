@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-2",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "Note that a Job's `.spec.activeDeadlineSeconds` takes precedence over its `.spec.backoffLimit`.\nTherefore, a Job that is retrying one or more failed Pods will not deploy additional Pods once\nit reaches the time limit specified by `activeDeadlineSeconds`, even if the `backoffLimit` is not yet reached.\n\nExample:\n\n```yaml\napiVersion: batch/v1\nkind: Job\nmetadata:\n  name: pi-with-timeout\nspec:\n  backoffLimit: 5\n  activeDeadlineSeconds: 100\n  template:\n    spec:\n      containers:\n      - name: pi\n        image: perl:5.34.0\n        command: [\"perl\", \"-Mbignum=bpi\", \"-wle\", \"print bpi(2000)\"]\n      restartPolicy: Never\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-backoff-failure-policy-1",
+  "heading": "Jobs > Handling Pod and container failures > Pod backoff failure policy",
+  "text": "- The number of Pods with `.status.phase = \"Failed\"`.\n- When using `restartPolicy = \"OnFailure\"`, the number of retries in all the\n  containers of Pods with `.status.phase` equal to `Pending` or `Running`.\n\nIf either of the calculations reaches the `.spec.backoffLimit`, the Job is\nconsidered failed.\n\nIf your Job has `restartPolicy = \"OnFailure\"`, keep in mind that your Pod running the job\nwill be terminated once the job backoff limit has been reached. This can make debugging\nthe Job's executable more difficult. We suggest setting\n`restartPolicy = \"Never\"` when debugging the Job or using a logging system to ensure output\nfrom failed Jobs is not lost inadvertently."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-1",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "By default, a Job will run uninterrupted unless a Pod fails (`restartPolicy=Never`)\nor a Container exits in error (`restartPolicy=OnFailure`), at which point the Job defers to the\n`.spec.backoffLimit` described above. Once `.spec.backoffLimit` has been reached the Job will\nbe marked as failed and any running Pods will be terminated.\n\nAnother way to terminate a Job is by setting an active deadline.\nDo this by setting the `.spec.activeDeadlineSeconds` field of the Job to a number of seconds.\nThe `activeDeadlineSeconds` applies to the duration of the job, no matter how many Pods are created.\nOnce a Job reaches `activeDeadlineSeconds`, all of its running Pods are terminated and the Job status\nwill become `type: Failed` with `reason: DeadlineExceeded`."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-3",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "Note that both the Job spec and the [Pod template spec](/docs/concepts/workloads/pods/init-containers/#detailed-behavior)\nwithin the Job have an `activeDeadlineSeconds` field. Ensure that you set this field at the proper level.\n\nKeep in mind that the `restartPolicy` applies to the Pod, and not to the Job itself:\nthere is no automatic Job restart once the Job status is `type: Failed`.\nThat is, the Job termination mechanisms activated with `.spec.activeDeadlineSeconds`\nand `.spec.backoffLimit` result in a permanent Job failure that requires manual intervention to resolve."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#backoff-limit-per-index-1",
+  "heading": "Jobs > Handling Pod and container failures > Backoff limit per index",
+  "text": "You can additionally limit the maximal number of indexes marked failed by\nsetting the `.spec.maxFailedIndexes` field.\nWhen the number of failed indexes exceeds the `maxFailedIndexes` field, the\nJob controller triggers termination of all remaining running Pods for that Job.\nOnce all pods are terminated, the entire Job is marked failed by the Job\ncontroller, by setting the Failed condition in the Job status.\n\nHere is an example manifest for a Job that defines a `backoffLimitPerIndex`:\n\nIn the example above, the Job controller allows for one restart for each\nof the indexes. When the total number of failed indexes exceeds 5, then\nthe entire Job is terminated.\n\nOnce the job is finished, the Job status looks as follows:\n\n```sh\nkubectl get -o yaml job job-backoff-limit-per-index-example\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#intro-0",
+  "heading": "Jobs",
+  "text": "A Job creates one or more Pods and will continue to retry execution of the Pods until a specified number of them successfully terminate.\nAs pods successfully complete, the Job tracks the successful completions. When a specified number\nof successful completions is reached, the task (ie, Job) is complete. Deleting a Job will clean up\nthe Pods it created. Suspending a Job will delete its active Pods until the Job\nis resumed again.\n\nA simple case is to create one Job object in order to reliably run one Pod to completion.\nThe Job object will start a new Pod if the first Pod fails or is deleted (for example\ndue to a node hardware failure or a node reboot).\n\nYou can also use a Job to run multiple Pods in parallel.\n\nIf you want to run a Job (either a single task, or several in parallel) on a schedule,\nsee [CronJob](/docs/concepts/workloads/controllers/cron-jobs/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-backoff-failure-policy-0",
+  "heading": "Jobs > Handling Pod and container failures > Pod backoff failure policy",
+  "text": "There are situations where you want to fail a Job after some amount of retries\ndue to a logical error in configuration etc.\nTo do so, set `.spec.backoffLimit` to specify the number of retries before\nconsidering a Job as failed.\n\nThe `.spec.backoffLimit` is set by default to 6, unless the\n[backoff limit per index](#backoff-limit-per-index) (only Indexed Job) is specified.\nWhen `.spec.backoffLimitPerIndex` is specified, then `.spec.backoffLimit` defaults\nto 2147483647 (MaxInt32).\n\nFailed Pods associated with the Job are recreated by the Job controller with an\nexponential back-off delay (10s, 20s, 40s ...) capped at ten minutes.\n\nThe number of retries is calculated in two ways:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#backoff-limit-per-index-2",
+  "heading": "Jobs > Handling Pod and container failures > Backoff limit per index",
+  "text": "```yaml\n  status:\n    completedIndexes: 1,3,5,7,9\n    failedIndexes: 0,2,4,6,8\n    succeeded: 5          # 1 succeeded pod for each of 5 succeeded indexes\n    failed: 10            # 2 failed pods (1 retry) for each of 5 failed indexes\n    conditions:\n    - message: Job has failed indexes\n      reason: FailedIndexes\n      status: \"True\"\n      type: FailureTarget\n    - message: Job has failed indexes\n      reason: FailedIndexes\n      status: \"True\"\n      type: Failed\n```\n\nThe Job controller adds the `FailureTarget` Job condition to trigger\n[Job termination and cleanup](#job-termination-and-cleanup). When all of the\nJob Pods are terminated, the Job controller adds the `Failed` condition\nwith the same values for `reason` and `message` as the `FailureTarget` Job\ncondition. For details, see [Termination of Job Pods](#termination-of-job-pods)."
+ }
+]

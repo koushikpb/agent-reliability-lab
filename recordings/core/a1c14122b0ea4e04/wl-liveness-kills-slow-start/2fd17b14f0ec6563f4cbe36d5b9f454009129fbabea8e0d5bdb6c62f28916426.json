@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EvsDCqQBCBMYAipA47qtA5yAx9gKf72NZ6w8WUe6hW5KlF1w0QYKn1DFiQCGMiD59XYmW02I7yIZq++SmLUOzKYquXT6K9CVeGWkVzIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB69Hw1gYSDKkaIBii0mgMFKO3NBoMiIFoaz49EhibK5EjIjBtX6BbFf1yKEUGlRtaLFaHVW7HIDrVnw+2ifxbsWo40cgLYINV2D33Wz8vfwKm9bkqgwKs3n/Yhg4fa8czjwYgZbCC60NyhoTtGAK2lQUPvQ3T4kQdx1y1RKIPV4r66mXKmhyCdI5ANcL/QsJvbV2IxVNyLwQE9cinN7+xcLaMvFlqM3pOFVajU/YsYb95DHZxuWhaGFGy8Qv41LNtrJGvML6wRoZMHodMmsGxb9e3YVpECUnQ400MDgTpgCDBnJPoouvdcomqzWPppp4cG/w47ZAFNj+L69x/LjE1lK7Pl/LR83gphJi2ThQO599f1dkxI0MIpydt8TigX6tywR7/mZjaiMLWUBLqDuIrO0NyaSOV2JX8weOnp3LGw2W+AKbbFK+itbhUZ8GLE7NsPkwQ8fi+/GsFGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01W11zHvXzZvkL4AVkgKJdbU",
+   "input": {
+    "query": "startup probe slow starting container liveness"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3459,
+ "model": "claude-opus-4-7",
+ "output_tokens": 182,
+ "stop_reason": "tool_use"
+}

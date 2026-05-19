@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary of what I did:**\n\n1. **Read the ticket** \u2014 login failures after Microsoft SSO, 500 error, `oauth2-proxy` in `internal-tools`.\n2. **Listed pods** \u2014 all three pods (`oauth2-proxy`, two `ops-portal` replicas) were Running, Ready, with zero restarts \u2014 ruling out crash loops or image issues.\n3. **Pulled logs** \u2014 the `oauth2-proxy` pod logs contained a definitive Azure AD error: `AADSTS7000222: The provided client secret keys for app '6c2e9a41...' are expired.` This fired on every login callback starting at 08:01, explaining the exact timing. The portal pod logs showed nothing but healthy `/healthz` calls.\n4. **Resolved the ticket** with a two-step fix: (a) IT identity team regenerates the Azure AD client secret, (b) platform team updates the Kubernetes Secret and rolls the `oauth2-proxy` deployment to restore access immediately.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8781,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 230,
+ "stop_reason": "end_turn"
+}

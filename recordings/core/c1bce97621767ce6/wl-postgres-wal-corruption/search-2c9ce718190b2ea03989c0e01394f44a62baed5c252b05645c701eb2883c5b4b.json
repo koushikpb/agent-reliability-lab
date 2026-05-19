@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-0",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "In any situation where a pod deletion has not succeeded for 6 minutes, kubernetes will\nforce detach volumes being unmounted if the node is unhealthy at that instant. Any\nworkload still running on the node that uses a force-detached volume will cause a\nviolation of the\n[CSI specification](https://github.com/container-storage-interface/spec/blob/master/spec.md#controllerunpublishvolume),\nwhich states that `ControllerUnpublishVolume` \"**must** be called after all\n`NodeUnstageVolume` and `NodeUnpublishVolume` on the volume are called and succeed\".\nIn such circumstances, volumes on the node in question might encounter data corruption.\n\nThe forced storage detach behaviour is optional; users might opt to use the \"Non-graceful\nnode shutdown\" feature instead."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-0",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "For a Pod that defines an `emptyDir` volume, the volume is created when the Pod is assigned to a node.\nAs the name says, the `emptyDir` volume is initially empty. All containers in the Pod can read and write the same\nfiles in the `emptyDir` volume, though that volume can be mounted at the same\nor different paths in each container. When a Pod is removed from a node for\nany reason, the data in the `emptyDir` is deleted permanently.\n\nA container crashing does *not* remove a Pod from a node. The data in an `emptyDir` volume\nis safe across container crashes.\n\nSome uses for an `emptyDir` are:\n\n* scratch space, such as for a disk-based merge sort\n* checkpointing a long computation for recovery from crashes\n* holding files that a content-manager container fetches while a webserver\n  container serves the data"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-3",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "In this case, you don't need to delete and recreate a Pod or deployment that is using an existing PVC.\nAny in-use PVC automatically becomes available to its Pod as soon as its file system has been expanded.\nThis feature has no effect on PVCs that are not in use by a Pod or deployment. You must create a Pod that\nuses the PVC before the expansion can complete.\n\nSimilar to other volume types - FlexVolume volumes can also be expanded when in-use by a Pod.\n\nFlexVolume resize is possible only when the underlying driver supports resize.\n\n#### Recovering from Failure when Expanding Volumes\n\nIf a user specifies a new size that is too big to be satisfied by underlying\nstorage system, expansion of PVC will be continuously retried until user or\ncluster administrator takes some action. This can be undesirable and hence\nKubernetes provides following methods of recovering from such failures."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-limits#mutable-csi-node-allocatable-count-1",
+  "heading": "Node-specific Volume Limits > Dynamic volume limits > Mutable CSI Node Allocatable Count",
+  "text": "Kubelet will periodically call the corresponding CSI driver\u2019s `NodeGetInfo` endpoint to refresh the maximum number of attachable volumes, using the interval specified in `nodeAllocatableUpdatePeriodSeconds`. The minimum allowed value for this field is 10 seconds.\n\nIf a volume attachment operation fails with a `ResourceExhausted` error (gRPC code 8), Kubernetes triggers an immediate update to the allocatable volume count for that Node. Additionally, kubelet marks affected pods as Failed, allowing their controllers to handle recreation. This prevents pods from getting stuck indefinitely in the `ContainerCreating` state."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#image-1",
+  "heading": "Volumes > Types of volumes > image",
+  "text": "`IfNotPresent`\n: The kubelet pulls if the reference isn't already present on disk. The Pod becomes\n  `Failed` if the reference isn't present and the pull fails.\n\nThe volume gets re-resolved if the Pod gets deleted and recreated, which means\nthat new remote content will become available on Pod recreation. A failure to\nresolve or pull the image during Pod startup will block containers from starting\nand may add significant latency. Failures will be retried using normal volume\nbackoff and will be reported on the Pod reason and message.\n\nThe types of objects that may be mounted by this volume are defined by the\ncontainer runtime implementation on a host machine. At a minimum, they must include\nall valid types supported by the container image field. The OCI object gets\nmounted in a single directory (`spec.containers[*].volumeMounts[*].mountPath`)\nand will be mounted read-only.\n\nBesides that:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "Force storage detach on timeout can be disabled by setting the `disable-force-detach-on-timeout`\nconfig field in `kube-controller-manager`. Disabling the force detach on timeout feature means\nthat a volume that is hosted on a node that is unhealthy for more than 6 minutes will not have\nits associated\n[VolumeAttachment](/docs/reference/kubernetes-api/config-and-storage-resources/volume-attachment-v1/)\ndeleted.\n\nAfter this setting has been applied, unhealthy pods still attached to volumes must be recovered\nvia the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure mentioned above.\n\n- Caution must be taken while using the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure.\n- Deviation from the steps documented above can result in data corruption."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-fault-recovery-0",
+  "heading": "Pod Lifecycle > Pod lifetime > Pods and fault recovery",
+  "text": "If one of the containers in the Pod fails, then Kubernetes may try to restart that\nspecific container.\nRead [How Pods handle problems with containers](#container-restarts) to learn more.\n\nPods can however fail in a way that the cluster cannot recover from, and in that case\nKubernetes does not attempt to heal the Pod further; instead, Kubernetes deletes the\nPod and relies on other components to provide automatic healing.\n\nIf a Pod is scheduled to a node and that\nnode then fails, the Pod is treated as unhealthy and Kubernetes eventually deletes the Pod.\nA Pod won't survive an eviction due to\na lack of resources or Node maintenance.\n\nKubernetes uses a higher-level abstraction, called a\ncontroller, that handles the work of\nmanaging the relatively disposable Pod instances."
+ },
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-2",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "Kubernetes volumes enable complex\napplications, with data persistence and Pod volume sharing requirements, to be deployed\non Kubernetes. Management of persistent volumes associated with a specific storage\nback-end or protocol includes actions such as provisioning/de-provisioning/resizing\nof volumes, attaching/detaching a volume to/from a Kubernetes node and\nmounting/dismounting a volume to/from individual containers in a pod that needs to\npersist data.\n\nVolume management components are shipped as Kubernetes volume\n[plugin](/docs/concepts/storage/volumes/#volume-types).\nThe following broad classes of Kubernetes volume plugins are supported on Windows:\n\n* [`FlexVolume plugins`](/docs/concepts/storage/volumes/#flexvolume)\n  * Please note that FlexVolumes have been deprecated as of 1.23\n* [`CSI Plugins`](/docs/concepts/storage/volumes/#csi)\n\n##### In-tree volume plugins\n\nThe following in-tree plugins support persistent storage on Windows nodes:"
+ }
+]

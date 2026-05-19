@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01X5BmUvF2Mn8dyabE3DAXWB",
+   "input": {
+    "id": "T-6007",
+    "note": "Cause: The docs-site 4.3 pod spec added `securityContext.readOnlyRootFilesystem: true` (part of the quarterly hardening \u2014 a recommended practice [cite: concepts/security/application-security-checklist#security-context-container-0]). Next.js tries to create its image-optimizer cache at `/app/.next/cache` on startup, which fails on the read-only root filesystem.\n\nEvidence:\n- `list_pods` in `marketing` shows the new ReplicaSet pod `docs-site-5c7b9d4f6-wk4pz` running image `docs-site:4.3.0` in CrashLoopBackOff (11 restarts) with `readOnlyRootFilesystem: true`; the 4.2.0 pods are healthy and do not have that setting.\n- Pod logs show: `Error: EROFS: read-only file system, mkdir '/app/.next/cache'` from `ImageOptimizerCache.init` right after Next.js starts, then exit 1. (The earlier New Relic 401 messages are unrelated \u2014 the agent logs the error and continues.)\n\nFix: Keep `readOnlyRootFilesystem: true` and give the container a writable `emptyDir` mounted at the cache path. Add to the Deployment pod spec:\n\n```yaml\nvolumes:\n- name: next-cache\n  emptyDir: {}\n# in the container:\nvolumeMounts:\n- name: next-cache\n  mountPath: /app/.next/cache\n```\n\nAn `emptyDir` volume is the standard way to provide scratch/cache space to a container [cite: concepts/storage/volumes#emptydir-4]. If the app writes to other paths too (e.g. `/tmp`), mount emptyDirs there as well. After redeploying, the new ReplicaSet should become Ready and the rollout will complete.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6134,
+ "model": "claude-opus-4-7",
+ "output_tokens": 712,
+ "stop_reason": "tool_use"
+}

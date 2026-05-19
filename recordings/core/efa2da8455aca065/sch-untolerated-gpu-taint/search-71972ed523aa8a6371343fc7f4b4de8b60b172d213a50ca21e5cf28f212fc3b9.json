@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#intro-0",
+  "heading": "Taints and Tolerations",
+  "text": "[_Node affinity_](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)\nis a property of Pods that *attracts* them to\na set of nodes (either as a preference or a\nhard requirement). _Taints_ are the opposite -- they allow a node to repel a set of pods.\n\n_Tolerations_ are applied to pods. Tolerations allow the scheduler to schedule pods with matching\ntaints. Tolerations allow scheduling but don't guarantee scheduling: the scheduler also\n[evaluates other parameters](/docs/concepts/scheduling-eviction/pod-priority-preemption/)\nas part of its function.\n\nTaints and tolerations work together to ensure that pods are not scheduled\nonto inappropriate nodes. One or more taints are applied to a node; this\nmarks that the node should not accept any pods that do not tolerate the taints."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/advanced-pod-config#tolerations-0",
+  "heading": "Advanced Pod Configuration > Influencing Pod scheduling decisions > Tolerations",
+  "text": "_Tolerations_ allow Pods to be scheduled on nodes with matching taints:\n\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: myapp\n    image: nginx\n  tolerations:\n  - key: \"key\"\n    operator: \"Equal\"\n    value: \"value\"\n    effect: \"NoSchedule\"\n\nFor more information, see [Assign Pods to Nodes](/docs/concepts/scheduling-eviction/assign-pod-node/)."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#example-use-cases-3",
+  "heading": "Taints and Tolerations > Example Use Cases",
+  "text": "[ExtendedResourceToleration](/docs/reference/access-authn-authz/admission-controllers/#extendedresourcetoleration)\nadmission controller. Now, because the nodes are tainted, no pods without the\ntoleration will schedule on them. But when you submit a pod that requests the\nextended resource, the `ExtendedResourceToleration` admission controller will\nautomatically add the correct toleration to the pod and that pod will schedule\non the special hardware nodes. This will make sure that these special hardware\nnodes are dedicated for pods requesting such hardware and you don't have to\nmanually add tolerations to your pods."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-1",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "```yaml\ntolerations:\n- key: \"key1\"\n  operator: \"Equal\"\n  value: \"value1\"\n  effect: \"NoSchedule\"\n```\n\n```yaml\ntolerations:\n- key: \"key1\"\n  operator: \"Exists\"\n  effect: \"NoSchedule\"\n```\n\nThe default Kubernetes scheduler takes taints and tolerations into account when\nselecting a node to run a particular Pod. However, if you manually specify the\n`.spec.nodeName` for a Pod, that action bypasses the scheduler; the Pod is then\nbound onto the node where you assigned it, even if there are `NoSchedule`\ntaints on that node that you selected.\nIf this happens and the node also has a `NoExecute` taint set, the kubelet will\neject the Pod unless there is an appropriate tolerance set.\n\nHere's an example of a pod that has some tolerations defined:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-5",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "* if there is at least one un-ignored taint with effect `NoSchedule` then Kubernetes will not schedule\nthe pod onto that node\n* if there is no un-ignored taint with effect `NoSchedule` but there is at least one un-ignored taint with\neffect `PreferNoSchedule` then Kubernetes will *try* to not schedule the pod onto the node\n* if there is at least one un-ignored taint with effect `NoExecute` then the pod will be evicted from\nthe node (if it is already running on the node), and will not be\nscheduled onto the node (if it is not yet running on the node).\n\nFor example, imagine you taint a node like this\n\n```shell\nkubectl taint nodes node1 key1=value1:NoSchedule\nkubectl taint nodes node1 key1=value1:NoExecute\nkubectl taint nodes node1 key2=value2:NoSchedule\n```\n\nAnd a pod has two tolerations:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-0",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "You add a taint to a node using [kubectl taint](/docs/reference/generated/kubectl/kubectl-commands#taint).\nFor example,\n\n```shell\nkubectl taint nodes node1 key1=value1:NoSchedule\n```\n\nplaces a taint on node `node1`. The taint has key `key1`, value `value1`, and taint effect `NoSchedule`.\nThis means that no pod will be able to schedule onto `node1` unless it has a matching toleration.\n\nTo remove the taint added by the command above, you can run:\n\n```shell\nkubectl taint nodes node1 key1=value1:NoSchedule-\n```\n\nYou specify a toleration for a pod in the PodSpec. Both of the following tolerations \"match\" the\ntaint created by the `kubectl taint` line above, and thus a pod with either toleration would be able\nto schedule onto `node1`:"
+ },
+ {
+  "chunk_id": "concepts/containers/runtime-class#scheduling-0",
+  "heading": "Runtime Class > Scheduling",
+  "text": "By specifying the `scheduling` field for a RuntimeClass, you can set constraints to\nensure that Pods running with this RuntimeClass are scheduled to nodes that support it.\nIf `scheduling` is not set, this RuntimeClass is assumed to be supported by all nodes.\n\nTo ensure pods land on nodes supporting a specific RuntimeClass, that set of nodes should have a\ncommon label which is then selected by the `runtimeclass.scheduling.nodeSelector` field. The\nRuntimeClass's nodeSelector is merged with the pod's nodeSelector in admission, effectively taking\nthe intersection of the set of nodes selected by each. If there is a conflict, the pod will be\nrejected.\n\nIf the supported nodes are tainted to prevent other RuntimeClass pods from running on the node, you\ncan add `tolerations` to the RuntimeClass. As with the `nodeSelector`, the tolerations are merged\nwith the pod's tolerations in admission, effectively taking the union of the set of nodes tolerated\nby each."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/daemonset#taints-and-tolerations-4",
+  "heading": "DaemonSet > How Daemon Pods are scheduled > Taints and tolerations",
+  "text": "| [`node.kubernetes.io/not-ready`](/docs/reference/labels-annotations-taints/#node-kubernetes-io-not-ready)             | `NoExecute`  | DaemonSet Pods can be scheduled onto nodes that are not healthy or ready to accept Pods. Any DaemonSet Pods running on such nodes will not be evicted. |\n| [`node.kubernetes.io/unreachable`](/docs/reference/labels-annotations-taints/#node-kubernetes-io-unreachable)         | `NoExecute`  | DaemonSet Pods can be scheduled onto nodes that are unreachable from the node controller. Any DaemonSet Pods running on such nodes will not be evicted. |"
+ }
+]

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me search for more specific information about the required security context settings:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CSRX7TBcLZUtBFyo6MRKPg",
+   "input": {
+    "query": "allowPrivilegeEscalation false capabilities drop runAsNonRoot seccompProfile"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4589,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 87,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Summary: Read T-3008, listed pods in `analytics`, and found clickhoug-2's event shows the Corvane CSI driver's MountDevice is being rejected by storage array `cv-array-02` with `CVN-4127: host group hg-k8s-prod reached max LUN mappings (512)`. Since this is an external SAN limit requiring storage-admin action (not a Kubernetes fix), I escalated the ticket to the storage team.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7240,
+ "model": "claude-opus-4-7",
+ "output_tokens": 152,
+ "stop_reason": "end_turn"
+}

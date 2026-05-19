@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "ConfigMaps consumed as environment variables are not updated automatically and require a pod restart. \n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes#using-subpath) volume mount will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/encrypt-data#configure-automatic-reloading-0",
+  "heading": "Encrypting Confidential Data at Rest > Configure automatic reloading",
+  "text": "You can configure automatic reloading of encryption provider configuration.\nThat setting determines whether the\nAPI server should\nload the file you specify for `--encryption-provider-config` only once at\nstartup, or automatically whenever you change that file. Enabling this option\nallows you to change the keys for encryption at rest without restarting the\nAPI server.\n\nTo allow automatic reloading, configure the API server to run with:\n`--encryption-provider-config-automatic-reload=true`.\nWhen enabled, file changes are polled every minute to observe the modifications.\nThe `apiserver_encryption_config_controller_automatic_reload_last_timestamp_seconds`\nmetric identifies when the new config becomes effective. This allows\nencryption keys to be rotated without restarting the API server."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/kubeadm/kubeadm-reconfigure#applying-kube-proxy-configuration-changes-1",
+  "heading": "Reconfiguring a kubeadm cluster > Reconfiguring the cluster > Applying kube-proxy configuration changes",
+  "text": "Once the `kube-proxy` ConfigMap is updated, you can restart all kube-proxy Pods:\n\nDelete the Pods with:\n\n```shell\nkubectl delete po -n kube-system -l k8s-app=kube-proxy\n```\n\nNew Pods that use the updated ConfigMap will be created.\n\nBecause kubeadm deploys kube-proxy as a DaemonSet, node specific configuration is unsupported."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Mounted ConfigMaps are updated automatically",
+  "text": "When a mounted ConfigMap is updated, the projected content is eventually updated too.\nThis applies in the case where an optionally referenced ConfigMap comes into\nexistence after a pod has started.\n\nKubelet checks whether the mounted ConfigMap is fresh on every periodic sync. However,\nit uses its local TTL-based cache for getting the current value of the ConfigMap. As a\nresult, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the pod can be as long as kubelet sync period (1\nminute by default) + TTL of ConfigMaps cache (1 minute by default) in kubelet. You\ncan trigger an immediate refresh by updating one of the pod's annotations.\n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes/#using-subpath)\nvolume will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/vertical-pod-autoscale#updateMode-InPlace-0",
+  "heading": "Vertical Pod Autoscaling > Update modes > InPlace",
+  "text": "This mode is available as an alpha feature in VPA 1.7.0 and requires\nKubernetes 1.33 or later with the `InPlacePodVerticalScaling` cluster feature\ngate enabled, and the `InPlace` feature gate enabled on the VPA updater and\nadmission controller. It uses the\n[in-place Pod resize](/docs/concepts/workloads/pods/pod-lifecycle/#pod-resize)\nfeature to apply updates without disrupting the Pod.\n\nIn `InPlace` mode, VPA attempts to update Pod resource requests and limits without\nrestarting or evicting the Pod. Unlike `InPlaceOrRecreate`, this mode **never falls\nback to eviction**. If an in-place update cannot be applied (for example, because the\nnode does not have enough capacity), VPA defers the update and retries it in a\nsubsequent reconciliation loop.\n\nTo use `InPlace` mode, enable the `InPlace` feature gate on both the VPA updater\nand admission controller:"
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-2",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "When a ConfigMap currently consumed in a volume is updated, projected keys are eventually updated as well.\nThe kubelet checks whether the mounted ConfigMap is fresh on every periodic sync.\nHowever, the kubelet uses its local cache for getting the current value of the ConfigMap.\nThe type of the cache is configurable using the `configMapAndSecretChangeDetectionStrategy` field in\nthe [KubeletConfiguration struct](/docs/reference/config-api/kubelet-config.v1beta1/).\nA ConfigMap can be either propagated by watch (default), ttl-based, or by redirecting\nall requests directly to the API server.\nAs a result, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the Pod can be as long as the kubelet sync period + cache\npropagation delay, where the cache propagation delay depends on the chosen cache type"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/kubeadm/kubeadm-reconfigure#persisting-node-object-reconfiguration-2",
+  "heading": "Reconfiguring a kubeadm cluster > Persisting the reconfiguration > Persisting Node object reconfiguration",
+  "text": "Any changes to the `KubeletConfiguration` stored in `/var/lib/kubelet/config.yaml` will be overwritten on\n`kubeadm upgrade` by downloading the contents of the cluster wide `kubelet-config` ConfigMap.\nTo persist kubelet node specific configuration either the file `/var/lib/kubelet/config.yaml`\nhas to be updated manually post-upgrade or the file `/var/lib/kubelet/kubeadm-flags.env` can include flags.\nThe kubelet flags override the associated `KubeletConfiguration` options, but note that\nsome of the flags are deprecated.\n\nA kubelet restart will be required after changing `/var/lib/kubelet/config.yaml` or\n`/var/lib/kubelet/kubeadm-flags.env`."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#optional-configmaps-2",
+  "heading": "Configure a Pod to Use a ConfigMap > Optional ConfigMaps",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: dapi-test-pod\nspec:\n  containers:\n    - name: test-container\n      image: gcr.io/google_containers/busybox\n      command: [\"/bin/sh\", \"-c\", \"ls /etc/config\"]\n      volumeMounts:\n      - name: config-volume\n        mountPath: /etc/config\n  volumes:\n    - name: config-volume\n      configMap:\n        name: no-config\n        optional: true # mark the source ConfigMap as optional\n  restartPolicy: Never\n```"
+ }
+]

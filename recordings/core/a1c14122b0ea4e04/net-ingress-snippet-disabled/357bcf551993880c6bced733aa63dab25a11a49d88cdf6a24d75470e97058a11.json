@@ -1,0 +1,35 @@
+{
+ "content": [
+  {
+   "signature": "EuoCCqQBCBMYAipAOOEGFlzDQ5lenAJsSuKFbGv5vDmoC4wKx1FCyEoditbNwwisYL/g3WaYl9RvnwhOgdfBMw6FXKJM4Dbfj+7SADIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBk87w1gYSDB6Y58njXavZ3oqVOhoMQ7WP79HgTm2bJpQrIjDopGizVBhd4VNYi3D+TkOVrTluRjFW50B/wJNPJXak0RmdrhzI9oZ9KknW8LxnL7gqc/4lXzf4LQiNHVuE6kou7DLDwNNW+Jk/X60y89viCxlUmFnvDZP91Ep/Hw1gZ85MGxJbdLg8YiWfxk7uys5dCeLbyv3noCk0QlZ9uo8//aV8k+Qwre9FnP1eawKjA2Y29Bd9oxRSbsEoG3Fc9C2RD9T2sGsYAQ==",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01RW41Gy33kfjJcqjvZXN3mV",
+   "input": {
+    "pod": "ingress-nginx-controller-5c8f9d7b6-qh4tn"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MDfMEikWihKTPvWu3uwLj3",
+   "input": {
+    "query": "nginx.ingress.kubernetes.io/configuration-snippet annotation deprecated allow-snippet-annotations"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5969,
+ "model": "claude-opus-4-7",
+ "output_tokens": 226,
+ "stop_reason": "tool_use"
+}

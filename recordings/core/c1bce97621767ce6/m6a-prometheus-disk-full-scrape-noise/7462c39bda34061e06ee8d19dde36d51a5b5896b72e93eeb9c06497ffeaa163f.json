@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "The search results don't contain specific Prometheus configuration documentation, but I have enough evidence from the logs to provide a complete resolution. Let me update the ticket with the findings and recommended fix.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01VyUe53V8Sjh4b72He6p7YC",
+   "input": {
+    "id": "T-5005",
+    "note": "## Root Cause\nThe Prometheus persistent volume (100Gi) in the monitoring namespace ran out of disk space, causing data ingestion to fail starting at 03:02:44 on 2026-05-22. This prevented metrics from being scraped and stored, creating gaps in Grafana dashboards and preventing alerts from firing.\n\n## Evidence\nPrometheus logs show a clear progression:\n- At 03:02:44: \"write /prometheus/wal/00004812: no space left on device\" \n- At 05:00:02: \"compaction failed\" error due to no space\n- Multiple subsequent \"Append failed\" errors preventing new samples from being written\n\nThe pod is configured with a 30-day retention policy (--storage.tsdb.retention.time=30d) on the 100Gi volume, which appears insufficient for the current scraping rate.\n\n## Fix\nTo resolve this issue and prevent recurrence:\n\n1. **Immediately**: Delete old metrics data to free space. Connect to the Prometheus pod and remove old block files from /prometheus to restore normal operation.\n\n2. **Short-term**: Investigate and increase the Prometheus storage capacity by:\n   - Expanding the persistent volume beyond 100Gi (the storage class supports allowVolumeExpansion)\n   - Or reducing the retention period from 30 days to a shorter period that fits within the 100Gi allocation\n\n3. **Long-term**: Implement a proper storage strategy:\n   - Consider using Prometheus remote storage solutions like Thanos, Cortex, or Grafana Mimir [cite: concepts/cluster-administration/observability#metrics-tools-0] for longer retention and scalability\n   - Set up monitoring/alerts on Prometheus disk usage to catch this before it happens again\n   - Review and adjust retention policies based on your actual metrics volume and retention requirements",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7654,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 543,
+ "stop_reason": "tool_use"
+}

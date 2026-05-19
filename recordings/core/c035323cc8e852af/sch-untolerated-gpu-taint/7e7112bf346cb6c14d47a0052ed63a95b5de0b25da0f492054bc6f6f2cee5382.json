@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:** I resolved ticket T-3002 by identifying that the doc-embedder pod was missing a toleration for the `dedicated: gpu` taint on the GPU nodes. The pod's scheduler message explicitly reported this missing toleration. I provided the owner with the specific toleration to add to their deployment spec to allow scheduling on the GPU node pool.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 4788,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 78,
+ "stop_reason": "end_turn"
+}

@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Excellent! Now I have all the information I need. The issue is clear:\n\n**Cause:** The ledger-export job has an `activeDeadlineSeconds` of 3600 seconds (1 hour), but the job needs more than 1 hour to export 95 batches of ledger data. The last two jobs were terminated with \"DeadlineExceeded\" at batch 69 and batch 69 out of 95, indicating they ran for the full hour and then were killed by the deadline.\n\n**Evidence:**\n- Logs show the job started at 2026-05-20T01:00:04Z and received SIGTERM at 2026-05-20T02:00:04Z - exactly 1 hour later\n- The job was only at batch 69/95 when killed\n- The previous run (29635540-p2mcs) succeeded because it must have completed within the 1-hour window\n- Exit code 143 indicates the process was terminated by SIGTERM signal\n\n**Fix:** The owner needs to increase the `activeDeadlineSeconds` in the CronJob spec for ledger-export to allow enough time for all 95 batches to complete. Based on the logs showing ~8 minutes per 10 batches, 95 batches would need roughly 75+ minutes, so setting it to 5400 seconds (90 minutes) or higher would be appropriate.\n\nLet me update the ticket:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01A2yiQHXoDWikxzZYdPbBFD",
+   "input": {
+    "id": "T-2005",
+    "note": "The ledger-export cronjob is failing due to exceeding its activeDeadlineSeconds timeout. The job has activeDeadlineSeconds set to 3600 seconds (1 hour), but it needs longer to complete all 95 batches of ledger export [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-1].\n\nEvidence: The logs show the job started at 2026-05-20T01:00:04Z and received SIGTERM termination signal exactly 1 hour later at 2026-05-20T02:00:04Z, after completing only batch 69/95. The exit code 143 indicates SIGTERM termination. The previous successful run (29635540-p2mcs) completed within the 1-hour window.\n\nFix: Increase the activeDeadlineSeconds in the ledger-export CronJob spec. Based on the observed rate of ~8 minutes per 10 batches, the job needs at least 75+ minutes to complete all 95 batches. Recommend setting activeDeadlineSeconds to at least 5400 seconds (90 minutes) to allow sufficient margin.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4794,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 680,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/containers/images#imagepullbackoff-0",
+  "heading": "Images > Updating images > ImagePullBackOff",
+  "text": "When a kubelet starts creating containers for a Pod using a container runtime,\nit might be possible the container is in [Waiting](/docs/concepts/workloads/pods/pod-lifecycle/#container-state-waiting)\nstate because of `ImagePullBackOff`.\n\nThe status `ImagePullBackOff` means that a container could not start because Kubernetes\ncould not pull a container image (for reasons such as invalid image name, or pulling\nfrom a private registry without `imagePullSecret`). The `BackOff` part indicates\nthat Kubernetes will keep trying to pull the image, with an increasing back-off delay.\n\nKubernetes raises the delay between each attempt until it reaches a compiled-in limit,\nwhich is 300 seconds (5 minutes)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#create-a-pod-that-uses-your-secret-1",
+  "heading": "Pull an Image from a Private Registry > Create a Pod that uses your Secret",
+  "text": "To pull the image from the private registry, Kubernetes needs credentials.\nThe `imagePullSecrets` field in the configuration file specifies that\nKubernetes should get the credentials from a Secret named `regcred`.\n\nCreate a Pod that uses your Secret, and verify that the Pod is running:\n\n```shell\nkubectl apply -f my-private-reg-pod.yaml\nkubectl get pod private-reg\n```\n\nTo use image pull secrets for a Pod (or a Deployment, or other object that\nhas a pod template that you are using), you need to make sure that the appropriate\nSecret does exist in the right namespace. The namespace to use is the same\nnamespace where you defined the Pod.\n\nAlso, in case the Pod fails to start with the status `ImagePullBackOff`, view the Pod events:\n\n```shell\nkubectl describe pod private-reg\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-2",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "When a pod is failing to start repeatedly, `CrashLoopBackOff` may appear in the `Status` field of some kubectl commands.\nSimilarly, when a pod is being deleted, `Terminating` may appear in the `Status` field of some kubectl commands.\n\nMake sure not to confuse _Status_, a kubectl display field for user intuition, with the pod's `phase`.\nPod phase is an explicit part of the Kubernetes data model and of the\n[Pod API](/docs/reference/kubernetes-api/workload-resources/pod-v1/). \n\n```\n  NAMESPACE               NAME               READY   STATUS             RESTARTS   AGE\n  alessandras-namespace   alessandras-pod    0/1     CrashLoopBackOff   200        2d9h\n```\n\nA Pod is granted a term to terminate gracefully, which defaults to 30 seconds.\nYou can use the flag `--force` to [terminate a Pod by force](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-backoff-failure-policy-1",
+  "heading": "Jobs > Handling Pod and container failures > Pod backoff failure policy",
+  "text": "- The number of Pods with `.status.phase = \"Failed\"`.\n- When using `restartPolicy = \"OnFailure\"`, the number of retries in all the\n  containers of Pods with `.status.phase` equal to `Pending` or `Running`.\n\nIf either of the calculations reaches the `.spec.backoffLimit`, the Job is\nconsidered failed.\n\nIf your Job has `restartPolicy = \"OnFailure\"`, keep in mind that your Pod running the job\nwill be terminated once the job backoff limit has been reached. This can make debugging\nthe Job's executable more difficult. We suggest setting\n`restartPolicy = \"Never\"` when debugging the Job or using a logging system to ensure output\nfrom failed Jobs is not lost inadvertently."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#image-4",
+  "heading": "Volumes > Types of volumes > image",
+  "text": "See the [_Use an Image Volume With a Pod_](/docs/tasks/configure-pod-container/image-volumes)\nexample for more details on how to use the volume source.\n\n#### Pod status and `image` volumes {#image-volume-pod-status}\n\nIf the `ImageVolumeWithDigest` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)\nis enabled in your cluster,\nthen whenever you specify an `image` volume for a Pod,\nthe kubelet updates the Pod status to record the _digest_\nof the container image that's being used as a volume source.\n\nHere's a simplified example of a running Pod, represented as YAML, including the status update.\nNote the new `ImageRef` field under `volumeMounts` in the container status."
+ },
+ {
+  "chunk_id": "concepts/containers/images#image-pull-policy-4",
+  "heading": "Images > Updating images > Image pull policy",
+  "text": "When you (or a controller) submit a new Pod to the API server, your cluster sets the\n`imagePullPolicy` field when specific conditions are met:\n\n- if you omit the `imagePullPolicy` field, and you specify the digest for the\n  container image, the `imagePullPolicy` is automatically set to `IfNotPresent`.\n- if you omit the `imagePullPolicy` field, and the tag for the container image is\n  `:latest`, `imagePullPolicy` is automatically set to `Always`.\n- if you omit the `imagePullPolicy` field, and you don't specify the tag for the\n  container image, `imagePullPolicy` is automatically set to `Always`.\n- if you omit the `imagePullPolicy` field, and you specify a tag for the container\n  image that isn't `:latest`, the `imagePullPolicy` is automatically set to\n  `IfNotPresent`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/_index#pod-generation-2",
+  "heading": "Pods > Pod update and replacement > Pod generation",
+  "text": "- **Container Image**: The `ContainerStatus.ImageID` reflects the image from the previous generation until the new image\n  is pulled and the container is updated.\n- **Actual Resources**: During an in-progress resize, the actual resources in use still belong to the previous generation's\n  request.\n- **Container state**: During an in-progress resize, with require restart policy reflects the previous generation's\n  request.\n- **activeDeadlineSeconds** & **terminationGracePeriodSeconds** & **deletionTimestamp**: The effects of these fields on the\n  Pod's status are a result of the previously observed specification.\n\nResource sharing and communication\nPods enable data sharing and communication among their constituent\ncontainers."
+ },
+ {
+  "chunk_id": "concepts/containers/images#image-pull-policy-6",
+  "heading": "Images > Updating images > Image pull policy",
+  "text": "- Set the `imagePullPolicy` of the container to `Always`.\n- Omit the `imagePullPolicy` and use `:latest` as the tag for the image to use;\n  Kubernetes will set the policy to `Always` when you submit the Pod.\n- Omit the `imagePullPolicy` and the tag for the image to use;\n  Kubernetes will set the policy to `Always` when you submit the Pod.\n- Enable the [AlwaysPullImages](/docs/reference/access-authn-authz/admission-controllers/#alwayspullimages)\n  admission controller."
+ }
+]

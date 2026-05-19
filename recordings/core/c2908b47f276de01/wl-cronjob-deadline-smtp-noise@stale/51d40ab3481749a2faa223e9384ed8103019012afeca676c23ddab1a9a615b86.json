@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-2005 by identifying that the nightly ledger-export cronjob was failing due to exceeding its `activeDeadlineSeconds` deadline of 3600 seconds (1 hour). The job logs showed it was processing 95 batches of ledger data but was being terminated by SIGTERM after exactly 1 hour while still on batch 69. The fix is to increase the `activeDeadlineSeconds` value in the CronJob specification to allow sufficient time for the job to complete all 95 batches, with a recommended setting of at least 5400 seconds (90 minutes).",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5764,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 143,
+ "stop_reason": "end_turn"
+}

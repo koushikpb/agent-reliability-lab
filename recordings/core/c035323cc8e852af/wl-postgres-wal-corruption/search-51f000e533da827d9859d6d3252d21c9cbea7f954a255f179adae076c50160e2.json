@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/job#ttl-mechanism-for-finished-jobs-2",
+  "heading": "Jobs > Clean up finished jobs automatically > TTL mechanism for finished Jobs",
+  "text": "It is recommended to set `ttlSecondsAfterFinished` field because unmanaged jobs\n(Jobs that you created directly, and not indirectly through other workload APIs\nsuch as CronJob) have a default deletion\npolicy of `orphanDependents` causing Pods created by an unmanaged Job to be left around\nafter that Job is fully deleted.\nEven though the control plane eventually\n[garbage collects](/docs/concepts/workloads/pods/pod-lifecycle/#pod-garbage-collection)\nthe Pods from a deleted Job after they either fail or complete, sometimes those\nlingering pods may cause cluster performance degradation or in worst case cause the\ncluster to go offline due to this degradation.\n\nYou can use [LimitRanges](/docs/concepts/policy/limit-range/) and\n[ResourceQuotas](/docs/concepts/policy/resource-quotas/) to place a\ncap on the amount of resources that a particular namespace can\nconsume."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#taint-based-evictions-3",
+  "heading": "Taints and Tolerations > Taint based Evictions",
+  "text": "In case a node is to be drained, the node controller or the kubelet adds relevant taints\nwith `NoExecute` effect. This effect is added by default for the\n`node.kubernetes.io/not-ready` and `node.kubernetes.io/unreachable` taints.\nIf the fault condition returns to normal, the kubelet or node\ncontroller can remove the relevant taint(s).\n\nIn some cases when the node is unreachable, the API server is unable to communicate\nwith the kubelet on the node. The decision to delete the pods cannot be communicated to\nthe kubelet until communication with the API server is re-established. In the meantime,\nthe pods that are scheduled for deletion may continue to run on the partitioned node.\n\nThe control plane limits the rate of adding new taints to nodes. This rate limiting\nmanages the number of evictions that are triggered when many nodes become unreachable at\nonce (for example: if there is a network disruption)."
+ },
+ {
+  "chunk_id": "concepts/storage/projected-volumes#windows-0",
+  "heading": "Projected Volumes > SecurityContext interactions > Windows",
+  "text": "In Windows pods that have a projected volume and `RunAsUsername` set in the\nPod `SecurityContext`, the ownership is not enforced due to the way user\naccounts are managed in Windows. Windows stores and manages local user and group\naccounts in a database file called Security Account Manager (SAM). Each\ncontainer maintains its own instance of the SAM database, to which the host has\nno visibility into while the container is running. Windows containers are\ndesigned to run the user mode portion of the OS in isolation from the host,\nhence the maintenance of a virtual SAM database. As a result, the kubelet running\non the host does not have the ability to dynamically configure host file\nownership for virtualized container accounts. It is recommended that if files on\nthe host machine are to be shared with the container then they should be placed\ninto their own volume mount outside of `C:\\`.\n\nBy default, the projected files will have the following ownership as shown for\nan example projected volume file:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#specific-scenarios-1",
+  "heading": "Troubleshooting Clusters > Cluster failure modes > Specific scenarios",
+  "text": "      (Assuming the master VM ends up in partition A.)\n- Kubelet software fault\n  - Results\n    - crashing kubelet cannot start new pods on the node\n    - kubelet might delete the pods or not\n    - node marked unhealthy\n    - replication controllers start new pods elsewhere\n- Cluster operator error\n  - Results\n    - loss of pods, services, etc\n    - lost of apiserver backing store\n    - users unable to read API\n    - etc."
+ },
+ {
+  "chunk_id": "concepts/security/cloud-native-security#lifecycle-phase-distribute-0",
+  "heading": "Cloud Native Security and Kubernetes > _Distribute_ lifecycle phase",
+  "text": "- Ensure the security of the supply chain for container images you execute.\n- Ensure the security of the supply chain for the cluster and other components\n  that execute your application. For example, this might include an external\n  database that your cloud native application uses for persistence.\n\nTo achieve this, you can:\n\n1. Scan container images and other artifacts for known vulnerabilities.\n1. Ensure that software distribution uses encryption in transit, with\n   a chain of trust for the software source.\n1. Adopt and follow processes to update dependencies when updates are\n   available, especially in response to security announcements.\n1. Use validation mechanisms such as digital certificates for supply\n   chain assurance.\n1. Subscribe to feeds and other mechanisms to alert you to security\n   risks.\n1. Restrict access to artifacts. Place container images in a\n   [private registry](/docs/concepts/containers/images/#using-a-private-registry)\n   that only allows authorized clients to pull images."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#using-subpath-0",
+  "heading": "Volumes > Using subPath",
+  "text": "Sometimes, it is useful to share one volume for multiple uses in a single Pod.\nThe `volumeMounts[*].subPath` property specifies a sub-path inside the referenced volume\ninstead of its root.\n\nThe following example shows how to configure a Pod with a LAMP stack (Linux, Apache, MySQL, PHP)\nusing a single, shared volume. This sample `subPath` configuration is not recommended\nfor production use.\n\nThe PHP application's code and assets map to the volume's `html` folder and\nthe MySQL database is stored in the volume's `mysql` folder. For example:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#mitigations-1",
+  "heading": "Troubleshooting Clusters > Cluster failure modes > Mitigations",
+  "text": "- Action: Snapshot apiserver PDs/EBS-volumes periodically\n  - Mitigates: Apiserver backing storage lost\n  - Mitigates: Some cases of operator error\n  - Mitigates: Some cases of Kubernetes software fault\n\n- Action: use replication controller and services in front of pods\n  - Mitigates: Node shutdown\n  - Mitigates: Kubelet software fault\n\n- Action: applications (containers) designed to tolerate unexpected restarts\n  - Mitigates: Node shutdown\n  - Mitigates: Kubelet software fault"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#backoff-limit-per-index-2",
+  "heading": "Jobs > Handling Pod and container failures > Backoff limit per index",
+  "text": "```yaml\n  status:\n    completedIndexes: 1,3,5,7,9\n    failedIndexes: 0,2,4,6,8\n    succeeded: 5          # 1 succeeded pod for each of 5 succeeded indexes\n    failed: 10            # 2 failed pods (1 retry) for each of 5 failed indexes\n    conditions:\n    - message: Job has failed indexes\n      reason: FailedIndexes\n      status: \"True\"\n      type: FailureTarget\n    - message: Job has failed indexes\n      reason: FailedIndexes\n      status: \"True\"\n      type: Failed\n```\n\nThe Job controller adds the `FailureTarget` Job condition to trigger\n[Job termination and cleanup](#job-termination-and-cleanup). When all of the\nJob Pods are terminated, the Job controller adds the `Failed` condition\nwith the same values for `reason` and `message` as the `FailureTarget` Job\ncondition. For details, see [Termination of Job Pods](#termination-of-job-pods)."
+ }
+]

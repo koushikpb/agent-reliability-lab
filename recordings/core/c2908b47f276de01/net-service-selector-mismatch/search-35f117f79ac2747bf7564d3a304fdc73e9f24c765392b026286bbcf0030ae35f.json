@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-2",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "This confirms that the EndpointSlice controller has found the correct Pods for\nyour Service.  If the `ENDPOINTS` column is `<none>`, you should check that\nthe `spec.selector` field of your Service actually selects for\n`metadata.labels` values on your Pods.  A common mistake is to have a typo or\nother error, such as the Service selecting for `app=hostnames`, but the\nDeployment specifying `run=hostnames`, as in versions previous to 1.18, where\nthe `kubectl run` command could have been also used to create a Deployment."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-1",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Because this Service has no selector, the corresponding EndpointSlice\nobjects are not created automatically. You can map the Service\nto the network address and port where it's running, by adding an EndpointSlice\nobject manually. For example:\n\n```yaml\napiVersion: discovery.k8s.io/v1\nkind: EndpointSlice\nmetadata:\n  name: my-service-1 # by convention, use the name of the Service\n                     # as a prefix for the name of the EndpointSlice\n  labels:\n    # You should set the \"kubernetes.io/service-name\" label.\n    # Set its value to match the name of the Service\n    kubernetes.io/service-name: my-service\naddressType: IPv4\nports:\n  - name: http # should match with the name of the service port defined above\n    appProtocol: http\n    protocol: TCP\n    port: 9376\nendpoints:\n  - addresses:\n      - \"10.4.5.6\"\n  - addresses:\n      - \"10.1.2.3\"\n```\n\n#### Custom EndpointSlices"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-4",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "#### Accessing a Service without a selector {#service-no-selector-access}\n\nAccessing a Service without a selector works the same as if it had a selector.\nIn the [example](#services-without-selectors) for a Service without a selector,\ntraffic is routed to one of the two endpoints defined in\nthe EndpointSlice manifest: a TCP connection to 10.1.2.3 or 10.4.5.6, on port 9376.\n\nThe Kubernetes API server does not allow proxying to endpoints that are not mapped to\npods. Actions such as `kubectl port-forward service/<service-name> forwardedPort:servicePort` where the service has no\nselector will fail due to this constraint. This prevents the Kubernetes API server\nfrom being used as a proxy to endpoints the caller may not be authorized to access.\n\nAn `ExternalName` Service is a special case of Service that does not have\nselectors and uses DNS names instead. For more information, see the\n[ExternalName](#externalname) section."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-0",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Services most commonly abstract access to Kubernetes Pods thanks to the selector,\nbut when used with a corresponding set of\nEndpointSlices\nobjects and without a selector, the Service can abstract other kinds of backends,\nincluding ones that run outside the cluster.\n\nFor example:\n\n* You want to have an external database cluster in production, but in your\n  test environment you use your own databases.\n* You want to point your Service to a Service in a different\n  namespace or on another cluster.\n* You are migrating a workload to Kubernetes. While evaluating the approach,\n  you run only a portion of your backends in Kubernetes.\n\nIn any of these scenarios you can define a Service _without_ specifying a\nselector to match Pods. For example:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  ports:\n    - name: http\n      protocol: TCP\n      port: 80\n      targetPort: 9376\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-0",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "If you got this far, you have confirmed that your Service is correctly\ndefined and is resolved by DNS.  Now let's check that the Pods you ran are\nactually being selected by the Service.\n\nEarlier you saw that the Pods were running.  You can re-check that:\n\n```shell\nkubectl get pods -l app=hostnames\n```\n```none\nNAME                        READY     STATUS    RESTARTS   AGE\nhostnames-632524106-bbpiw   1/1       Running   0          1h\nhostnames-632524106-ly40y   1/1       Running   0          1h\nhostnames-632524106-tlaok   1/1       Running   0          1h\n```\n\nThe `-l app=hostnames` argument is a label selector configured on the Service.\n\nThe \"AGE\" column says that these Pods are about an hour old, which implies that\nthey are running fine and not crashing."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service-traffic-policy#using-service-internal-traffic-policy-0",
+  "heading": "Service Internal Traffic Policy > Using Service Internal Traffic Policy",
+  "text": "You can enable the internal-only traffic policy for a\nService, by setting its\n`.spec.internalTrafficPolicy` to `Local`. This tells kube-proxy to only use node local\nendpoints for cluster internal traffic.\n\nFor pods on nodes with no endpoints for a given Service, the Service\nbehaves as if it has zero endpoints (for Pods on this node) even if the service\ndoes have endpoints on other nodes.\n\nThe following example shows what a Service looks like when you set\n`.spec.internalTrafficPolicy` to `Local`:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n      targetPort: 9376\n  internalTrafficPolicy: Local\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#pod-selector-0",
+  "heading": "StatefulSets > Components > Pod Selector",
+  "text": "You must set the `.spec.selector` field of a StatefulSet to match the labels of its\n`.spec.template.metadata.labels`. Failing to specify a matching Pod Selector will result in a\nvalidation error during StatefulSet creation."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/daemonset#pod-selector-1",
+  "heading": "DaemonSet > Writing a DaemonSet Spec > Pod Selector",
+  "text": "The `.spec.selector` must match the `.spec.template.metadata.labels`.\nConfig with these two not matching will be rejected by the API."
+ }
+]

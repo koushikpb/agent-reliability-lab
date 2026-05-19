@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#proportional-scaling-2",
+  "heading": "Deployments > Scaling a Deployment > Proportional scaling",
+  "text": "* Then a new scaling request for the Deployment comes along. The autoscaler increments the Deployment replicas\nto 15. The Deployment controller needs to decide where to add these new 5 replicas. If you weren't using\nproportional scaling, all 5 of them would be added in the new ReplicaSet. With proportional scaling, you\nspread the additional replicas across all ReplicaSets. Bigger proportions go to the ReplicaSets with the\nmost replicas and lower proportions go to ReplicaSets with less replicas. Any leftovers are added to the\nReplicaSet with the most replicas. ReplicaSets with zero replicas are not scaled up.\n\nIn our example above, 3 replicas are added to the old ReplicaSet and 2 replicas are added to the\nnew ReplicaSet. The rollout process should eventually move all replicas to the new ReplicaSet, assuming\nthe new replicas become healthy. To confirm this, run:\n\n```shell\nkubectl get deploy\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicationcontroller#responsibilities-of-the-replicationcontroller-1",
+  "heading": "ReplicationController > Responsibilities of the ReplicationController",
+  "text": "The ReplicationController is forever constrained to this narrow responsibility. It itself will not perform readiness nor liveness probes. Rather than performing auto-scaling, it is intended to be controlled by an external auto-scaler (as discussed in [#492](https://issue.k8s.io/492)), which would change its `replicas` field. We will not add scheduling policies (for example, [spreading](https://issue.k8s.io/367#issuecomment-48428019)) to the ReplicationController. Nor should it verify that the pods controlled match the currently specified template, as that would obstruct auto-sizing and other automated processes. Similarly, completion deadlines, ordering dependencies, configuration expansion, and other features belong elsewhere. We even plan to factor out the mechanism for bulk pod creation ([#170](https://issue.k8s.io/170))."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicaset#replicaset-as-a-horizontal-pod-autoscaler-target-1",
+  "heading": "ReplicaSet > Working with ReplicaSets > ReplicaSet as a Horizontal Pod Autoscaler Target",
+  "text": "```shell\nkubectl apply -f https://k8s.io/examples/controllers/hpa-rs.yaml\n```\n\nAlternatively, you can use the `kubectl autoscale` command to accomplish the same\n(and it's easier!)\n\n```shell\nkubectl autoscale rs frontend --max=10 --min=3 --cpu=50%\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicaset#scaling-a-replicaset-0",
+  "heading": "ReplicaSet > Working with ReplicaSets > Scaling a ReplicaSet",
+  "text": "A ReplicaSet can be easily scaled up or down by simply updating the `.spec.replicas` field. The ReplicaSet controller\nensures that a desired number of Pods with a matching label selector are available and operational.\n\nWhen scaling down, the ReplicaSet controller chooses which pods to delete by sorting the available pods to\nprioritize scaling down pods based on the following general algorithm:\n\n1. Pending (and unschedulable) pods are scaled down first\n1. If `controller.kubernetes.io/pod-deletion-cost` annotation is set, then\n   the pod with the lower value will come first.\n1. Pods on nodes with more replicas come before pods on nodes with fewer replicas.\n1. If the pods' creation times differ, the pod that was created more recently\n   comes before the older pod (the creation times are bucketed on an integer log scale).\n\nIf all of the above match, then selection is random."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicaset#replicaset-as-a-horizontal-pod-autoscaler-target-0",
+  "heading": "ReplicaSet > Working with ReplicaSets > ReplicaSet as a Horizontal Pod Autoscaler Target",
+  "text": "A ReplicaSet can also be a target for\n[Horizontal Pod Autoscalers (HPA)](/docs/tasks/run-application/horizontal-pod-autoscale/). That is,\na ReplicaSet can be auto-scaled by an HPA. Here is an example HPA targeting\nthe ReplicaSet we created in the previous example.\n\n```yaml\napiVersion: autoscaling/v1\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: frontend-scaler\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: ReplicaSet\n    name: frontend\n  minReplicas: 3\n  maxReplicas: 10\n  targetCPUUtilizationPercentage: 50\n```\n\nSaving this manifest into `hpa-rs.yaml` and submitting it to a Kubernetes cluster should\ncreate the defined HPA that autoscales the target ReplicaSet depending on the CPU usage\nof the replicated Pods."
+ },
+ {
+  "chunk_id": "tasks/run-application/scale-stateful-set#scaling-down-does-not-work-right-0",
+  "heading": "Scale a StatefulSet > Troubleshooting > Scaling down does not work right",
+  "text": "You cannot scale down a StatefulSet when any of the stateful Pods it manages is\nunhealthy. Scaling down only takes place after those stateful Pods become running and ready.\n\nIf spec.replicas > 1, Kubernetes cannot determine the reason for an unhealthy Pod.\nIt might be the result of a permanent fault or of a transient fault. A transient\nfault can be caused by a restart required by upgrading or maintenance.\n\nIf the Pod is unhealthy due to a permanent fault, scaling\nwithout correcting the fault may lead to a state where the StatefulSet membership\ndrops below a certain minimum number of replicas that are needed to function\ncorrectly. This may cause your StatefulSet to become unavailable.\n\nIf the Pod is unhealthy due to a transient fault and the Pod might become available again,\nthe transient error may interfere with your scale-up or scale-down operation. Some distributed\ndatabases have issues when nodes join and leave at the same time. It is better\nto reason about scaling operations at the application level in these cases, and\nperform scaling only when you are sure that your stateful application cluster is\ncompletely healthy."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#algorithm-details-4",
+  "heading": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work? > Algorithm details",
+  "text": "Note that the _original_ value for the average utilization is reported\nback via the HorizontalPodAutoscaler status, without factoring in the\nnot-yet-ready pods or missing metrics, even when the new usage ratio is\nused.\n\nIf multiple metrics are specified in a HorizontalPodAutoscaler, this\ncalculation is done for each metric, and then the largest of the desired\nreplica counts is chosen. If any of these metrics cannot be converted\ninto a desired replica count (e.g. due to an error fetching the metrics\nfrom the metrics APIs) and a scale down is suggested by the metrics which\ncan be fetched, scaling is skipped. This means that the HPA is still capable\nof scaling up if one or more metrics give a `desiredReplicas` greater than\nthe current value."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#scaling-policies-0",
+  "heading": "Horizontal Pod Autoscaling > Configurable scaling behavior > Scaling policies",
+  "text": "One or more scaling policies can be specified in the `behavior` section of the spec.\nWhen multiple policies are specified the policy which allows the highest amount of\nchange is the policy which is selected by default. The following example shows this behavior\nwhile scaling down:\n\n```yaml\nbehavior:\n  scaleDown:\n    policies:\n    - type: Pods\n      value: 4\n      periodSeconds: 60\n    - type: Percent\n      value: 10\n      periodSeconds: 60\n```\n\n`periodSeconds` indicates the length of time in the past for which the policy must hold true.\nThe maximum value that you can set for `periodSeconds` is 1800 (half an hour).\nThe first policy _(Pods)_ allows at most 4 replicas to be scaled down in one minute. The second policy\n_(Percent)_ allows at most 10% of the current replicas to be scaled down in one minute."
+ }
+]

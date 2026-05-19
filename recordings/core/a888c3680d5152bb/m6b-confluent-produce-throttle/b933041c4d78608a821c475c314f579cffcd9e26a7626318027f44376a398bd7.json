@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "These results don't address Kafka specifically. Let me search more directly for Kafka consumer issues:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_017XtWtZMN438U8ugCWykwJx",
+   "input": {
+    "query": "Kafka consumer partition rebalance scaling"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4985,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 81,
+ "stop_reason": "tool_use"
+}

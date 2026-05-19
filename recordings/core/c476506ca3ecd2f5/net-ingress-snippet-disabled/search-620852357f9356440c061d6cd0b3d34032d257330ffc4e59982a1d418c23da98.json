@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#tls-1",
+  "heading": "Ingress > Types of Ingress > TLS",
+  "text": "Referencing this secret in an Ingress tells the Ingress controller to\nsecure the channel from the client to the load balancer using TLS. You need to make\nsure the TLS secret you created came from a certificate that contains a Common\nName (CN), also known as a Fully Qualified Domain Name (FQDN) for `https-example.foo.com`.\n\nKeep in mind that TLS will not work on the default rule because the\ncertificates would have to be issued for all the possible sub-domains. Therefore,\n`hosts` in the `tls` section need to explicitly match the `host` in the `rules`\nsection.\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: tls-example-ingress\nspec:\n  tls:\n  - hosts:\n      - https-example.foo.com\n    secretName: testsecret-tls\n  rules:\n  - host: https-example.foo.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: service1\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#resource-backend-1",
+  "heading": "Ingress > The Ingress resource > Resource backends",
+  "text": "```\nName:             ingress-resource-backend\nNamespace:        default\nAddress:\nDefault backend:  APIGroup: k8s.example.com, Kind: StorageBucket, Name: static-assets\nRules:\n  Host        Path  Backends\n  ----        ----  --------\n  *\n              /icons   APIGroup: k8s.example.com, Kind: StorageBucket, Name: icon-assets\nAnnotations:  <none>\nEvents:       <none>\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-1",
+  "heading": "Ingress > The Ingress resource",
+  "text": "An Ingress needs `apiVersion`, `kind`, `metadata` and `spec` fields.\nThe name of an Ingress object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).\nFor general information about working with config files, see\n[deploying applications](/docs/tasks/run-application/run-stateless-application-deployment/),\n[configuring containers](/docs/tasks/configure-pod-container/configure-pod-configmap/),\n[managing resources](/docs/concepts/workloads/management/).\nIngress controllers frequently use [annotations](/docs/concepts/overview/working-with-objects/annotations/) to configure behavior.\nReview the documentation for your choice of ingress controller to learn which annotations are expected and / or supported."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#components-1",
+  "heading": "StatefulSets > Components",
+  "text": "```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx\n  labels:\n    app: nginx\nspec:\n  ports:\n  - port: 80\n    name: web\n  clusterIP: None\n  selector:\n    app: nginx\n---\napiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: web\nspec:\n  selector:\n    matchLabels:\n      app: nginx # has to match .spec.template.metadata.labels\n  serviceName: \"nginx\"\n  replicas: 3 # by default is 1\n  minReadySeconds: 10 # by default is 0\n  template:\n    metadata:\n      labels:\n        app: nginx # has to match .spec.selector.matchLabels\n    spec:\n      terminationGracePeriodSeconds: 10\n      containers:\n      - name: nginx\n        image: registry.k8s.io/nginx-slim:0.24\n        ports:\n        - containerPort: 80\n          name: web\n        volumeMounts:\n        - name: www\n          mountPath: /usr/share/nginx/html\n  volumeClaimTemplates:\n  - metadata:\n      name: www\n    spec:\n      accessModes: [ \"ReadWriteOnce\" ]\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#tls-0",
+  "heading": "Ingress > Types of Ingress > TLS",
+  "text": "You can secure an Ingress by specifying a secret\nthat contains a TLS private key and certificate. The Ingress resource only\nsupports a single TLS port, 443, and assumes TLS termination at the ingress point\n(traffic to the Service and its Pods is in plaintext).\nIf the TLS configuration section in an Ingress specifies different hosts, they are\nmultiplexed on the same port according to the hostname specified through the\nSNI TLS extension (provided the Ingress controller supports SNI). The TLS secret\nmust contain keys named `tls.crt` and `tls.key` that contain the certificate\nand private key to use for TLS. For example:\n\n```yaml\napiVersion: v1\nkind: Secret\nmetadata:\n  name: testsecret-tls\n  namespace: default\ndata:\n  tls.crt: base64 encoded cert\n  tls.key: base64 encoded key\ntype: kubernetes.io/tls\n```"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#baseline-13",
+  "heading": "Pod Security Standards > Profile Details > Baseline",
+  "text": "\t\t\t\t<p>Setting the SELinux type is restricted, and setting a custom SELinux user or role option is forbidden.</p>\n\t\t\t\t<p><strong>Restricted Fields</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>spec.securityContext.seLinuxOptions.type</code></li>\n\t\t\t\t\t<li><code>spec.containers[*].securityContext.seLinuxOptions.type</code></li>\n\t\t\t\t\t<li><code>spec.initContainers[*].securityContext.seLinuxOptions.type</code></li>\n\t\t\t\t\t<li><code>spec.ephemeralContainers[*].securityContext.seLinuxOptions.type</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<p><strong>Allowed Values</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li>Undefined/\"\"</li>\n\t\t\t\t\t<li><code>container_t</code></li>"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#intro-0",
+  "heading": "Ingress",
+  "text": "The Kubernetes project recommends using [Gateway](https://gateway-api.sigs.k8s.io/) instead of\n[Ingress](/docs/concepts/services-networking/ingress/).\nThe Ingress API has been frozen.\n\nThis means that:\n* The Ingress API is generally available, and is subject to the [stability guarantees](/docs/reference/using-api/deprecation-policy/#deprecating-parts-of-the-api) for generally available APIs.\n  The Kubernetes project has no plans to remove Ingress from Kubernetes.\n* The Ingress API is no longer being developed, and will have no further changes\n  or updates made to it."
+ }
+]

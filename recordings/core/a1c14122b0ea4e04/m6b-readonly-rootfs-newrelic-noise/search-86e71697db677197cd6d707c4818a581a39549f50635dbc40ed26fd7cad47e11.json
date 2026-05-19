@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-1",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "* Volume subpath mounts: only the entire volume can be mounted in a Windows container\n* Subpath volume mounting for Secrets\n* Host mount projection\n* Read-only root filesystem (mapped volumes still support `readOnly`)\n* Block device mapping\n* Memory as the storage medium (for example, `emptyDir.medium` set to `Memory`)\n* File system features like uid/gid; per-user Linux filesystem permissions\n* Setting [secret permissions with DefaultMode](/docs/tasks/inject-data-application/distribute-credentials-secure/#set-posix-permissions-for-secret-keys) (due to UID/GID dependency)\n* NFS based storage/volume support\n* Expanding the mounted volume (resizefs)"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-5",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "When the `InPlacePodVerticalScalingMemoryBackedVolumes` feature gate is enabled, you can dynamically adjust the `sizeLimit` of memory-backed (`medium: Memory`) `emptyDir` volumes, without restarting the Pod or its containers.\n\nFor more details, see [Resize CPU and Memory Resources assigned to Containers](/docs/tasks/configure-pod-container/resize-container-resources/#resizing-memory-backed-emptydir-volumes).\n\n#### emptyDir permissions configuration example\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pd\nspec:\n  containers:\n  - image: registry.k8s.io/test-webserver\n    name: test-container\n    volumeMounts:\n    - mountPath: /cache\n      name: cache-volume\n  volumes:\n  - name: cache-volume\n    emptyDir:\n      mode: 01777\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-1",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "The `emptyDir.medium` field controls where `emptyDir` volumes are stored. By\ndefault `emptyDir` volumes are stored on whatever medium that backs the node\nsuch as disk, SSD, or network storage, depending on your environment. If you set\nthe `emptyDir.medium` field to `\"Memory\"`, Kubernetes mounts a tmpfs (RAM-backed\nfilesystem) for you instead. While tmpfs is very fast, be aware that, unlike\ndisks, files you write count against the memory limit of the container that wrote them."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-4",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pd\nspec:\n  containers:\n  - image: registry.k8s.io/test-webserver\n    name: test-container\n    volumeMounts:\n    - mountPath: /cache\n      name: cache-volume\n  volumes:\n  - name: cache-volume\n    emptyDir:\n      sizeLimit: 500Mi\n```\n\n#### emptyDir memory configuration example\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pd\nspec:\n  containers:\n  - image: registry.k8s.io/test-webserver\n    name: test-container\n    volumeMounts:\n    - mountPath: /cache\n      name: cache-volume\n  volumes:\n  - name: cache-volume\n    emptyDir:\n      sizeLimit: 500Mi\n      medium: Memory\n```\n\n#### emptyDir and in-place Pod resizing"
+ },
+ {
+  "chunk_id": "concepts/security/linux-security#protection-for-secret-data-on-nodes-0",
+  "heading": "Security For Linux Nodes > Protection for Secret data on nodes",
+  "text": "On Linux nodes, memory-backed volumes (such as [`secret`](/docs/concepts/configuration/secret/)\nvolume mounts, or [`emptyDir`](/docs/concepts/storage/volumes/#emptydir) with `medium: Memory`)\nare implemented with a `tmpfs` filesystem.\n\nIf you have swap configured and use an older Linux kernel (or a current kernel and an unsupported configuration of Kubernetes),\n**memory** backed volumes can have data written to persistent storage.\n\nThe Linux kernel officially supports the `noswap` option from version 6.3,\ntherefore it is recommended the used kernel version is 6.3 or later,\nor supports the `noswap` option via a backport, if swap is enabled on the node.\n\nRead [swap memory management](/docs/concepts/cluster-administration/swap-memory-management/#memory-backed-volumes)\nfor more info."
+ },
+ {
+  "chunk_id": "concepts/security/application-security-checklist#security-context-container-0",
+  "heading": "Application Security Checklist > Base security hardening > Container-level `securityContext` recommendations",
+  "text": "- [ ] Disable privilege escalations using `allowPrivilegeEscalation: false`.\n- [ ] Configure the root filesystem to be read-only with `readOnlyRootFilesystem: true`.\n- [ ] Avoid running privileged containers (set `privileged: false`).\n- [ ] Drop all capabilities from the containers and add back only specific ones\n  that are needed for operation of the container."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#eviction-signals-7",
+  "heading": "Node-pressure Eviction > Eviction signals and thresholds > Eviction signals",
+  "text": "The kubelet recognizes three specific filesystem identifiers that can be used with\neviction signals (`<identifier>.inodesFree` or `<identifier>.available`):\n\n1. `nodefs`: The node's main filesystem, used for local disk volumes,\n    emptyDir volumes not backed by memory, log storage, ephemeral storage,\n    and more. For example, `nodefs` contains `/var/lib/kubelet`.\n\n1. `imagefs`: An optional filesystem that container runtimes can use to store\n   container images (which are the read-only layers). If there is no separate\n   `containerfs`, the image filesystem also stores container writable layers.\n\n1. `containerfs`: An optional filesystem that container runtimes can use to\n   store container writable layers. When `containerfs` is used, the `imagefs`\n   filesystem can be split to only store images (read-only layers) and nothing\n   else."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-2",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "A size limit can be specified for the default medium, which limits the capacity\nof the `emptyDir` volume. The storage is allocated from\n[node ephemeral storage](/docs/concepts/storage/ephemeral-storage/#setting-requests-and-limits-for-local-ephemeral-storage).\nIf that is filled up from another source (for example, log files or image overlays),\nthe `emptyDir` may run out of capacity before this limit.\nIf no size is specified, memory-backed volumes are sized to node allocatable memory.\n\nPlease check [here](/docs/concepts/configuration/manage-resources-containers/#memory-backed-emptydir)\nfor points to note in terms of resource management when using memory-backed `emptyDir`."
+ }
+]

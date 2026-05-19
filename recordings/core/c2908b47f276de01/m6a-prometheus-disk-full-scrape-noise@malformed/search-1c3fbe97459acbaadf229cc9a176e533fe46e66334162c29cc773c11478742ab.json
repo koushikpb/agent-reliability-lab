@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-1",
+  "heading": "Observability > Metrics",
+  "text": "flowchart LR\n    C[Cluster components] --> P[Prometheus scraper]\n    P --> TS[(Time series storage)]\n    TS --> D[Dashboards and alerts]\n    TS --> A[Automated actions]\n\n*Figure 2. Components of a typical Kubernetes metrics pipeline.*\n\nFor multi-cluster or multi-cloud visibility, distributed time series databases (for example Thanos or Cortex) can complement Prometheus.\n\nSee [Common observability tools - metrics tools](#metrics-tools) for metrics scrapers and time series databases."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#logging-tools-0",
+  "heading": "Observability > Common observability tools > Logging tools",
+  "text": "- [Elasticsearch](https://www.elastic.co/elasticsearch/) delivers distributed log indexing and search.\n- [Fluent Bit](https://fluentbit.io/) collects and forwards container and node logs with a low resource footprint.\n- [Fluentd](https://www.fluentd.org/) routes and transforms logs to multiple destinations.\n- [Grafana Loki](https://grafana.com/oss/loki/) stores logs in a Prometheus-inspired, label-based format.\n- [OpenSearch](https://opensearch.org/) provides open source log indexing and search compatible with Elasticsearch APIs."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-tools-0",
+  "heading": "Observability > Common observability tools > Metrics tools",
+  "text": "- [Cortex](https://cortexmetrics.io/) offers horizontally scalable, long-term Prometheus storage.\n- [Grafana Mimir](https://grafana.com/oss/mimir/) is a Grafana Labs project that provides multi-tenant, horizontally scalable Prometheus-compatible storage.\n- [Prometheus](https://prometheus.io/) is the monitoring system that scrapes and stores metrics from Kubernetes components.\n- [Thanos](https://thanos.io/) extends Prometheus with global querying, downsampling, and object storage support."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-metrics#metrics-in-kubernetes-0",
+  "heading": "Metrics For Kubernetes System Components > Metrics in Kubernetes",
+  "text": "In most cases metrics are available on `/metrics` endpoint of the HTTP server. For components that\ndon't expose endpoint by default, it can be enabled using `--bind-address` flag.\n\nExamples of those components:\n\n* kube-controller-manager\n* kube-proxy\n* kube-apiserver\n* kube-scheduler\n* kubelet\n\nIn a production environment you may want to configure [Prometheus Server](https://prometheus.io/)\nor some other metrics scraper to periodically gather these metrics and make them available in some\nkind of time series database.\n\nNote that kubelet also exposes metrics in\n`/metrics/cadvisor`, `/metrics/resource` and `/metrics/probes` endpoints. Those metrics do not\nhave the same lifecycle.\n\nIf your cluster uses RBAC, reading metrics requires\nauthorization via a user, group or ServiceAccount with a ClusterRole that allows accessing\n`/metrics`. For example:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/monitor-node-health#exporter-0",
+  "heading": "Monitor Node Health > Exporter",
+  "text": "An exporter reports the node problems and/or metrics to certain backends.\nThe following exporters are supported:\n\n- **Kubernetes exporter**: this exporter reports node problems to the Kubernetes API server.\n  Temporary problems are reported as Events and permanent problems are reported as Node Conditions.\n\n- **Prometheus exporter**: this exporter reports node problems and metrics locally as Prometheus\n  (or OpenMetrics) metrics. You can specify the IP address and port for the exporter using command\n  line arguments.\n\n- **Stackdriver exporter**: this exporter reports node problems and metrics to the Stackdriver\n  Monitoring API. The exporting behavior can be customized using a\n  [configuration file](https://github.com/kubernetes/node-problem-detector/blob/v0.8.12/config/exporter/stackdriver-exporter.json)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#parameter-tuning-0",
+  "heading": "Auditing > Parameter tuning",
+  "text": "Parameters should be set to accommodate the load on the API server.\n\nFor example, if kube-apiserver receives 100 requests each second, and each request is audited only\non `ResponseStarted` and `ResponseComplete` stages, you should account for \u2245200 audit\nevents being generated each second. Assuming that there are up to 100 events in a batch,\nyou should set throttling level at least 2 queries per second. Assuming that the backend can take up to\n5 seconds to write events, you should set the buffer size to hold up to 5 seconds of events;\nthat is: 10 batches, or 1000 events.\n\nIn most cases however, the default parameters should be sufficient and you don't have to worry about\nsetting them manually. You can look at the following Prometheus metrics exposed by kube-apiserver\nand in the logs to monitor the state of the auditing subsystem.\n\n- `apiserver_audit_event_total` metric contains the total number of audit events exported.\n- `apiserver_audit_error_total` metric contains the total number of events dropped due to an error\n  during exporting."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#configurations-0",
+  "heading": "Local ephemeral storage > Configurations for local ephemeral storage",
+  "text": "Kubernetes supports the following ways to configure local ephemeral storage on a\nnode:\n\nIn this configuration, you place all different kinds of ephemeral local data\n(`emptyDir` volumes, writeable layers, container images, logs) into one filesystem.\n\nThe kubelet also writes\n[node-level container logs](/docs/concepts/cluster-administration/logging/#logging-at-the-node-level)\nand treats these similarly to ephemeral local storage.\n\nThe kubelet writes logs to files inside its configured log directory (`/var/log`\nby default); and has a base directory for other locally stored data\n(`/var/lib/kubelet` by default).\n\nTypically, both `/var/lib/kubelet` and `/var/log` are on the system root filesystem,\nand the kubelet is designed with that layout in mind.\n\nYour node can have as many other filesystems, not used for Kubernetes,\nas you like."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#logs-1",
+  "heading": "Observability > Logs",
+  "text": "- On machines with `systemd`, the kubelet and container runtime write to journald. Otherwise, they write to `.log` files in the `/var/log` directory.\n- System components that run inside containers always write to `.log` files in `/var/log`, bypassing the default container logging mechanism.\n\nSystem component and container logs stored under `/var/log` require log rotation to prevent uncontrolled growth. Some cluster provisioning scripts install log rotation by default; verify your environment and adjust as needed. See the [system logs reference](/docs/concepts/cluster-administration/system-logs/) for details on locations, formats, and configuration options.\n\nMost clusters run a node-level logging agent (for example, Fluent Bit or Fluentd) that tails these files and forwards entries to a central log store. The [logging architecture guidance](/docs/concepts/cluster-administration/logging/) explains how to design such pipelines, apply retention, and log flows to backends.\n\nFigure 3 outlines a common log aggregation pipeline."
+ }
+]

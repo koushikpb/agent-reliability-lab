@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! Now I have all the information I need. The issue is that the documents namespace has the \"restricted\" PodSecurity policy enabled, which requires specific securityContext settings. The pdf-exporter 1.5.0 image doesn't have those security context settings configured. Let me update the ticket with the resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01QR28EaFQYTawTtb9uK6kvb",
+   "input": {
+    "id": "T-4002",
+    "note": "**Cause**: The deployment timeout is caused by PodSecurity policy enforcement. The documents namespace has the \"restricted\" PodSecurity policy enabled [cite: concepts/security/pod-security-standards#restricted-0], which requires that pods must set specific security context constraints. The error from the failed deployment job shows that the pdf-exporter:1.5.0 image violates these requirements:\n- allowPrivilegeEscalation must be false\n- capabilities must drop ALL\n- runAsNonRoot must be true\n- seccompProfile.type must be RuntimeDefault or Localhost\n\n**Evidence**: The deployment rollout timeout occurred after the image was successfully set, and the kubectl get events output shows: \"Error creating: pods \\\"pdf-exporter-5f6b8d9c47-8xq2d\\\" is forbidden: violates PodSecurity \\\"restricted:latest\\\": allowPrivilegeEscalation != false (container \\\"exporter\\\" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container \\\"exporter\\\" must set securityContext.capabilities.drop=[\\\"ALL\\\"]), runAsNonRoot != true (pod or container \\\"exporter\\\" must set securityContext.runAsNonRoot=true), seccompProfile...\"\n\n**Fix**: Update your pdf-exporter Deployment manifest in the documents namespace to include security context settings that comply with the restricted policy [cite: concepts/security/pod-security-standards#restricted-1]. Add to your deployment spec:\n```yaml\nspec:\n  template:\n    spec:\n      securityContext:\n        runAsNonRoot: true\n        seccompProfile:\n          type: RuntimeDefault\n      containers:\n      - name: exporter\n        securityContext:\n          allowPrivilegeEscalation: false\n          capabilities:\n            drop:\n            - ALL\n```\nRedeploy with these security context settings and the 1.5.0 image should roll out successfully.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4834,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 604,
+ "stop_reason": "tool_use"
+}

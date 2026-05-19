@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search the documentation for information about HPA CPU metrics showing as unknown and how HPA works with metrics.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_018mjaJ9pdzHpaNgNFcigzPL",
+   "input": {
+    "query": "HPA CPU unknown metrics metrics-server"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2408,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 84,
+ "stop_reason": "tool_use"
+}

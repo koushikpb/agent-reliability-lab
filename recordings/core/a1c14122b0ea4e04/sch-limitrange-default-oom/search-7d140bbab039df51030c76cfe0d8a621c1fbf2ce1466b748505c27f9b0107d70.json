@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-container-is-terminated-1",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My container is terminated",
+  "text": "The output is similar to:\n```\nName:                           simmemleak-hra99\nNamespace:                      default\nImage(s):                       saadali/simmemleak\nNode:                           kubernetes-node-tf0f/10.240.216.66\nLabels:                         name=simmemleak\nStatus:                         Running\nReason:\nMessage:\nIP:                             10.244.2.75\nContainers:\n  simmemleak:\n    Image:  saadali/simmemleak:latest\n    Limits:\n      cpu:          100m\n      memory:       50Mi\n    State:          Running\n      Started:      Tue, 07 Jul 2019 12:54:41 -0700\n    Last State:     Terminated\n      Reason:       OOMKilled\n      Exit Code:    137\n      Started:      Fri, 07 Jul 2019 12:54:30 -0700\n      Finished:     Fri, 07 Jul 2019 12:54:33 -0700\n    Ready:          False\n    Restart Count:  5\nConditions:\n  Type      Status\n  Ready     False\nEvents:\n  Type    Reason     Age   From               Message\n  ----    ------     ----  ----               -------"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-4",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "```\n... Normal  Created   Created container with id 66a3a20aa7980e61be4922780bf9d24d1a1d8b7395c09861225b0eba1b1f8511\n... Warning BackOff   Back-off restarting failed container\n```\n\nView detailed information about your cluster's Nodes:\n\n```\nkubectl describe nodes\n```\n\nThe output includes a record of the Container being killed because of an out-of-memory condition:\n\n```\nWarning OOMKilling Memory cgroup out of memory: Kill process 4481 (stress) score 1994 or sacrifice child\n```\n\nDelete your Pod:\n\n```shell\nkubectl delete pod memory-demo-2 --namespace=mem-example\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-2",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "```shell\nkubectl get pod memory-demo-2 --namespace=mem-example\n```\n\nAt this point, the Container might be running or killed. Repeat the preceding command until the Container is killed:\n\n```shell\nNAME            READY     STATUS      RESTARTS   AGE\nmemory-demo-2   0/1       OOMKilled   1          24s\n```\n\nGet a more detailed view of the Container status:\n\n```shell\nkubectl get pod memory-demo-2 --output=yaml --namespace=mem-example\n```\n\nThe output shows that the Container was killed because it is out of memory (OOM):\n\n```yaml\nlastState:\n   terminated:\n     containerID: 65183c1877aaec2e8427bc95609cc52677a454b56fcb24340dbd22917c23b10f\n     exitCode: 137\n     finishedAt: 2017-06-20T20:52:19Z\n     reason: OOMKilled\n     startedAt: null\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-container-is-terminated-3",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My container is terminated",
+  "text": "In the preceding example, the `Restart Count:  5` indicates that the `simmemleak`\ncontainer in the Pod was terminated and restarted five times (so far).\nThe `OOMKilled` reason shows that the container tried to use more memory than its limit.\n\nYour next step might be to check the application code for a memory leak. If you\nfind that the application is behaving how you expect, consider setting a higher\nmemory limit (and possibly request) for that container."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#requests-and-limits-1",
+  "heading": "Resource Management for Pods and Containers > Requests and limits",
+  "text": "`memory` limits are enforced by the kernel with out of memory (OOM) kills. When\na container uses more than its `memory` limit, the kernel may terminate it. However,\nterminations only happen when the kernel detects memory pressure. Thus, a\ncontainer that over allocates memory may not be immediately killed. This means\n`memory` limits are enforced reactively. A container may use more memory than\nits `memory` limit, but if it does, it may get killed.\n\nThere is a feature `MemoryQoS` which adds memory throttling and optional\ntiered memory reservation on Linux nodes using cgroup v2. For details, see\n[Memory QoS with cgroup v2](/docs/concepts/workloads/pods/pod-qos/#memory-qos-with-cgroup-v2).\n\nIf you specify a limit for a resource, but do not specify any request, and no admission-time\nmechanism has applied a default request for that resource, then Kubernetes copies the limit\nyou specified and uses it as the requested value for the resource."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#if-you-do-not-specify-a-memory-limit-0",
+  "heading": "Assign Memory Resources to Containers and Pods > If you do not specify a memory limit",
+  "text": "If you do not specify a memory limit for a Container, one of the following situations applies:\n\n* The Container has no upper bound on the amount of memory it uses. The Container\ncould use all of the memory available on the Node where it is running which in turn could invoke the OOM Killer. Further, in case of an OOM Kill, a container with no resource limits will have a greater chance of being killed.\n\n* The Container is running in a namespace that has a default memory limit, and the\nContainer is automatically assigned the default limit. Cluster administrators can use a\n[LimitRange](/docs/reference/generated/kubernetes-api//#limitrange-v1-core)\nto specify a default value for the memory limit."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-3",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "The Container in this exercise can be restarted, so the kubelet restarts it. Repeat\nthis command several times to see that the Container is repeatedly killed and restarted:\n\n```shell\nkubectl get pod memory-demo-2 --namespace=mem-example\n```\n\nThe output shows that the Container is killed, restarted, killed again, restarted again, and so on:\n\n```\nkubectl get pod memory-demo-2 --namespace=mem-example\nNAME            READY     STATUS      RESTARTS   AGE\nmemory-demo-2   0/1       OOMKilled   1          37s\n```\n```\n\nkubectl get pod memory-demo-2 --namespace=mem-example\nNAME            READY     STATUS    RESTARTS   AGE\nmemory-demo-2   1/1       Running   2          40s\n```\n\nView detailed information about the Pod history:\n\n```\nkubectl describe pod memory-demo-2 --namespace=mem-example\n```\n\nThe output shows that the Container starts and fails repeatedly:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/resize-container-resources#limitations-1",
+  "heading": "Resize CPU and Memory Resources assigned to Containers > Limitations",
+  "text": "* **Resource Types:** Only CPU and memory resources can be resized.\n* **Memory Decrease:** If the memory resize restart policy is `NotRequired` (or unspecified), the kubelet will make a\nbest-effort attempt to prevent oom-kills when decreasing memory limits, but doesn't provide any guarantees. \nBefore decreasing container memory limits, if memory usage exceeds the requested limit, the resize will be skipped\nand the status will remain in an \"In Progress\" state. This is considered best-effort because it is still subject\nto a race condition where memory usage may spike right after the check is performed. \n* **QoS Class:** The Pod's original [Quality of Service (QoS) class](/docs/concepts/workloads/pods/pod-qos/)\n  (Guaranteed, Burstable, or BestEffort) is determined at creation and **cannot** be changed by a resize.\n  The resized resource values must still adhere to the rules of the original QoS class:\n    * *Guaranteed*: Requests must continue to equal limits for both CPU and memory after resizing."
+ }
+]

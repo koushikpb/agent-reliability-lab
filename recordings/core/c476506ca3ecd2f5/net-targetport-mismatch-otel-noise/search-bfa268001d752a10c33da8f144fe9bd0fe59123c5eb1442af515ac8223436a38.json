@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#intro-0",
+  "heading": "Ingress",
+  "text": "The Kubernetes project recommends using [Gateway](https://gateway-api.sigs.k8s.io/) instead of\n[Ingress](/docs/concepts/services-networking/ingress/).\nThe Ingress API has been frozen.\n\nThis means that:\n* The Ingress API is generally available, and is subject to the [stability guarantees](/docs/reference/using-api/deprecation-policy/#deprecating-parts-of-the-api) for generally available APIs.\n  The Kubernetes project has no plans to remove Ingress from Kubernetes.\n* The Ingress API is no longer being developed, and will have no further changes\n  or updates made to it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#intro-0",
+  "heading": "Ingress Controllers",
+  "text": "The Kubernetes project recommends using [Gateway](https://gateway-api.sigs.k8s.io/) instead of\n[Ingress](/docs/concepts/services-networking/ingress/).\nThe Ingress API has been frozen.\n\nThis means that:\n* The Ingress API is generally available, and is subject to the [stability guarantees](/docs/reference/using-api/deprecation-policy/#deprecating-parts-of-the-api) for generally available APIs.\n  The Kubernetes project has no plans to remove Ingress from Kubernetes.\n* The Ingress API is no longer being developed, and will have no further changes\n  or updates made to it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#default-backend-0",
+  "heading": "Ingress > The Ingress resource > DefaultBackend",
+  "text": "An Ingress with no rules sends all traffic to a single default backend and `.spec.defaultBackend`\nis the backend that should handle requests in that case.\nThe `defaultBackend` is conventionally a configuration option of the\n[Ingress controller](/docs/concepts/services-networking/ingress-controllers) and\nis not specified in your Ingress resources.\nIf no `.spec.rules` are specified, `.spec.defaultBackend` must be specified.\nIf `defaultBackend` is not set, the handling of requests that do not match any of the rules will be up to the\ningress controller (consult the documentation for your ingress controller to find out how it handles this case).\n\nIf none of the hosts or paths match the HTTP request in the Ingress objects, the traffic is\nrouted to your default backend."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#simple-fanout-2",
+  "heading": "Ingress > Types of Ingress > Simple fanout",
+  "text": "Depending on the [Ingress controller](/docs/concepts/services-networking/ingress-controllers/)\nyou are using, you may need to create a default-http-backend\n[Service](/docs/concepts/services-networking/service/)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#tls-1",
+  "heading": "Ingress > Types of Ingress > TLS",
+  "text": "Referencing this secret in an Ingress tells the Ingress controller to\nsecure the channel from the client to the load balancer using TLS. You need to make\nsure the TLS secret you created came from a certificate that contains a Common\nName (CN), also known as a Fully Qualified Domain Name (FQDN) for `https-example.foo.com`.\n\nKeep in mind that TLS will not work on the default rule because the\ncertificates would have to be issued for all the possible sub-domains. Therefore,\n`hosts` in the `tls` section need to explicitly match the `host` in the `rules`\nsection.\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: tls-example-ingress\nspec:\n  tls:\n  - hosts:\n      - https-example.foo.com\n    secretName: testsecret-tls\n  rules:\n  - host: https-example.foo.com\n    http:\n      paths:\n      - path: /\n        pathType: Prefix\n        backend:\n          service:\n            name: service1\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/gateway#migrating-from-ingress-0",
+  "heading": "Gateway API > Migrating from Ingress",
+  "text": "Gateway API is the successor to the [Ingress](/docs/concepts/services-networking/ingress/) API.\nHowever, it does not include the Ingress kind. As a result, a one-time conversion from your existing\nIngress resources to Gateway API resources is necessary.\n\nRefer to the [ingress migration](https://gateway-api.sigs.k8s.io/guides/getting-started/migrating-from-ingress)\nguide for details on migrating Ingress resources to Gateway API resources."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#simple-fanout-0",
+  "heading": "Ingress > Types of Ingress > Simple fanout",
+  "text": "A fanout configuration routes traffic from a single IP address to more than one Service,\nbased on the HTTP URI being requested. An Ingress allows you to keep the number of load balancers\ndown to a minimum. For example, a setup like:\n\nIt would require an Ingress such as:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: simple-fanout-example\nspec:\n  rules:\n  - host: foo.bar.com\n    http:\n      paths:\n      - path: /foo\n        pathType: Prefix\n        backend:\n          service:\n            name: service1\n            port:\n              number: 4200\n      - path: /bar\n        pathType: Prefix\n        backend:\n          service:\n            name: service2\n            port:\n              number: 8080\n```\n\nWhen you create the Ingress with `kubectl apply -f`:\n\n```shell\nkubectl describe ingress simple-fanout-example\n```"
+ }
+]

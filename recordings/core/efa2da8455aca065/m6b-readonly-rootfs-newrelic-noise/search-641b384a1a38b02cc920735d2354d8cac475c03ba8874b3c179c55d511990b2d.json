@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#intro-2",
+  "heading": "Configure a Security Context for a Pod or Container",
+  "text": "  - is run as privileged, or\n  - has the capability `CAP_SYS_ADMIN`\n\n* `readOnlyRootFilesystem`: Mounts the container's root filesystem as read-only.\n\nThe above bullets are not a complete set of security context settings -- please see\n[SecurityContext](/docs/reference/generated/kubernetes-api//#securitycontext-v1-core)\nfor a comprehensive list."
+ },
+ {
+  "chunk_id": "concepts/security/application-security-checklist#security-context-container-0",
+  "heading": "Application Security Checklist > Base security hardening > Container-level `securityContext` recommendations",
+  "text": "- [ ] Disable privilege escalations using `allowPrivilegeEscalation: false`.\n- [ ] Configure the root filesystem to be read-only with `readOnlyRootFilesystem: true`.\n- [ ] Avoid running privileged containers (set `privileged: false`).\n- [ ] Drop all capabilities from the containers and add back only specific ones\n  that are needed for operation of the container."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#proc-access-1",
+  "heading": "Configure a Security Context for a Pod or Container > Managing access to the `/proc` filesystem",
+  "text": "- Read-Only Paths:\n  - `/proc/bus`\n  - `/proc/fs`\n  - `/proc/irq`\n  - `/proc/sys`\n  - `/proc/sysrq-trigger`\n\nFor some Pods, you might want to bypass that default masking of paths.\nThe most common context for wanting this is if you are trying to run containers within\na Kubernetes container (within a pod).\n\nThe `securityContext` field `procMount` allows a user to request a container's `/proc`\nbe `Unmasked`, or be mounted as read-write by the container process. This also\napplies to `/sys/firmware` which is not in `/proc`.\n\n```yaml\n...\nsecurityContext:\n  procMount: Unmasked\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/projected-volumes#linux-1",
+  "heading": "Projected Volumes > SecurityContext interactions > Linux",
+  "text": "If a Pod's `serviceAccountToken` volume permissions were set to `0600` because\nall other containers in the Pod have the same `runAsUser`, ephemeral\ncontainers must use the same `runAsUser` to be able to read the token."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#configure-volume-permission-and-ownership-change-policy-for-pods-1",
+  "heading": "Configure a Security Context for a Pod or Container > Configure volume permission and ownership change policy for Pods",
+  "text": "* _OnRootMismatch_: Only change permissions and ownership if the permission and the ownership of\n  root directory does not match with expected permissions of the volume.\n  This could help shorten the time it takes to change ownership and permission of a volume.\n* _Always_: Always change permission and ownership of the volume when volume is mounted.\n\nFor example:\n\n```yaml\nsecurityContext:\n  runAsUser: 1000\n  runAsGroup: 3000\n  fsGroup: 2000\n  fsGroupChangePolicy: \"OnRootMismatch\"\n```\n\nThis field has no effect on ephemeral volume types such as\n[`secret`](/docs/concepts/storage/volumes/#secret),\n[`configMap`](/docs/concepts/storage/volumes/#configmap),\nand [`emptyDir`](/docs/concepts/storage/volumes/#emptydir)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#proc-access-0",
+  "heading": "Configure a Security Context for a Pod or Container > Managing access to the `/proc` filesystem",
+  "text": "For runtimes that follow the OCI runtime specification, containers default to running in a mode where\nthere are multiple paths that are both masked and read-only.\nThe result of this is the container has these paths present inside the container's mount namespace, and they can function similarly to if\nthe container was an isolated host, but the container process cannot write to\nthem. The list of masked and read-only paths are as follows:\n\n- Masked Paths:\n  - `/proc/asound`\n  - `/proc/acpi`\n  - `/proc/kcore`\n  - `/proc/keys`\n  - `/proc/latency_stats`\n  - `/proc/timer_list`\n  - `/proc/timer_stats`\n  - `/proc/sched_debug`\n  - `/proc/scsi`\n  - `/sys/firmware`\n  - `/sys/devices/virtual/powercap`"
+ },
+ {
+  "chunk_id": "concepts/security/application-security-checklist#security-context-pod-0",
+  "heading": "Application Security Checklist > Base security hardening > Pod-level `securityContext` recommendations",
+  "text": "- [ ] Set `runAsNonRoot: true`.\n- [ ] Configure the container to execute as a less privileged user\n  (for example, using `runAsUser` and `runAsGroup`), and configure appropriate\n  permissions on files or directories inside the container image.\n- [ ] Optionally add a supplementary group with `fsGroup` to access persistent volumes.\n- [ ] The application deploys into a namespace that enforces an appropriate\n  [Pod security standard](/docs/concepts/security/pod-security-standards/).\n  If you cannot control this enforcement for the cluster(s) where the application is\n  deployed, take this into account either through documentation or additional defense in depth."
+ },
+ {
+  "chunk_id": "concepts/security/linux-kernel-security-constraints#linux-security-features-1",
+  "heading": "Linux kernel security constraints for Pods and containers > Security features in the Linux kernel",
+  "text": "You use the `securityContext` field in your Pod specification to define the\nconstraints that apply to those processes. The `securityContext` field also\nsupports other security settings, such as specific Linux capabilities or file\naccess permissions using UIDs and GIDs. To learn more, refer to\n[Configure a SecurityContext for a Pod or Container](/docs/tasks/configure-pod-container/security-context/)."
+ }
+]

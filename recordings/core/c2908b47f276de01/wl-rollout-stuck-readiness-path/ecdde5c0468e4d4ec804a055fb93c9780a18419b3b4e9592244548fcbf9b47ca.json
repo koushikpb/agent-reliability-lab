@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the issue. The application has moved from the `/healthz` endpoint to `/readyz` in version 3.1.0, but the pod's readiness probe is still configured to use the old `/healthz` endpoint. Let me search the Kubernetes documentation to understand more about how readiness probes work and confirm the fix.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01EgDuqz6PU9f6afK8Nx4Yez",
+   "input": {
+    "query": "readiness probe configuration pod spec"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2508,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 133,
+ "stop_reason": "tool_use"
+}

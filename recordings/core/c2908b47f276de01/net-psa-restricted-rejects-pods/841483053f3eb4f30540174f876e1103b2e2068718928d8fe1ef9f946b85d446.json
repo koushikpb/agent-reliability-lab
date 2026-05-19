@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:**\n\nI've resolved ticket T-4002. The issue was that the pdf-exporter 1.5.0 deployment was failing due to PodSecurity policy violations in the documents namespace. The deployment couldn't create new pods because the container was missing required security context settings: `allowPrivilegeEscalation: false`, `runAsNonRoot: true`, capabilities with `ALL` dropped, and a `seccompProfile` set to `RuntimeDefault`. I provided the specific YAML configuration the team needs to add to their deployment manifest to comply with the \"restricted:latest\" PodSecurity policy and allow the rollout to succeed.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7727,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 144,
+ "stop_reason": "end_turn"
+}

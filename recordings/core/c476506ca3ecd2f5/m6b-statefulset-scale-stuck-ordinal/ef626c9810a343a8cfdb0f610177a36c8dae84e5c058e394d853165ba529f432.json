@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "signature": "EtEICqgBCBMYAipAJNS6wfZUTHT426avaUAoQTfUs9otm9RFJfgQx45AheqUs3a/f3RjgAaJVdRIGT9l8WmEYFSedQ8pdPgvxkfRgTIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAcv98dYGEgxADJIduroRUOI9MHMaDIeLwNouIU5jtZTlEiIwebFmCmTOh9S+x7GmIhRtGzZCD+k9I/YLGsxlwmd74ZxfJmxRtEGK432/YarWnx7uKtUGaFEqIoGn9Ml8QEIfVRbtSJzXqrVMVCiTBvnelCkZfj7FKl4Jk5xJ/2S6RPzo7voFMoOS2p8RZGriIvakofSYnXDsHM+U65s6GV2f6qF4hJkdOqj5avX+KTQgAm3DqTGOE+C/BIIuYt+dCdCiv7avwabf9yIS2Cayffs3/LKPIITC9rocJupndpPqtzEmAvr0JCWK0nM1fMmwww+iFy9tN51ywB3Eewx6EZ9NRF6Uz3j7UgUV61pHLR66rrvZ8u69G331kfJ4+0LXpqB/W+j+OvX4OeIUWx6xXakFP2oZ+zafLq1auzzYu7F18+MzBTccBv1S+9I7RnPDTa4x0flC63b7Cf5RbuuCPPr80O2LtIZb4+ltXceR2glnWZ/ts5guTQVdnvWUNRi9UYBkPAgzBAfrpABETCClJW2iNDFkqWuF5Z9tkEHPePKzcQ5JsNiOgSttnmYdjdfrSGQ68nDWV7h92RR9okv5coj3fgYztBWpfLmZE0a/4n5ldDOZhwyJyTq0UhQpp6vlU+zkBZ97u2AMleaSu4djGtt4HdCAngvGBLdvsNELZer/KEKL8+Uo5LPZnE80zbUf/kF2uFeMM9l/8O913b7lbmqS61FGPIPNWuAe29a+FFhUl3eehh7oNgp1WDbELH8qdjqaXS/LcifBbwd35CzbfJlLvlrj7U6iYRI5dC3OKQtmwJBQnDsFHQlWUwi7McfmqfwW0zMzVJ39uKg3zjcRJheyZlpqj27hPdIBSCmteWzJ6brn9J7p+YlFUUq48aVwBrHgfFZoBjkkNb7LhaEj2uPlp+XMPVJe2USLGn+fS9D0jrpx/ydUFPfs8oDq59tucxNf8HhzyV/NAhVz0RdpXfpRO40Kn7t3g9adCgZQOhMr1+Qo/htYuaB5MW0Va3QOXEhYE72VPQIR6W/O38NXKAzetAvOSwXNmD3u5cR9L8n9a7GP+NONHQvxRLHgRfPBa4kK11yyXhPZjPD5ynzzNb9gSUCsv67DX5AbPCVZL1qGOnglaJWE5H9GV7aew6K3eQAh6gafY2s0Xe0ri9QHjEokF0nN9naSx65tzIBVjfwBGvaXj8/G34OEZul+nJr6Q5m6i5XMyfslYmErOts4nm84tQMEpGRczWDy2BgB",
+   "thinking": "Now the picture is clear:\n\n1. `docindex-3` started but its environment variable `CLUSTER_SIZE=3` is still set to 3 (the old replica count). The pod sees its own ordinal (3) is outside the configured cluster size and enters standby mode, returning HTTP 503 from the readiness endpoint.\n\n2. Because `docindex-3` never becomes ready (readiness probe keeps failing with 503), the StatefulSet's `OrderedReady` ordering guarantee means `docindex-4` is never created.\n\nThe fix: The `CLUSTER_SIZE` environment variable in the StatefulSet's pod template needs to be updated to 5 (the new desired replica count). Once `docindex-3` sees `CLUSTER_SIZE=5`, it will accept shards, pass the readiness probe, and then `docindex-4` will be created and (if also configured correctly) will also become ready.\nI'll write up this analysis in the ticket now.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "The root cause is now clear. Let me update the ticket with the full diagnosis and fix.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_012gv1gez15QfpXhwcWqpQfP",
+   "input": {
+    "id": "T-6002",
+    "note": "**Root Cause:** The `CLUSTER_SIZE` environment variable in the StatefulSet's pod template was never updated when the replica count was increased from 3 to 5. As a result, `docindex-3` starts up, sees its own ordinal (3) is \u2265 `CLUSTER_SIZE` (3), and enters standby mode \u2014 deliberately returning HTTP 503 from its readiness endpoint. This causes the readiness probe to fail continuously (290+ failures over 48 minutes).\n\n**Why `docindex-4` never appeared:** The StatefulSet uses the default `OrderedReady` pod management policy, which requires that each pod be Running *and* Ready before the next one is created [cite: concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0]. Because `docindex-3` is stuck as not-ready, the controller is blocked and will not create `docindex-4` [cite: concepts/workloads/controllers/statefulset#pod-management-policies-0].\n\n**Evidence:**\n- `docindex-3`: status `Running`, ready `false`, 290 readiness probe failures (`503 standby`) over 48 min.\n- `docindex-4`: never created (only 4 pods present in the `search` namespace).\n- Pod log: `WARN cluster: own ordinal 3 is outside the configured cluster (CLUSTER_SIZE=3); joining as standby, no shards assigned` and `WARN cluster: still standby after 30m; set CLUSTER_SIZE to include ordinal 3 to receive shards`.\n\n**Fix (owner action required):**\n1. Edit the `docindex` StatefulSet and update the `CLUSTER_SIZE` environment variable in the pod template from `3` to `5`:\n   ```\n   kubectl edit statefulset docindex -n search\n   ```\n   Change `CLUSTER_SIZE: \"3\"` \u2192 `CLUSTER_SIZE: \"5\"`.\n2. Because a pod-template change triggers a rolling update, the StatefulSet controller will restart `docindex-3` (and subsequently the others) with the correct value. `docindex-3` will leave standby, pass its readiness probe, and then `docindex-4` will be created automatically.\n3. Verify with `kubectl get sts docindex -n search` until it shows `5/5 ready`.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4895,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 890,
+ "stop_reason": "tool_use"
+}

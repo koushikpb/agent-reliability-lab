@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-4004. The issue was that notification-worker was configured to connect to `smtp-relay` using an unqualified hostname, which only resolves within the same namespace. When the platform team moved smtp-relay from the `notify` namespace to `shared-infra` on Sunday night, the DNS lookups began failing. The fix is to update the SMTP_HOST configuration to use the fully qualified domain name `smtp-relay.shared-infra.svc.cluster.local` for cross-namespace service discovery.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 3708,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 122,
+ "stop_reason": "end_turn"
+}

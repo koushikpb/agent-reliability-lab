@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for information about image pull policy and when images aren't updated:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01XfnNkTSGCnRtoTXeW5M1Vs",
+   "input": {
+    "query": "IfNotPresent image pull policy tag same image not updated"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5652,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 82,
+ "stop_reason": "tool_use"
+}

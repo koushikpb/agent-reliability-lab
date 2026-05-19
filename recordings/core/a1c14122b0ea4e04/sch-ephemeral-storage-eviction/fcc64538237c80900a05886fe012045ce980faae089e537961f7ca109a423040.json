@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Summary: Read T-3005, listed pods in `reporting`, and found two prior report-generator pods in Evicted/Failed state with kubelet messages showing ~38 GiB of ephemeral-storage usage and `request is 0`. Confirmed in the docs that the kubelet evicts pods on ephemeral-storage pressure and that this is controlled via `ephemeral-storage` requests/limits. Resolved the ticket with the cause, evidence, and a concrete Deployment fix (add `ephemeral-storage` request/limit, or move scratch data to a PV).",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8027,
+ "model": "claude-opus-4-7",
+ "output_tokens": 194,
+ "stop_reason": "end_turn"
+}

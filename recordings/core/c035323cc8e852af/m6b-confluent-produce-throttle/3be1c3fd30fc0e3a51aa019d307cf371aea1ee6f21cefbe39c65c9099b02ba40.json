@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results are about Kubernetes-level rate limiting, not Kafka broker throttling. Let me search more specifically for information about Kafka producer configuration and rate limiting.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LaxYsS7AorFHbopwpRdN6X",
+   "input": {
+    "query": "Kafka client connection issues broker quotas"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5342,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 96,
+ "stop_reason": "tool_use"
+}

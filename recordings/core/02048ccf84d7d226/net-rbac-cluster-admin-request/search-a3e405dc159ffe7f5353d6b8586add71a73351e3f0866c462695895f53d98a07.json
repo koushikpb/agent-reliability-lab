@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-0",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use the built-in Kubernetes\n[role-based access control (RBAC)](/docs/reference/access-authn-authz/rbac/)\nmechanism to grant the minimum permissions required by each service account.\nYou create a *role*, which grants access, and then *bind* the role to your\nServiceAccount. RBAC lets you define a minimum set of permissions so that the\nservice account permissions follow the principle of least privilege. Pods that\nuse that service account don't get more permissions than are required to\nfunction correctly.\n\nFor instructions, refer to\n[ServiceAccount permissions](/docs/reference/access-authn-authz/rbac/#service-account-permissions).\n\n#### Cross-namespace access using a ServiceAccount {#cross-namespace}"
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-1",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "- Assign permissions at the namespace level where possible. Use RoleBindings as opposed to\n  ClusterRoleBindings to give users rights only within a specific namespace.\n- Avoid providing wildcard permissions when possible, especially to all resources.\n  As Kubernetes is an extensible system, providing wildcard access gives rights\n  not just to all object types that currently exist in the cluster, but also to all object types\n  which are created in the future.\n- Administrators should not use `cluster-admin` accounts except where specifically needed.\n  Providing a low privileged account with\n  [impersonation rights](/docs/reference/access-authn-authz/authentication/#user-impersonation)\n  can avoid accidental modification of cluster resources.\n- Avoid adding users to the `system:masters` group. Any user who is a member of this group\n  bypasses all RBAC rights checks and will always have unrestricted superuser access, which cannot be\n  revoked by removing RoleBindings or ClusterRoleBindings. As an aside, if a cluster is"
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-0",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "Ideally, minimal RBAC rights should be assigned to users and service accounts. Only permissions\nexplicitly required for their operation should be used. While each cluster will be different,\nsome general rules that can be applied are :"
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#workload-creation-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Workload creation",
+  "text": "Permission to create workloads (either Pods, or\n[workload resources](/docs/concepts/workloads/controllers/) that manage Pods) in a namespace\nimplicitly grants access to many other resources in that namespace, such as Secrets, ConfigMaps, and\nPersistentVolumes that can be mounted in Pods. Additionally, since Pods can run as any\n[ServiceAccount](/docs/reference/access-authn-authz/service-accounts-admin/), granting permission\nto create workloads also implicitly grants the API access levels of any service account in that\nnamespace."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#workload-creation-1",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Workload creation",
+  "text": "Users who can run privileged Pods can use that access to gain node access and potentially to\nfurther elevate their privileges. Where you do not fully trust a user or other principal\nwith the ability to create suitably secure and isolated Pods, you should enforce either the\n**Baseline** or **Restricted** Pod Security Standard.\nYou can use [Pod Security admission](/docs/concepts/security/pod-security-admission/)\nor other (third party) mechanisms to implement that enforcement.\n\nFor these reasons, namespaces should be used to separate resources requiring different levels of\ntrust or tenancy. It is still considered best practice to follow [least privilege](#least-privilege)\nprinciples and assign the minimum set of permissions, but boundaries within a namespace should be\nconsidered weak."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-1",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use RBAC to allow service accounts in one namespace to perform actions\non resources in a different namespace in the cluster. For example, consider a\nscenario where you have a service account and Pod in the `dev` namespace and\nyou want your Pod to see Jobs running in the `maintenance` namespace. You could\ncreate a Role object that grants permissions to list Job objects. Then,\nyou'd create a RoleBinding object in the `maintenance` namespace to bind the\nRole to the ServiceAccount object. Now, Pods in the `dev` namespace can list\nJob objects in the `maintenance` namespace using that service account."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#default-service-accounts-0",
+  "heading": "Service Accounts > What are service accounts? > Default service accounts",
+  "text": "When you create a cluster, Kubernetes automatically creates a ServiceAccount\nobject named `default` for every namespace in your cluster. The `default`\nservice accounts in each namespace get no permissions by default other than the\n[default API discovery permissions](/docs/reference/access-authn-authz/rbac/#default-roles-and-role-bindings)\nthat Kubernetes grants to all authenticated principals if role-based access control (RBAC) is enabled.\nIf you delete the `default` ServiceAccount object in a namespace, the\ncontrol plane\nreplaces it with a new one.\n\nIf you deploy a Pod in a namespace, and you don't\n[manually assign a ServiceAccount to the Pod](#assign-to-pod), Kubernetes\nassigns the `default` ServiceAccount for that namespace to the Pod."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/hardening-dra#grant-node-local-driver-permissions-0",
+  "heading": "Harden Dynamic Resource Allocation in Your Cluster > Grant least-privilege permissions for synthetic subresources > Grant node-local driver permissions",
+  "text": "Use node-aware verbs for node-local drivers:\n\n```yaml\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: dra-node-driver-status-updater\nrules:\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/status\"]\n    verbs: [\"get\", \"patch\", \"update\"]\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/driver\"]\n    verbs: [\"associated-node:patch\", \"associated-node:update\"]\n    resourceNames: [\"dra.example.com\"]\n```"
+ }
+]

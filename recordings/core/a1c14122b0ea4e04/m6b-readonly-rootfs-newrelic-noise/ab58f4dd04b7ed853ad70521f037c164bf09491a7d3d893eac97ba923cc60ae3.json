@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Resolved T-6007. The 4.3 pods crash because the quarterly hardening added `readOnlyRootFilesystem: true`, but Next.js needs to create `/app/.next/cache` at startup (logs show `EROFS` from `ImageOptimizerCache.init`). Fix is to mount an `emptyDir` at `/app/.next/cache` while keeping the read-only root filesystem.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7648,
+ "model": "claude-opus-4-7",
+ "output_tokens": 138,
+ "stop_reason": "end_turn"
+}

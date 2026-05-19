@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#scaling-to-and-from-zero-0",
+  "heading": "Horizontal Pod Autoscaling > Scaling to and from zero",
+  "text": "For HorizontalPodAutoscalers that scale on [custom](#scaling-on-custom-metrics) (object) or\nexternal metrics, you can set `spec.minReplicas` to `0`. The workload is then scaled all the way\ndown to zero replicas when there is no load, and scaled back up when the metric indicates that at\nleast one replica is needed. This is useful for workloads that are idle for long periods and\nexpensive to keep running, such as consumers of an occasionally used queue or jobs that require\ndedicated hardware like GPUs.\n\nScaling to zero is only supported for object and external metrics. It is not available for\nresource metrics (such as CPU or memory utilization), because those can only be measured on\nrunning Pods. Setting `minReplicas: 0` requires at least one object or external metric to be\nconfigured; the API server rejects the HorizontalPodAutoscaler otherwise."
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#autoscaling-on-multiple-metrics-and-custom-metrics-2",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Autoscaling on multiple metrics and custom metrics",
+  "text": "Notice that the `targetCPUUtilizationPercentage` field has been replaced with an array called `metrics`.\nThe CPU utilization metric is a *resource metric*, since it is represented as a percentage of a resource\nspecified on pod containers.  Notice that you can specify other resource metrics besides CPU.  By default,\nthe only other supported resource metric is `memory`.  These resources do not change names from cluster\nto cluster, and should always be available, as long as the `metrics.k8s.io` API is available.\n\nYou can also specify resource metrics in terms of direct values, instead of as percentages of the\nrequested value, by using a `target.type` of `AverageValue` instead of `Utilization`, and\nsetting the corresponding `target.averageValue` field instead of the `target.averageUtilization`.\n\n```\n  metrics:\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: AverageValue\n        averageValue: 500Mi\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics > Container resource metrics",
+  "text": "The HorizontalPodAutoscaler API also supports a container metric source where the HPA can track the\nresource usage of individual containers across a set of Pods, in order to scale the target resource.\nThis lets you configure scaling thresholds for the containers that matter most in a particular Pod.\nFor example, if you have a web application and a sidecar container that provides logging, you can scale based on the resource\nuse of the web application, ignoring the sidecar container and its resource use.\n\nIf you revise the target resource to have a new Pod specification with a different set of containers,\nyou should revise the HPA spec if that newly added container should also be used for\nscaling. If the specified container in the metric source is not present or only present in a subset\nof the pods then those pods are ignored and the recommendation is recalculated. See [Algorithm](#algorithm-details)\nfor more details about the calculation. To use container resources for autoscaling define a metric\nsource as follows:"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-metrics-apis-0",
+  "heading": "Horizontal Pod Autoscaling > Support for metrics APIs",
+  "text": "By default, the HorizontalPodAutoscaler controller retrieves metrics from a series of APIs.\nIn order for it to access these APIs, cluster administrators must ensure that:\n\n- The [API aggregation layer](/docs/tasks/extend-kubernetes/configure-aggregation-layer/) is enabled.\n\n- The corresponding APIs are registered:\n\n  - For resource metrics, this is the `metrics.k8s.io` [API](/docs/reference/external-api/metrics.v1beta1/),\n    generally provided by [metrics-server](https://github.com/kubernetes-sigs/metrics-server).\n    It can be launched as a cluster add-on.\n\n    The HorizontalPodAutoscaler currently supports the `metrics.k8s.io/v1beta1`\n    API for resource metrics. It does not support `metrics.k8s.io/v1` yet."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-3",
+  "heading": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work?",
+  "text": "- For per-pod resource metrics (like CPU), the controller fetches the metrics\n  from the resource metrics API for each Pod targeted by the HorizontalPodAutoscaler.\n  Then, if a target utilization value is set, the controller calculates the utilization\n  value as a percentage of the equivalent\n  [resource request](/docs/concepts/configuration/manage-resources-containers/#requests-and-limits)\n  on the containers in each Pod. If a target raw value is set, the raw metric values are used directly.\n  The controller then takes the mean of the utilization or the raw value (depending on the type\n  of target specified) across all targeted Pods, and produces a ratio used to scale\n  the number of desired replicas.\n\n  Please note that if some of the Pod's containers do not have the relevant resource request set,\n  CPU utilization for the Pod will not be defined and the autoscaler will\n  not take any action for that metric. See the [algorithm details](#algorithm-details) section below\n  for more information about how the autoscaling algorithm works."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics",
+  "text": "Any HPA target can be scaled based on the resource usage of the pods in the scaling target.\nWhen defining the pod specification the resource requests like `cpu` and `memory` should\nbe specified. This is used to determine the resource utilization and used by the HPA controller\nto scale the target up or down. To use resource utilization based scaling specify a metric source\nlike this:\n\n```yaml\ntype: Resource\nresource:\n  name: cpu\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nWith this metric the HPA controller will keep the average utilization of the pods in the scaling\ntarget at 60%. Utilization is the ratio between the current usage of resource to the requested\nresources of the pod. See [Algorithm](#algorithm-details) for more details about how the utilization\nis calculated and averaged.\n\nSince the resource usages of all the containers are summed up the total pod utilization may not\naccurately represent the individual container resource usage. This could lead to situations where\na single container might be running with high usage and the HPA will not scale out because the overall\npod usage is still within acceptable limits."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-metrics-apis-1",
+  "heading": "Horizontal Pod Autoscaling > Support for metrics APIs",
+  "text": "  - For custom metrics, this is the `custom.metrics.k8s.io` [API](/docs/reference/external-api/custom-metrics.v1beta2/).\n    It's provided by \"adapter\" API servers provided by metrics solution vendors.\n    Check with your metrics pipeline to see if there is a Kubernetes metrics adapter available.\n\n  - For external metrics, this is the `external.metrics.k8s.io` [API](/docs/reference/external-api/external-metrics.v1beta1/).\n    It may be provided by the custom metrics adapters provided above."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-4",
+  "heading": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work?",
+  "text": "- For per-pod custom metrics, the controller functions similarly to per-pod resource metrics,\n  except that it works with raw values, not utilization values.\n\n- For object metrics and external metrics, a single metric is fetched, which describes\n  the object in question. This metric is compared to the target\n  value, to produce a ratio as above. In the `autoscaling/v2` API\n  version, this value can optionally be divided by the number of Pods before the\n  comparison is made."
+ }
+]

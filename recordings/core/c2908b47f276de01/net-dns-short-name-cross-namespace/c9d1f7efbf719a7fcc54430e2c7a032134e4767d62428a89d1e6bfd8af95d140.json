@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-4004. The issue was that notification-worker was trying to reach `smtp-relay` using a short service name that only works within the same namespace. After the smtp-relay Service was moved to the shared-infra namespace, the DNS lookups started failing. The fix is to update the `SMTP_HOST` configuration to use the fully qualified domain name `smtp-relay.shared-infra`, which will allow cross-namespace service discovery to work correctly.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5208,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 109,
+ "stop_reason": "end_turn"
+}

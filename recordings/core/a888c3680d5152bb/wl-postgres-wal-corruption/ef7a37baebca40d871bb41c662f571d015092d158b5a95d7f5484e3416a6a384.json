@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "The documentation search doesn't have specific details about PostgreSQL recovery. However, based on the evidence I have, let me look for information about forced pod deletion and recovery scenarios.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0182xTspCq9u7MetU7P4EAmK",
+   "input": {
+    "query": "force delete pod StatefulSet recovery"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01SSfA6nLVTpy7EWpjua9o1d",
+   "input": {
+    "query": "delete pod without grace period"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 13479,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 135,
+ "stop_reason": "tool_use"
+}

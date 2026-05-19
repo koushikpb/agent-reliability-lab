@@ -1,0 +1,45 @@
+{
+ "content": [
+  {
+   "text": "Good - the logs show the pods were being terminated with SIGTERM during startup. Let me search the documentation to understand what could cause this behavior, particularly around pod lifecycle and termination:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01TDcrCwtLvBLZw9W86wqEhF",
+   "input": {
+    "query": "liveness probe failure restart pod termination SIGTERM"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WT8L65bMZpzgrLthukRrEJ",
+   "input": {
+    "query": "startup time slow application readiness probe delay"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DudFH1hCDC4jiqGDTsG9P2",
+   "input": {
+    "query": "terminationGracePeriodSeconds pod startup"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2560,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 190,
+ "stop_reason": "tool_use"
+}

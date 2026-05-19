@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-6001 by identifying that the HPA's inability to scale was caused by the fluent-bit sidecar container added in the 4.8.0 release lacking CPU resource requests. According to Kubernetes documentation, HPA calculates CPU utilization as the ratio of actual usage to requested resources. Without requests on the log-forwarder container, this calculation fails and shows as `<unknown>`, preventing scaling decisions. The fix is to add resource requests (CPU and memory) to the log-forwarder container specification in the Deployment.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 10287,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 127,
+ "stop_reason": "end_turn"
+}

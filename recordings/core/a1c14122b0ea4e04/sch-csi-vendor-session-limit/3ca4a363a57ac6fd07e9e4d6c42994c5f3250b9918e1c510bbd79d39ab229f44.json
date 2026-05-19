@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EvIDCqQBCBMYAipAqp2oPDu2ZppliakxPkZJ38GIPzj36QpfJSbtdwDSZe84MvsPuJKie5tvous0+udTYePyZmugjM96iK1U14q4HzIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBgNDw1gYSDPDKsv9mZE2EiMXxXRoM68yp6CCjfhC0vIfBIjAPg3XdP2OfTRRL4PFac2rBV+iD1fvShGk93XuAE36/qK86IG4LZW66Rg7cAlqL+boq+gE64S5c6tCbbMUdXWT9wjrsNdGSBpbElPchXg5XObFWO48Ub4SMN8Z0QcY2MdnbS0oDOstZlwl/WarPvov3eVSpjZDuMvZQZ2CCGp8vyuDyYrfyvT6B23AceTFu69hZY38t4aQSyeeuSP/PkoiRNGsSbO5Er50eLXEuhoHFQKzQ9VaOAW7xesFXdaM8b9KhTjhl7Ul2SjVcniexxLHw4q0hMtVP7GPtJaHlEfsxTdSmFnAjfc3ZOjt7GKHJ211WPUHNXLrfN831lyMuhR49EmptazPTVtqCCNz03kAVdfcvQ16Y5eYhV4h1RkrBys+/GmZuloOHMvO9/N41GAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LQk7PcJkjW1B9nGaLZzM37",
+   "input": {
+    "query": "CVN-4127 max LUN mappings host group corvane CSI"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2778,
+ "model": "claude-opus-4-7",
+ "output_tokens": 181,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Based on the evidence I've gathered, the issue is clear: the notification-worker is configured to use `SMTP_HOST=smtp-relay`, which only resolves within the same namespace. The platform team moved smtp-relay from the `notify` namespace to the `shared-infra` namespace on Sunday, so the hostname no longer resolves.\n\nThe fix is straightforward: the notification-worker needs to be updated to use the fully qualified domain name for the smtp-relay service in the shared-infra namespace. The standard Kubernetes DNS naming convention for cross-namespace service access is `<service-name>.<namespace>.svc.cluster.local`.\n\nLet me update the ticket with the resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_013NHNwb6MfZvDTbGDBn4N3m",
+   "input": {
+    "id": "T-4004",
+    "note": "**Cause:** The notification-worker is configured with `SMTP_HOST=smtp-relay`, which resolves only within the same namespace (notify). The platform team moved smtp-relay from the notify namespace to shared-infra on Sunday night, making the unqualified hostname unreachable. The logs show: \"lookup smtp-relay on 10.96.0.10:53: no such host\".\n\n**Evidence:** Pod logs from notification-worker-5b7d6c9f48-jq2vx show multiple email job failures with DNS lookup errors for \"smtp-relay\" since May 11 at 07:02:14Z (after the Sunday night migration). The smtp-relay pods are confirmed running and healthy in the shared-infra namespace.\n\n**Fix:** Update the notification-worker deployment's SMTP_HOST environment variable from `smtp-relay` to `smtp-relay.shared-infra.svc.cluster.local`. This uses the fully qualified domain name to reach the service across namespaces. After updating the configuration and redeploying, the DNS lookups will succeed and email jobs will resume processing.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2832,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 484,
+ "stop_reason": "tool_use"
+}

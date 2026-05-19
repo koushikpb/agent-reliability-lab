@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-2003. The issue was that the catalog-search deployment was missing a **startup probe**. The application takes ~55 seconds to load a 12.4 GiB index snapshot into memory, but the liveness probe was configured to start checking after only 30 seconds with a tight failure threshold, causing the pods to be killed before startup completed. This created a restart loop.\n\nThe fix is to add a startup probe that allows the application up to 5 minutes to initialize, while keeping the aggressive liveness probe for detecting deadlocks during normal operation. I've provided the ticket owner with the specific configuration recommendation.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5545,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 143,
+ "stop_reason": "end_turn"
+}

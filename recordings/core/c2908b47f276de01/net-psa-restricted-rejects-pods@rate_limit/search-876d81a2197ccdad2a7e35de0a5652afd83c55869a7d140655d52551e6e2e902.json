@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/containers/images#imagepullbackoff-0",
+  "heading": "Images > Updating images > ImagePullBackOff",
+  "text": "When a kubelet starts creating containers for a Pod using a container runtime,\nit might be possible the container is in [Waiting](/docs/concepts/workloads/pods/pod-lifecycle/#container-state-waiting)\nstate because of `ImagePullBackOff`.\n\nThe status `ImagePullBackOff` means that a container could not start because Kubernetes\ncould not pull a container image (for reasons such as invalid image name, or pulling\nfrom a private registry without `imagePullSecret`). The `BackOff` part indicates\nthat Kubernetes will keep trying to pull the image, with an increasing back-off delay.\n\nKubernetes raises the delay between each attempt until it reaches a compiled-in limit,\nwhich is 300 seconds (5 minutes)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-1",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "In practice, a `CrashLoopBackOff` is a condition or event that might be seen as output\nfrom the `kubectl` command, while describing or listing Pods, when a container in the Pod\nfails to start properly and then continually tries and fails in a loop.\n\nIn other words, when a container enters the crash loop, Kubernetes applies the\nexponential backoff delay mentioned in the [Container restart policy](#restart-policy).\nThis mechanism prevents a faulty container from overwhelming the system with continuous\nfailed start attempts.\n\nThe `CrashLoopBackOff` can be caused by issues like the following:\n\n* Application errors that cause the container to exit.\n* Configuration errors, such as incorrect environment variables or missing\n  configuration files.\n* Resource constraints, where the container might not have enough memory or CPU\n  to start properly.\n* Health checks failing if the application doesn't start serving within the\n  expected time.\n* Container liveness probes or startup probes returning a `Failure` result\n  as mentioned in the [probes section](#container-probes).\n\nTo investigate the root cause of a `CrashLoopBackOff` issue, a user can:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/windows#troubleshooting-node-0",
+  "heading": "Windows debugging tips > Node-level troubleshooting",
+  "text": "1. My Pods are stuck at \"Container Creating\" or restarting over and over\n\n   Ensure that your pause image is compatible with your Windows OS version.\n   See [Pause container](/docs/concepts/windows/intro/#pause-container)\n   to see the latest / recommended pause image and/or get more information.\n\n   If using containerd as your container runtime the pause image is specified in the\n   `plugins.plugins.cri.sandbox_image` field of the of config.toml configuration file.\n\n1. My pods show status as `ErrImgPull` or `ImagePullBackOff`\n\n   Ensure that your Pod is getting scheduled to a\n   [compatible](https://docs.microsoft.com/virtualization/windowscontainers/deploy-containers/version-compatibility)\n   Windows Node.\n\n   More information on how to specify a compatible node for your Pod can be found in\n   [this guide](/docs/concepts/windows/user-guide/#ensuring-os-specific-workloads-land-on-the-appropriate-container-host)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-pods-2",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Pods",
+  "text": "If a Pod is stuck in the `Waiting` state, then it has been scheduled to a worker node, \nbut it can't run on that machine. Again, the information from `kubectl describe ...`\nshould be informative. The most common cause of `Waiting` pods is a failure to pull the image.\nThere are three things to check:\n\n* Make sure that you have the name of the image correct.\n* Have you pushed the image to the registry?\n* Try to manually pull the image to see if the image can be pulled. For example,\n  if you use Docker on your PC, run `docker pull <image>`.\n\n#### My pod stays terminating\n\nIf a Pod is stuck in the `Terminating` state, it means that a deletion has been\nissued for the Pod, but the control plane is unable to delete the Pod object."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#image-1",
+  "heading": "Volumes > Types of volumes > image",
+  "text": "`IfNotPresent`\n: The kubelet pulls if the reference isn't already present on disk. The Pod becomes\n  `Failed` if the reference isn't present and the pull fails.\n\nThe volume gets re-resolved if the Pod gets deleted and recreated, which means\nthat new remote content will become available on Pod recreation. A failure to\nresolve or pull the image during Pod startup will block containers from starting\nand may add significant latency. Failures will be retried using normal volume\nbackoff and will be reported on the Pod reason and message.\n\nThe types of objects that may be mounted by this volume are defined by the\ncontainer runtime implementation on a host machine. At a minimum, they must include\nall valid types supported by the container image field. The OCI object gets\nmounted in a single directory (`spec.containers[*].volumeMounts[*].mountPath`)\nand will be mounted read-only.\n\nBesides that:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#handling-pod-and-container-failures-1",
+  "heading": "Jobs > Handling Pod and container failures",
+  "text": "An entire Pod can also fail, for a number of reasons, such as when the pod is kicked off the node\n(node is upgraded, rebooted, deleted, etc.), or if a container of the Pod fails and the\n`.spec.template.spec.restartPolicy = \"Never\"`. When a Pod fails, then the Job controller\nstarts a new Pod. This means that your application needs to handle the case when it is restarted in a new\npod. In particular, it needs to handle temporary files, locks, incomplete output and the like\ncaused by previous runs.\n\nBy default, each pod failure is counted towards the `.spec.backoffLimit` limit,\nsee [pod backoff failure policy](#pod-backoff-failure-policy). However, you can\ncustomize handling of pod failures by setting the Job's [pod failure policy](#pod-failure-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-2",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "When a pod is failing to start repeatedly, `CrashLoopBackOff` may appear in the `Status` field of some kubectl commands.\nSimilarly, when a pod is being deleted, `Terminating` may appear in the `Status` field of some kubectl commands.\n\nMake sure not to confuse _Status_, a kubectl display field for user intuition, with the pod's `phase`.\nPod phase is an explicit part of the Kubernetes data model and of the\n[Pod API](/docs/reference/kubernetes-api/workload-resources/pod-v1/). \n\n```\n  NAMESPACE               NAME               READY   STATUS             RESTARTS   AGE\n  alessandras-namespace   alessandras-pod    0/1     CrashLoopBackOff   200        2d9h\n```\n\nA Pod is granted a term to terminate gracefully, which defaults to 30 seconds.\nYou can use the flag `--force` to [terminate a Pod by force](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-0",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "A Pod failure policy, defined with the `.spec.podFailurePolicy` field, enables\nyour cluster to handle Pod failures based on the container exit codes and the\nPod conditions.\n\nIn some situations, you  may want to have a better control when handling Pod\nfailures than the control provided by the [Pod backoff failure policy](#pod-backoff-failure-policy),\nwhich is based on the Job's `.spec.backoffLimit`. These are some examples of use cases:\n\n* To optimize costs of running workloads by avoiding unnecessary Pod restarts,\n  you can terminate a Job as soon as one of its Pods fails with an exit code\n  indicating a software bug.\n* To guarantee that your Job finishes even if there are disruptions, you can\n  ignore Pod failures caused by disruptions (such as preemption,\n  API-initiated eviction\n  or taint-based eviction) so\n  that they don't count towards the `.spec.backoffLimit` limit of retries."
+ }
+]

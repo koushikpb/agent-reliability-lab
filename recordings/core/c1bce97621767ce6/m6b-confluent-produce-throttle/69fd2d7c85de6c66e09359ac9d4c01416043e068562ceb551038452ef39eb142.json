@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the status of the clickstream-ingest pods in the ingest namespace.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01AiC18wGwQrSEs8r7E68LqG",
+   "input": {
+    "namespace": "ingest"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1360,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 75,
+ "stop_reason": "tool_use"
+}

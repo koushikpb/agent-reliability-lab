@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics",
+  "text": "Any HPA target can be scaled based on the resource usage of the pods in the scaling target.\nWhen defining the pod specification the resource requests like `cpu` and `memory` should\nbe specified. This is used to determine the resource utilization and used by the HPA controller\nto scale the target up or down. To use resource utilization based scaling specify a metric source\nlike this:\n\n```yaml\ntype: Resource\nresource:\n  name: cpu\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nWith this metric the HPA controller will keep the average utilization of the pods in the scaling\ntarget at 60%. Utilization is the ratio between the current usage of resource to the requested\nresources of the pod. See [Algorithm](#algorithm-details) for more details about how the utilization\nis calculated and averaged.\n\nSince the resource usages of all the containers are summed up the total pod utilization may not\naccurately represent the individual container resource usage. This could lead to situations where\na single container might be running with high usage and the HPA will not scale out because the overall\npod usage is still within acceptable limits."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#pod-readiness-and-autoscaling-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Pod readiness and autoscaling metrics",
+  "text": "The HorizontalPodAutoscaler (HPA) controller includes two command line options that influence how CPU metrics are collected from Pods during startup:\n\n1. `--horizontal-pod-autoscaler-cpu-initialization-period` (default: 5 minutes)\n\n  This defines the time window after a Pod starts during which its **CPU usage is ignored** unless:\n    - The Pod is in a `Ready` state **and**\n    - The metric sample was taken entirely during the period it was `Ready`.\n\n  This command line option helps **exclude misleading high CPU usage** from initializing Pods (for example: Java apps warming up) in HPA scaling decisions.\n\n1. `--horizontal-pod-autoscaler-initial-readiness-delay` (default: 30 seconds)\n\n  This defines a short delay period after a Pod starts during which the HPA controller treats Pods that are currently `Unready` as still initializing, **even if they have previously transitioned to `Ready` briefly**."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics > Container resource metrics",
+  "text": "The HorizontalPodAutoscaler API also supports a container metric source where the HPA can track the\nresource usage of individual containers across a set of Pods, in order to scale the target resource.\nThis lets you configure scaling thresholds for the containers that matter most in a particular Pod.\nFor example, if you have a web application and a sidecar container that provides logging, you can scale based on the resource\nuse of the web application, ignoring the sidecar container and its resource use.\n\nIf you revise the target resource to have a new Pod specification with a different set of containers,\nyou should revise the HPA spec if that newly added container should also be used for\nscaling. If the specified container in the metric source is not present or only present in a subset\nof the pods then those pods are ignored and the recommendation is recalculated. See [Algorithm](#algorithm-details)\nfor more details about the calculation. To use container resources for autoscaling define a metric\nsource as follows:"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-1",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics > Container resource metrics",
+  "text": "```yaml\ntype: ContainerResource\ncontainerResource:\n  name: cpu\n  container: application\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\n\nIn the above example the HPA controller scales the target such that the average utilization of the cpu\nin the `application` container of all the pods is 60%.\n\nIf you change the name of a container that a HorizontalPodAutoscaler is tracking, you can\nmake that change in a specific order to ensure scaling remains available and effective\nwhilst the change is being applied. Before you update the resource that defines the container\n(such as a Deployment), you should update the associated HPA to track both the new and\nold container names. This way, the HPA is able to calculate a scaling recommendation\nthroughout the update process.\n\nOnce you have rolled out the container name change to the workload resource, tidy up by removing\nthe old container name from the HPA specification."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#pod-readiness-and-autoscaling-metrics-1",
+  "heading": "Horizontal Pod Autoscaling > Pod readiness and autoscaling metrics",
+  "text": "  It is designed to:\n    - Avoid including Pods that rapidly fluctuate between `Ready` and `Unready` during startup.\n    - Ensure stability in the initial readiness signal before HPA considers their metrics valid.\n\nYou can only set these command line options cluster-wide."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-horizontalpodautoscaler-in-kubectl-0",
+  "heading": "Horizontal Pod Autoscaling > Support for HorizontalPodAutoscaler in kubectl",
+  "text": "HorizontalPodAutoscaler, like every API resource, is supported in a standard way by `kubectl`.\nYou can create a new autoscaler using `kubectl create` command.\nYou can list autoscalers by `kubectl get hpa` or get detailed description by `kubectl describe hpa`.\nFinally, you can delete an autoscaler using `kubectl delete hpa`.\n\nIn addition, there is a special `kubectl autoscale` command for creating a HorizontalPodAutoscaler object.\nFor instance, executing `kubectl autoscale rs foo --min=2 --max=5 --cpu=80%`\nwill create an autoscaler for ReplicaSet _foo_, with target CPU utilization set to `80%`\nand the number of replicas between 2 and 5."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#algorithm-details-4",
+  "heading": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work? > Algorithm details",
+  "text": "Note that the _original_ value for the average utilization is reported\nback via the HorizontalPodAutoscaler status, without factoring in the\nnot-yet-ready pods or missing metrics, even when the new usage ratio is\nused.\n\nIf multiple metrics are specified in a HorizontalPodAutoscaler, this\ncalculation is done for each metric, and then the largest of the desired\nreplica counts is chosen. If any of these metrics cannot be converted\ninto a desired replica count (e.g. due to an error fetching the metrics\nfrom the metrics APIs) and a scale down is suggested by the metrics which\ncan be fetched, scaling is skipped. This means that the HPA is still capable\nof scaling up if one or more metrics give a `desiredReplicas` greater than\nthe current value."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#tolerance-0",
+  "heading": "Horizontal Pod Autoscaling > Configurable scaling behavior > Tolerance",
+  "text": "The `tolerance` field configures a threshold for metric variations, preventing the\nautoscaler from scaling for changes below that value.\n\nThis tolerance is defined as the amount of variation around the desired metric value under\nwhich no scaling will occur. For example, consider a HorizontalPodAutoscaler configured\nwith a target memory consumption of 100MiB and a scale-up tolerance of 5%:\n\n```yaml\nbehavior:\n  scaleUp:\n    tolerance: 0.05 # 5% tolerance for scale up\n```\n\nWith this configuration, the HPA algorithm will only consider scaling up if the memory\nconsumption is higher than 105MiB (that is: 5% above the target)."
+ }
+]

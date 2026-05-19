@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more directly with the exact phrase:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01QtxJopacCAY4j5bKVq1aRV",
+   "input": {
+    "query": "if some of the Pod's containers do not have"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 22873,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 73,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-2005 by diagnosing that the ledger-export CronJob in the finance namespace is failing because it exceeds the 1-hour (3600 second) activeDeadlineSeconds timeout. The job processes 9.4 million ledger rows in 95 batches, but only completes ~73% of batches before being terminated with SIGTERM. The fix is to increase the activeDeadlineSeconds to at least 7200 seconds (2 hours) in the CronJob spec to allow the job sufficient time to complete.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 3999,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 131,
+ "stop_reason": "end_turn"
+}

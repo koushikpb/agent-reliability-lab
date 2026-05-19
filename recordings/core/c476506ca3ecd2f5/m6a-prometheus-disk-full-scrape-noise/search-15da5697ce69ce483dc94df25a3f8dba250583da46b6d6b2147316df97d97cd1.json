@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-cluster/monitor-node-health#exporter-0",
+  "heading": "Monitor Node Health > Exporter",
+  "text": "An exporter reports the node problems and/or metrics to certain backends.\nThe following exporters are supported:\n\n- **Kubernetes exporter**: this exporter reports node problems to the Kubernetes API server.\n  Temporary problems are reported as Events and permanent problems are reported as Node Conditions.\n\n- **Prometheus exporter**: this exporter reports node problems and metrics locally as Prometheus\n  (or OpenMetrics) metrics. You can specify the IP address and port for the exporter using command\n  line arguments.\n\n- **Stackdriver exporter**: this exporter reports node problems and metrics to the Stackdriver\n  Monitoring API. The exporting behavior can be customized using a\n  [configuration file](https://github.com/kubernetes/node-problem-detector/blob/v0.8.12/config/exporter/stackdriver-exporter.json)."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#requests-limits-2",
+  "heading": "Local ephemeral storage > Setting requests and limits for local ephemeral storage",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: frontend\nspec:\n  containers:\n  - name: app\n    image: images.my-company.example/app:v4\n    resources:\n      requests:\n        ephemeral-storage: \"2Gi\"\n      limits:\n        ephemeral-storage: \"4Gi\"\n    volumeMounts:\n    - name: ephemeral\n      mountPath: \"/tmp\"\n  - name: log-aggregator\n    image: images.my-company.example/log-aggregator:v6\n    resources:\n      requests:\n        ephemeral-storage: \"2Gi\"\n      limits:\n        ephemeral-storage: \"4Gi\"\n    volumeMounts:\n    - name: ephemeral\n      mountPath: \"/tmp\"\n  volumes:\n    - name: ephemeral\n      emptyDir:\n        sizeLimit: 500Mi\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-tools-0",
+  "heading": "Observability > Common observability tools > Metrics tools",
+  "text": "- [Cortex](https://cortexmetrics.io/) offers horizontally scalable, long-term Prometheus storage.\n- [Grafana Mimir](https://grafana.com/oss/mimir/) is a Grafana Labs project that provides multi-tenant, horizontally scalable Prometheus-compatible storage.\n- [Prometheus](https://prometheus.io/) is the monitoring system that scrapes and stores metrics from Kubernetes components.\n- [Thanos](https://thanos.io/) extends Prometheus with global querying, downsampling, and object storage support."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/check-if-dockershim-removal-affects-you#some-filesystem-metrics-are-missing-and-the-metrics-format-is-different-2",
+  "heading": "Check whether dockershim removal affects you > Known issues > Some filesystem metrics are missing and the metrics format is different",
+  "text": "You can mitigate this issue by using [cAdvisor](https://github.com/google/cadvisor) as a standalone daemonset.\n\n1. Find the latest [cAdvisor release](https://github.com/google/cadvisor/releases)\n   with the name pattern `vX.Y.Z-containerd-cri` (for example, `v0.42.0-containerd-cri`).\n2. Follow the steps in [cAdvisor Kubernetes Daemonset](https://github.com/google/cadvisor/tree/master/deploy/kubernetes) to create the daemonset.\n3. Point the installed metrics collector to use the cAdvisor `/metrics` endpoint\n   which provides the full set of\n   [Prometheus container metrics](https://github.com/google/cadvisor/blob/master/docs/storage/prometheus.md).\n\nAlternatives:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/check-if-dockershim-removal-affects-you#some-filesystem-metrics-are-missing-and-the-metrics-format-is-different-0",
+  "heading": "Check whether dockershim removal affects you > Known issues > Some filesystem metrics are missing and the metrics format is different",
+  "text": "The Kubelet `/metrics/cadvisor` endpoint provides Prometheus metrics,\nas documented in [Metrics for Kubernetes system components](/docs/concepts/cluster-administration/system-metrics/).\nIf you install a metrics collector that depends on that endpoint, you might see the following issues:"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-2",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "A size limit can be specified for the default medium, which limits the capacity\nof the `emptyDir` volume. The storage is allocated from\n[node ephemeral storage](/docs/concepts/storage/ephemeral-storage/#setting-requests-and-limits-for-local-ephemeral-storage).\nIf that is filled up from another source (for example, log files or image overlays),\nthe `emptyDir` may run out of capacity before this limit.\nIf no size is specified, memory-backed volumes are sized to node allocatable memory.\n\nPlease check [here](/docs/concepts/configuration/manage-resources-containers/#memory-backed-emptydir)\nfor points to note in terms of resource management when using memory-backed `emptyDir`."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#example-debugging-a-down-unreachable-node-7",
+  "heading": "Troubleshooting Clusters > Listing your cluster > Example: debugging a down/unreachable node",
+  "text": "```none\n  memory             456Mi (24%)  256Mi (13%)\n  ephemeral-storage  0 (0%)       0 (0%)\n  hugepages-2Mi      0 (0%)       0 (0%)\nEvents:\n...\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-1",
+  "heading": "Observability > Metrics",
+  "text": "flowchart LR\n    C[Cluster components] --> P[Prometheus scraper]\n    P --> TS[(Time series storage)]\n    TS --> D[Dashboards and alerts]\n    TS --> A[Automated actions]\n\n*Figure 2. Components of a typical Kubernetes metrics pipeline.*\n\nFor multi-cluster or multi-cloud visibility, distributed time series databases (for example Thanos or Cortex) can complement Prometheus.\n\nSee [Common observability tools - metrics tools](#metrics-tools) for metrics scrapers and time series databases."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-scheduling-readiness#observability-0",
+  "heading": "Pod Scheduling Readiness > Observability",
+  "text": "The metric `scheduler_pending_pods` comes with a new label `\"gated\"` to distinguish whether a Pod\nhas been tried scheduling but claimed as unschedulable, or explicitly marked as not ready for\nscheduling. You can use `scheduler_pending_pods{queue=\"gated\"}` to check the metric result."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-scheduling-readiness#intro-0",
+  "heading": "Pod Scheduling Readiness",
+  "text": "Pods were considered ready for scheduling once created. Kubernetes scheduler\ndoes its due diligence to find nodes to place all pending Pods. However, in a\nreal-world case, some Pods may stay in a \"miss-essential-resources\" state for a long period.\nThese Pods actually churn the scheduler (and downstream integrators like Cluster AutoScaler)\nin an unnecessary manner.\n\nBy specifying/removing a Pod's `.spec.schedulingGates`, you can control when a Pod is ready\nto be considered for scheduling."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#preemption-0",
+  "heading": "Pod Priority and Preemption > Preemption",
+  "text": "When Pods are created, they go to a queue and wait to be scheduled. The\nscheduler picks a Pod from the queue and tries to schedule it on a Node. If no\nNode is found that satisfies all the specified requirements of the Pod,\npreemption logic is triggered for the pending Pod. Let's call the pending Pod P.\nPreemption logic tries to find a Node where removal of one or more Pods with\nlower priority than P would enable P to be scheduled on that Node. If such a\nNode is found, one or more lower priority Pods get evicted from the Node. After\nthe Pods are gone, P can be scheduled on the Node."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#pod-management-policies-0",
+  "heading": "StatefulSets > Deployment and Scaling Guarantees > Pod Management Policies",
+  "text": "StatefulSet allows you to relax its ordering guarantees while\npreserving its uniqueness and identity guarantees via its `.spec.podManagementPolicy` field.\n\n#### OrderedReady Pod Management\n\n`OrderedReady` pod management is the default for StatefulSets. It implements the behavior\ndescribed in [Deployment and Scaling Guarantees](#deployment-and-scaling-guarantees).\n\n#### Parallel Pod Management\n\n`Parallel` pod management tells the StatefulSet controller to launch or\nterminate all Pods in parallel, and to not wait for Pods to become Running\nand Ready or completely terminated prior to launching or terminating another\nPod.\n\nFor scaling operations, this means all Pods are created or terminated simultaneously.\n\nFor rolling updates when [`.spec.updateStrategy.rollingUpdate.maxUnavailable`](#maximum-unavailable-pods)\nis greater than 1, the StatefulSet controller terminates and creates up to `maxUnavailable` Pods\nsimultaneously (also known as \"bursting\"). This can speed up updates but may result in Pods becoming ready out of order, which might not be suitable for applications requiring strict ordering."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0",
+  "heading": "StatefulSets > Deployment and Scaling Guarantees",
+  "text": "* For a StatefulSet with N replicas, when Pods are being deployed, they are created sequentially, in order from {0..N-1}.\n* When Pods are being deleted, they are terminated in reverse order, from {N-1..0}.\n* Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready. If [`.spec.minReadySeconds`](#minimum-ready-seconds) is set, predecessors must be available (Ready for at least `minReadySeconds`).\n* Before a Pod is terminated, all of its successors must be completely shutdown.\n\nThe StatefulSet should not specify a `pod.Spec.TerminationGracePeriodSeconds` of 0. This practice\nis unsafe and strongly discouraged. For further explanation, please refer to\n[force deleting StatefulSet Pods](/docs/tasks/run-application/force-delete-stateful-set-pod/)."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#effect-of-pod-priority-on-scheduling-order-0",
+  "heading": "Pod Priority and Preemption > Pod priority > Effect of Pod priority on scheduling order",
+  "text": "When Pod priority is enabled, the scheduler orders pending Pods by\ntheir priority and a pending Pod is placed ahead of other pending Pods\nwith lower priority in the scheduling queue. As a result, the higher\npriority Pod may be scheduled sooner than Pods with lower priority if\nits scheduling requirements are met. If such Pod cannot be scheduled, the\nscheduler will continue and try to schedule other lower priority Pods.\n\n#### PodGroups and scheduling order\n\nWhen the `GenericWorkload` feature gate is enabled, PodGroups are interleaved\nwith the standalone Pods in the scheduling queue. PodGroup object has its own\n`priority` field which is used for ordering with respect to other Pods and\nPodGroups. The details on how to set the priority of a PodGroup are available on the\n[Pod Group Disruption and Priority](/docs/concepts/workloads/workload-api/disruption-and-priority/)\npage.\n\n#### CompositePodGroups and scheduling order\n\nWhen the `CompositePodGroup` feature gate is enabled, the scheduler treats the following objects as\nunits of scheduling that can be enqueued:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-pods-0",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Pods",
+  "text": "The first step in debugging a Pod is taking a look at it. Check the current\nstate of the Pod and recent events with the following command:\n\n```shell\nkubectl describe pods ${POD_NAME}\n```\n\nLook at the state of the containers in the pod. Are they all `Running`?\nHave there been recent restarts?\n\nContinue debugging depending on the state of the pods.\n\n#### My pod stays pending\n\nIf a Pod is stuck in `Pending` it means that it can not be scheduled onto a node.\nGenerally this is because there are insufficient resources of one type or another\nthat prevent scheduling. Look at the output of the `kubectl describe ...` command above.\nThere should be messages from the scheduler about why it can not schedule your pod.\nReasons include:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#higher-priority-pods-are-preempted-before-lower-priority-pods-0",
+  "heading": "Pod Priority and Preemption > Troubleshooting > Higher priority Pods are preempted before lower priority pods",
+  "text": "The scheduler tries to find nodes that can run a pending Pod. If no node is\nfound, the scheduler tries to remove Pods with lower priority from an arbitrary\nnode in order to make room for the pending pod.\nIf a node with low priority Pods is not feasible to run the pending Pod, the scheduler\nmay choose another node with higher priority Pods (compared to the Pods on the\nother node) for preemption. The victims must still have lower priority than the\npreemptor Pod.\n\nWhen there are multiple nodes available for preemption, the scheduler tries to\nchoose the node with a set of Pods with lowest priority. However, if such Pods\nhave PodDisruptionBudget that would be violated if they are preempted then the\nscheduler may choose another node with higher priority Pods.\n\nWhen multiple nodes exist for preemption and none of the above scenarios apply,\nthe scheduler chooses a node with the lowest priority."
+ }
+]

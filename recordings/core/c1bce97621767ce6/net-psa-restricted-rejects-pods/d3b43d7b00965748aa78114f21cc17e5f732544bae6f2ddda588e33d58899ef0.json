@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The deploy job is erroring out. Let me check the logs from the failed deployment pod:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MYSJLYmKdnZ7Tunmg5Yako",
+   "input": {
+    "pod": "deploy-pdf-exporter-28591340-wq7mz"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1862,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 90,
+ "stop_reason": "tool_use"
+}

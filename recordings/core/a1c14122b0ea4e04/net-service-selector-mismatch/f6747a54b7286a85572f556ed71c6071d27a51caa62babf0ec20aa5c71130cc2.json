@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EqIDCqQBCBMYAipAntnFoVAgAL5TkRa7DTQ5r9kA0ezhQiO5bhUBxpUzy/ACZg7NDcQmz2abZQZEEibhJHLhqURlQQ1zluIrBNqKDTIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBtc/w1gYSDFh3P6zEenkQ41YBRRoMs9eXtMA/7b5/MK8jIjCYfaOu7LteVVnazmiAzwrEx1yC20dqqfBaz9dYUoxs/XV8WxapVkriQY0cs1WlXK0qqgHQADhpL+bxd+35eDplgS877ruP8uyoY9dkDP5y1Bm+/qbE3AX8HkIHK6AU7rwwcXsil4OedjTLjVp+2GMW/F5pl50JocLMevS3snAT8tQ6J/htXBea7GT6w/m3Y2OQkLhMlDR9EQGSm8zONOY8Xb/pnYWV59VpTXZIs9nRfYRCuBa1kpmH3anJFs5iNQGgiLVmPVqUdUX9Kj7sHbWpvzbszinWLkJvv4FnghgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01TsmBX55JMDa3xpChxecwGE",
+   "input": {
+    "query": "Service selector matches pod labels endpoints"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2612,
+ "model": "claude-opus-4-7",
+ "output_tokens": 153,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduler-perf-tuning#intro-0",
+  "heading": "Scheduler Performance Tuning",
+  "text": "[kube-scheduler](/docs/concepts/scheduling-eviction/kube-scheduler/#kube-scheduler)\nis the Kubernetes default scheduler. It is responsible for placement of Pods\non Nodes in a cluster.\n\nNodes in a cluster that meet the scheduling requirements of a Pod are\ncalled _feasible_ Nodes for the Pod. The scheduler finds feasible Nodes\nfor a Pod and then runs a set of functions to score the feasible Nodes,\npicking a Node with the highest score among the feasible ones to run\nthe Pod. The scheduler then notifies the API server about this decision\nin a process called _Binding_.\n\nThis page explains performance tuning optimizations that are relevant for\nlarge Kubernetes clusters.\n\nIn large clusters, you can tune the scheduler's behaviour balancing\nscheduling outcomes between latency (new Pods are placed quickly) and\naccuracy (the scheduler rarely makes poor placement decisions).\n\nYou configure this tuning setting via kube-scheduler setting\n`percentageOfNodesToScore`. This KubeSchedulerConfiguration setting determines\na threshold for scheduling nodes in your cluster."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-metrics#kubelet-pressure-stall-information-psi-metrics-5",
+  "heading": "Metrics For Kubernetes System Components > Component metrics > kubelet Pressure Stall Information (PSI) metrics",
+  "text": "Here is a simple spike scenario. The cpu.some `avg10` value of `0.74` indicates that in the last 10 seconds, at least one task in this container was stalled on the CPU for 0.74% of the time (0.0074 seconds or 74 milliseconds). Because `avg10` (0.74) is significantly higher than `avg300` (0.21) on the same resource, this suggests a recent surge in resource contention rather than a sustained long-term bottleneck. If monitored continuously and the `avg300` metrics increase as well, we can diagnose a more serious, lasting issue!"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/dra#kube-controller-manager-metrics-0",
+  "heading": "Good practices for Dynamic Resource Allocation as a Cluster Admin > Monitor and tune components for higher load, especially in high scale environments > `kube-controller-manager` metrics",
+  "text": "The following metrics look closely at the internal ResourceClaim controller\nmanaged by the `kube-controller-manager` component.\n\n* Workqueue Add Rate: Monitor  sum(rate(workqueue_adds_total{name=\"resource_claim\"}[5m]))  to gauge how quickly items are added to the ResourceClaim controller.\n* Workqueue Depth: Track\n  sum(workqueue_depth{endpoint=\"kube-controller-manager\",\n  name=\"resource_claim\"}) to identify any backlogs in the ResourceClaim\n  controller.\n* Workqueue Work Duration: Observe histogram_quantile(0.99,\n  sum(rate(workqueue_work_duration_seconds_bucket{name=\"resource_claim\"}[5m]))\n  by (le)) to understand the speed at which the ResourceClaim controller\n  processes work."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/swap-memory-management#risks-and-caveats-0",
+  "heading": "Swap memory management > Risks and caveats",
+  "text": "It is deeply encouraged to encrypt the swap space.\nSee Memory-backed volumes [memory-backed volumes](#memory-backed-volumes) for more info.\n\nHaving swap available on a system reduces predictability.\nWhile swap can enhance performance by making more RAM available, swapping data\nback to memory is a heavy operation, sometimes slower by many orders of magnitude,\nwhich can cause unexpected performance regressions.\nFurthermore, swap changes a system's behaviour under memory pressure.\nEnabling swap increases the risk of noisy neighbors,\nwhere Pods that frequently use their RAM may cause other Pods to swap.\nIn addition, since swap allows for greater memory usage for workloads in Kubernetes that cannot be predictably accounted for,\nand due to unexpected packing configurations,\nthe scheduler currently does not account for swap memory usage.\nThis heightens the risk of noisy neighbors."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/dra#kube-scheduler-metrics-0",
+  "heading": "Good practices for Dynamic Resource Allocation as a Cluster Admin > Monitor and tune components for higher load, especially in high scale environments > `kube-scheduler` metrics",
+  "text": "The following scheduler metrics are high level metrics aggregating performance\nacross all Pods scheduled, not just those using DRA. It is important to note\nthat the end-to-end metrics are ultimately influenced by the\n`kube-controller-manager`'s performance in creating ResourceClaims from\nResourceClaimTemplates in deployments that heavily use ResourceClaimTemplates.\n\n* Scheduler End-to-End Duration: Monitor histogram_quantile(0.99,\n  sum(increase(scheduler_pod_scheduling_sli_duration_seconds_bucket[5m])) by\n  (le)).\n* Scheduler Algorithm Latency: Track histogram_quantile(0.99,\n  sum(increase(scheduler_scheduling_algorithm_duration_seconds_bucket[5m])) by\n  (le))."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduler-perf-tuning#enabling-opportunistic-batching-0",
+  "heading": "Scheduler Performance Tuning > Enabling Opportunistic Batching",
+  "text": "When scheduling large workloads, Pods often have equivalent scheduling constraints and require the scheduler\nto perform the same operations over and over again. The [Opportunistic Batching](/docs/reference/command-line-tools-reference/feature-gates/#OpportunisticBatching)\nfeature allows the scheduler to reuse the filtering and scoring results between scheduling cycles\nwhich greatly speeds up the scheduling process.\n\nWith rescoring, the scheduler can continue batching in that situation. When the next Pod can still fit on\nthe previously chosen Node, the scheduler updates that Node's score and puts it back into the cached candidate list.\nIf rescoring does not succeed, the scheduler falls back to the existing behavior and flushes the cache.\n\nBasically, this feature works like:\n1. The scheduler schedules pod-1 and caches the scheduling result.\n1. The scheduler schedules pod-2, 3, ... with the cached results.\n1. The cache expires after 0.5 second. The scheduler schedules the next pod which builds a new cache."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#intro-0",
+  "heading": "Observability",
+  "text": "In Kubernetes, observability is the process of collecting and analyzing metrics, logs, and traces\u2014often referred to as the three pillars of observability\u2014in order to obtain a better understanding of the internal state, performance, and health of the cluster.\n\nKubernetes control plane components, as well as many add-ons, generate and emit these signals. By aggregating and correlating them, you can gain a unified picture of the control plane, add-ons, and applications across the cluster.\n\nFigure 1 outlines how cluster components emit the three primary signal types.\n\nflowchart LR\n    A[Cluster components] --> M[Metrics pipeline]\n    A --> L[Log pipeline]\n    A --> T[Trace pipeline]\n    M --> S[(Storage and analysis)]\n    L --> S\n    T --> S\n    S --> O[Operators and automation]\n\n*Figure 1. High-level signals emitted by cluster components and their consumers.*"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-usage-monitoring#intro-0",
+  "heading": "Tools for Monitoring Resources",
+  "text": "To scale an application and provide a reliable service, you need to\nunderstand how the application behaves when it is deployed. You can examine\napplication performance in a Kubernetes cluster by examining the containers,\n[pods](/docs/concepts/workloads/pods/),\n[services](/docs/concepts/services-networking/service/), and\nthe characteristics of the overall cluster. Kubernetes provides detailed\ninformation about an application's resource usage at each of these levels.\nThis information allows you to evaluate your application's performance and\nwhere bottlenecks can be removed to improve overall performance. \n\nIn Kubernetes, application monitoring does not depend on a single monitoring solution.\nOn new clusters, you can use [resource metrics](#resource-metrics-pipeline) or\n[full metrics](#full-metrics-pipeline) pipelines to collect monitoring statistics."
+ }
+]

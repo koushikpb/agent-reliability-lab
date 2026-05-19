@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the status of pods in the ledger namespace to see the current state of the PVC and related resources.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01EcfVYZEPpKZV3vVjKyHTUs",
+   "input": {
+    "namespace": "ledger"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1341,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 81,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try a different search:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01N89aRYxujhE66k5E3jJFHJ",
+   "input": {
+    "query": "pod restart rolling update deployment"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5198,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 65,
+ "stop_reason": "tool_use"
+}

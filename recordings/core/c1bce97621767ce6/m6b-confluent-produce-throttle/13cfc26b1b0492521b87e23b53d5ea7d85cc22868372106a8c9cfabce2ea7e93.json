@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-6005. The issue is **Kafka broker-side throttling**, not a Kubernetes problem. \n\nThe pod logs clearly show the broker throttling the producer for 2.7-3 seconds at a time, with the producer queue at 96% capacity and average throttle time of 2.8 seconds. Despite having low CPU usage and being scaled to 8 replicas, the consumer lag continues to grow because the Kafka broker is rate-limiting the producer via quota enforcement.\n\nThe fix is for the ticket owner to contact their data platform team to investigate the producer quota settings for their client API key, as the quota is likely set too low for current throughput demands.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8825,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 157,
+ "stop_reason": "end_turn"
+}

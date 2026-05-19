@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EtoDCqQBCBMYAipAVX9Er0kPKD5Xq6x9+1Q1bzQHKud3zvxgNs+E6cjl5Mj3YF9zc46ztakjjMvqW67VwfnvBd4rdVi8VxY5W/bhQTIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBws7w1gYSDF1Lhtb/+8sgyx4c3BoMP124ahJWeICBzyI1IjAMd8MUy+DiCsuxAhCKiUWrZszgkKz1JGY8QnCIFMZptYQJtD6XL8oqnEdWZEK4fvIq4gFmJZ5e6yvdSrZY7uuZrwnmpIcsbquVy96SJkhBzmGN3HZwJDwuLPwpQfoeC9AMO9BU9Z1k1aSTA1rKZoJ/FjiDUj1rT3MDSj0nrayry9vSuzCwglzRCtFxD0hF9jlc0Hh276INH6dSXABFk9RruL1MdYJoLSEMpWXWnJ8LlYe7DtW9t9krh8pEugrf3kk570/VVeds6ZpETL5ukspKu3vQxSeQOFp0mHRV0E8t0Lb8p7LqiSiX976DDKmY21FvqbSGFd4n6xWltoktnwdjipaH5pb4QFqXClvug4iF10D81YOsGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WqaTD9axTy6TtLBL7qw25x",
+   "input": {
+    "query": "Pod Security Standards restricted allowPrivilegeEscalation runAsNonRoot capabilities seccompProfile"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3262,
+ "model": "claude-opus-4-7",
+ "output_tokens": 195,
+ "stop_reason": "tool_use"
+}

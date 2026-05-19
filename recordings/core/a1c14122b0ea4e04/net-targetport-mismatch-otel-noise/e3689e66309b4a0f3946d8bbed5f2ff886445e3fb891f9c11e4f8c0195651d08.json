@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EswDCqQBCBMYAipA8jcNYLKHt5uqXoKXhDWzMhUHYhwWR43QKG0sRSmFZ4GzOnk40Y4xdh89eXXxVsbx74HIMpuIanMOKtFAghtXsDIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBzc/w1gYSDIALCSmZMe+f6RfxShoMkw2DYmU6xHaw8Pj5IjCgjMqg0GESp46Dde8VIuYkJFYiCm1CwYM2KePkiN4+P25ecl+vvR8ZThKPgM+7x8Mq1AFETPfDfdH2dhWRQP7IVZ6QukZQ/DF3u5kOi6pV6qOfdwKQsMMdLcglHp7jnca5px8rOp2BJnGGu/nXv8t4o8cl+K2R+7x6ElZFPP6OcXvhqBkvD5bFBQFc+pc3BfcVQKwOYT5eRtMo8aRCarqJneA5SbEesaiR5xDWSnsnEpee5dpweNtMxYlTlI39SAHQntwJx38wpkduV/JhimMQZFCeFIUcBxICGIA3qD/3zHAJr/vXdjoc9fV7cKZEykwxyfZytC9ppFt1BUWkcHmDHkowMA4IpBgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01K5tNCfLNKXbV77rDKNZKk1",
+   "input": {
+    "query": "ingress-nginx 502 bad gateway service targetPort mismatch"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2982,
+ "model": "claude-opus-4-7",
+ "output_tokens": 176,
+ "stop_reason": "tool_use"
+}

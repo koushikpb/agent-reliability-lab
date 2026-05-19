@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#examine-pod-logs-0",
+  "heading": "Debug Running Pods > Examining pod logs",
+  "text": "First, look at the logs of the affected container:\n\n```shell\nkubectl logs ${POD_NAME} -c ${CONTAINER_NAME}\n```\n\nIf your container has previously crashed, you can access the previous container's crash log with:\n\n```shell\nkubectl logs ${POD_NAME} -c ${CONTAINER_NAME} --previous\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-2",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "1. **Check logs**: Use `kubectl logs <name-of-pod>` to check the logs of the container.\n   This is often the most direct way to diagnose the issue causing the crashes.\n1. **Inspect events**: Use `kubectl describe pod <name-of-pod>` to see events\n   for the Pod, which can provide hints about configuration or resource issues.\n1. **Review configuration**: Ensure that the Pod configuration, including\n   environment variables and mounted volumes, is correct and that all required\n   external resources are available.\n1. **Check resource limits**: Make sure that the container has enough CPU\n   and memory allocated. Sometimes, increasing the resources in the Pod definition\n   can resolve the issue.\n1. **Debug application**: There might exist bugs or misconfigurations in the\n   application code. Running this container image locally or in a development\n   environment can help diagnose application specific issues."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#copying-a-pod-while-changing-its-command-0",
+  "heading": "Debug Running Pods > Debugging using a copy of the Pod > Copying a Pod while changing its command",
+  "text": "Sometimes it's useful to change the command for a container, for example to\nadd a debugging flag or because the application is crashing.\n\nTo simulate a crashing application, use `kubectl run` to create a container\nthat immediately exits:\n\n```\nkubectl run --image=busybox:1.28 myapp -- false\n```\n\nYou can see using `kubectl describe pod myapp` that this container is crashing:\n\n```\nContainers:\n  myapp:\n    Image:         busybox\n    ...\n    Args:\n      false\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    1\n```\n\nYou can use `kubectl debug` to create a copy of this Pod with the command\nchanged to an interactive shell:\n\n```\nkubectl debug myapp -it --copy-to=myapp-debug --container=myapp -- sh\n```\n\n```\nIf you don't see a command prompt, try pressing enter.\n/ #\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-1",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "The \"RESTARTS\" column says that these pods are not crashing frequently or being\nrestarted.  Frequent restarts could lead to intermittent connectivity issues.\nIf the restart count is high, read more about how to [debug pods](/docs/tasks/debug/debug-application/debug-pods).\n\nInside the Kubernetes system is a control loop which evaluates the selector of\nevery Service and saves the results into one or more EndpointSlice objects.\n\n```shell\nkubectl get endpointslices -l kubernetes.io/service-name=hostnames\n\nNAME              ADDRESSTYPE   PORTS   ENDPOINTS\nhostnames-ytpni   IPv4          9376    10.244.0.5,10.244.0.6,10.244.0.7\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#debugging-using-a-copy-of-the-pod-0",
+  "heading": "Debug Running Pods > Debugging using a copy of the Pod",
+  "text": "Sometimes Pod configuration options make it difficult to troubleshoot in certain\nsituations. For example, you can't run `kubectl exec` to troubleshoot your\ncontainer if your container image does not include a shell or if your application\ncrashes on startup. In these situations you can use `kubectl debug` to create a\ncopy of the Pod with configuration values changed to aid debugging."
+ },
+ {
+  "chunk_id": "concepts/containers/container-lifecycle-hooks#debugging-hook-handlers-0",
+  "heading": "Container Lifecycle Hooks > Container hooks > Debugging Hook handlers",
+  "text": "The logs for a Hook handler are not exposed in Pod events.\nIf a handler fails for some reason, it broadcasts an event.\nFor `PostStart`, this is the `FailedPostStartHook` event,\nand for `PreStop`, this is the `FailedPreStopHook` event.\nTo generate a failed `FailedPostStartHook` event yourself, modify the\n[lifecycle-events.yaml](https://k8s.io/examples/pods/lifecycle-events.yaml)\nfile to change the postStart command to \"badcommand\" and apply it.\nHere is some example output of the resulting events you see from running `kubectl describe pod lifecycle-demo`:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#using-kubectl-describe-pod-to-fetch-details-about-pods-7",
+  "heading": "Debug Running Pods > Using `kubectl describe pod` to fetch details about pods",
+  "text": "Lastly, you see a log of recent events related to your Pod. \"From\" indicates the component that is logging the event. \"Reason\" and \"Message\" tell you what happened."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/logging#intro-0",
+  "heading": "Logging Architecture",
+  "text": "Application logs can help you understand what is happening inside your application. The\nlogs are particularly useful for debugging problems and monitoring cluster activity. Most\nmodern applications have some kind of logging mechanism. Likewise, container engines\nare designed to support logging. The easiest and most adopted logging method for\ncontainerized applications is writing to standard output and standard error streams.\n\nHowever, the native functionality provided by a container engine or runtime is usually\nnot enough for a complete logging solution.\n\nFor example, you may want to access your application's logs if a container crashes,\na pod gets evicted, or a node dies.\n\nIn a cluster, logs should have a separate storage and lifecycle independent of nodes,\npods, or containers. This concept is called\n[cluster-level logging](#cluster-level-logging-architectures).\n\nCluster-level logging architectures require a separate backend to store, analyze, and\nquery logs. Kubernetes does not provide a native storage solution for log data. Instead,\nthere are many logging solutions that integrate with Kubernetes. The following sections\ndescribe how to handle and store logs on nodes."
+ }
+]

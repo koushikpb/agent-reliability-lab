@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:**\n\nI resolved ticket T-6005 by analyzing the clickstream-ingest pod logs and identifying that the Kafka broker is applying producer-side throttling to the clickstream-ingest API key. The broker throttle warnings (2.7-3.0 seconds), 96% full producer queue, and growing consumer lag despite low CPU usage all point to a broker-side quota limit rather than a Kubernetes resource problem. The fix is for the team to contact the data platform team to increase the producer rate quota for their API key.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 4472,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 120,
+ "stop_reason": "end_turn"
+}

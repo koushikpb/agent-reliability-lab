@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Now I have all the information I need. The issue is clear:\n\n**Root Cause:** The pod-embedder pod has a nodeSelector for `pool=gpu` which matches the GPU nodes, but those GPU nodes have a taint `dedicated: gpu` with `NoSchedule` effect. The pod currently has a toleration for `nvidia.com/gpu` but NOT for the `dedicated: gpu` taint, so the scheduler cannot place it on those nodes.\n\n**Evidence:** \n- Pod status shows \"Unschedulable\" with message \"3 node(s) had untolerated taint {dedicated: gpu}\"\n- The pod does have a `nvidia.com/gpu` toleration but is missing one for the `dedicated: gpu` taint\n- The ml-serving team's pods run successfully on these same GPU nodes, which means those pods have the required `dedicated: gpu` toleration\n\n**Fix:** Add a toleration for the `dedicated: gpu` taint to the doc-embedder deployment spec.\n\nLet me update the ticket with this resolution.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01J7bih2iQ5MGZDQ8Nhrjebm",
+   "input": {
+    "id": "T-3002",
+    "note": "Root cause identified: The doc-embedder pod has a nodeSelector for pool=gpu but is missing a toleration for the dedicated:gpu taint on the GPU nodes.\n\nEvidence: The pod condition shows \"3 node(s) had untolerated taint {dedicated: gpu}\" - the GPU nodes have a taint with key=dedicated, value=gpu, and effect=NoSchedule. The pod currently only has tolerations for nvidia.com/gpu and Kubernetes default conditions, but not for the dedicated:gpu taint.\n\nAccording to Kubernetes taint and toleration design [cite: concepts/scheduling-eviction/taint-and-toleration#intro-0], when a node has a taint, pods must have a matching toleration to be scheduled on that node. This is used for specialized hardware nodes [cite: concepts/scheduling-eviction/taint-and-toleration#example-use-cases-2].\n\nFix: Update the doc-embedder Deployment spec to add a toleration for dedicated:gpu. Add the following to the pod template tolerations:\n- key: dedicated\n  operator: Equal\n  value: gpu\n  effect: NoSchedule\n\nThe ml-serving team's pods schedule successfully on these same nodes because they already have this toleration configured.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4129,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 601,
+ "stop_reason": "tool_use"
+}

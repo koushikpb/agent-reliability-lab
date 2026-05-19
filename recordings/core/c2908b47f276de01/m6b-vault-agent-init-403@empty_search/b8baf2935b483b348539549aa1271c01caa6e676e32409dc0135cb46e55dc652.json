@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try a different search to understand Vault agent configuration:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_017buQbh3Bfqgzh17EU4K6ok",
+   "input": {
+    "query": "Vault agent init container Kubernetes authentication"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2926,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 74,
+ "stop_reason": "tool_use"
+}

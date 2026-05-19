@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01C3a4FXe3BT8bbrj7efEFjB",
+   "input": {
+    "id": "T-2004",
+    "note": "Cause: The accounts-api 3.1.0 image removed the legacy /healthz endpoint and split health into /livez and /readyz (per the pod's own startup logs: \"health endpoints moved to the standard split: /livez, /readyz (legacy /healthz removed, see CHANGELOG 3.1.0)\"). The Deployment's readiness probe still targets GET /healthz on :8080, so the kubelet gets HTTP 404 on every probe (\"Readiness probe failed: HTTP probe failed with statuscode: 404\", repeated in logs as \"GET /healthz 404 ua=kube-probe\"). A failing readiness probe keeps the Pod's Ready condition false, so it never receives traffic and the rollout cannot progress past the first new replica [cite: concepts/workloads/pods/probes#configure-probes-2] [cite: concepts/workloads/pods/pod-lifecycle#readiness-probe-0]. Stuck rollouts due to readiness probe failures are a documented Deployment failure mode [cite: concepts/workloads/controllers/deployment#failed-deployment-0].\n\nEvidence:\n- New pod accounts-api-8f4b6d7c9-m7zjn (image 3.1.0): ready=false, message \"Readiness probe failed: HTTP probe failed with statuscode: 404\".\n- Pod logs show the app is up and listening on :8080 serving /livez, /readyz, /metrics; probes to /healthz return 404.\n- Old 3.0.4 pods (which do expose /healthz) are Ready and still serving \u2014 consistent with the probe path, not the app, being the problem.\n\nFix (for the Deployment owner to apply): Update the accounts-api Deployment's readinessProbe (and livenessProbe, if it also points at /healthz) to use the new endpoints \u2014 httpGet.path: /readyz for readinessProbe and /livez for livenessProbe, port 8080 \u2014 then re-apply. The new pod should go Ready within a probe period or two and the rolling update will continue, retiring the old 3.0.4 replicas. No cluster-side change is needed.\n\nSide note (not part of this ticket): accounts-worker-55d8b9c6f-rk2tv has 2 restarts with last state Terminated exit code 1 \u2014 worth a separate look if it keeps recurring.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6329,
+ "model": "claude-opus-4-7",
+ "output_tokens": 881,
+ "stop_reason": "tool_use"
+}

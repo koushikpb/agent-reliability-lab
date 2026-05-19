@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-6",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "When the `CSIMigration{provider}` feature flag is enabled for a specific in-tree volume plugin,\nthe `kubernetes.io/pv-controller` finalizer is replaced by the\n`external-provisioner.volume.kubernetes.io/finalizer` finalizer.\n\nThe finalizers ensure that the PV object is removed only after the volume is deleted\nfrom the storage backend provided the reclaim policy of the PV is `Delete`. This\nalso ensures that the volume is deleted from storage backend irrespective of the\norder of deletion of PV and PVC."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "The purpose of the Storage Object in Use Protection feature is to ensure that\nPersistentVolumeClaims (PVCs) in active use by a Pod and PersistentVolume (PVs)\nthat are bound to PVCs are not removed from the system, as this may result in data loss.\n\nPVC is in active use by a Pod when a Pod object exists that is using the PVC.\n\nIf a user deletes a PVC in active use by a Pod, the PVC is not removed immediately.\nPVC removal is postponed until the PVC is no longer actively used by any Pods. Also,\nif an admin deletes a PV that is bound to a PVC, the PV is not removed immediately.\nPV removal is postponed until the PV is no longer bound to a PVC.\n\nYou can see that a PVC is protected when the PVC's status is `Terminating` and the\n`Finalizers` list includes `kubernetes.io/pvc-protection`:"
+ },
+ {
+  "chunk_id": "tasks/run-application/delete-stateful-set#persistent-volumes-0",
+  "heading": "Delete a StatefulSet > Deleting a StatefulSet > Persistent Volumes",
+  "text": "Deleting the Pods in a StatefulSet will not delete the associated volumes.\nThis is to ensure that you have the chance to copy data off the volume before\ndeleting it. Deleting the PVC after the pods have terminated might trigger\ndeletion of the backing Persistent Volumes depending on the storage class\nand reclaim policy. You should never assume ability to access a volume\nafter claim deletion.\n\nUse caution when deleting a PVC, as it may lead to data loss."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "Finalizers can be added on a PersistentVolume to ensure that PersistentVolumes\nhaving `Delete` reclaim policy are deleted only after the backing storage are deleted.\n\nThe finalizer `external-provisioner.volume.kubernetes.io/finalizer`(introduced\nin  v1.31) is added to both dynamically provisioned and statically provisioned\nCSI volumes.\n\nThe finalizer `kubernetes.io/pv-controller`(introduced in v1.31) is added to \ndynamically provisioned in-tree plugin volumes and skipped for statically \nprovisioned in-tree plugin volumes.\n\nThe following is an example of dynamically provisioned in-tree plugin volume:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-4",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "```shell\nName:            pvc-2f0bab97-85a8-4552-8044-eb8be45cf48d\nLabels:          <none>\nAnnotations:     pv.kubernetes.io/provisioned-by: csi.vsphere.vmware.com\nFinalizers:      [kubernetes.io/pv-protection external-provisioner.volume.kubernetes.io/finalizer]\nStorageClass:    fast\nStatus:          Bound\nClaim:           demo-app/nginx-logs\nReclaim Policy:  Delete\nAccess Modes:    RWO\nVolumeMode:      Filesystem\nCapacity:        200Mi\nNode Affinity:   <none>\nMessage:\nSource:\n    Type:              CSI (a Container Storage Interface (CSI) volume source)\n    Driver:            csi.vsphere.vmware.com\n    FSType:            ext4\n    VolumeHandle:      44830fa8-79b4-406b-8b58-621ba25353fd\n    ReadOnly:          false\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-5",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "When you use a `podFailurePolicy`, the job controller only matches Pods in the\n`Failed` phase. Pods with a deletion timestamp that are not in a terminal phase\n(`Failed` or `Succeeded`) are considered still terminating. This implies that\nterminating pods retain a [tracking finalizer](#job-tracking-with-finalizers)\nuntil they reach a terminal phase.\nSince Kubernetes 1.27, Kubelet transitions deleted pods to a terminal phase\n(see: [Pod Phase](/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase)). This\nensures that deleted pods have their finalizers removed by the Job controller.\n\nStarting with Kubernetes v1.28, when Pod failure policy is used, the Job controller recreates\nterminating Pods only once these Pods reach the terminal `Failed` phase. This behavior is similar\nto `podReplacementPolicy: Failed`. For more information, see [Pod replacement policy](#pod-replacement-policy)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-3",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "In this case, you don't need to delete and recreate a Pod or deployment that is using an existing PVC.\nAny in-use PVC automatically becomes available to its Pod as soon as its file system has been expanded.\nThis feature has no effect on PVCs that are not in use by a Pod or deployment. You must create a Pod that\nuses the PVC before the expansion can complete.\n\nSimilar to other volume types - FlexVolume volumes can also be expanded when in-use by a Pod.\n\nFlexVolume resize is possible only when the underlying driver supports resize.\n\n#### Recovering from Failure when Expanding Volumes\n\nIf a user specifies a new size that is too big to be satisfied by underlying\nstorage system, expansion of PVC will be continuously retried until user or\ncluster administrator takes some action. This can be undesirable and hence\nKubernetes provides following methods of recovering from such failures."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-2",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "```yaml\napiVersion: apps/v1\nkind: StatefulSet\n...\nspec:\n  persistentVolumeClaimRetentionPolicy:\n    whenDeleted: Retain\n    whenScaled: Delete\n...\n```\n\nThe StatefulSet controller adds\n[owner references](/docs/concepts/overview/working-with-objects/owners-dependents/#owner-references-in-object-specifications)\nto its PVCs, which are then deleted by the garbage collector after the Pod is terminated. This enables the Pod to\ncleanly unmount all volumes before the PVCs are deleted (and before the backing PV and\nvolume are deleted, depending on the retain policy).  When you set the `whenDeleted`\npolicy to `Delete`, an owner reference to the StatefulSet instance is placed on all PVCs\nassociated with that StatefulSet."
+ }
+]

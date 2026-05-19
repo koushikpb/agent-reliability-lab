@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/delete-stateful-set#force-deletion-of-statefulset-pods-0",
+  "heading": "Delete a StatefulSet > Deleting a StatefulSet > Force deletion of StatefulSet pods",
+  "text": "If you find that some pods in your StatefulSet are stuck in the 'Terminating'\nor 'Unknown' states for an extended period of time, you may need to manually\nintervene to forcefully delete the pods from the apiserver.\nThis is a potentially dangerous task. Refer to\n[Force Delete StatefulSet Pods](/docs/tasks/run-application/force-delete-stateful-set-pod/)\nfor details."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-1",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "A Pod is not deleted automatically when a node is unreachable.\nThe Pods running on an unreachable Node enter the 'Terminating' or 'Unknown' state after a\n[timeout](/docs/concepts/architecture/nodes/#condition).\nPods may also enter these states when the user attempts graceful deletion of a Pod\non an unreachable Node.\nThe only ways in which a Pod in such a state can be removed from the apiserver are as follows:\n\n- The Node object is deleted (either by you, or by the\n  [Node Controller](/docs/concepts/architecture/nodes/#node-controller)).\n- The kubelet on the unresponsive Node starts responding, kills the Pod and removes the entry\n   from the apiserver.\n- Force deletion of the Pod by the user."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#force-deletion-1",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods > Force Deletion",
+  "text": "If you're using any version of kubectl <= 1.4, you should omit the `--force` option and use:\n\n```shell\nkubectl delete pods <pod> --grace-period=0\n```\n\nIf even after these commands the pod is stuck on `Unknown` state, use the following command to\nremove the pod from the cluster:\n\n```shell\nkubectl patch pod <pod> -p '{\"metadata\":{\"finalizers\":null}}'\n```\n\nAlways perform force deletion of StatefulSet Pods carefully and with complete knowledge of the risks involved."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#force-deletion-0",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods > Force Deletion",
+  "text": "Force deletions **do not** wait for confirmation from the kubelet that the Pod has been terminated.\nIrrespective of whether a force deletion is successful in killing a Pod, it will immediately\nfree up the name from the apiserver. This would let the StatefulSet controller create a replacement\nPod with that same identity; this can lead to the duplication of a still-running Pod,\nand if said Pod can still communicate with the other members of the StatefulSet,\nwill violate the at most one semantics that StatefulSet is designed to guarantee.\n\nWhen you force delete a StatefulSet pod, you are asserting that the Pod in question will never\nagain make contact with other Pods in the StatefulSet and its name can be safely freed up for a\nreplacement to be created.\n\nIf you want to delete a Pod forcibly using kubectl version >= 1.5, do the following:\n\n```shell\nkubectl delete pods <pod> --grace-period=0 --force\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-2",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "The recommended best practice is to use the first or second approach. If a Node is confirmed\nto be dead (e.g. permanently disconnected from the network, powered down, etc), then delete\nthe Node object. If the Node is suffering from a network partition, then try to resolve this\nor wait for it to resolve. When the partition heals, the kubelet will complete the deletion\nof the Pod and free up its name in the apiserver.\n\nNormally, the system completes the deletion once the Pod is no longer running on a Node, or\nthe Node is deleted by an administrator. You may override this by force deleting the Pod."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-0",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "You can perform a graceful pod deletion with the following command:\n\n```shell\nkubectl delete pods <pod>\n```\n\nFor the above to lead to graceful termination, the Pod **must not** specify a\n`pod.Spec.TerminationGracePeriodSeconds` of 0. The practice of setting a\n`pod.Spec.TerminationGracePeriodSeconds` of 0 seconds is unsafe and strongly discouraged\nfor StatefulSet Pods. Graceful deletion is safe and will ensure that the Pod\n[shuts down gracefully](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination)\nbefore the kubelet deletes the name from the apiserver."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-forced-1",
+  "heading": "Pod Lifecycle > Termination of Pods > Forced Pod termination",
+  "text": "Immediate deletion does not wait for confirmation that the running resource has been terminated.\nThe resource may continue to run on the cluster indefinitely.\n\nIf you need to force-delete Pods that are part of a StatefulSet, refer to the task\ndocumentation for\n[deleting Pods from a StatefulSet](/docs/tasks/run-application/force-delete-stateful-set-pod/)."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#statefulset-considerations-0",
+  "heading": "Force Delete StatefulSet Pods > StatefulSet considerations",
+  "text": "In normal operation of a StatefulSet, there is **never** a need to force delete a StatefulSet Pod.\nThe [StatefulSet controller](/docs/concepts/workloads/controllers/statefulset/) is responsible for\ncreating, scaling and deleting members of the StatefulSet. It tries to ensure that the specified\nnumber of Pods from ordinal 0 through N-1 are alive and ready. StatefulSet ensures that, at any time,\nthere is at most one Pod with a given identity running in a cluster. This is referred to as\n*at most one* semantics provided by a StatefulSet."
+ }
+]

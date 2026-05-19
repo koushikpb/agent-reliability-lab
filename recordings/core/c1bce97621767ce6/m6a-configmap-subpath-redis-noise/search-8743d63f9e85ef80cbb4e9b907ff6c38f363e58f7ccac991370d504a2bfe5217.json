@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/volumes#mount-propagation-0",
+  "heading": "Volumes > Mount propagation",
+  "text": "Mount propagation is a low-level feature that does not work consistently on all\nvolume types. The Kubernetes project recommends only using mount propagation with `hostPath`\nor memory-backed `emptyDir` volumes. See\n[Kubernetes issue #95049](https://github.com/kubernetes/kubernetes/issues/95049)\nfor more context.\n\nMount propagation allows for sharing volumes mounted by a container to\nother containers in the same Pod, or even to other Pods on the same node.\n\nMount propagation of a volume is controlled by the `mountPropagation` field\nin `containers[*].volumeMounts`. Its values are:\n\n* `None` - This volume mount will not receive any subsequent mounts\n  that are mounted to this volume or any of its subdirectories by the host.\n  In a similar fashion, no mounts created by the container will be visible on\n  the host. This is the default mode."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "ConfigMaps consumed as environment variables are not updated automatically and require a pod restart. \n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes#using-subpath) volume mount will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#configmap-2",
+  "heading": "Volumes > Types of volumes > configMap",
+  "text": "* You must [create a ConfigMap](/docs/tasks/configure-pod-container/configure-pod-configmap/#create-a-configmap)\n  before you can use it.\n\n* A ConfigMap is always mounted as `readOnly`.\n\n* A container using a ConfigMap as a [`subPath`](#using-subpath) volume mount will not\n  receive updates when the ConfigMap changes.\n\n* Text data is exposed as files using the UTF-8 character encoding.\n  For other character encodings, use `binaryData`."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-1",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "This is an example of a Pod that mounts a ConfigMap in a volume:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: mypod\n    image: redis\n    volumeMounts:\n    - name: foo\n      mountPath: \"/etc/foo\"\n      readOnly: true\n  volumes:\n  - name: foo\n    configMap:\n      name: myconfigmap\n```\n\nEach ConfigMap you want to use needs to be referred to in `.spec.volumes`.\n\nIf there are multiple containers in the Pod, then each container needs its\nown `volumeMounts` block, but only one `.spec.volumes` is needed per ConfigMap.\n\n#### Mounted ConfigMaps are updated automatically"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Mounted ConfigMaps are updated automatically",
+  "text": "When a mounted ConfigMap is updated, the projected content is eventually updated too.\nThis applies in the case where an optionally referenced ConfigMap comes into\nexistence after a pod has started.\n\nKubelet checks whether the mounted ConfigMap is fresh on every periodic sync. However,\nit uses its local TTL-based cache for getting the current value of the ConfigMap. As a\nresult, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the pod can be as long as kubelet sync period (1\nminute by default) + TTL of ConfigMaps cache (1 minute by default) in kubelet. You\ncan trigger an immediate refresh by updating one of the pod's annotations.\n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes/#using-subpath)\nvolume will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#mount-propagation-2",
+  "heading": "Volumes > Mount propagation",
+  "text": "  This mode is equal to `rslave` mount propagation as described in the\n  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)\n\n* `Bidirectional` - This volume mount behaves the same as the `HostToContainer` mount.\n  In addition, all volume mounts created by the container will be propagated\n  back to the host and to all containers of all Pods that use the same volume.\n\n  A typical use case for this mode is a Pod with a FlexVolume or CSI driver, or\n  a Pod that needs to mount something on the host using a `hostPath` volume.\n\n  This mode is equal to `rshared` mount propagation as described in the\n  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#mount-propagation-1",
+  "heading": "Volumes > Mount propagation",
+  "text": "  This mode is equal to `rprivate` mount propagation as described in\n  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)\n\n  However, the CRI runtime may choose `rslave` mount propagation (i.e.,\n  `HostToContainer`) when `rprivate` propagation is not applicable.\n  cri-dockerd (Docker) is known to choose `rslave` mount propagation when the\n  mount source contains the Docker daemon's root directory (`/var/lib/docker`).\n\n* `HostToContainer` - This volume mount will receive all subsequent mounts\n  that are mounted to this volume or any of its subdirectories.\n\n  In other words, if the host mounts anything inside the volume mount, the\n  container will see it mounted there.\n\n  Similarly, if any Pod with `Bidirectional` mount propagation to the same\n  volume mounts anything there, the container with `HostToContainer` mount\n  propagation will see it."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#populate-a-volume-with-data-stored-in-a-configmap-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Populate a Volume with data stored in a ConfigMap",
+  "text": "Add the ConfigMap name under the `volumes` section of the Pod specification.\nThis adds the ConfigMap data to the directory specified as `volumeMounts.mountPath` (in this\ncase, `/etc/config`). The `command` section lists directory files with names that match the\nkeys in ConfigMap."
+ }
+]

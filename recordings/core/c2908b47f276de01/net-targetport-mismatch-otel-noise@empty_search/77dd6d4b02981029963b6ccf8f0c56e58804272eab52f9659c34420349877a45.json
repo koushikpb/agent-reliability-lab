@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more broadly for information about 502 errors and upstream connection issues.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011wmyyRJTLs3udtHm8TzDPU",
+   "input": {
+    "query": "502 bad gateway ingress upstream connection refused"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2979,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 79,
+ "stop_reason": "tool_use"
+}

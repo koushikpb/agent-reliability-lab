@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more specifically for information about how OpenTelemetry errors should be handled by applications and whether they should affect service availability:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01ShLC74o18jEF2jDEB7eB5b",
+   "input": {
+    "query": "application health check readiness liveness independent metrics telemetry"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6912,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 93,
+ "stop_reason": "tool_use"
+}

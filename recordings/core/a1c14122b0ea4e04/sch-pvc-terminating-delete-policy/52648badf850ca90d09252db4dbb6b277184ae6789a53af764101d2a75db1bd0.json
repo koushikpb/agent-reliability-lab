@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016oaZckUrxG2WHmhHUne16r",
+   "input": {
+    "namespace": "ledger"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KvCGVNtYAGeo83U2HeoqG3",
+   "input": {
+    "query": "PVC stuck terminating finalizer kubernetes.io/pvc-protection"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1895,
+ "model": "claude-opus-4-7",
+ "output_tokens": 139,
+ "stop_reason": "tool_use"
+}

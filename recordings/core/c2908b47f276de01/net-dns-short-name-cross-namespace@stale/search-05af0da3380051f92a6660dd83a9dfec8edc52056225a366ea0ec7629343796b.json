@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/service#dns-0",
+  "heading": "Service > Discovering services > DNS",
+  "text": "You can (and almost always should) set up a DNS service for your Kubernetes\ncluster using an [add-on](/docs/concepts/cluster-administration/addons/).\n\nA cluster-aware DNS server, such as CoreDNS, watches the Kubernetes API for new\nServices and creates a set of DNS records for each one.  If DNS has been enabled\nthroughout your cluster then all Pods should automatically be able to resolve\nServices by their DNS name.\n\nFor example, if you have a Service called `my-service` in a Kubernetes\nnamespace `my-ns`, the control plane and the DNS Service acting together\ncreate a DNS record for `my-service.my-ns`. Pods in the `my-ns` namespace\nshould be able to find the service by doing a name lookup for `my-service`\n(`my-service.my-ns` would also work).\n\nPods in other namespaces must qualify the name as `my-service.my-ns`. These names\nwill resolve to the cluster IP assigned for the Service."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#cloud-native-service-discovery-0",
+  "heading": "Service > Services in Kubernetes > Cloud-native service discovery",
+  "text": "If you're able to use Kubernetes APIs for service discovery in your application,\nyou can query the API server\nfor matching EndpointSlices. Kubernetes updates the EndpointSlices for a Service\nwhenever the set of Pods in a Service changes.\n\nFor non-native applications, Kubernetes offers ways to place a network port or load\nbalancer in between your application and the backend Pods.\n\nEither way, your workload can use these [service discovery](#discovering-services)\nmechanisms to find the target it wants to connect to."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#default-service-accounts-0",
+  "heading": "Service Accounts > What are service accounts? > Default service accounts",
+  "text": "When you create a cluster, Kubernetes automatically creates a ServiceAccount\nobject named `default` for every namespace in your cluster. The `default`\nservice accounts in each namespace get no permissions by default other than the\n[default API discovery permissions](/docs/reference/access-authn-authz/rbac/#default-roles-and-role-bindings)\nthat Kubernetes grants to all authenticated principals if role-based access control (RBAC) is enabled.\nIf you delete the `default` ServiceAccount object in a namespace, the\ncontrol plane\nreplaces it with a new one.\n\nIf you deploy a Pod in a namespace, and you don't\n[manually assign a ServiceAccount to the Pod](#assign-to-pod), Kubernetes\nassigns the `default` ServiceAccount for that namespace to the Pod."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#use-cases-1",
+  "heading": "Service Accounts > Use cases for Kubernetes service accounts",
+  "text": "* Your Pods need to communicate with the Kubernetes API server, for example in\n  situations such as the following:\n  * Providing read-only access to sensitive information stored in Secrets.\n  * Granting [cross-namespace access](#cross-namespace), such as allowing a\n    Pod in namespace `example` to read, list, and watch for Lease objects in\n    the `kube-node-lease` namespace.\n* Your Pods need to communicate with an external service. For example, a\n  workload Pod requires an identity for a commercially available cloud API,\n  and the commercial provider allows configuring a suitable trust relationship.\n* [Authenticating to a private image registry using an `imagePullSecret`](/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account).\n* An external service needs to communicate with the Kubernetes API server. For\n  example, authenticating to the cluster as part of a CI/CD pipeline.\n* You use third-party security software in your cluster that relies on the"
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#dns-0",
+  "heading": "Multi-tenancy > Additional Considerations > DNS",
+  "text": "Kubernetes clusters include a Domain Name System (DNS) service to provide translations from names\nto IP addresses, for all Services and Pods. By default, the Kubernetes DNS service allows lookups\nacross all namespaces in the cluster.\n\nIn multi-tenant environments where tenants can access pods and other Kubernetes resources, or where\nstronger isolation is required, it may be necessary to prevent pods from looking up services in other\nNamespaces.\nYou can restrict cross-namespace DNS lookups by configuring security rules for the DNS service.\nFor example, CoreDNS (the default DNS service for Kubernetes) can leverage Kubernetes metadata\nto restrict queries to Pods and Services within a namespace. For more information, read an\n[example](https://github.com/coredns/policy#kubernetes-metadata-multi-tenancy-policy) of\nconfiguring this within the CoreDNS documentation."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#discovering-services-0",
+  "heading": "Service > Discovering services",
+  "text": "For clients running inside your cluster, Kubernetes supports two primary modes of\nfinding a Service: environment variables and DNS."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-1",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Because this Service has no selector, the corresponding EndpointSlice\nobjects are not created automatically. You can map the Service\nto the network address and port where it's running, by adding an EndpointSlice\nobject manually. For example:\n\n```yaml\napiVersion: discovery.k8s.io/v1\nkind: EndpointSlice\nmetadata:\n  name: my-service-1 # by convention, use the name of the Service\n                     # as a prefix for the name of the EndpointSlice\n  labels:\n    # You should set the \"kubernetes.io/service-name\" label.\n    # Set its value to match the name of the Service\n    kubernetes.io/service-name: my-service\naddressType: IPv4\nports:\n  - name: http # should match with the name of the service port defined above\n    appProtocol: http\n    protocol: TCP\n    port: 9376\nendpoints:\n  - addresses:\n      - \"10.4.5.6\"\n  - addresses:\n      - \"10.1.2.3\"\n```\n\n#### Custom EndpointSlices"
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-records-0",
+  "heading": "DNS for Services and Pods > Namespaces of Services > DNS Records",
+  "text": "What objects get DNS records?\n\n1. Services\n1. Pods\n\nThe following sections detail the supported DNS record types and layout that is\nsupported. Any other layout or names or queries that happen to work are\nconsidered implementation details and are subject to change without warning.\nFor more up-to-date specification, see\n[Kubernetes DNS-Based Service Discovery](https://github.com/kubernetes/dns/blob/master/docs/specification.md)."
+ }
+]

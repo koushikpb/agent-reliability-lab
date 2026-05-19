@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-level-terminationgraceperiodseconds-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields > Probe-level `terminationGracePeriodSeconds`",
+  "text": "```yaml\nspec:\n  terminationGracePeriodSeconds: 3600  # pod-level\n  containers:\n  - name: test\n    image: ...\n\n    ports:\n    - name: liveness-port\n      containerPort: 8080\n\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: liveness-port\n      failureThreshold: 1\n      periodSeconds: 60\n      # Override pod-level terminationGracePeriodSeconds\n      terminationGracePeriodSeconds: 60\n```\n\nProbe-level `terminationGracePeriodSeconds` **cannot** be set for readiness probes.\nIt will be rejected by the API server."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-results-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe results",
+  "text": "The kubelet evaluates the result of each probe execution and takes action\naccordingly. Each probe has one of three results:\n\n`Success`\n: The container passed the diagnostic.\n\n`Failure`\n: The container failed the diagnostic. For liveness and startup probes, the\n  kubelet kills the container, and the container is subjected to its\n  [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy).\n  For readiness probes, the kubelet marks the container as not ready, and the\n  Pod stops receiving traffic from matching Services.\n\n`Unknown`\n: The diagnostic failed (no action should be taken, and the kubelet will make\n  further checks).\n\nIf a container does not provide a particular probe, the kubelet always\nconsiders the result as `Success`. For readiness probes specifically,\nthe result is considered `Failure` before the initial delay."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#when-should-you-use-a-readiness-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > When to use each probe > When should you use a readiness probe?",
+  "text": "To start sending traffic to a Pod only when a probe succeeds, specify a\nreadiness probe. The readiness probe might be the same as the liveness probe,\nbut the existence of the readiness probe in the spec means that the Pod will\nstart without receiving any traffic and only start receiving traffic after the\nprobe starts succeeding.\n\nYou can also use a readiness probe to let a container take itself down for\nmaintenance, by checking an endpoint specific to readiness that is different\nfrom the liveness probe.\n\nWhen your app has a strict dependency on back-end services, you can implement\nboth a liveness and a readiness probe. The liveness probe passes when the app\nitself is healthy, but the readiness probe additionally checks that each\nrequired back-end service is available. This helps you avoid directing traffic\nto Pods that can only respond with error messages."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#liveness-probe-0",
+  "heading": "Pod Lifecycle > Container probes > Liveness probe",
+  "text": "Liveness probes determine when to restart a container.\nFor example, liveness probes could catch a deadlock, where an application is\nrunning, but unable to make progress. Restarting a container in such a state\ncan help to make the application more available despite bugs.\n\nIf a container fails its liveness probe more times than the configured tolerance,\nthe kubelet restarts that container.\nLiveness probes do not wait for readiness probes to succeed. If you want to\nwait before executing a liveness probe, you can either define\n`initialDelaySeconds` or use a startup probe."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-command-2",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a liveness command",
+  "text": "For the first 30 seconds of the container's life, there is a `/tmp/healthy` file.\nSo during the first 30 seconds, the command `cat /tmp/healthy` returns a success\ncode. After 30 seconds, `cat /tmp/healthy` returns a failure code.\n\nCreate the Pod:\n\n```shell\nkubectl apply -f https://k8s.io/examples/pods/probe/exec-liveness.yaml\n```\n\nWithin 30 seconds, view the Pod events:\n\n```shell\nkubectl describe pod liveness-exec\n```\n\nThe output indicates that no liveness probes have failed yet:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-readiness-probes-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define readiness probes",
+  "text": "Sometimes, applications are temporarily unable to serve traffic.\nFor example, an application might need to load large data or configuration\nfiles during startup, or depend on external services after startup.\nIn such cases, you don't want to kill the application,\nbut you don't want to send it requests either. Kubernetes provides\nreadiness probes to detect and mitigate these situations. A pod with containers\nreporting that they are not ready does not receive traffic through Kubernetes\nServices.\n\nReadiness probes run on the container during its whole lifecycle.\n\nThe readiness and liveness probes do not depend on each other to succeed.\nIf you want to wait before executing a readiness probe, you should use\n`initialDelaySeconds` or a `startupProbe`.\n\nReadiness probes are configured similarly to liveness probes. The only difference\nis that you use the `readinessProbe` field instead of the `livenessProbe` field.\n\n```yaml\nreadinessProbe:\n  exec:\n    command:\n    - /bin/cat\n    - /tmp/healthy\n  initialDelaySeconds: 5\n  periodSeconds: 5\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#grpc-probe-tls-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a gRPC liveness probe > Use TLS with gRPC probes",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: grpc-tls-app\nspec:\n  containers:\n  - name: app\n    image: registry.k8s.io/e2e-test-images/agnhost:2.40\n    command: [\"/agnhost\", \"grpc-health-checking\", \"--port=8443\"]\n    ports:\n    - containerPort: 8443\n    livenessProbe:\n      grpc:\n        port: 8443\n        mode: TLS\n      initialDelaySeconds: 5\n      periodSeconds: 10\n```\n\nWhen `mode` is set to `TLS`, the `kubelet` connects over TLS with\n`InsecureSkipVerify` and does not verify the server certificate. This matches\nthe behavior of HTTPS probes. Certificate verification is not supported.\n\nIf the feature gate is disabled, the `kube-apiserver` removes the `mode`\nfield from new or updated Pods."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-condition#lifecycle-pod-conditions-1",
+  "heading": "Pod Conditions > Lifecycle Pod conditions",
+  "text": "1. `PodScheduled`: the Pod has been scheduled to a node.\n1. `PodReadyToStartContainers`: the Pod sandbox has been successfully created and networking configured. The sandbox and network are set up by the container runtime and CNI plugin.\n1. `Initialized`: all [init containers](/docs/concepts/workloads/pods/init-containers/) have completed successfully. For a Pod without init containers, this is set to `True` before sandbox creation.\n1. `ContainersReady`: all containers in the Pod are ready. A container's readiness is determined by its [readiness probe](/docs/concepts/workloads/pods/probes/#readiness-probe), if configured.\n1. `Ready`: the Pod is able to serve requests and should be added to the load balancing pools of all matching [Services](/docs/concepts/services-networking/service/). Pods that are not `Ready` are removed from Service endpoints."
+ }
+]

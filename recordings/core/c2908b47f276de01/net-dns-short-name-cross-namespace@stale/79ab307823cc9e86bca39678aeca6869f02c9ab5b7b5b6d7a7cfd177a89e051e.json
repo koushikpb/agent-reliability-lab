@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI successfully resolved ticket T-4004. The notification-worker pods were failing to send emails because they were configured with an unqualified hostname (`smtp-relay`) for the SMTP server, but the platform team moved that service to a different namespace (shared-infra) without updating the pods' configuration. The fix is to update the SMTP_HOST environment variable in the notification-worker deployment from `smtp-relay` to `smtp-relay.shared-infra` to use the proper cross-namespace DNS name.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7185,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 115,
+ "stop_reason": "end_turn"
+}

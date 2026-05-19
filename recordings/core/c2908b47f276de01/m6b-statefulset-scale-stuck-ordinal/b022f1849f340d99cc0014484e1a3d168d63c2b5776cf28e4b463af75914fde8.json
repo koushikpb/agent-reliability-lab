@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the current state of the pods in the search namespace to see what's happening with the docindex StatefulSet.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CZz8DuHYxUtTn6oGssTtig",
+   "input": {
+    "namespace": "search"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1369,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 81,
+ "stop_reason": "tool_use"
+}

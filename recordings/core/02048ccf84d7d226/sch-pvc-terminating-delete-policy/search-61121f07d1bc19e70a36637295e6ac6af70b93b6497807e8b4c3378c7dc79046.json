@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-6",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "When the `CSIMigration{provider}` feature flag is enabled for a specific in-tree volume plugin,\nthe `kubernetes.io/pv-controller` finalizer is replaced by the\n`external-provisioner.volume.kubernetes.io/finalizer` finalizer.\n\nThe finalizers ensure that the PV object is removed only after the volume is deleted\nfrom the storage backend provided the reclaim policy of the PV is `Delete`. This\nalso ensures that the volume is deleted from storage backend irrespective of the\norder of deletion of PV and PVC."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "Finalizers can be added on a PersistentVolume to ensure that PersistentVolumes\nhaving `Delete` reclaim policy are deleted only after the backing storage are deleted.\n\nThe finalizer `external-provisioner.volume.kubernetes.io/finalizer`(introduced\nin  v1.31) is added to both dynamically provisioned and statically provisioned\nCSI volumes.\n\nThe finalizer `kubernetes.io/pv-controller`(introduced in v1.31) is added to \ndynamically provisioned in-tree plugin volumes and skipped for statically \nprovisioned in-tree plugin volumes.\n\nThe following is an example of dynamically provisioned in-tree plugin volume:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-4",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "```shell\nName:            pvc-2f0bab97-85a8-4552-8044-eb8be45cf48d\nLabels:          <none>\nAnnotations:     pv.kubernetes.io/provisioned-by: csi.vsphere.vmware.com\nFinalizers:      [kubernetes.io/pv-protection external-provisioner.volume.kubernetes.io/finalizer]\nStorageClass:    fast\nStatus:          Bound\nClaim:           demo-app/nginx-logs\nReclaim Policy:  Delete\nAccess Modes:    RWO\nVolumeMode:      Filesystem\nCapacity:        200Mi\nNode Affinity:   <none>\nMessage:\nSource:\n    Type:              CSI (a Container Storage Interface (CSI) volume source)\n    Driver:            csi.vsphere.vmware.com\n    FSType:            ext4\n    VolumeHandle:      44830fa8-79b4-406b-8b58-621ba25353fd\n    ReadOnly:          false\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-1",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "```shell\nkubectl describe pv pvc-74a498d6-3929-47e8-8c02-078c1ece4d78\nName:            pvc-74a498d6-3929-47e8-8c02-078c1ece4d78\nLabels:          <none>\nAnnotations:     kubernetes.io/createdby: vsphere-volume-dynamic-provisioner\n                 pv.kubernetes.io/bound-by-controller: yes\n                 pv.kubernetes.io/provisioned-by: kubernetes.io/vsphere-volume\nFinalizers:      [kubernetes.io/pv-protection kubernetes.io/pv-controller]\nStorageClass:    vcp-sc\nStatus:          Bound\nClaim:           default/vcp-pvc-1\nReclaim Policy:  Delete\nAccess Modes:    RWO\nVolumeMode:      Filesystem\nCapacity:        1Gi\nNode Affinity:   <none>\nMessage:\nSource:\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-4",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "This means that if the controller crashes and restarts, no Pod will be deleted before its\nowner reference has been updated appropriate to the policy. If a condemned Pod is\nforce-deleted while the controller is down, the owner reference may or may not have been\nset up, depending on when the controller crashed. It may take several reconcile loops to\nupdate the owner references, so some condemned Pods may have set up owner references and\nothers may not. For this reason we recommend waiting for the controller to come back up,\nwhich will verify owner references before terminating Pods. If that is not possible, the\noperator should verify the owner references on PVCs to ensure the expected objects are\ndeleted when Pods are force-deleted."
+ },
+ {
+  "chunk_id": "tasks/run-application/delete-stateful-set#persistent-volumes-0",
+  "heading": "Delete a StatefulSet > Deleting a StatefulSet > Persistent Volumes",
+  "text": "Deleting the Pods in a StatefulSet will not delete the associated volumes.\nThis is to ensure that you have the chance to copy data off the volume before\ndeleting it. Deleting the PVC after the pods have terminated might trigger\ndeletion of the backing Persistent Volumes depending on the storage class\nand reclaim policy. You should never assume ability to access a volume\nafter claim deletion.\n\nUse caution when deleting a PVC, as it may lead to data loss."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#force-deletion-1",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods > Force Deletion",
+  "text": "If you're using any version of kubectl <= 1.4, you should omit the `--force` option and use:\n\n```shell\nkubectl delete pods <pod> --grace-period=0\n```\n\nIf even after these commands the pod is stuck on `Unknown` state, use the following command to\nremove the pod from the cluster:\n\n```shell\nkubectl patch pod <pod> -p '{\"metadata\":{\"finalizers\":null}}'\n```\n\nAlways perform force deletion of StatefulSet Pods carefully and with complete knowledge of the risks involved."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/namespaces#creating-a-new-namespace-1",
+  "heading": "Share a Cluster with Namespaces > Creating a new namespace",
+  "text": "There is an optional field `finalizers`, which allows observables to purge resources whenever the\nnamespace is deleted. Keep in mind that if you specify a nonexistent finalizer, the namespace will\nbe created but will get stuck in the `Terminating` state if the user tries to delete it.\n\nMore information on `finalizers` can be found in the namespace\n[design doc](https://git.k8s.io/design-proposals-archive/architecture/namespaces.md#finalizers)."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/storage-classes#azure-file-2",
+  "heading": "Storage Classes > Parameters > Azure File (deprecated)",
+  "text": "During storage provisioning, a secret named by `secretName` is created for the\nmounting credentials. If the cluster has enabled both\n[RBAC](/docs/reference/access-authn-authz/rbac/) and\n[Controller Roles](/docs/reference/access-authn-authz/rbac/#controller-roles),\nadd the `create` permission of resource `secret` for clusterrole\n`system:controller:persistent-volume-binder`.\n\nIn a multi-tenancy context, it is strongly recommended to set the value for\n`secretNamespace` explicitly, otherwise the storage account credentials may\nbe read by other users."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/kubeadm/kubeadm-certs#check-certificate-expiration-1",
+  "heading": "Certificate Management with kubeadm > Certificate expiry and management",
+  "text": "```console\nCERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE AUTHORITY   EXTERNALLY MANAGED\nadmin.conf                 Dec 30, 2020 23:36 UTC   364d                                    no\napiserver                  Dec 30, 2020 23:36 UTC   364d            ca                      no\napiserver-etcd-client      Dec 30, 2020 23:36 UTC   364d            etcd-ca                 no\napiserver-kubelet-client   Dec 30, 2020 23:36 UTC   364d            ca                      no\ncontroller-manager.conf    Dec 30, 2020 23:36 UTC   364d                                    no\netcd-healthcheck-client    Dec 30, 2020 23:36 UTC   364d            etcd-ca                 no\netcd-peer                  Dec 30, 2020 23:36 UTC   364d            etcd-ca                 no\netcd-server                Dec 30, 2020 23:36 UTC   364d            etcd-ca                 no\nfront-proxy-client         Dec 30, 2020 23:36 UTC   364d            front-proxy-ca          no\nscheduler.conf             Dec 30, 2020 23:36 UTC   364d                                    no\nCERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY MANAGED\nca                      Dec 28, 2029 23:36 UTC   9y              no\n```"
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/authentication-mechanisms#x509-client-certificate-authentication-1",
+  "heading": "Hardening Guide - Authentication Mechanisms > X.509 client certificate authentication",
+  "text": "- Client certificates cannot be individually revoked. Once compromised, a certificate can be used\n  by an attacker until it expires. To mitigate this risk, it is recommended to configure short\n  lifetimes for user authentication credentials created using client certificates.\n- If a certificate needs to be invalidated, the certificate authority must be re-keyed, which\n  can introduce availability risks to the cluster.\n- There is no permanent record of client certificates created in the cluster. Therefore, all\n  issued certificates must be recorded if you need to keep track of them.\n- Private keys used for client certificate authentication cannot be password-protected. Anyone\n  who can read the file containing the key will be able to make use of it.\n- Using client certificate authentication requires a direct connection from the client to the\n  API server without any intervening TLS termination points, which can complicate network architectures.\n- Group data is embedded in the `O` value of the client certificate, which means the user's group\n  memberships cannot be changed for the lifetime of the certificate."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#azure-file-1",
+  "heading": "Storage Classes > Parameters > Azure File (deprecated)",
+  "text": "- `skuName`: Azure storage account SKU tier. Default is empty.\n- `location`: Azure storage account location. Default is empty.\n- `storageAccount`: Azure storage account name. Default is empty. If a storage\n  account is not provided, all storage accounts associated with the resource\n  group are searched to find one that matches `skuName` and `location`. If a\n  storage account is provided, it must reside in the same resource group as the\n  cluster, and `skuName` and `location` are ignored.\n- `secretNamespace`: the namespace of the secret that contains the Azure Storage\n  Account Name and Key. Default is the same as the Pod.\n- `secretName`: the name of the secret that contains the Azure Storage Account Name and\n  Key. Default is `azure-storage-account-<accountName>-secret`\n- `readOnly`: a flag indicating whether the storage will be mounted as read only.\n  Defaults to false which means a read/write mount. This setting will impact the\n  `ReadOnly` setting in VolumeMounts as well."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/access-cluster#without-kubectl-proxy-2",
+  "heading": "Accessing Clusters > Directly accessing the REST API > Without kubectl proxy",
+  "text": "```shell\nAPISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')\nTOKEN=$(kubectl get secret default-token -o jsonpath='{.data.token}' | base64 --decode)\n\ncurl $APISERVER/api --header \"Authorization: Bearer $TOKEN\" --insecure\n```\n\nThe output is similar to this:\n\n```json\n{\n  \"kind\": \"APIVersions\",\n  \"versions\": [\n    \"v1\"\n  ],\n  \"serverAddressByClientCIDRs\": [\n    {\n      \"clientCIDR\": \"0.0.0.0/0\",\n      \"serverAddress\": \"10.0.1.149:443\"\n    }\n  ]\n}\n```"
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#authenticating-credentials-0",
+  "heading": "Service Accounts > Authenticating service account credentials",
+  "text": "ServiceAccounts use signed\nJSON Web Tokens  (JWTs)\nto authenticate to the Kubernetes API server, and to any other system where a\ntrust relationship exists. Depending on how the token was issued\n(either time-limited using a `TokenRequest` or using a legacy mechanism with\na Secret), a ServiceAccount token might also have an expiry time, an audience,\nand a time after which the token *starts* being valid. When a client that is\nacting as a ServiceAccount tries to communicate with the Kubernetes API server,\nthe client includes an `Authorization: Bearer <token>` header with the HTTP\nrequest. The API server checks the validity of that bearer token as follows:\n\n1. Checks the token signature.\n1. Checks whether the token has expired.\n1. Checks whether object references in the token claims are currently valid.\n1. Checks whether the token is currently valid.\n1. Checks the audience claims."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#bootstrap-token-secrets-2",
+  "heading": "Secrets > Types of Secret > Bootstrap token Secrets",
+  "text": "- `token-id`: A random 6 character string as the token identifier. Required.\n- `token-secret`: A random 16 character string as the actual token Secret. Required.\n- `description`: A human-readable string that describes what the token is\n  used for. Optional.\n- `expiration`: An absolute UTC time using [RFC3339](https://datatracker.ietf.org/doc/html/rfc3339) specifying when the token\n  should be expired. Optional.\n- `usage-bootstrap-<usage>`: A boolean flag indicating additional usage for\n  the bootstrap token.\n- `auth-extra-groups`: A comma-separated list of group names that will be\n  authenticated as in addition to the `system:bootstrappers` group.\n\nYou can alternatively provide the values in the `stringData` field of the Secret\nwithout base64 encoding them:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#manually-create-an-api-token-for-a-serviceaccount-2",
+  "heading": "Configure Service Accounts for Pods > Manually create an API token for a ServiceAccount",
+  "text": "You can still manually create a service account token Secret; for example,\nif you need a token that never expires. However, using the\n[TokenRequest](/docs/reference/kubernetes-api/authentication-resources/token-request-v1/)\nsubresource to obtain a token to access the API is recommended instead."
+ }
+]

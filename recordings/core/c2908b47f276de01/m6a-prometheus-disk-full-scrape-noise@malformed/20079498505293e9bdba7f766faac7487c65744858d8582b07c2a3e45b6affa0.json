@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for documentation on Prometheus data gaps and retention issues:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KNYDndDyYaiJ7Cdv9xKsQS",
+   "input": {
+    "query": "Prometheus data gaps missing metrics storage"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2137,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 74,
+ "stop_reason": "tool_use"
+}

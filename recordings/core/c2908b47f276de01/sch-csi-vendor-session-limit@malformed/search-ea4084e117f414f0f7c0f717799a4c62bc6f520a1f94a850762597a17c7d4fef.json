@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/storage-classes#mount-options-0",
+  "heading": "Storage Classes > Mount options",
+  "text": "PersistentVolumes that are dynamically created by a StorageClass will have the\nmount options specified in the `mountOptions` field of the class.\n\nIf the volume plugin does not support mount options but mount options are\nspecified, provisioning will fail. Mount options are **not** validated on either\nthe class or PV. If a mount option is invalid, the PV mount fails."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-3",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "* `readOnly`: An optional boolean value indicating whether the volume is to be\n  \"ControllerPublished\" (attached) as read-only. Default is false. This value is passed\n  to the CSI driver via the `readonly` field in the `ControllerPublishVolumeRequest`.\n* `fsType`: If the PV's `VolumeMode` is `Filesystem`, then this field may be used\n  to specify the filesystem that should be used to mount the volume. If the\n  volume has not been formatted and formatting is supported, this value will be\n  used to format the volume.\n  This value is passed to the CSI driver via the `VolumeCapability` field of\n  `ControllerPublishVolumeRequest`, `NodeStageVolumeRequest`, and\n  `NodePublishVolumeRequest`.\n* `volumeAttributes`: A map of string to string that specifies static properties\n  of a volume. This map must correspond to the map returned in the\n  `volume.attributes` field of the `CreateVolumeResponse` by the CSI driver as"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#mount-options-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Mount Options",
+  "text": "A Kubernetes administrator can specify additional mount options for when a\nPersistent Volume is mounted on a node.\n\nNot all Persistent Volume types support mount options.\n\nThe following volume types support mount options:\n\n* `csi` (including CSI migrated volume types)\n* `iscsi`\n* `nfs`\n\nMount options are not validated. If a mount option is invalid, the mount fails.\n\nIn the past, the annotation `volume.beta.kubernetes.io/mount-options` was used instead\nof the `mountOptions` attribute. This annotation is still working; however,\nit will become fully deprecated in a future Kubernetes release."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#out-of-tree-volume-plugins-0",
+  "heading": "Volumes > Out-of-tree volume plugins",
+  "text": "The out-of-tree volume plugins include\nContainer Storage Interface (CSI), and also\nFlexVolume (which is deprecated). These plugins enable storage vendors to create custom storage plugins\nwithout adding their plugin source code to the Kubernetes repository.\n\nPreviously, all volume plugins were \"in-tree\". The \"in-tree\" plugins were built, linked, compiled,\nand shipped with the core Kubernetes binaries. This meant that adding a new storage system to\nKubernetes (a volume plugin) required checking code into the core Kubernetes code repository.\n\nBoth CSI and FlexVolume allow volume plugins to be developed independently of\nthe Kubernetes code base, and deployed (installed) on Kubernetes clusters as\nextensions.\n\nFor storage vendors looking to create an out-of-tree volume plugin, please refer\nto the [volume plugin FAQ](https://github.com/kubernetes/community/blob/main/sig-storage/volume-plugin-faq.md)."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-4",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "  defined in the [CSI spec](https://github.com/container-storage-interface/spec/blob/master/spec.md#createvolume).\n  The map is passed to the CSI driver via the `volume_context` field in the\n  `ControllerPublishVolumeRequest`, `NodeStageVolumeRequest`, and\n  `NodePublishVolumeRequest`.\n* `controllerPublishSecretRef`: A reference to the secret object containing\n  sensitive information to pass to the CSI driver to complete the CSI\n  `ControllerPublishVolume` and `ControllerUnpublishVolume` calls. This field is\n  optional, and may be empty if no secret is required. If the Secret\n  contains more than one secret, all secrets are passed.\n* `nodeExpandSecretRef`: A reference to the secret containing sensitive\n  information to pass to the CSI driver to complete the CSI\n  `NodeExpandVolume` call. This field is optional and may be empty if no\n  secret is required. If the object contains more than one secret, all"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-6",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "  `NodePublishVolume` call. This field is optional and may be empty if no\n  secret is required. If the secret object contains more than one secret, all\n  secrets are passed.\n* `nodeStageSecretRef`: A reference to the secret object containing\n  sensitive information to pass to the CSI driver to complete the CSI\n  `NodeStageVolume` call. This field is optional and may be empty if no secret\n  is required. If the Secret contains more than one secret, all secrets\n  are passed."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "Finalizers can be added on a PersistentVolume to ensure that PersistentVolumes\nhaving `Delete` reclaim policy are deleted only after the backing storage are deleted.\n\nThe finalizer `external-provisioner.volume.kubernetes.io/finalizer`(introduced\nin  v1.31) is added to both dynamically provisioned and statically provisioned\nCSI volumes.\n\nThe finalizer `kubernetes.io/pv-controller`(introduced in v1.31) is added to \ndynamically provisioned in-tree plugin volumes and skipped for statically \nprovisioned in-tree plugin volumes.\n\nThe following is an example of dynamically provisioned in-tree plugin volume:"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-7",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "#### CSI raw block volume support\n\nVendors with external CSI drivers can implement raw block volume support\nin Kubernetes workloads.\n\nYou can set up your\n[PersistentVolume/PersistentVolumeClaim with raw block volume support](/docs/concepts/storage/persistent-volumes/#raw-block-volume-support)\nas usual, without any CSI-specific changes.\n\n#### CSI ephemeral volumes\n\nYou can directly configure CSI volumes within the Pod\nspecification. Volumes specified in this way are ephemeral and do not\npersist across Pod restarts. See\n[Ephemeral Volumes](/docs/concepts/storage/ephemeral-volumes/#csi-ephemeral-volumes)\nfor more information.\n\nFor more information on how to develop a CSI driver, refer to the\n[kubernetes-csi documentation](https://kubernetes-csi.github.io/docs/)\n\n#### Windows CSI proxy"
+ }
+]

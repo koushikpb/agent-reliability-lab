@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-2003. The catalog-search pods were stuck in a CrashLoopBackOff restart loop because the liveness probe was starting to check for the health endpoint after only 30 seconds, but the application required more time to initialize and start serving requests. The fix is to add a startup probe to the deployment configuration that gives the application sufficient time (e.g., 300 seconds) to start before the liveness probe begins checking, following Kubernetes best practices for slow-starting applications [cite: tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0].",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 10522,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 148,
+ "stop_reason": "end_turn"
+}

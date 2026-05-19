@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "signature": "EqMJCqgBCBMYAipA/2mNJ6m29Asgc9BYwpetZz3wUQSxpXWWRgOy7mHj17nCkrOz0lwOdWLZqnaH8WlKoHXt8ugdC1P34vuT71FZaTIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAb388dYGEgyxf8LxKKHE+islAsgaDBSPtW1t/7/45PfEvCIwzah+zEdVvNiqMoqOyWL9brAnENkPBWlgNyUdaBtpTHKBmsoZ1BhqtUAq/xFlbSryKqcHqFf+qbk+yGfLn8/34elA7LeZWJAL3MGDG/Zp/ANV5v2WpBk5FmeM57yD6V90+RYX/ue+7C0rioT21PTQkCpRVq7H+C/vkHQwm0R550Uk/L8KtRkXNZMGE5PV9S4HE8AqGUHXFEfPvC5sGHxxBdlEgbio+DzrtT1fBjl9HY53z6d+jMDjJsci2OO3wcjIHhP568ylht/gtquOmqa7Masdy0Q21HFltTs4raIWItEGpgPjbkLC0mJnGtxDN2Ze/2FkDYitUJrMZCWN2/ZtquxD7E5MZ4A+Pr/UXYjbTqk1KrGEEC2SHbQoJoxoRdpPv6phikdVlrxeFlZ8oyMb1cQ40cQMrYnWvdKN033WgM80Ur+97Q+oos8ZhKgKfLqTvYgvu5W0a4C2aYi99FZZCsQIweS+ucnNqiVtjkQUOdNDQYVfeHJ7y1Czxw5AjohqkC97ae85gSV/pINkT6cFI2iwBpGLuW2b6AZXYWQF3al8dlTDaM2Gfxw0GqERSvd3qyLlIRcH5yXSWUJQOZp+Nx+R4Zvunc7dcdQSURsM9rZymYWJUnv2+jH8Y2aYQDvgABiYtwoNKh/rIX6cpmQRk34uUtNWB7rxF+C2/BTLR4mjT7fW0uQahHQA1xCxgrlkhV+wuRkwJ3Jc7jBvQGthYV05Lp5x7bajqtGfZFrPK9phjASBsXSsiLvrx1uuVKRU650HIh0tK9b3JAHEUFiHz5w0+z5udvOrKOTuexyLeWq7ML3pjPajfP2EjWNjDlZxrAjDcjR3cBbCz1d4LciDrazJDB30wfkPYm+wmjZHZlBYpwvjUvOGoQcoiQrb85pR8JG2B9yYpJEIif6AtN8kd2EjAAvqGuMYpsZ79bIr4oKdgJjRLqAcOH4n0dD1cQeccVw6c+x0tHLsbMYwJZuGmUy9jMg4KAx0sM2Oa5+r65VDwVvyZWPNTz5yt5/x/7ulP2lVdiOTJSYEH7eAEtzQloSGufIqHEbXeGSvuev0qzwYHS+odoPyMQ3FCKbOehjw0+aoEgxc/dm35H5PshgLq3lwVXWjwzMUUUuJM83YW6s5KssVVfQhxJUjpQKdjRsp67VBTai46lXB5mDwhvTYFy4YmNMdvMWxcmiX12Vlte8xQkvtyaCJ8r9tmPpf3zSZmTjWFIDioPJbOdxPDNnNgTsbf5YyxfwKnNfHp92HR9KJJXA+Nnhm5QPPtcJLn0Spm1D1XyJMRdeF5VSKq+NyuIdVcuUviz0B/uoYAQ==",
+   "thinking": "Now I have all the evidence I need. The root cause is clear:\n\n1. The 4.8.0 release added a `log-forwarder` sidecar container (`fluent/fluent-bit:3.1.4`) with **no resource requests** at all (`\"resources\": {}`).\n2. The HPA uses CPU utilization, which is calculated as `current_cpu_usage / cpu_requests`. When a container has no CPU requests, the HPA controller cannot compute utilization for the pod, resulting in `<unknown>`.\n3. The docs clearly state that CPU requests must be set for HPA resource-based scaling to work.\n4. The simplest fix is adding a small CPU request like 100m to the log-forwarder container, rather than switching the HPA to ContainerResource metrics targeting only the api container. I'll go update the ticket with this recommendation now.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "I have all the evidence I need. The cause is crystal clear. Let me resolve the ticket.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DzUDtLayLNSMv57kAhWQhP",
+   "input": {
+    "id": "T-6001",
+    "note": "**Root cause:** The 4.8.0 release introduced a `log-forwarder` sidecar container (`fluent/fluent-bit:3.1.4`) with **no CPU or memory requests** defined (`resources: {}`). The HPA computes CPU utilization as *current usage \u00f7 requested CPU*. Because the sidecar has no CPU request, the per-pod sum of requested CPU is incomplete and the controller cannot produce a valid utilization ratio \u2014 this is why `kubectl get hpa` shows `cpu <unknown>/60%` and no scaling occurs [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0].\n\n**Evidence observed:**\n- All three `search-api` pods (image `4.8.0`) contain two containers:\n  - `api` \u2014 has `requests: {cpu: \"1\", memory: \"2Gi\"}` \u2705\n  - `log-forwarder` \u2014 has `resources: {}` (no requests, no limits) \u274c\n- Before 4.8.0 the sidecar did not exist, so this field was fully populated and the HPA worked correctly.\n- Pod logs show the worker pool is saturated (`busy=16/16 queued=41`) confirming the service is under real load but HPA cannot act.\n\n**Fix (choose one):**\n\n**Option A (recommended) \u2014 Add a CPU request to the sidecar:**\nIn the `search-api` Deployment spec, add a `cpu` request to the `log-forwarder` container so the HPA can compute a valid pod-level utilization ratio [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0]:\n```yaml\n- name: log-forwarder\n  image: fluent/fluent-bit:3.1.4\n  resources:\n    requests:\n      cpu: \"100m\"\n      memory: \"64Mi\"\n```\nAfter rolling out the new Deployment, the HPA `TARGETS` column should immediately populate and scaling will resume.\n\n**Option B \u2014 Switch HPA to ContainerResource metrics:**\nChange the HPA to track only the `api` container's CPU, ignoring the sidecar entirely [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0] [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-1]:\n```yaml\nmetrics:\n- type: ContainerResource\n  containerResource:\n    name: cpu\n    container: api\n    target:\n      type: Utilization\n      averageUtilization: 60\n```\nOption A is simpler and also improves scheduler visibility for the sidecar. Option B is useful if you intentionally want to exclude the sidecar from the scaling signal long-term.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6502,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 1061,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI successfully resolved ticket T-4004. The notification-worker email jobs were failing because the smtp-relay Service was moved from the notify namespace to shared-infra on Sunday, but the application's SMTP_HOST environment variable still referenced just `smtp-relay`. In Kubernetes, short hostnames only resolve within the local namespace. The fix is to update the SMTP_HOST to use the fully qualified domain name `smtp-relay.shared-infra.svc.cluster.local` so DNS resolution works across namespaces.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7729,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 118,
+ "stop_reason": "end_turn"
+}

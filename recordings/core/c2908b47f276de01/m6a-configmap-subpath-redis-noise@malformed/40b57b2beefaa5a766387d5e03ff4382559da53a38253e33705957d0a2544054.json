@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search the Kubernetes documentation for ConfigMap hot-reload behavior to understand how the gateway should be picking up changes.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_012bMNEjbe3eMJX4CY3HQN98",
+   "input": {
+    "query": "ConfigMap hot reload updates without restart"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2243,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 85,
+ "stop_reason": "tool_use"
+}

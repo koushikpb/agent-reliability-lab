@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/delete-stateful-set#persistent-volumes-0",
+  "heading": "Delete a StatefulSet > Deleting a StatefulSet > Persistent Volumes",
+  "text": "Deleting the Pods in a StatefulSet will not delete the associated volumes.\nThis is to ensure that you have the chance to copy data off the volume before\ndeleting it. Deleting the PVC after the pods have terminated might trigger\ndeletion of the backing Persistent Volumes depending on the storage class\nand reclaim policy. You should never assume ability to access a volume\nafter claim deletion.\n\nUse caution when deleting a PVC, as it may lead to data loss."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#volume-claim-templates-0",
+  "heading": "StatefulSets > Components > Volume Claim Templates",
+  "text": "You can set the `.spec.volumeClaimTemplates` field to create a\n[PersistentVolumeClaim](/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims). \nThis will provide stable storage to the StatefulSet if either:\n\n* The StorageClass specified for the volume claim is set up to use [dynamic\n  provisioning](/docs/concepts/storage/dynamic-provisioning/).\n* The cluster already contains a PersistentVolume with the correct StorageClass\n  and sufficient available storage space."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-0",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "The optional `.spec.persistentVolumeClaimRetentionPolicy` field controls if\nand how PVCs are deleted during the lifecycle of a StatefulSet. You must enable the\n`StatefulSetAutoDeletePVC` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)\non the API server and the controller manager to use this field.\nOnce enabled, there are two policies you can configure for each StatefulSet:\n\n`whenDeleted`\n: Configures the volume retention behavior that applies when the StatefulSet is deleted.\n\n`whenScaled`\n: Configures the volume retention behavior that applies when the replica count of\n  the StatefulSet   is reduced; for example, when scaling down the set.\n\nFor each policy that you can configure, you can set the value to either `Delete` or `Retain`."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-4",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "If expanding underlying storage fails, the cluster administrator can manually\nrecover the Persistent Volume Claim (PVC) state and cancel the resize requests.\nOtherwise, the resize requests are continuously retried by the controller without\nadministrator intervention.\n\n1. Mark the PersistentVolume(PV) that is bound to the PersistentVolumeClaim(PVC)\n   with `Retain` reclaim policy.\n2. Delete the PVC. Since PV has `Retain` reclaim policy - we will not lose any data\n   when we recreate the PVC.\n3. Delete the `claimRef` entry from PV specs, so as new PVC can bind to it.\n   This should make the PV `Available`.\n4. Re-create the PVC with smaller size than PV and set `volumeName` field of the\n   PVC to the name of the PV. This should bind new PVC to existing PV.\n5. Don't forget to restore the reclaim policy of the PV."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#limitations-0",
+  "heading": "StatefulSets > Limitations",
+  "text": "* The storage for a given Pod must either be provisioned by a\n  [PersistentVolume Provisioner](/docs/concepts/storage/dynamic-provisioning/)\n  based on the requested _storage class_, or pre-provisioned by an admin.\n* Deleting and/or scaling a StatefulSet down will _not_ delete the volumes associated with the\n  StatefulSet. This is done to ensure data safety, which is generally more valuable than an\n  automatic purge of all related StatefulSet resources.\n* StatefulSets currently require a [Headless Service](/docs/concepts/services-networking/service/#headless-services)\n  to be responsible for the network identity of the Pods. You are responsible for creating this\n  Service.\n* StatefulSets do not provide any guarantees on the termination of pods when a StatefulSet is\n  deleted. To achieve ordered and graceful termination of the pods in the StatefulSet, it is\n  possible to scale the StatefulSet down to 0 prior to deletion.\n* When using [Rolling Updates](#rolling-updates) with the default"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reclaiming-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reclaiming",
+  "text": "When a user is done with their volume, they can delete the PVC objects from the\nAPI that allows reclamation of the resource. The reclaim policy for a PersistentVolume\ntells the cluster what to do with the volume after it has been released of its claim.\nCurrently, volumes can either be Retained, Recycled, or Deleted.\n\n#### Retain\n\nThe `Retain` reclaim policy allows for manual reclamation of the resource.\nWhen the PersistentVolumeClaim is deleted, the PersistentVolume still exists\nand the volume is considered \"released\". But it is not yet available for\nanother claim because the previous claimant's data remains on the volume.\nAn administrator can manually reclaim the volume with the following steps.\n\n1. Delete the PersistentVolume. The associated storage asset in external infrastructure\n   still exists after the PV is deleted.\n1. Manually clean up the data on the associated storage asset accordingly.\n1. Manually delete the associated storage asset.\n\nIf you want to reuse the same storage asset, create a new PersistentVolume with\nthe same storage asset definition.\n\n#### Delete"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#phase-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Phase",
+  "text": "A PersistentVolume will be in one of the following phases:\n\n`Available`\n: a free resource that is not yet bound to a claim\n\n`Bound`\n: the volume is bound to a claim\n\n`Released`\n: the claim has been deleted, but the associated storage resource is not yet reclaimed by the cluster\n\n`Failed`\n: the volume has failed its (automated) reclamation\n\nYou can see the name of the PVC bound to the PV using `kubectl describe persistentvolume <name>`.\n\n#### Phase transition timestamp\n\nThe `.status` field for a PersistentVolume can include an alpha `lastPhaseTransitionTime` field. This field records\nthe timestamp of when the volume last transitioned its phase. For newly created\nvolumes the phase is set to `Pending` and `lastPhaseTransitionTime` is set to\nthe current time."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#volume-populators-and-data-sources-0",
+  "heading": "Persistent Volumes > Volume populators and data sources",
+  "text": "[Volume cloning](#volume-cloning) and\n[snapshot restore](#volume-snapshot-and-restore-volume-from-snapshot-support) pre-populate\na new volume from a built-in _data source_. _Volume populators_ extend this mechanism so that\na PersistentVolumeClaim can be pre-populated from other kinds of source (a custom resource),\nreferenced through its `dataSourceRef` field:\n\n```yaml\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: populated-pvc\nspec:\n  dataSourceRef:\n    name: example-name\n    kind: ExampleDataSource\n    apiGroup: example.storage.k8s.io\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: 10Gi\n```\n\nFor details, including cross-namespace data sources, see\n[Volume Populators and Data Sources](/docs/concepts/storage/volume-populators-and-data-sources/)."
+ }
+]

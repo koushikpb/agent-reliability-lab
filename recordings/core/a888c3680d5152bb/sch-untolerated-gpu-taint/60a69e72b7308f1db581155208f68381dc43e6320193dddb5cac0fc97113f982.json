@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the current state of pods in the vision namespace to see the doc-embedder pod status.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01V52Dvs4a8GGDB6s1Cvbjpa",
+   "input": {
+    "namespace": "vision"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1350,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 77,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search the Kubernetes documentation about Service label selectors to confirm this behavior:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01D3uKS8eZpiCRnG6hYbnbVx",
+   "input": {
+    "query": "Service selector labels matching pods"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2186,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 75,
+ "stop_reason": "tool_use"
+}

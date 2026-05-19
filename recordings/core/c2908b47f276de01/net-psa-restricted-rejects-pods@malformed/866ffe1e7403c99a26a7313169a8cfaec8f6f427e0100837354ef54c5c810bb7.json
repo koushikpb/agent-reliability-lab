@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for information about deployment rollout issues and timeouts in Kubernetes:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_012mWtZRUqhZqgqwm6PbCote",
+   "input": {
+    "query": "deployment rollout timeout image pull failed"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1801,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 77,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary**\n\nI successfully resolved ticket T-2003. The issue was that the catalog-search pods were being terminated during their slow startup phase (loading a 48-shard, 12.4 GB index) before the HTTP listener could start. The current liveness probe configuration only allowed 90 seconds of grace period, which was insufficient. \n\nI diagnosed this by examining the pod logs which showed SIGTERM signals being received mid-initialization, and reviewed the pod status showing repeated CrashLoopBackOff failures with connection refused errors. The solution is to add a startup probe to the deployment that allows up to 10 minutes for initialization before liveness probe monitoring begins, following Kubernetes best practices for slow-starting applications.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 12259,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 159,
+ "stop_reason": "end_turn"
+}

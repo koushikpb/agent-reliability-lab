@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! Now I can see the issue clearly. The job is hitting the `activeDeadlineSeconds` limit of 3600 seconds (1 hour), but the export is taking much longer. The logs show it started at 01:00:04Z and was terminated at 02:00:04Z (exactly 1 hour later) while only at batch 69/95. Let me search the documentation about job deadlines to provide proper guidance:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LcbuF9e6jnH1KVtzLQ6jhR",
+   "input": {
+    "query": "activeDeadlineSeconds job timeout deadline"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2630,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 158,
+ "stop_reason": "tool_use"
+}

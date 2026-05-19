@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/probes#when-should-you-use-a-readiness-probe-1",
+  "heading": "Liveness, Readiness, and Startup Probes > When to use each probe > When should you use a readiness probe?",
+  "text": "For containers that need to work on loading large data, configuration files, or\nmigrations during startup, consider using a [startup probe](#startup-probe).\nHowever, if you want to detect the difference between an app that has failed\nand an app that is still processing its startup data, you might prefer a readiness probe."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "`initialDelaySeconds`\n: Number of seconds after the container has started before startup, liveness or readiness probes are initiated. If a startup probe is defined, liveness and readiness probe delays do not begin until the startup probe has succeeded. In some older Kubernetes versions, the initialDelaySeconds might be ignored if periodSeconds was set to a value higher than initialDelaySeconds. However, in current versions, initialDelaySeconds is always honored and the probe will not start until after this initial delay. Defaults to 0 seconds. Minimum value is 0.\n\n`periodSeconds`\n: How often (in seconds) to perform the probe. Default to 10 seconds. The minimum value is 1. While a container is not Ready, the readiness probe may be executed at times other than the configured `periodSeconds` interval. This is to make the Pod ready faster.\n\n`timeoutSeconds`\n: Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Protect slow starting containers with startup probes",
+  "text": "Thanks to the startup probe, the application will have a maximum of 5 minutes\n(30 * 10 = 300s) to finish its startup.\nOnce the startup probe has succeeded once, the liveness probe takes over to\nprovide a fast response to container deadlocks.\nIf the startup probe never succeeds, the container is killed after 300s and\nsubject to the pod's `restartPolicy`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#liveness-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Types of probe > Liveness probe",
+  "text": "Liveness probes determine when to restart a container.\nFor example, liveness probes could catch a deadlock, where an application is\nrunning, but unable to make progress. Restarting a container in such a state\ncan help to make the application more available despite bugs.\n\nIf a container fails its liveness probe more times than the configured tolerance,\nthe kubelet restarts that container.\nLiveness probes do not wait for readiness probes to succeed. If you want to\nwait before executing a liveness probe, you can either define\n`initialDelaySeconds` or use a [startup probe](#startup-probe).\n\nLiveness probes can be a powerful way to recover from application failures,\nbut they should be used with caution.\nLiveness probes must be configured carefully to ensure that they truly indicate\nunrecoverable application failure, for example a deadlock."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Protect slow starting containers with startup probes",
+  "text": "Sometimes, you have to deal with applications that require additional startup\ntime on their first initialization. In such cases, it can be tricky to set up\nliveness probe parameters without compromising the fast response to deadlocks\nthat motivated such a probe. The solution is to set up a startup probe with the\nsame command, HTTP or TCP check, with a `failureThreshold * periodSeconds` long\nenough to cover the worst case startup time.\n\nSo, the previous example would become:\n\n```yaml\nports:\n- name: liveness-port\n  containerPort: 8080\n\nlivenessProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n  failureThreshold: 1\n  periodSeconds: 10\n\nstartupProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n  failureThreshold: 30\n  periodSeconds: 10\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#when-should-you-use-a-startup-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > When to use each probe > When should you use a startup probe?",
+  "text": "Startup probes are useful for Pods that have containers that take a long time to\ncome into service. Rather than set a long liveness interval, you can configure a\nseparate configuration for probing the container as it starts up, allowing a\ntime longer than the liveness interval would allow.\n\nIf your container usually starts in more than\n\\\\( initialDelaySeconds + failureThreshold \\times  periodSeconds \\\\), you should specify a\nstartup probe that checks the same endpoint as the liveness probe. The default\nfor `periodSeconds` is 10s. You should then set its `failureThreshold` high\nenough to allow the container to start, without changing the default values of\nthe liveness probe. This helps to protect against deadlocks."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "[Probes](/docs/reference/generated/kubernetes-api//#probe-v1-core)\nhave a number of fields that you can use to more precisely control the behavior of startup,\nliveness and readiness checks. For example:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: probe-example\nspec:\n  containers:\n  - name: app\n    image: registry.k8s.io/e2e-test-images/agnhost:2.40\n    ports:\n    - containerPort: 8080\n    startupProbe:\n      httpGet:\n        path: /healthz\n        port: 8080\n      failureThreshold: 30\n      periodSeconds: 10\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: 8080\n      initialDelaySeconds: 10\n      periodSeconds: 5\n      timeoutSeconds: 3\n      failureThreshold: 3\n    readinessProbe:\n      httpGet:\n        path: /ready\n        port: 8080\n      periodSeconds: 5\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#grpc-probes-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe mechanism details > gRPC probes",
+  "text": "If your application implements the\n[gRPC Health Checking Protocol](https://github.com/grpc/grpc/blob/master/doc/health-checking.md),\nyou can configure Kubernetes to use it for application startup, liveness or readiness checks.\n\nHere is an example manifest:"
+ }
+]

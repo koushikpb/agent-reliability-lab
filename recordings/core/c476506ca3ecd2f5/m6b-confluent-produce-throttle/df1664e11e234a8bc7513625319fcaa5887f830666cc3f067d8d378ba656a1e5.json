@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "EscCCqgBCBMYAipAvxAhaWLO2peHjDiutYrivoXrDdxade+OPtpNL2ffCqbinn4GlpH29NfoYuKCGfBbfRYRaxQaIleAUecq38aTczIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAZT78dYGEgxgVe8L4MD+wd5R4G8aDHsfl4z07Y+ekb7cgiIwzfCmvtFWl86z7I2hq4o7d9HCkhUPVHqvbLcWenHfOH0paijyqY+OBsmIo9ejBe85KkwvPSzMETqcajG+C4GggYqXR7NEXAPktfFm+QEaH7Rm5KMAEf0xMkvRnUjDaquuSTxUIbW6nn38IPSGvrZv6SqIKTUrlqhso0yrkEgrGAE=",
+   "thinking": "Let me start by reading the ticket to understand the issue.",
+   "type": "thinking"
+  },
+  {
+   "text": "Sure! Let me start by reading the ticket.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Mkz8jQmhp9DteBY9ByH1jz",
+   "input": {
+    "id": "T-6005"
+   },
+   "name": "get_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1161,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 94,
+ "stop_reason": "tool_use"
+}

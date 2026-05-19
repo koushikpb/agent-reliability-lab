@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the status of the pods in the internal-tools namespace where the ops portal and oauth2-proxy run.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01U2AqeHBrxVMJTnyVm7WyRa",
+   "input": {
+    "namespace": "internal-tools"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1378,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 82,
+ "stop_reason": "tool_use"
+}

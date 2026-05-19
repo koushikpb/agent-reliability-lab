@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:** I identified that the search-api HPA is not scaling because the deployment's log-forwarder sidecar container (added in version 4.8.0) lacks CPU requests. HPA cannot calculate CPU utilization when any container is missing resource requests, causing it to report \"unknown\" metrics. The fix is to add CPU and memory requests to the log-forwarder container in the deployment spec.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 4671,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 92,
+ "stop_reason": "end_turn"
+}

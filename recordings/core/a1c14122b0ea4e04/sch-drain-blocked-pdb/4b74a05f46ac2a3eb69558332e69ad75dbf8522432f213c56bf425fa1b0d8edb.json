@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EvQKCqQBCBMYAipAQ/fsy5epYbs46OaQvE1G8Q5ayFpq0CDZlr0PO8ouCMKbSPI3x+f3eQWwphDyx9APe91QFpbIfwCI+bBpnahLwzIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBmtDw1gYSDIzlUnNYXfNpnGIvnRoM1KOnZcPWSXgFWg2RIjA8XdCQuLCatI1EwxXVbYIL0jOkzR84Dh7hTf1eTHp6qiBk1sPbH0fO6PkAO7jpTnMq/AhoW4hgoSjGGGrLsuIs0dE8jNuFNQnm0AMUWu9M1wEw2Qfc0tr9952FVHnsk+OpVFFPutt1yAM1PawnPoTYCjMMLAsIT+igCOO4w1FqEAq5yXu23mIsy+QkhGHrqGFscVRBD5NbfDd3bKt+VS6osWN6q7Sa5vTQLZa59mlYDEjMLl0jNrBe/JHBgti/FBsfcSoHPWNGDHMssG9ZMCX/shUUon7rcmDnl+ZzB3aFYQDR9ANalIpvqep0SuhQWPa3nw+Uql6ZK8cKaEwmNhPCWcRCIgpzsvxeEIvaLB/XtaDsEjWJvCLMIdvjMPSgwNWVHUIscKxf8uuTdMfj3pKHleBCDpS3hXlMUu5wIzZ43rwRSAee5YST6xm6ntEBs1JKuCJtZe8PTA6nU9SR/lteUs3sNtdbWealaTFknilvDoKiUqRkrD8eE5RuGc1roO8zfNebgU9E9N5pX2gFPys3rjdAvPhPF2M1iFMM2OofmUauYqjEji541+UP2GNJAiBk2wNF0HxXafg6exqa07qX0JxCKkGZWSDYLT6mqohH5ahFzoxdNT7oOcVxVeQ7D7GhaIYGj3xuPNvfii2q8Vhx07RI242lm4bkzgPyTA1Nfopt07SzeZSdhDgYGN8Msm/8ZyCf64A+Ta3OHAqiXfQRZe5hcsVIvw4IyBXyZW6bMa9nYDyk52644+c5GExHgay1U0zlgfalfdMCHmg5T8nnc2NYSrOPD3PO+QcR3cGi3vPMo7Z90L8XJOa41enLnzZqNJ7vUUIdCcMYYjeZNNX6G4HigbnN33VXOBTYTVW+lCTk7k1H+kfZ580b8zAbgLUPmzpkYxw8zXiEzsHh2i8wYx8ZnjILCqwscDz+wqOrJx+N9YMpPLOleIqGd/akeyBnaBNDXa6NEaGWZytWYlnvyNSl8Fjg274UIjEFKv/h05HBP9+LPf16Jeg0W1CQcsmx3X2hXSgP16Xl/ijQz/b0BWAIHi1TJmN52gVOqY4i71SV2TckYWTGsqAvYoZz475gkqgYcQalVvE4Y/X6yRKhmZsi+HMka/bkIbilQDN8gVC4KLYXYvv+aMjM/+BeQN4ANKPi+DdkPtKskPAHimum+SZ7KlG8mOPM62erG9MU9zO1539qpfI9u5CWQ4TrAvf+pOQIky9TwYoFgWwzDmMyG7Gv3KcxvZ/5hGoOAF8wlLg4m3mFgDXFNjF5iZZi1qCK+wSeEsOZ9LD2K/v/VoW24lWo8qCe/x5ohNqse0OrvFhkywQ/ZJsUmldngY4QzX2Uur4pLKKg0N89pd8jwyAjuJdkVBa08FrC86DqEwc/1HKEdTq7+fC13bSkpKtbGM7PJFmepm5RhOa6Gy1iwl+AgJHxxGY0TU7LumoHRuFv3okC2SEZAKQ2H3At7PKfBvR5UPo+4vOaQlhRog0iiacoOhPpTTyEmj4P8zVuzGvidz+JqvWns74SCjcXNvVPSrgS6QKieB9TGCNc73Ch8O7V6f5d3izcGw+HCGE/viernuVkwkYulV2J1/MOSAfXAxgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01733jt7Ss7xezzpFP59WgVN",
+   "input": {
+    "pod": "zk-2"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5671,
+ "model": "claude-opus-4-7",
+ "output_tokens": 603,
+ "stop_reason": "tool_use"
+}

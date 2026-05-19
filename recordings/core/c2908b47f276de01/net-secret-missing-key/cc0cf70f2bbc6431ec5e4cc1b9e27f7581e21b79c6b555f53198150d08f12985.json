@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Now I have a clear understanding of the issue. Let me update the ticket with the resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01JW7Auch4aDRDtzzEoZdnZM",
+   "input": {
+    "id": "T-4001",
+    "note": "**Cause**: The invoice-api 3.8.0 pods are failing with `CreateContainerConfigError` because the container specification is trying to reference a key `STRIPE_WEBHOOK_SECRET` that does not exist in the Secret `billing/invoice-api-secrets`.\n\n**Evidence**: Pod status shows new 3.8.0 pods (invoice-api-7c9f8b6d4-hx2lp, invoice-api-7c9f8b6d4-r8wqz) in `CreateContainerConfigError` status with message \"Error: couldn't find key STRIPE_WEBHOOK_SECRET in Secret billing/invoice-api-secrets\". The older 3.7.2 pods continue running without this issue because they don't require this key.\n\n**Fix**: The invoice-api 3.8.0 deployment configuration is referencing a Secret key that hasn't been added to the Secret object. You need to:\n1. Add the missing `STRIPE_WEBHOOK_SECRET` key to the `billing/invoice-api-secrets` Secret with the appropriate Stripe webhook secret value\n2. Trigger a rollout restart of the invoice-api deployment\n\nAs referenced in Kubernetes documentation [cite: concepts/configuration/secret#using-secrets-as-environment-variables-0], when using Secrets as environment variables, each referenced key must exist in the Secret. The new version's addition of Stripe webhook handling introduced this new required secret key that wasn't present before.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4014,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 439,
+ "stop_reason": "tool_use"
+}

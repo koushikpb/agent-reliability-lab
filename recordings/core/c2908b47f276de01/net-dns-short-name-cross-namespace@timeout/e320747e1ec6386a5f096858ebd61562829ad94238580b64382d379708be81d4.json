@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Good, the pods are running. Now let me check the logs from the notification-worker to see what DNS errors are occurring.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01UcHHmRbZP4XcLfMoR3dM4w",
+   "input": {
+    "pod": "notification-worker-5b7d6c9f48-jq2vx"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1885,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 100,
+ "stop_reason": "tool_use"
+}

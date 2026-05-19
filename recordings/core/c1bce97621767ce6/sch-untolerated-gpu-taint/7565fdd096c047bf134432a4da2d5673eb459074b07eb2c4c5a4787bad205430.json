@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary**: I resolved ticket T-3002 by identifying that the doc-embedder pod was stuck in Pending because the GPU nodes have a `dedicated: gpu` taint that the pod wasn't tolerating. Although the pod had the correct nodeSelector and toleration for nvidia.com/gpu, it was missing the toleration for the dedicated taint. I provided the fix: add a matching toleration to the deployment's pod spec so the scheduler can place the pod on the GPU nodes.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 4956,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 107,
+ "stop_reason": "end_turn"
+}

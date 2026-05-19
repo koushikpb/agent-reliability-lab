@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "EvECCqgBCBMYAipAUKGsZmKBc/WN/sv3rXJNW6qa7ayH2mLm72UMPDOV7/0CG6Enz1X28SCwa8b/b0tXPjnpxNlK8wMEaWLM0KtfPDIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAfj18dYGEgzSNqPJnSPEZ/yG5osaDJVxL5OiMSpz52Wx4SIw2TZdyWtKUxSAiVVuaklXIo0PM9l3C4kP0uUz+5cHhl34m3D8IR0Nrs6iGUf1hs6xKnawXd8liHrtogCEpa2jU82ZNSi5AlZhub9hemTWMwvuyqMRu+z3+f/XkL51NtLo5JFkM+mhO1EbZ/cOOuCocX+2pRz0YHW4jAkhNRUli9PULJ/HMZJNwDTQFVw7g2xu4u2PFWCwbG3S2B04l2YRJvw7nIAEx8OuGAE=",
+   "thinking": "Let me look at the pods in the orders namespace and search for relevant documentation simultaneously.",
+   "type": "thinking"
+  },
+  {
+   "text": "Let me investigate the pods in the `orders` namespace right away.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01NQJ6ibzfJxbzBZqTWDX3i4",
+   "input": {
+    "namespace": "orders"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1494,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 100,
+ "stop_reason": "tool_use"
+}

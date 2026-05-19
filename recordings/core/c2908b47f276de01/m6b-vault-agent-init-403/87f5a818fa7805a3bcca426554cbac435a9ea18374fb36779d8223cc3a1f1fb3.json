@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the pods in the orders namespace to see their status:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01C5ScT5ymA9rukMbnDH2NZq",
+   "input": {
+    "namespace": "orders"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1412,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 69,
+ "stop_reason": "tool_use"
+}

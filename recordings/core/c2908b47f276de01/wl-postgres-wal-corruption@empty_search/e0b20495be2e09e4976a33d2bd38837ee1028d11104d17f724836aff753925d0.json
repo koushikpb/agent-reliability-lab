@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "text": "Based on my investigation, I've found a critical issue that requires human intervention. The PostgreSQL database is corrupted and cannot recover automatically. Let me escalate this:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_014Lc9CFHPFxDTP2Ph4pr32i",
+   "input": {
+    "id": "T-2007",
+    "reason": "PostgreSQL checkpoint corruption after node reboot: the database shows \"invalid primary checkpoint record\" errors and is in a crash loop (23+ restarts). This is a data integrity issue that requires database recovery expertise and potentially manual intervention with pg_resetwal or recovery from backups, which is beyond safe automated remediation."
+   },
+   "name": "escalate",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2461,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 170,
+ "stop_reason": "tool_use"
+}

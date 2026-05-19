@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#introduction-0",
+  "heading": "Persistent Volumes > Introduction",
+  "text": "Managing storage is a distinct problem from managing compute instances.\nThe PersistentVolume subsystem provides an API for users and administrators\nthat abstracts details of how storage is provided from how it is consumed.\nTo do this, we introduce two new API resources: PersistentVolume and PersistentVolumeClaim.\n\nA _PersistentVolume_ (PV) is a piece of storage in the cluster that has been\nprovisioned by an administrator or dynamically provisioned using\n[Storage Classes](/docs/concepts/storage/storage-classes/). It is a resource in\nthe cluster just like a node is a cluster resource. PVs are volume plugins like\nVolumes, but have a lifecycle independent of any individual Pod that uses the PV.\nThis API object captures the details of the implementation of the storage, be that\nNFS, iSCSI, or a cloud-provider-specific storage system."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-2",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "```shell\n    Type:               vSphereVolume (a Persistent Disk resource in vSphere)\n    VolumePath:         [vsanDatastore] d49c4a62-166f-ce12-c464-020077ba5d46/kubernetes-dynamic-pvc-74a498d6-3929-47e8-8c02-078c1ece4d78.vmdk\n    FSType:             ext4\n    StoragePolicyName:  vSAN Default Storage Policy\nEvents:                 <none>\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#introduction-1",
+  "heading": "Persistent Volumes > Introduction",
+  "text": "A _PersistentVolumeClaim_ (PVC) is a request for storage by a user. It is similar\nto a Pod. Pods consume node resources and PVCs consume PV resources. Pods can\nrequest specific levels of resources (CPU and Memory). Claims can request specific\nsize and access modes (e.g., they can be mounted ReadWriteOnce, ReadOnlyMany,\nReadWriteMany, or ReadWriteOncePod, see [AccessModes](#access-modes)).\n\nWhile PersistentVolumeClaims allow a user to consume abstract storage resources,\nit is common that users need PersistentVolumes with varying properties, such as\nperformance, for different problems. Cluster administrators need to be able to\noffer a variety of PersistentVolumes that differ in more ways than size and access\nmodes, without exposing users to the details of how those volumes are implemented.\nFor these needs, there is the _StorageClass_ resource.\n\nSee the [detailed walkthrough with working examples](/docs/tutorials/configuration/configure-persistent-volume-storage)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistent-volumes-0",
+  "heading": "Persistent Volumes > Persistent Volumes",
+  "text": "Each PV contains a spec and status, which is the specification and status of the volume.\nThe name of a PersistentVolume object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).\n\n```yaml\napiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: pv0003\nspec:\n  capacity:\n    storage: 5Gi\n  volumeMode: Filesystem\n  accessModes:\n    - ReadWriteOnce\n  persistentVolumeReclaimPolicy: Recycle\n  storageClassName: slow\n  mountOptions:\n    - hard\n    - nfsvers=4.1\n  nfs:\n    path: /tmp\n    server: 172.17.0.2\n```\n\nHelper programs relating to the volume type may be required for consumption of\na PersistentVolume within a cluster.  In this example, the PersistentVolume is\nof type NFS and the helper program /sbin/mount.nfs is required to support the\nmounting of NFS filesystems."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#phase-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Phase",
+  "text": "A PersistentVolume will be in one of the following phases:\n\n`Available`\n: a free resource that is not yet bound to a claim\n\n`Bound`\n: the volume is bound to a claim\n\n`Released`\n: the claim has been deleted, but the associated storage resource is not yet reclaimed by the cluster\n\n`Failed`\n: the volume has failed its (automated) reclamation\n\nYou can see the name of the PVC bound to the PV using `kubectl describe persistentvolume <name>`.\n\n#### Phase transition timestamp\n\nThe `.status` field for a PersistentVolume can include an alpha `lastPhaseTransitionTime` field. This field records\nthe timestamp of when the volume last transitioned its phase. For newly created\nvolumes the phase is set to `Pending` and `lastPhaseTransitionTime` is set to\nthe current time."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#stable-storage-0",
+  "heading": "StatefulSets > Pod Identity > Stable Storage",
+  "text": "For each VolumeClaimTemplate entry defined in a StatefulSet, each Pod receives one\nPersistentVolumeClaim. In the nginx example above, each Pod receives a single PersistentVolume\nwith a StorageClass of `my-storage-class` and 1 GiB of provisioned storage. If no StorageClass\nis specified, then the default StorageClass will be used. When a Pod is (re)scheduled\nonto a node, its `volumeMounts` mount the PersistentVolumes associated with its\nPersistentVolume Claims. Note that, the PersistentVolumes associated with the\nPods' PersistentVolume Claims are not deleted when the Pods, or StatefulSet are deleted.\nThis must be done manually."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#persistentvolumeclaim-0",
+  "heading": "Volumes > Types of volumes > persistentVolumeClaim",
+  "text": "A `persistentVolumeClaim` volume is used to mount a\n[PersistentVolume](/docs/concepts/storage/persistent-volumes/) into a Pod. PersistentVolumeClaims\nare a way for users to \"claim\" durable storage (such as an iSCSI volume)\nwithout knowing the details of the particular cloud environment.\n\nSee the information about [PersistentVolumes](/docs/concepts/storage/persistent-volumes/) for more\ndetails."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reserving-a-persistentvolume-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reserving a PersistentVolume",
+  "text": "The control plane can [bind PersistentVolumeClaims to matching PersistentVolumes](#binding)\nin the cluster. However, if you want a PVC to bind to a specific PV, you need to pre-bind them.\n\nBy specifying a PersistentVolume in a PersistentVolumeClaim, you declare a binding\nbetween that specific PV and PVC. If the PersistentVolume exists and has not reserved\nPersistentVolumeClaims through its `claimRef` field, then the PersistentVolume and\nPersistentVolumeClaim will be bound.\n\nThe binding happens regardless of some volume matching criteria, including node affinity.\nThe control plane still checks that [storage class](/docs/concepts/storage/storage-classes/),\naccess modes, and requested storage size are valid.\n\n```yaml\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: foo-pvc\n  namespace: foo\nspec:\n  storageClassName: \"\" # Empty string must be explicitly set otherwise default StorageClass will be set\n  volumeName: foo-pv\n  ...\n```"
+ }
+]

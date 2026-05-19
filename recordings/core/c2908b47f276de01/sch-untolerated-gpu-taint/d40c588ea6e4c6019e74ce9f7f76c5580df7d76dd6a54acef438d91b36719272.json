@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the status of pods in the vision namespace to see the pending pod.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016RzecJBNGYEraYYMw4LV8Z",
+   "input": {
+    "namespace": "vision"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1346,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 72,
+ "stop_reason": "tool_use"
+}

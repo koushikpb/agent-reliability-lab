@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! The documentation confirms the issue. According to the search results, when a service is in a different namespace, the pod needs to use the fully qualified DNS name. Let me update the ticket with my findings:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01YC9wT7eo7vxUyKVntvrqPU",
+   "input": {
+    "id": "T-4004",
+    "note": "**Root Cause:** The notification-worker is configured with `SMTP_HOST=smtp-relay`, but the smtp-relay service was moved from the notify namespace to the shared-infra namespace on Sunday. When a service moves to a different namespace, pods must use the fully qualified DNS name to reach it.\n\n**Evidence:** Pod logs show the DNS lookup failures: \"lookup smtp-relay on 10.96.0.10:53: no such host\". The pod configuration shows `SMTP_HOST=smtp-relay` (unqualified name), which only works if the service is in the same namespace.\n\n**Fix:** Update the notification-worker configuration to use the fully qualified service name: `SMTP_HOST=smtp-relay.shared-infra` (or `SMTP_HOST=smtp-relay.shared-infra.svc.cluster.local` for full FQDN). According to Kubernetes DNS discovery, \"Pods in other namespaces must qualify the name as `my-service.my-ns`\" [cite: concepts/services-networking/service#dns-0], and \"DNS queries that don't specify a namespace are limited to the pod's namespace. If the namespace of the pod and service differ, the DNS query must include the namespace of the service\" [cite: tasks/administer-cluster/dns-debugging-resolution#are-you-in-the-right-namespace-for-the-service-0].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4189,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 447,
+ "stop_reason": "tool_use"
+}

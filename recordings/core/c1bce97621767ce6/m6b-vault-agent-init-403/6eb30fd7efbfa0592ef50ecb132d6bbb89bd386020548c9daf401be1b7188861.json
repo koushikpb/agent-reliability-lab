@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results mention init containers but not the specific Vault Agent issue. Let me search specifically for Vault-related errors or authentication issues.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0193Z6puiHsjtts9DKGt8AxQ",
+   "input": {
+    "query": "pod configuration secrets authentication environment variables image changes"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7019,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 90,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#non-graceful-node-shutdown-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling",
+  "text": "When a node is shutdown but not detected by kubelet's Node Shutdown Manager, the pods\nthat are part of a StatefulSet\nwill be stuck in terminating status on the shutdown node and cannot move to a new running node.\nThis is because kubelet on the shutdown node is not available to delete the pods so\nthe StatefulSet cannot create a new pod with the same name. If there are volumes used by the pods,\nthe VolumeAttachments will not be deleted from the original shutdown node so the volumes\nused by these pods cannot be attached to a new running node. As a result, the\napplication running on the StatefulSet cannot function properly. If the original\nshutdown node comes up, the pods will be deleted by kubelet and new pods will be\ncreated on a different running node. If the original shutdown node does not come up,\nthese pods will be stuck in terminating status on the shutdown node forever."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#volume-binding-mode-2",
+  "heading": "Storage Classes > Volume binding mode",
+  "text": "The following plugins support `WaitForFirstConsumer` with pre-created PersistentVolume binding:\n\n- CSI volumes, provided that the specific CSI driver supports this\n- [`local`](#local)\n\nIf you choose to use `WaitForFirstConsumer`, do not use `nodeName` in the Pod spec\nto specify node affinity.\nIf `nodeName` is used in this case, the scheduler will be bypassed and PVC will remain in `pending` state.\n\nInstead, you can use node selector for `kubernetes.io/hostname`:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#node-affinity-1",
+  "heading": "Persistent Volumes > Persistent Volumes > Node Affinity",
+  "text": "If the `MutablePVNodeAffinity` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) is enabled in your cluster,\nthe `.spec.nodeAffinity` field of a PersistentVolume is mutable.\nThis allows cluster administrators or external storage controller to update the node affinity of a PersistentVolume when the data is migrated,\nwithout interrupting the running pods.\n\nWhen updating the node affinity, you should ensure that the new node affinity still matches the nodes where the volume is currently in use.\nFor the pods violating the new affinity, if the pod is already running, it may continue to run. But Kubernetes does not support this configuration.\nYou should terminate the violating pods soon.\nDue to in memory caching, the pods created after the update may still be scheduled according to the old node affinity for a short period of time.\n\nTo use this feature, you should enable the `MutablePVNodeAffinity` feature gate on the following components:\n\n- `kube-apiserver`\n- `kubelet`"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-1",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "`Delete`\n: The PVCs created from the StatefulSet `volumeClaimTemplate` are deleted for each Pod\n  affected by the policy. With the `whenDeleted` policy all PVCs from the\n  `volumeClaimTemplate` are deleted after their Pods have been deleted. With the\n  `whenScaled` policy, only PVCs corresponding to Pod replicas being scaled down are\n  deleted, after their Pods have been deleted.\n\n`Retain` (default)\n: PVCs from the `volumeClaimTemplate` are not affected when their Pod is\n  deleted. This is the behavior before this new feature.\n\nBear in mind that these policies **only** apply when Pods are being removed due to the\nStatefulSet being deleted or scaled down. For example, if a Pod associated with a StatefulSet\nfails due to node failure, and the control plane creates a replacement Pod, the StatefulSet\nretains the existing PVC.  The existing volume is unaffected, and the cluster will attach it to\nthe node where the new Pod is about to launch.\n\nThe default for policies is `Retain`, matching the StatefulSet behavior before this new feature.\n\nHere is an example policy:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#node-affinity-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Node Affinity",
+  "text": "For most volume types, you do not need to set this field.\nYou need to explicitly set this for [local](/docs/concepts/storage/volumes/#local) volumes.\n\nA PV can specify node affinity to define constraints that limit what nodes this\nvolume can be accessed from. Pods that use a PV will only be scheduled to nodes\nthat are selected by the node affinity. To specify node affinity, set\n`nodeAffinity` in the `.spec` of a PV. The\n[PersistentVolume](/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1/#PersistentVolumeSpec)\nAPI reference has more details on this field.\n\n#### Updates to node affinity"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#volume-binding-mode-1",
+  "heading": "Storage Classes > Volume binding mode",
+  "text": "A cluster administrator can address this issue by specifying the `WaitForFirstConsumer` mode which\nwill delay the binding and provisioning of a PersistentVolume until a Pod using the PersistentVolumeClaim is created.\nPersistentVolumes will be selected or provisioned conforming to the topology that is\nspecified by the Pod's scheduling constraints. These include, but are not limited to, [resource\nrequirements](/docs/concepts/configuration/manage-resources-containers/),\n[node selectors](/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector),\n[pod affinity and\nanti-affinity](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity),\nand [taints and tolerations](/docs/concepts/scheduling-eviction/taint-and-toleration).\n\nThe following plugins support `WaitForFirstConsumer` with dynamic provisioning:\n\n- CSI volumes, provided that the specific CSI driver supports this"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#limitations-of-preemption-2",
+  "heading": "Pod Priority and Preemption > Preemption > Limitations of preemption",
+  "text": "Preemption does not necessarily remove all lower-priority\nPods. If the pending Pod can be scheduled by removing fewer than all\nlower-priority Pods, then only a portion of the lower-priority Pods are removed.\nEven so, the answer to the preceding question must be yes. If the answer is no,\nthe Node is not considered for preemption.\n\nIf a pending Pod has inter-pod affinity\nto one or more of the lower-priority Pods on the Node, the inter-Pod affinity\nrule cannot be satisfied in the absence of those lower-priority Pods. In this case,\nthe scheduler does not preempt any Pods on the Node. Instead, it looks for another\nNode. The scheduler might find a suitable Node or it might not. There is no\nguarantee that the pending Pod can be scheduled.\n\nOur recommended solution for this problem is to create inter-Pod affinity only\ntowards equal or higher priority Pods.\n\n#### Cross node preemption"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-limits#mutable-csi-node-allocatable-count-1",
+  "heading": "Node-specific Volume Limits > Dynamic volume limits > Mutable CSI Node Allocatable Count",
+  "text": "Kubelet will periodically call the corresponding CSI driver\u2019s `NodeGetInfo` endpoint to refresh the maximum number of attachable volumes, using the interval specified in `nodeAllocatableUpdatePeriodSeconds`. The minimum allowed value for this field is 10 seconds.\n\nIf a volume attachment operation fails with a `ResourceExhausted` error (gRPC code 8), Kubernetes triggers an immediate update to the allocatable volume count for that Node. Additionally, kubelet marks affected pods as Failed, allowing their controllers to handle recreation. This prevents pods from getting stuck indefinitely in the `ContainerCreating` state."
+ }
+]

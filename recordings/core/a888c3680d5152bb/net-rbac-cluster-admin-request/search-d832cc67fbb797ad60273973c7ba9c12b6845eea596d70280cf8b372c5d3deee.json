@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#intro-0",
+  "heading": "Role Based Access Control Good Practices",
+  "text": "Kubernetes RBAC is a key security control\nto ensure that cluster users and workloads have only the access to resources required to\nexecute their roles. It is important to ensure that, when designing permissions for cluster\nusers, the cluster administrator understands the areas where privilege escalation could occur,\nto reduce the risk of excessive access leading to security incidents.\n\nThe good practices laid out here should be read in conjunction with the general\n[RBAC documentation](/docs/reference/access-authn-authz/rbac/#restrictions-on-role-creation-or-update)."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#workload-creation-1",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Workload creation",
+  "text": "Users who can run privileged Pods can use that access to gain node access and potentially to\nfurther elevate their privileges. Where you do not fully trust a user or other principal\nwith the ability to create suitably secure and isolated Pods, you should enforce either the\n**Baseline** or **Restricted** Pod Security Standard.\nYou can use [Pod Security admission](/docs/concepts/security/pod-security-admission/)\nor other (third party) mechanisms to implement that enforcement.\n\nFor these reasons, namespaces should be used to separate resources requiring different levels of\ntrust or tenancy. It is still considered best practice to follow [least privilege](#least-privilege)\nprinciples and assign the minimum set of permissions, but boundaries within a namespace should be\nconsidered weak."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#workload-creation-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Workload creation",
+  "text": "Permission to create workloads (either Pods, or\n[workload resources](/docs/concepts/workloads/controllers/) that manage Pods) in a namespace\nimplicitly grants access to many other resources in that namespace, such as Secrets, ConfigMaps, and\nPersistentVolumes that can be mounted in Pods. Additionally, since Pods can run as any\n[ServiceAccount](/docs/reference/access-authn-authz/service-accounts-admin/), granting permission\nto create workloads also implicitly grants the API access levels of any service account in that\nnamespace."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#access-to-proxy-subresource-of-nodes-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Access to `proxy` subresource of Nodes",
+  "text": "Users with access to the `nodes/proxy` sub-resource have rights to the Kubelet API,\nwhich allows for command execution on every pod on the node(s) to which they have rights.\nThis access bypasses audit logging and admission control, so care should be taken before\ngranting any rights to this resource.\nThese APIs can be exercised via websocket HTTP `GET` requests, which only requires authorization of the **get** verb.\nThis means that **get** permission on `nodes/proxy` is not a read-only permission.\nFor example, permission to **get** `nodes/proxy` provides access to privileged kubelet\nAPIs that can retrieve container logs or execute and attach to pod processes,\neven when a caller does not have the equivalent permissions through the\nKubernetes API."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-0",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "Ideally, minimal RBAC rights should be assigned to users and service accounts. Only permissions\nexplicitly required for their operation should be used. While each cluster will be different,\nsome general rules that can be applied are :"
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#access-to-proxy-subresource-of-nodes-1",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Access to `proxy` subresource of Nodes",
+  "text": "See [Kubelet authentication/authorization](/docs/reference/access-authn-authz/kubelet-authn-authz/#get-nodes-proxy-warning)\nfor more information."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#impersonate-verb-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Impersonate verb",
+  "text": "This verb allows users to impersonate and gain the rights of other users in the cluster.\nCare should be taken when granting it, to ensure that excessive permissions cannot be gained\nvia one of the impersonated accounts."
+ },
+ {
+  "chunk_id": "concepts/security/secrets-good-practices#least-privilege-secrets-0",
+  "heading": "Good practices for Kubernetes Secrets > Cluster administrators > Configure least-privilege access to Secrets",
+  "text": "When planning your access control mechanism, such as Kubernetes\nRole-based Access Control [(RBAC)](/docs/reference/access-authn-authz/rbac/),\nconsider the following guidelines for access to `Secret` objects. You should\nalso follow the other guidelines in\n[RBAC good practices](/docs/concepts/security/rbac-good-practices).\n\n- **Components**: Restrict `watch` or `list` access to only the most\n  privileged, system-level components. Only grant `get` access for Secrets if\n  the component's normal behavior requires it.\n- **Humans**: Restrict `get`, `watch`, or `list` access to Secrets. Only allow\n  cluster administrators to access `etcd`. This includes read-only access. For\n  more complex access control, such as restricting access to Secrets with\n  specific annotations, consider using third-party authorization mechanisms.\n\nGranting `list` access to Secrets implicitly lets the subject fetch the\ncontents of the Secrets."
+ }
+]

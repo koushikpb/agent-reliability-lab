@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-2",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "1. **Check logs**: Use `kubectl logs <name-of-pod>` to check the logs of the container.\n   This is often the most direct way to diagnose the issue causing the crashes.\n1. **Inspect events**: Use `kubectl describe pod <name-of-pod>` to see events\n   for the Pod, which can provide hints about configuration or resource issues.\n1. **Review configuration**: Ensure that the Pod configuration, including\n   environment variables and mounted volumes, is correct and that all required\n   external resources are available.\n1. **Check resource limits**: Make sure that the container has enough CPU\n   and memory allocated. Sometimes, increasing the resources in the Pod definition\n   can resolve the issue.\n1. **Debug application**: There might exist bugs or misconfigurations in the\n   application code. Running this container image locally or in a development\n   environment can help diagnose application specific issues."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-1",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "In practice, a `CrashLoopBackOff` is a condition or event that might be seen as output\nfrom the `kubectl` command, while describing or listing Pods, when a container in the Pod\nfails to start properly and then continually tries and fails in a loop.\n\nIn other words, when a container enters the crash loop, Kubernetes applies the\nexponential backoff delay mentioned in the [Container restart policy](#restart-policy).\nThis mechanism prevents a faulty container from overwhelming the system with continuous\nfailed start attempts.\n\nThe `CrashLoopBackOff` can be caused by issues like the following:\n\n* Application errors that cause the container to exit.\n* Configuration errors, such as incorrect environment variables or missing\n  configuration files.\n* Resource constraints, where the container might not have enough memory or CPU\n  to start properly.\n* Health checks failing if the application doesn't start serving within the\n  expected time.\n* Container liveness probes or startup probes returning a `Failure` result\n  as mentioned in the [probes section](#container-probes).\n\nTo investigate the root cause of a `CrashLoopBackOff` issue, a user can:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#handling-pod-and-container-failures-0",
+  "heading": "Jobs > Handling Pod and container failures",
+  "text": "A container in a Pod may fail for a number of reasons, such as because the process in it exited with\na non-zero exit code, or the container was killed for exceeding a memory limit, etc. If this\nhappens, and the `.spec.template.spec.restartPolicy = \"OnFailure\"`, then the Pod stays\non the node, but the container is re-run. Therefore, your program needs to handle the case when it is\nrestarted locally, or else specify `.spec.template.spec.restartPolicy = \"Never\"`.\nSee [pod lifecycle](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) for more information on `restartPolicy`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-0",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "Kubernetes manages container failures within Pods using a [`restartPolicy`](#restart-policy) defined\nin the Pod `spec`. This policy determines how Kubernetes reacts to containers exiting due to errors\nor other reasons, which falls in the following sequence:\n\n1. **Initial crash**: Kubernetes attempts an immediate restart based on the Pod `restartPolicy`.\n1. **Repeated crashes**: After the initial crash Kubernetes applies an exponential\n   backoff delay for subsequent restarts, described in [`restartPolicy`](#restart-policy).\n   This prevents rapid, repeated restart attempts from overloading the system.\n1. **CrashLoopBackOff state**: This indicates that the backoff delay mechanism is currently\n   in effect for a given container that is in a crash loop, failing and restarting repeatedly.\n1. **Backoff reset**: If a container runs successfully for a certain duration\n   (e.g., 10 minutes), Kubernetes resets the backoff delay, treating any new crash\n   as the first one."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-2",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "When a pod is failing to start repeatedly, `CrashLoopBackOff` may appear in the `Status` field of some kubectl commands.\nSimilarly, when a pod is being deleted, `Terminating` may appear in the `Status` field of some kubectl commands.\n\nMake sure not to confuse _Status_, a kubectl display field for user intuition, with the pod's `phase`.\nPod phase is an explicit part of the Kubernetes data model and of the\n[Pod API](/docs/reference/kubernetes-api/workload-resources/pod-v1/). \n\n```\n  NAMESPACE               NAME               READY   STATUS             RESTARTS   AGE\n  alessandras-namespace   alessandras-pod    0/1     CrashLoopBackOff   200        2d9h\n```\n\nA Pod is granted a term to terminate gracefully, which defaults to 30 seconds.\nYou can use the flag `--force` to [terminate a Pod by force](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#examine-pod-logs-0",
+  "heading": "Debug Running Pods > Examining pod logs",
+  "text": "First, look at the logs of the affected container:\n\n```shell\nkubectl logs ${POD_NAME} -c ${CONTAINER_NAME}\n```\n\nIf your container has previously crashed, you can access the previous container's crash log with:\n\n```shell\nkubectl logs ${POD_NAME} -c ${CONTAINER_NAME} --previous\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-12",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: on-failure-pod\nspec:\n  restartPolicy: OnFailure\n  containers:\n  - name: try-once-container    # This container will run only once because the restartPolicy is Never.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'echo \"Only running once\" && sleep 10 && exit 1']\n    restartPolicy: Never     \n  - name: on-failure-container  # This container will be restarted on failure.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'echo \"Keep restarting\" && sleep 1800 && exit 1']\n```\n\nA Pod with `Always` restart policy with an init container that only execute once. If the init\ncontainer fails, the Pod fails. This allows the Pod to fail if the initialization failed,\nbut also keep running once the initialization succeeds:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-13",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: fail-pod-if-init-fails\nspec:\n  restartPolicy: Always\n  initContainers:\n  - name: init-once      # This init container will only try once. If it fails, the pod will fail.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'echo \"Failing initialization\" && sleep 10 && exit 1']\n    restartPolicy: Never\n  containers:\n  - name: main-container # This container will always be restarted once initialization succeeds.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'sleep 1800 && exit 0']\n```\n\nA Pod with Never restart policy with a container that ignores and restarts on specific exit codes.\nThis is useful to differentiate between restartable errors and non-restartable errors:"
+ }
+]

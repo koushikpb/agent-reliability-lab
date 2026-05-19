@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-init-containers#before-you-begin-0",
+  "heading": "Debug Init Containers > Before you begin",
+  "text": "* You should be familiar with the basics of\n  [Init Containers](/docs/concepts/workloads/pods/init-containers/).\n* You should have [Configured an Init Container](/docs/tasks/configure-pod-container/configure-pod-initialization/#create-a-pod-that-has-an-init-container)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-conditions-1",
+  "heading": "Pod Lifecycle > Pod conditions",
+  "text": "* `PodScheduled`: the Pod has been scheduled to a node.\n* `PodReadyToStartContainers`: the Pod sandbox has been successfully created,\n  networking configured, storage volumes mounted, and any dynamic resources (if requested) allocated.\n* `ContainersReady`: all containers in the Pod are ready.\n* `Initialized`: all [init containers](/docs/concepts/workloads/pods/init-containers/)\n  have completed successfully.\n* `Ready`: the Pod is able to serve requests and should be added to the load\n  balancing pools of all matching Services.\n* `DisruptionTarget`: the pod is about to be terminated due to a disruption (such as preemption, eviction or garbage-collection).\n* `PodResizePending`: a pod resize was requested but cannot be applied. See [Pod resize status](/docs/tasks/configure-pod-container/resize-container-resources#pod-resize-status).\n* `PodResizeInProgress`: the pod is in the process of resizing. See"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-pods-2",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Pods",
+  "text": "If a Pod is stuck in the `Waiting` state, then it has been scheduled to a worker node, \nbut it can't run on that machine. Again, the information from `kubectl describe ...`\nshould be informative. The most common cause of `Waiting` pods is a failure to pull the image.\nThere are three things to check:\n\n* Make sure that you have the name of the image correct.\n* Have you pushed the image to the registry?\n* Try to manually pull the image to see if the image can be pulled. For example,\n  if you use Docker on your PC, run `docker pull <image>`.\n\n#### My pod stays terminating\n\nIf a Pod is stuck in the `Terminating` state, it means that a deletion has been\nissued for the Pod, but the control plane is unable to delete the Pod object."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#cleaning-up-1",
+  "heading": "Configure a Pod to Use a ConfigMap > Cleaning up",
+  "text": "If you created a directory `configure-pod-container` and no longer need it, you should remove that too,\nor move it into the trash can / deleted files location.\n\n```bash\nrm -r configure-pod-container\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-16",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "   * Pod UID, IP address, and network namespace\n   * Pod sandbox and any attached devices\n   * All volumes, including `emptyDir` and mounted volumes\n\n1. **Pod Status Update**: The Pod's status is updated with a `PodRestartInPlace` condition set to `True`.\n   This makes the restart process observable.\n1. **Full Restart Sequence**: Once all containers are terminated, the `PodRestartInPlace` condition\n   is set to `False`, and the Pod begins the standard startup process:\n\n   * **Init containers are re-run** in order.\n   * Sidecar and regular containers are started.\n\nA key aspect of this feature is that **all** containers are restarted, including those that\npreviously completed successfully or failed. The `RestartAllContainers` action overrides\nany configured container-level or Pod-level `restartPolicy`.\n\nThis mechanism is useful in scenarios where a clean slate for all containers is necessary, such as:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#ephemeral-container-example-3",
+  "heading": "Debug Running Pods > Debugging with an ephemeral debug container > Example debugging using ephemeral containers",
+  "text": "```\n...\nEphemeral Containers:\n  debugger-8xzrl:\n    Container ID:   docker://b888f9adfd15bd5739fefaa39e1df4dd3c617b9902082b1cfdc29c4028ffb2eb\n    Image:          busybox\n    Image ID:       docker-pullable://busybox@sha256:1828edd60c5efd34b2bf5dd3282ec0cc04d47b2ff9caa0b6d4f07a21d1c08084\n    Port:           <none>\n    Host Port:      <none>\n    State:          Running\n      Started:      Wed, 12 Feb 2020 14:25:42 +0100\n    Ready:          False\n    Restart Count:  0\n    Environment:    <none>\n    Mounts:         <none>\n...\n```\n\nUse `kubectl delete` to remove the Pod when you're finished:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#examine-pod-logs-0",
+  "heading": "Debug Running Pods > Examining pod logs",
+  "text": "First, look at the logs of the affected container:\n\n```shell\nkubectl logs ${POD_NAME} -c ${CONTAINER_NAME}\n```\n\nIf your container has previously crashed, you can access the previous container's crash log with:\n\n```shell\nkubectl logs ${POD_NAME} -c ${CONTAINER_NAME} --previous\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-container-is-terminated-0",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My container is terminated",
+  "text": "Your container might get terminated because it is resource-starved. To check\nwhether a container is being killed because it is hitting a resource limit, call\n`kubectl describe pod` on the Pod of interest:\n\n```shell\nkubectl describe pod simmemleak-hra99\n```"
+ }
+]

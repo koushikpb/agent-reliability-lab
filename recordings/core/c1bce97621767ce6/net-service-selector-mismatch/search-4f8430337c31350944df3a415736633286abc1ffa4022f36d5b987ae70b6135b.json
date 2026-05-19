@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/management#external-tools-0",
+  "heading": "Managing Workloads > Organizing resource configurations > External tools",
+  "text": "This section lists only the most common tools used for managing workloads on Kubernetes. To see a larger list, view\n[Application definition and image build](https://landscape.cncf.io/guide#app-definition-and-development--application-definition-image-build)\nin the CNCF Landscape.\n\n#### Helm {#external-tool-helm}\n\n[Helm](https://helm.sh/) is a tool for managing packages of pre-configured\nKubernetes resources. These packages are known as _Helm charts_.\n\n#### Kustomize {#external-tool-kustomize}\n\n[Kustomize](https://kustomize.io/) traverses a Kubernetes manifest to add, remove or update configuration options.\nIt is available both as a standalone binary and as a [native feature](/docs/tasks/manage-kubernetes-objects/kustomization/)\nof kubectl."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dual-stack#dual-stack-service-configuration-scenarios-4",
+  "heading": "IPv4/IPv6 dual-stack > Services > Dual-stack Service configuration scenarios",
+  "text": "   ```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\n  labels:\n    app.kubernetes.io/name: MyApp\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n```\n\n   You can validate this behavior by using kubectl to inspect an existing service.\n\n   ```shell\n   kubectl get svc my-service -o yaml\n   ```\n\n   ```yaml\n   apiVersion: v1\n   kind: Service\n   metadata:\n     labels:\n       app.kubernetes.io/name: MyApp\n     name: my-service\n   spec:\n     clusterIP: 10.0.197.123\n     clusterIPs:\n     - 10.0.197.123\n     ipFamilies:\n     - IPv4\n     ipFamilyPolicy: SingleStack\n     ports:\n     - port: 80\n       protocol: TCP\n       targetPort: 80\n     selector:\n       app.kubernetes.io/name: MyApp\n     type: ClusterIP\n   status:\n     loadBalancer: {}\n   ```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/web-ui-dashboard#deploying-the-dashboard-ui-0",
+  "heading": "Deploy and Access the Kubernetes Dashboard > Deploying the Dashboard UI",
+  "text": "Kubernetes Dashboard supports only Helm-based installation currently as it is faster\nand gives us better control over all dependencies required by Dashboard to run.\n\nThe Dashboard UI is not deployed by default. To deploy it, run the following command:\n\n```shell\n# Add kubernetes-dashboard repository\nhelm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/\n# Deploy a Helm Release named \"kubernetes-dashboard\" using the kubernetes-dashboard chart\nhelm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/imperative-config#defining-controller-selectors-and-podtemplate-labels-0",
+  "heading": "Imperative Management of Kubernetes Objects Using Configuration Files > Defining controller selectors and PodTemplate labels",
+  "text": "Updating selectors on controllers is strongly discouraged.\n\nThe recommended approach is to define a single, immutable PodTemplate label\nused only by the controller selector with no other semantic meaning.\n\nExample label:\n\n```yaml\nselector:\n  matchLabels:\n      controller-selector: \"apps/v1/deployment/nginx\"\ntemplate:\n  metadata:\n    labels:\n      controller-selector: \"apps/v1/deployment/nginx\"\n```"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/topology-spread-constraints#node-labels-0",
+  "heading": "Pod Topology Spread Constraints > `topologySpreadConstraints` field > Node labels",
+  "text": "Topology spread constraints rely on node labels to identify the topology\ndomain(s) that each node is in.\nFor example, a node might have labels:\n```yaml\n  region: us-east-1\n  zone: us-east-1a\n```\n\nFor brevity, this example doesn't use the\n[well-known](/docs/reference/labels-annotations-taints/) label keys\n`topology.kubernetes.io/zone` and `topology.kubernetes.io/region`. However,\nthose registered label keys are nonetheless recommended rather than the private\n(unqualified) label keys `region` and `zone` that are used here.\n\nYou can't make a reliable assumption about the meaning of a private label key\nbetween different contexts.\n\nSuppose you have a 4-node cluster with the following labels:"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#defining-controller-selectors-and-podtemplate-labels-0",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > Defining controller selectors and PodTemplate labels",
+  "text": "Updating selectors on controllers is strongly discouraged.\n\nThe recommended approach is to define a single, immutable PodTemplate label\nused only by the controller selector with no other semantic meaning.\n\n**Example:**\n\n```yaml\nselector:\n  matchLabels:\n      controller-selector: \"apps/v1/deployment/nginx\"\ntemplate:\n  metadata:\n    labels:\n      controller-selector: \"apps/v1/deployment/nginx\"\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#pod-index-label-0",
+  "heading": "StatefulSets > Pod Identity > Pod index label",
+  "text": "When the StatefulSet controller creates a Pod,\nthe new Pod is labelled with `apps.kubernetes.io/pod-index`. The value of this label is the ordinal index of\nthe Pod. This label allows you to route traffic to a particular pod index, filter logs/metrics\nusing the pod index label, and more. Note the feature gate `PodIndexLabel` is enabled and locked by default for this\nfeature, in order to disable it, users will have to use server emulated version v1.31."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#pod-topology-labels-0",
+  "heading": "Assigning Pods to Nodes > Pod topology labels",
+  "text": "Pods inherit the topology labels (`topology.kubernetes.io/zone` and `topology.kubernetes.io/region`) from their assigned Node if those labels are present. These labels can then be utilized via the Downward API to provide the workload with node topology awareness.\n\nHere is an example of a Pod using downward API for it's zone and region:\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: pod-with-topology-labels\nspec:\n  containers:\n    - name: app\n      image: alpine\n      command: [\"sh\", \"-c\", \"env\"]\n      env:\n        - name: MY_ZONE\n          valueFrom:\n            fieldRef:\n              fieldPath: metadata.labels['topology.kubernetes.io/zone']\n        - name: MY_REGION\n          valueFrom:\n            fieldRef:\n              fieldPath: metadata.labels['topology.kubernetes.io/region']\n```"
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#jobs-with-sidecar-containers-0",
+  "heading": "Sidecar Containers > Sidecar containers and Pod lifecycle > Jobs with sidecar containers",
+  "text": "If you define a Job that uses sidecar using Kubernetes-style init containers,\nthe sidecar container in each Pod does not prevent the Job from completing after the\nmain container has finished.\n\nHere's an example of a Job with two containers, one of which is a sidecar:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#jobs-with-sidecar-containers-1",
+  "heading": "Sidecar Containers > Sidecar containers and Pod lifecycle > Jobs with sidecar containers",
+  "text": "```yaml\napiVersion: batch/v1\nkind: Job\nmetadata:\n  name: myjob\nspec:\n  template:\n    spec:\n      containers:\n        - name: myjob\n          image: alpine:latest\n          command: ['sh', '-c', 'echo \"logging\" > /opt/logs.txt']\n          volumeMounts:\n            - name: data\n              mountPath: /opt\n      initContainers:\n        - name: logshipper\n          image: alpine:latest\n          # Setting restartPolicy: Always makes this a sidecar container.\n          restartPolicy: Always\n          command: ['sh', '-c', 'tail -F /opt/logs.txt']\n          volumeMounts:\n            - name: data\n              mountPath: /opt\n      restartPolicy: Never\n      volumes:\n        - name: data\n          emptyDir: {}\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#termination-with-sidecars-0",
+  "heading": "Pod Lifecycle > Termination of Pods > Pod shutdown and sidecar containers",
+  "text": "If your Pod includes one or more\n[sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/)\n(init containers with an `Always` restart policy), the kubelet will delay sending\nthe TERM signal to these sidecar containers until the last main container has fully terminated.\nThe sidecar containers will be terminated in the reverse order they are defined in the Pod spec.\nThis ensures that sidecar containers continue serving the other containers in the Pod until they\nare no longer needed.\n\nThis means that slow termination of a main container will also delay the termination of the sidecar containers.\nIf the grace period expires before the termination process is complete, the Pod may enter [forced termination](#pod-termination-beyond-grace-period).\nIn this case, all remaining containers in the Pod will be terminated simultaneously with a short grace period."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#differences-from-application-containers-0",
+  "heading": "Sidecar Containers > Differences from application containers",
+  "text": "Sidecar containers run alongside _app containers_ in the same pod. However, they do not\nexecute the primary application logic; instead, they provide supporting functionality to\nthe main application.\n\nSidecar containers have their own independent lifecycles. They can be started, stopped,\nand restarted independently of app containers. This means you can update, scale, or\nmaintain sidecar containers without affecting the primary application.\n\nSidecar containers share the same network and storage namespaces with the primary\ncontainer. This co-location allows them to interact closely and share resources.\n\nFrom a Kubernetes perspective, the sidecar container's graceful termination is less important.\nWhen other containers take all allotted graceful termination time, the sidecar containers\nwill receive the `SIGTERM` signal, followed by the `SIGKILL` signal, before they have time to terminate gracefully. \nSo exit codes different from `0` (`0` indicates successful exit), for sidecar containers are normal\non Pod termination and should be generally ignored by the external tooling."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#termination-with-sidecars-1",
+  "heading": "Pod Lifecycle > Termination of Pods > Pod shutdown and sidecar containers",
+  "text": "Similarly, if the Pod has a `preStop` hook that exceeds the termination grace period, emergency termination may occur.\nIn general, if you have used `preStop` hooks to control the termination order without sidecar containers, you can now\nremove them and allow the kubelet to manage sidecar termination automatically."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#sidecar-containers-and-pod-lifecycle-1",
+  "heading": "Sidecar Containers > Sidecar containers and Pod lifecycle",
+  "text": "Compared to regular init containers, sidecars defined within `initContainers` continue to\nrun after they have started. This is important when there is more than one entry inside\n`.spec.initContainers` for a Pod. After a sidecar-style init container is running (the kubelet\nhas set the `started` status for that init container to true), the kubelet then starts the\nnext init container from the ordered `.spec.initContainers` list.\nThat status either becomes true because there is a process running in the\ncontainer and no startup probe defined, or as a result of its `startupProbe` succeeding.\n\nUpon Pod [termination](/docs/concepts/workloads/pods/pod-lifecycle/#termination-with-sidecars),\nthe kubelet postpones terminating sidecar containers until the main application container has fully stopped.\nThe sidecar containers are then shut down in the opposite order of their appearance in the Pod specification.\nThis approach ensures that the sidecars remain operational, supporting other containers within the Pod,\nuntil their service is no longer required."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#sidecar-example-0",
+  "heading": "Sidecar Containers > Sidecar containers in Kubernetes > Example application",
+  "text": "Here's an example of a Deployment with two containers, one of which is a sidecar:\n\nIn this example, the sidecar container is intentionally defined under `initContainers`\nwith `restartPolicy: Always`. Kubernetes treats such containers as sidecars that continue\nrunning for the lifetime of the Pod."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#differences-from-regular-containers-0",
+  "heading": "Init Containers > Understanding init containers > Differences from regular containers",
+  "text": "Init containers support all the fields and features of app containers,\nincluding resource limits, [volumes](/docs/concepts/storage/volumes/), and security settings. However, the\nresource requests and limits for an init container are handled differently,\nas documented in [Resource sharing within containers](#resource-sharing-within-containers).\n\nRegular init containers (in other words: excluding sidecar containers) do not support the\n`lifecycle`, `livenessProbe`, `readinessProbe`, or `startupProbe` fields. Init containers\nmust run to completion before the Pod can be ready; sidecar containers continue running\nduring a Pod's lifetime, and _do_ support some probes. See [sidecar container](/docs/concepts/workloads/pods/sidecar-containers/)\nfor further details about sidecar containers."
+ }
+]

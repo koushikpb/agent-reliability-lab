@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-2005 by identifying that the ledger-export cronjob is being terminated after exactly 1 hour (the activeDeadlineSeconds timeout) before it can complete all 95 batches. The job logs showed it was killed via SIGTERM at batch 69/95. The fix is to increase the activeDeadlineSeconds value in the CronJob spec to at least 5400 seconds (90 minutes) to allow the full export to complete.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5833,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 111,
+ "stop_reason": "end_turn"
+}

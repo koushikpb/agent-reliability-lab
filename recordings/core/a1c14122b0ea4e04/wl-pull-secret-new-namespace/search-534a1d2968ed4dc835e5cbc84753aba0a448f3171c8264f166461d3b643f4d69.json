@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#create-a-pod-that-uses-your-secret-1",
+  "heading": "Pull an Image from a Private Registry > Create a Pod that uses your Secret",
+  "text": "To pull the image from the private registry, Kubernetes needs credentials.\nThe `imagePullSecrets` field in the configuration file specifies that\nKubernetes should get the credentials from a Secret named `regcred`.\n\nCreate a Pod that uses your Secret, and verify that the Pod is running:\n\n```shell\nkubectl apply -f my-private-reg-pod.yaml\nkubectl get pod private-reg\n```\n\nTo use image pull secrets for a Pod (or a Deployment, or other object that\nhas a pod template that you are using), you need to make sure that the appropriate\nSecret does exist in the right namespace. The namespace to use is the same\nnamespace where you defined the Pod.\n\nAlso, in case the Pod fails to start with the status `ImagePullBackOff`, view the Pod events:\n\n```shell\nkubectl describe pod private-reg\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-imagepullsecrets-0",
+  "heading": "Secrets > Working with Secrets > Container image pull Secrets",
+  "text": "If you want to fetch container images from a private repository, you need a way for\nthe kubelet on each node to authenticate to that repository. You can configure\n_image pull Secrets_ to make this possible. These Secrets are configured at the Pod\nlevel.\n\n#### Using imagePullSecrets\n\nThe `imagePullSecrets` field is a list of references to Secrets in the same namespace.\nYou can use an `imagePullSecrets` to pass a Secret that contains a Docker (or other) image registry\npassword to the kubelet. The kubelet uses this information to pull a private image on behalf of your Pod.\nSee the [PodSpec API](/docs/reference/generated/kubernetes-api//#podspec-v1-core)\nfor more information about the `imagePullSecrets` field.\n\n##### Manually specifying an imagePullSecret"
+ },
+ {
+  "chunk_id": "concepts/containers/images#specifying-imagepullsecrets-on-a-pod-0",
+  "heading": "Images > Using a private registry > Specifying `imagePullSecrets` on a Pod",
+  "text": "This is the recommended approach to run containers based on images\nin private registries.\n\nKubernetes supports specifying container image registry keys on a Pod.\nAll `imagePullSecrets` must be Secrets that exist in the same\nnamespace as the\nPod. These Secrets must be of type `kubernetes.io/dockercfg` or `kubernetes.io/dockerconfigjson`."
+ },
+ {
+  "chunk_id": "concepts/containers/images#creating-a-secret-with-a-docker-config-1",
+  "heading": "Images > Using a private registry > Creating a Secret with a Docker config",
+  "text": "This is particularly useful if you are using multiple private container\nregistries, as `kubectl create secret docker-registry` creates a Secret that\nonly works with a single private registry.\n\nPods can only reference image pull secrets in their own namespace,\nso this process needs to be done one time per namespace.\n\n#### Referring to `imagePullSecrets` on a Pod\n\nNow, you can create pods which reference that secret by adding the `imagePullSecrets`\nsection to a Pod definition. Each item in the `imagePullSecrets` array can only\nreference one Secret in the same namespace.\n\nFor example:\n\n```shell\ncat <<EOF > pod.yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: foo\n  namespace: awesomeapps\nspec:\n  containers:\n    - name: foo\n      image: janedoe/awesomeapp:v1\n  imagePullSecrets:\n    - name: myregistrykey\nEOF\n\ncat <<EOF >> ./kustomization.yaml\nresources:\n- pod.yaml\nEOF\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#add-image-pull-secret-to-service-account-1",
+  "heading": "Configure Service Accounts for Pods > Add ImagePullSecrets to a service account > Add image pull secret to service account",
+  "text": "Using your editor, delete the line with key `resourceVersion`, add lines for\n`imagePullSecrets:` and save it. Leave the `uid` value set the same as you found it.\n\nAfter you made those changes, the edited ServiceAccount looks something like this:\n\n```yaml\napiVersion: v1\nkind: ServiceAccount\nmetadata:\n  creationTimestamp: 2021-07-07T22:02:39Z\n  name: default\n  namespace: default\n  uid: 052fb0f4-3d50-11e5-b066-42010af0d7b6\nimagePullSecrets:\n  - name: myregistrykey\n```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/web-ui-dashboard#specifying-application-details-5",
+  "heading": "Deploy and Access the Kubernetes Dashboard > Deploying containerized applications > Specifying application details",
+  "text": "  Dashboard offers all available secrets in a dropdown list, and allows you to create a new secret.\n  The secret name must follow the DNS domain name syntax, for example `new.image-pull.secret`.\n  The content of a secret must be base64-encoded and specified in a\n  [`.dockercfg`](/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod) file.\n  The secret name may consist of a maximum of 253 characters.\n\n  In case the creation of the image pull secret is successful, it is selected by default. If the creation fails, no secret is applied.\n\n- **CPU requirement (cores)** and **Memory requirement (MiB)**:\n  You can specify the minimum [resource limits](/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/)\n  for the container. By default, Pods run with unbounded CPU and memory limits."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#create-a-pod-that-uses-your-secret-2",
+  "heading": "Pull an Image from a Private Registry > Create a Pod that uses your Secret",
+  "text": "If you then see an event with the reason set to `FailedToRetrieveImagePullSecret`,\nKubernetes can't find a Secret with name (`regcred`, in this example).\n\nMake sure that the Secret you have specified exists, and that its name is spelled properly.\n```shell\nEvents:\n  ...  Reason                           ...  Message\n       ------                                -------\n  ...  FailedToRetrieveImagePullSecret  ...  Unable to retrieve some image pull secrets (<regcred>); attempting to pull the image may not succeed.\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-imagepullsecrets-1",
+  "heading": "Secrets > Working with Secrets > Container image pull Secrets",
+  "text": "You can learn how to specify `imagePullSecrets` from the\n[container images](/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod)\ndocumentation.\n\n##### Arranging for imagePullSecrets to be automatically attached\n\nYou can manually create `imagePullSecrets`, and reference these from a ServiceAccount. Any Pods\ncreated with that ServiceAccount or created with that ServiceAccount by default, will get their\n`imagePullSecrets` field set to that of the service account.\nSee [Add ImagePullSecrets to a service account](/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account)\nfor a detailed explanation of that process.\n\nUsing Secrets with static Pods\nYou cannot use ConfigMaps or Secrets with static Pods."
+ }
+]

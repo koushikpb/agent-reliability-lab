@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/autoscaling#autoscaling-based-on-cluster-size-0",
+  "heading": "Autoscaling Workloads > Scaling workloads automatically > Autoscaling based on cluster size",
+  "text": "For workloads that need to be scaled based on the size of the cluster (for example\n`cluster-dns` or other system components), you can use the\n[_Cluster Proportional Autoscaler_](https://github.com/kubernetes-sigs/cluster-proportional-autoscaler).\nJust like the VPA, it is not part of the Kubernetes core, but hosted as its\nown project on GitHub.\n\nThe Cluster Proportional Autoscaler watches the number of schedulable nodes\nand cores and scales the number of replicas of the target workload accordingly.\n\nIf the number of replicas should stay the same, you can scale your workloads vertically according to the cluster size using\nthe [_Cluster Proportional Vertical Autoscaler_](https://github.com/kubernetes-sigs/cluster-proportional-vertical-autoscaler).\nThe project is **currently in beta** and can be found on GitHub."
+ },
+ {
+  "chunk_id": "tasks/run-application/scale-stateful-set#before-you-begin-0",
+  "heading": "Scale a StatefulSet > Before you begin",
+  "text": "- StatefulSets are only available in Kubernetes version 1.5 or later.\n  To check your version of Kubernetes, run `kubectl version`.\n\n- Not all stateful applications scale nicely. If you are unsure about whether\n  to scale your StatefulSets, see [StatefulSet concepts](/docs/concepts/workloads/controllers/statefulset/)\n  or [StatefulSet tutorial](/docs/tutorials/stateful-application/basic-stateful-set/) for further information.\n\n- You should perform scaling only when you are confident that your stateful application\n  cluster is completely healthy."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-6",
+  "heading": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work?",
+  "text": "The HorizontalPodAutoscaler controller accesses corresponding workload resources that support scaling (such as Deployments\nand StatefulSet). These resources each have a subresource named `scale`, an interface that allows you to dynamically set the\nnumber of replicas and examine each of their current states.\nFor general information about subresources in the Kubernetes API, see\n[Kubernetes API Concepts](/docs/reference/using-api/api-concepts/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-1",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "`Delete`\n: The PVCs created from the StatefulSet `volumeClaimTemplate` are deleted for each Pod\n  affected by the policy. With the `whenDeleted` policy all PVCs from the\n  `volumeClaimTemplate` are deleted after their Pods have been deleted. With the\n  `whenScaled` policy, only PVCs corresponding to Pod replicas being scaled down are\n  deleted, after their Pods have been deleted.\n\n`Retain` (default)\n: PVCs from the `volumeClaimTemplate` are not affected when their Pod is\n  deleted. This is the behavior before this new feature.\n\nBear in mind that these policies **only** apply when Pods are being removed due to the\nStatefulSet being deleted or scaled down. For example, if a Pod associated with a StatefulSet\nfails due to node failure, and the control plane creates a replacement Pod, the StatefulSet\nretains the existing PVC.  The existing volume is unaffected, and the cluster will attach it to\nthe node where the new Pod is about to launch.\n\nThe default for policies is `Retain`, matching the StatefulSet behavior before this new feature.\n\nHere is an example policy:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/node-overprovisioning#calculate-the-total-reserved-resources-0",
+  "heading": "Overprovision Node Capacity For A Cluster > Set the desired replica count > Calculate the total reserved resources",
+  "text": "For example, with 5 replicas each reserving 0.1 CPU and 200MiB of memory:  \nTotal CPU reserved: 5 \u00d7 0.1 = 0.5 (in the Pod specification, you'll write the quantity `500m`)  \nTotal memory reserved: 5 \u00d7 200MiB = 1GiB (in the Pod specification, you'll write `1 Gi`)  \n\nTo scale the Deployment, adjust the number of replicas based on your cluster's size and expected workload:\n\n```shell\nkubectl scale deployment capacity-reservation --replicas=5\n```\n\nVerify the scaling:\n\n```shell\nkubectl get deployment capacity-reservation\n```\n\nThe output should reflect the updated number of replicas:\n\n```none\nNAME                   READY   UP-TO-DATE   AVAILABLE   AGE\ncapacity-reservation   5/5     5            5           2m\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#statefulset-considerations-0",
+  "heading": "Force Delete StatefulSet Pods > StatefulSet considerations",
+  "text": "In normal operation of a StatefulSet, there is **never** a need to force delete a StatefulSet Pod.\nThe [StatefulSet controller](/docs/concepts/workloads/controllers/statefulset/) is responsible for\ncreating, scaling and deleting members of the StatefulSet. It tries to ensure that the specified\nnumber of Pods from ordinal 0 through N-1 are alive and ready. StatefulSet ensures that, at any time,\nthere is at most one Pod with a given identity running in a cluster. This is referred to as\n*at most one* semantics provided by a StatefulSet."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicaset#scaling-a-replicaset-0",
+  "heading": "ReplicaSet > Working with ReplicaSets > Scaling a ReplicaSet",
+  "text": "A ReplicaSet can be easily scaled up or down by simply updating the `.spec.replicas` field. The ReplicaSet controller\nensures that a desired number of Pods with a matching label selector are available and operational.\n\nWhen scaling down, the ReplicaSet controller chooses which pods to delete by sorting the available pods to\nprioritize scaling down pods based on the following general algorithm:\n\n1. Pending (and unschedulable) pods are scaled down first\n1. If `controller.kubernetes.io/pod-deletion-cost` annotation is set, then\n   the pod with the lower value will come first.\n1. Pods on nodes with more replicas come before pods on nodes with fewer replicas.\n1. If the pods' creation times differ, the pod that was created more recently\n   comes before the older pod (the creation times are bucketed on an integer log scale).\n\nIf all of the above match, then selection is random."
+ },
+ {
+  "chunk_id": "concepts/workloads/_index#intro-1",
+  "heading": "Workloads",
+  "text": "* [Deployment](/docs/concepts/workloads/controllers/deployment/) and [ReplicaSet](/docs/concepts/workloads/controllers/replicaset/)\n  (replacing the legacy resource\n  ReplicationController).\n  Deployment is a good fit for managing a stateless application workload on your cluster,\n  where any Pod in the Deployment is interchangeable and can be replaced if needed.\n* [StatefulSet](/docs/concepts/workloads/controllers/statefulset/) lets you\n  run one or more related Pods that do track state somehow. For example, if your workload\n  records data persistently, you can run a StatefulSet that matches each Pod with a\n  [PersistentVolume](/docs/concepts/storage/persistent-volumes/). Your code, running in the\n  Pods for that StatefulSet, can replicate data to other Pods in the same StatefulSet\n  to improve overall resilience.\n* [DaemonSet](/docs/concepts/workloads/controllers/daemonset/) defines Pods that provide\n  facilities that are local to nodes."
+ }
+]

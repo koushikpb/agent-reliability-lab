@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The logs show the job is being killed by SIGTERM. Let me search the Kubernetes documentation for information about job deadlines and what causes this behavior.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01QiWziYfxBpYiYLjD5WvBSR",
+   "input": {
+    "query": "activeDeadlineSeconds job deadline timeout"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2568,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 93,
+ "stop_reason": "tool_use"
+}

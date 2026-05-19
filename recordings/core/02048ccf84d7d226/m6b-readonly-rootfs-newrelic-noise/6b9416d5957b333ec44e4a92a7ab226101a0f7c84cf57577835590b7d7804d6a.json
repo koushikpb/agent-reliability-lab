@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "EpQHCqgBCBMYAipA6mKc5KmTT9ezmAWLKu5MrOTb+RJ0Zid6puQS90ytARFU8gK3VRzsd3Rt9vJPcJ1oDDW1KZiR/VgewcTURBDt3DIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAb7s8dYGEgzW/PDbA0u9s8cEH4EaDOM40MZ8eJ7lDpoFviIw8pVxwvRAKjhJJgc7+saKxMSAu0la7FDGgkU7LfutLg8OGZaVNNAcGIZ9l5ewr7wAKpgF4Clq4RHqI9LG6XsbQHYH4hPeKJONlLEX4wHkg+J30UTU2CgezxCx8AU07t1QAS/n+a6x64eekh2ExSYap3rOXhEf6jq/bf9vXLe6lkNw6I0mDJHuLZ+bLDgoerA5uZ673+8NKT8NlhdDHAjVzYTcjOiJlmBtPCTqGCpMhS75ZRiMPwiJc+DgNNKBQ0EVvQMxsEv1cCVZnvE+GpDkAVz23ew/KDKvhNBsG2LNPci3BxgFhmv00KKAuEyxO1HFGfsdFRUl4eXUTG8pCnbmTkC8W5m1BrYzp7iItRoeIoqpYM8gyy5WDh17TJ8GXmLJvGLkq1CTIHu/NKteumio1rpSYf9yXpAxagv0rgrrVGwjOKghO/yzcwMRiV2G4nPSRhpJLmDuxvWblqLh6Tqhele8XcOWJFN2Xh/oI4gZSWWyrZqOZ1RD1h9iS7WMt2FM3xBme8cgYHCCL8ln3pmgjJOaXhj1aVT7qAozco9eFvASJZgw/Zoh5AZDM9Zhi6jUgQVtYhgqW/jPQb61RgGpzqLxAvCg8t8l9NeNOUHEWff/q4jGnLWR7nhQhjWtlG0hjfX8mKHZvKyALI+6oQNjbThDlhocP2sYQUZKad0Ee9yEAPr2OMuYc1ntV+biZzOM3yupyga6VXLmzFcIwfErc1R3C+rB+g/Elp3a9uYjP9MJTvCHeS5V+l2t3Jbvs4GaPEfrNHbf5+mrU6sB2mDb5+IHXg0Au1olhMsrqKXQSDNI/aM6T8qydy0i/l32P54CvD/w6qcAtXiok1UKaT2ulEUVWSEfiOJvl2PbNUqa8GhqU7LkD5Rt/AdGi9B6+vHUvalCJCuA7MDR69ZnShS9KHMloJGl4ejnvIqjl+zhZLS266SV83wuW/QIQxgB",
+   "thinking": "The cause is clear:\n\n1. The 4.3.0 deployment added `readOnlyRootFilesystem: true` to the security context (compare with the 4.2 pods which don't have this setting).\n2. Next.js tries to create the directory `/app/.next/cache` at startup.\n3. With `readOnlyRootFilesystem: true`, the filesystem is read-only and that `mkdir` call fails with `EROFS: read-only file system`.\n4. This causes the process to exit with code 1, triggering CrashLoopBackOff.\n\nThe fix is to mount an `emptyDir` volume at `/app/.next/cache` so Next.js can write to it even with `readOnlyRootFilesystem: true`.\nI should look up more documentation on emptyDir volumes to cite the right reference.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "The root cause is clear. Let me also grab a quick reference for `emptyDir` volumes to back the fix recommendation.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01STBG6VFoLpceBfBHkDTSrM",
+   "input": {
+    "query": "emptyDir volume writable mount readOnlyRootFilesystem"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4690,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 307,
+ "stop_reason": "tool_use"
+}

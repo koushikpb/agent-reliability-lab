@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/job#terminal-job-conditions-2",
+  "heading": "Jobs > Job termination and cleanup > Terminal Job conditions",
+  "text": "Jobs succeed for the following reasons:\n- The number of succeeded Pods reached the specified `.spec.completions`\n- The criteria specified in `.spec.successPolicy` are met. For details, see\n  [Success policy](#success-policy).\n\nIn Kubernetes v1.31 and later the Job controller delays the addition of the\nterminal conditions,`Failed` or `Complete`, until all of the Job Pods are terminated.\n\nIn Kubernetes v1.30 and earlier, the Job controller added the `Complete` or the\n`Failed` Job terminal conditions as soon as the Job termination process was\ntriggered and all Pod finalizers were removed. However, some Pods would still\nbe running or terminating at the moment that the terminal condition was added."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-3",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "Since Kubernetes 1.27, the kubelet transitions deleted Pods to a terminal phase\n(`Failed` or `Succeeded` depending on the exit statuses of the pod containers)\nbefore their deletion from the API server, with two exceptions:\n\n* [static Pods](/docs/tasks/configure-pod-container/static-pod/) (which are\nmanaged directly by the kubelet and represented by mirror Pods) \n*  [force-deleted\nPods](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced)\nwithout a finalizer\n\nIf a node dies or is disconnected from the rest of the cluster, Kubernetes\napplies a policy for setting the `phase` of all Pods on the lost node to Failed."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "The purpose of the Storage Object in Use Protection feature is to ensure that\nPersistentVolumeClaims (PVCs) in active use by a Pod and PersistentVolume (PVs)\nthat are bound to PVCs are not removed from the system, as this may result in data loss.\n\nPVC is in active use by a Pod when a Pod object exists that is using the PVC.\n\nIf a user deletes a PVC in active use by a Pod, the PVC is not removed immediately.\nPVC removal is postponed until the PVC is no longer actively used by any Pods. Also,\nif an admin deletes a PV that is bound to a PVC, the PV is not removed immediately.\nPV removal is postponed until the PV is no longer bound to a PVC.\n\nYou can see that a PVC is protected when the PVC's status is `Terminating` and the\n`Finalizers` list includes `kubernetes.io/pvc-protection`:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#unused-pvc-tracking-0",
+  "heading": "Persistent Volumes > PersistentVolumeClaims > Unused PVC tracking",
+  "text": "When enabled, the PVC protection controller adds an `Unused`\n[condition](/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions) to each\nPersistentVolumeClaim to indicate whether it is currently referenced by any\nnon-terminal Pod.\n\nThe condition has two states:\n\n`Unused` with status `\"True\"` (reason `NoPodsUsingPVC`)\n: No non-terminal Pod references this PVC. The `lastTransitionTime` records when\n  the PVC became unused.\n\n`Unused` with status `\"False\"` (reason `PodUsingPVC`)\n: At least one non-terminal Pod currently references this PVC. The\n  `lastTransitionTime` records when the PVC started being used.\n\nA Pod is considered non-terminal if its phase is not `Succeeded` or `Failed`.\nThis means that a Pending Pod (even one that has not yet been scheduled) counts\nas using the PVC."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/determine-reason-pod-failure#customizing-the-termination-message-1",
+  "heading": "Determine the Reason for Pod Failure > Customizing the termination message",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: msg-path-demo\nspec:\n  containers:\n  - name: msg-path-demo-container\n    image: debian\n    terminationMessagePath: \"/tmp/my-log\"\n```\n\nMoreover, users can set the `terminationMessagePolicy` field of a Container for\nfurther customization. This field defaults to \"`File`\" which means the termination\nmessages are retrieved only from the termination message file. By setting the\n`terminationMessagePolicy` to \"`FallbackToLogsOnError`\", you can tell Kubernetes\nto use the last chunk of container log output if the termination message file\nis empty and the container exited with an error. The log output is limited to\n2048 bytes or 80 lines, whichever is smaller."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-0",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "Kubernetes manages container failures within Pods using a [`restartPolicy`](#restart-policy) defined\nin the Pod `spec`. This policy determines how Kubernetes reacts to containers exiting due to errors\nor other reasons, which falls in the following sequence:\n\n1. **Initial crash**: Kubernetes attempts an immediate restart based on the Pod `restartPolicy`.\n1. **Repeated crashes**: After the initial crash Kubernetes applies an exponential\n   backoff delay for subsequent restarts, described in [`restartPolicy`](#restart-policy).\n   This prevents rapid, repeated restart attempts from overloading the system.\n1. **CrashLoopBackOff state**: This indicates that the backoff delay mechanism is currently\n   in effect for a given container that is in a crash loop, failing and restarting repeatedly.\n1. **Backoff reset**: If a container runs successfully for a certain duration\n   (e.g., 10 minutes), Kubernetes resets the backoff delay, treating any new crash\n   as the first one."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#default-field-values-3",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > Default field values",
+  "text": "```yaml\n      terminationGracePeriodSeconds: 30 # defaulted by apiserver\n# ...\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/run-replicated-stateful-application#drain-a-node-2",
+  "heading": "Run a Replicated Stateful Application > Simulate Pod and Node failure > Drain a Node",
+  "text": "```\nNAME      READY   STATUS          RESTARTS   AGE       IP            NODE\nmysql-2   2/2     Terminating     0          15m       10.244.1.56   kubernetes-node-9l2t\n[...]\nmysql-2   0/2     Pending         0          0s        <none>        kubernetes-node-fjlm\nmysql-2   0/2     Init:0/2        0          0s        <none>        kubernetes-node-fjlm\nmysql-2   0/2     Init:1/2        0          20s       10.244.5.32   kubernetes-node-fjlm\nmysql-2   0/2     PodInitializing 0          21s       10.244.5.32   kubernetes-node-fjlm\nmysql-2   1/2     Running         0          22s       10.244.5.32   kubernetes-node-fjlm\nmysql-2   2/2     Running         0          30s       10.244.5.32   kubernetes-node-fjlm\n```"
+ }
+]

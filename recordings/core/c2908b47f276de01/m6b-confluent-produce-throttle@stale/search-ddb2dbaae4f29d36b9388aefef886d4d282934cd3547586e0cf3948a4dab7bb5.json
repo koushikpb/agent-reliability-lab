@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/policy/resource-quotas#how-kubernetes-resourcequotas-work-3",
+  "heading": "Resource Quotas > How Kubernetes ResourceQuotas work",
+  "text": "- For `cpu` and `memory` resources, ResourceQuotas enforce that **every**\n  (new) pod in that namespace sets a limit for that resource.\n  If you enforce a resource quota in a namespace for either `cpu` or `memory`,\n  you and other clients, **must** specify either `requests` or `limits` for that resource,\n  for every new Pod you submit. If you don't, the control plane may reject admission\n  for that Pod.\n- For other resources: ResourceQuota works and will ignore pods in the namespace without\n  setting a limit or request for that resource. It means that you can create a new pod\n  without limit/request for ephemeral storage if the resource quota limits the ephemeral\n  storage of this namespace.\n\nYou can use a [LimitRange](/docs/concepts/policy/limit-range/) to automatically set\na default request for these resources."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#notes-1",
+  "heading": "Configure Quotas for API Objects > Notes",
+  "text": "<table>\n<tr><th>String</th><th>API Object</th></tr>\n<tr><td>\"pods\"</td><td>Pod</td></tr>\n<tr><td>\"services\"</td><td>Service</td></tr>\n<tr><td>\"replicationcontrollers\"</td><td>ReplicationController</td></tr>\n<tr><td>\"resourcequotas\"</td><td>ResourceQuota</td></tr>\n<tr><td>\"secrets\"</td><td>Secret</td></tr>\n<tr><td>\"configmaps\"</td><td>ConfigMap</td></tr>\n<tr><td>\"persistentvolumeclaims\"</td><td>PersistentVolumeClaim</td></tr>"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-on-object-count-1",
+  "heading": "Resource Quotas > Types of resource quota > Quota on object count",
+  "text": "If you define a quota this way, it applies to Kubernetes' APIs that are part of the API server, and\nto any custom resources backed by a CustomResourceDefinition.\nFor example, to create a quota on a `widgets` custom resource in the `example.com` API group,\nuse `count/widgets.example.com`.\nIf you use [API aggregation](/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/) to\nadd additional, custom APIs that are not defined as CustomResourceDefinitions, the core Kubernetes\ncontrol plane does not enforce quota for the aggregated API. The extension API server is expected to\nprovide quota enforcement if that's appropriate for the custom API.\n\n##### Generic syntax {#resource-quota-object-count-generic}\n\nThis is a list of common examples of object kinds that you may want to put under object count quota,\nlisted by the configuration string that you would use."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#quotas-1",
+  "heading": "Multi-tenancy > Control plane isolation > Quotas",
+  "text": "Resource quotas are namespaced objects. By mapping tenants to namespaces, cluster admins can use\nquotas to ensure that a tenant cannot monopolize a cluster's resources or overwhelm its control\nplane. Namespace management tools simplify the administration of quotas. In addition, while\nKubernetes quotas only apply within a single namespace, some namespace management tools allow\ngroups of namespaces to share quotas, giving administrators far more flexibility with less effort\nthan built-in quotas.\n\nQuotas prevent a single tenant from consuming greater than their allocated share of resources\nhence minimizing the \u201cnoisy neighbor\u201d issue, where one tenant negatively impacts the performance\nof other tenants' workloads."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-on-object-count-0",
+  "heading": "Resource Quotas > Types of resource quota > Quota on object count",
+  "text": "You can set quota for *the total number of one particular resource kind* in the Kubernetes API,\nusing the following syntax:\n\n* `count/<resource>.<group>` for resources from non-core API groups\n* `count/<resource>` for resources from the core API group\n\nFor example, the PodTemplate API is in the core API group and so if you want to limit the number of\nPodTemplate objects in a namespace, you use `count/podtemplates`.\n\nThese types of quotas are useful to protect against exhaustion of control plane storage. For example, you may\nwant to limit the number of Secrets in a server given their large size. Too many Secrets in a cluster can\nactually prevent servers and controllers from starting. You can set a quota for Jobs to protect against\na poorly configured CronJob. CronJobs that create too many Jobs in a namespace can lead to a denial of service."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#quotas-2",
+  "heading": "Multi-tenancy > Control plane isolation > Quotas",
+  "text": "When you apply a quota to namespace, Kubernetes requires you to also specify resource requests and\nlimits for each container. Limits are the upper bound for the amount of resources that a container\ncan consume. Containers that attempt to consume resources that exceed the configured limits will\neither be throttled or killed, based on the resource type. When resource requests are set lower\nthan limits, each container is guaranteed the requested amount but there may still be some\npotential for impact across workloads.\n\nQuotas cannot protect against all kinds of resource sharing, such as network traffic.\nNode isolation (described below) may be a better solution for this problem."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-for-dra-resource-claims-0",
+  "heading": "Resource Quotas > Types of resource quota > Quota for DRA resource claims",
+  "text": "DRA (Dynamic Resource Allocation) resource claims can request DRA resources by device class. For an example\ndevice class named `examplegpu`, you want to limit the total number of GPUs requested in a namespace to 4,\nyou can define a quota as follows:\n\n* `examplegpu.deviceclass.resource.k8s.io/devices: 4`\n\nWhen [Extended Resource allocation by DRA](/docs/concepts/resource-management/dynamic-resource-allocation/dra-features/#extended-resource)\nis enabled, the same device class named `examplegpu` can be requested via extended resource either explicitly\nwhen the device class's ExtendedResourceName field is given, say, `example.com/gpu`, then you can define a quota as follows:\n\n* `requests.example.com/gpu: 4`\n\nor implicitly using the derived extended resource name from device class name `examplegpu`, you can define\na quota as follows:\n\n* `requests.deviceclass.resource.kubernetes.io/examplegpu: 4`"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#notes-2",
+  "heading": "Configure Quotas for API Objects > Notes",
+  "text": "<tr><td>\"services.nodeports\"</td><td>Service of type NodePort</td></tr>\n<tr><td>\"services.loadbalancers\"</td><td>Service of type LoadBalancer</td></tr>\n</table>"
+ }
+]

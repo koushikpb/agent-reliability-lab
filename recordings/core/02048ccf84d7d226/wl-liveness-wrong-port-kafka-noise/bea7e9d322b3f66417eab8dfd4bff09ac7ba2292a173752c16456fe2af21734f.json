@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Ticket T-2006 is resolved. Here's a summary of what I did:\n\n**Investigation:**\n1. Read the ticket \u2014 both `orders-consumer` pods were restarting after a v2.0.1 upgrade.\n2. Listed pods in the `orders` namespace \u2014 both pods were in `CrashLoopBackOff` with 17 restarts and liveness probe failures on port 8080.\n3. Pulled logs from both pods simultaneously \u2014 both showed the same smoking-gun message: *\"HTTP_PORT unset, using default 9090 (default changed from 8080 in 2.0.0)\"*. The app now binds its health server to port **9090**, but the Deployment's liveness probe still targets port **8080**.\n4. Searched the Kubernetes docs for supporting context on probe failures and CrashLoopBackOff.\n\n**Cause:** A breaking configuration change in v2.0.1 changed the default `HTTP_PORT` from 8080 to 9090. The liveness probe was never updated, so it hits a port where nothing listens, fails 3 times, and kubelet kills the container (SIGTERM / exit code 143) \u2014 repeating indefinitely.\n\n**Fix given to owner:** Update the liveness probe port in the Deployment from `8080` to `9090` (or alternatively set `HTTP_PORT=8080` as an env var to preserve the old default), then verify the rolling update succeeds.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 10157,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 342,
+ "stop_reason": "end_turn"
+}

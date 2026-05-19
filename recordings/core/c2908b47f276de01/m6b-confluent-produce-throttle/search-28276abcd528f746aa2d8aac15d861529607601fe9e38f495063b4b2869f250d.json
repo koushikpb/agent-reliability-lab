@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/reserve-compute-resources#explicitly-reserved-cpu-list-1",
+  "heading": "Reserve Compute Resources for System Daemons > Node Allocatable > Explicitly Reserved CPU List",
+  "text": "This option is specifically designed for Telco/NFV use cases where uncontrolled\ninterrupts/timers may impact the workload performance. you can use this option\nto define the explicit cpuset for the system/kubernetes daemons as well as the\ninterrupts/timers, so the rest CPUs on the system can be used exclusively for\nworkloads, with less impact from uncontrolled interrupts/timers. To move the\nsystem daemon, kubernetes daemons and interrupts/timers to the explicit cpuset\ndefined by this option, other mechanism outside Kubernetes should be used.\nFor example: in Centos, you can do this using the tuned toolset."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-metrics#kubelet-pressure-stall-information-psi-metrics-6",
+  "heading": "Metrics For Kubernetes System Components > Component metrics > kubelet Pressure Stall Information (PSI) metrics",
+  "text": "Additionally, notice how in this example `cpu.some` shows pressure, while `cpu.full` remains at 0.00. This tells us that while some processes were delayed waiting for CPU time, the container as a whole was still making progress. A non-zero full value would indicate that all non-idle tasks were stalled simultaneously, a much bigger problem.\nAlthough not as human-readable, the `total` value of 35232438 represents the cumulative stall time in microseconds, that allow latency spike detection that otherwise may not show in the averages. They are also useful for monitoring systems, like Prometheus, to calculate precise rates of increase over specific time windows.\nAs a final note, when observing high I/O Pressure alongside low Memory Pressure, it can indicate that the application is waiting on disk throughput rather than failing due to a lack of available RAM. The node is not over-committed on memory, and a different diagnosis for disk consumption can be investigated. "
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/authentication-mechanisms#static-token-file-0",
+  "heading": "Hardening Guide - Authentication Mechanisms > Static token file",
+  "text": "Although Kubernetes allows you to load credentials from a\n[static token file](/docs/reference/access-authn-authz/authentication/#static-token-file) located\non the control plane node disks, this approach is not recommended for production servers due to\nseveral reasons:\n\n- Credentials are stored in clear text on control plane node disks, which can be a security risk.\n- Changing any credential requires a restart of the API server process to take effect, which can\n  impact availability.\n- There is no mechanism available to allow users to rotate their credentials. To rotate a\n  credential, a cluster administrator must modify the token on disk and distribute it to the users.\n- There is no lockout mechanism available to prevent brute-force attacks."
+ },
+ {
+  "chunk_id": "concepts/security/api-server-bypass-risks#runtime-socket-0",
+  "heading": "Kubernetes API Server Bypass Risks > Container runtime socket",
+  "text": "On each node in a Kubernetes cluster, access to interact with containers is controlled\nby the container runtime (or runtimes, if you have configured more than one). Typically,\nthe container runtime exposes a Unix socket that the kubelet can access. An attacker with\naccess to this socket can launch new containers or interact with running containers.\n\nAt the cluster level, the impact of this access depends on whether the containers that\nrun on the compromised node have access to Secrets or other confidential\ndata that an attacker could use to escalate privileges to other worker nodes or to\ncontrol plane components."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#queuing-0",
+  "heading": "API Priority and Fairness > Concepts > Queuing",
+  "text": "Even within a priority level there may be a large number of distinct sources of\ntraffic. In an overload situation, it is valuable to prevent one stream of\nrequests from starving others (in particular, in the relatively common case of a\nsingle buggy client flooding the kube-apiserver with requests, that buggy client\nwould ideally not have much measurable impact on other clients at all). This is\nhandled by use of a fair-queuing algorithm to process requests that are assigned\nthe same priority level. Each request is assigned to a _flow_, identified by the\nname of the matching FlowSchema plus a _flow distinguisher_ \u2014 which\nis either the requesting user, the target resource's namespace, or nothing \u2014 and the\nsystem attempts to give approximately equal weight to requests in different\nflows of the same priority level.\nTo enable distinct handling of distinct instances, controllers that have\nmany instances should authenticate with distinct usernames"
+ },
+ {
+  "chunk_id": "concepts/policy/pid-limiting#intro-0",
+  "heading": "Process ID Limits And Reservations",
+  "text": "Kubernetes allow you to limit the number of process IDs (PIDs) that a\nPod can use.\nYou can also reserve a number of allocatable PIDs for each node\nfor use by the operating system and daemons (rather than by Pods).\n\nProcess IDs (PIDs) are a fundamental resource on nodes. It is trivial to hit the\ntask limit without hitting any other resource limits, which can then cause\ninstability to a host machine.\n\nCluster administrators require mechanisms to ensure that Pods running in the\ncluster cannot induce PID exhaustion that prevents host daemons (such as the\nkubelet or\nkube-proxy,\nand potentially also the container runtime) from running.\nIn addition, it is important to ensure that PIDs are limited among Pods in order\nto ensure they have limited impact on other workloads on the same node.\n\nOn certain Linux installations, the operating system sets the PIDs limit to a low default,\nsuch as `32768`. Consider raising the value of `/proc/sys/kernel/pid_max`."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduler-perf-tuning#tuning-percentageofnodestoscore-1",
+  "heading": "Scheduler Performance Tuning > Tuning percentageOfNodesToScore",
+  "text": "You should avoid setting `percentageOfNodesToScore` very low so that kube-scheduler\ndoes not make frequent, poor Pod placement decisions. Avoid setting the\npercentage to anything below 10%, unless the scheduler's throughput is critical\nfor your application and the score of nodes is not important. In other words, you\nprefer to run the Pod on any Node as long as it is feasible."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#isolation-0",
+  "heading": "Multi-tenancy > Terminology > Isolation",
+  "text": "There are several ways to design and build multi-tenant solutions with Kubernetes. Each of these\nmethods comes with its own set of tradeoffs that impact the isolation level, implementation\neffort, operational complexity, and cost of service.\n\nA Kubernetes cluster consists of a control plane which runs Kubernetes software, and a data plane\nconsisting of worker nodes where tenant workloads are executed as pods. Tenant isolation can be\napplied in both the control plane and the data plane based on organizational requirements.\n\nThe level of isolation offered is sometimes described using terms like \u201chard\u201d multi-tenancy, which\nimplies strong isolation, and \u201csoft\u201d multi-tenancy, which implies weaker isolation. In particular,\n\"hard\" multi-tenancy is often used to describe cases where the tenants do not trust each other,\noften from security and resource sharing perspectives (e.g. guarding against attacks such as data\nexfiltration or DoS). Since data planes typically have much larger attack surfaces, \"hard\"\nmulti-tenancy often requires extra attention to isolating the data-plane, though control plane\nisolation  also remains critical."
+ }
+]

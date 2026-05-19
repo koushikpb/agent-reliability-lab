@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01UWuVp7xKn4nGYyXyaWGvND",
+   "input": {
+    "id": "T-4002",
+    "note": "Cause: The `documents` namespace enforces the PodSecurity \"restricted\" standard. The 1.5.0 rollout updated the Deployment's pod template, but the new ReplicaSet (pdf-exporter-5f6b8d9c47) cannot create pods because the exporter container does not meet restricted-profile requirements. The 1.4.2 pods keep running because they were admitted before (or under a laxer template). The `set image` only changes the image tag, so any securityContext gaps in the existing template remain and the new ReplicaSet is rejected.\n\nEvidence: Logs from deploy-pdf-exporter-28591340-wq7mz show `kubectl set image` succeeded, then `rollout status` timed out, and the ReplicaSet event was:\n  FailedCreate ... pods \"pdf-exporter-5f6b8d9c47-8xq2d\" is forbidden: violates PodSecurity \"restricted:latest\":\n    - allowPrivilegeEscalation != false\n    - unrestricted capabilities (must drop [\"ALL\"])\n    - runAsNonRoot != true\n    - seccompProfile not set to RuntimeDefault/Localhost\nMeanwhile `kubectl -n documents get pods` still shows two 1.4.2 pods Running and zero 1.5.0 pods, confirming no new pod was ever admitted.\n\nFix (owner applies to the pdf-exporter Deployment manifest, then redeploys):\nAdd a securityContext to the `exporter` container (and/or pod) that satisfies the restricted profile [cite: concepts/security/pod-security-standards#restricted-3] [cite: concepts/security/pod-security-standards#restricted-8] [cite: concepts/security/pod-security-standards#restricted-5], for example [cite: concepts/workloads/pods/advanced-pod-config#container-level-security-context-0]:\n\n  securityContext:\n    allowPrivilegeEscalation: false\n    runAsNonRoot: true\n    runAsUser: 1000           # any non-zero UID the image supports\n    capabilities:\n      drop: [\"ALL\"]\n    seccompProfile:\n      type: RuntimeDefault\n\nRe-run the deploy-pdf-exporter pipeline after this change; the new ReplicaSet will then be admitted and the rollout will complete. (The image tag bump itself is not the problem \u2014 the same manifest change would fail on 1.4.2 too if re-admitted.)",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6326,
+ "model": "claude-opus-4-7",
+ "output_tokens": 923,
+ "stop_reason": "tool_use"
+}

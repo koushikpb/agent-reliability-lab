@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EoEECqQBCBMYAipAGUdSF0b0JgISYwrv/Q7YM4LNDzRHRiItCg5b2sZkaOd4dUrJpy+YFFutQXkercMrioZxunHeFwodr1x60M31DjIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBpvDw1gYSDDc2wW7bxPHpv3kXGRoMRVFoaj56dY0JlXt5IjCsmjPsDaRSgQGxcLk3RKiIpFtnSQ3pFODvansg9XP778kQ29GsyZjxOqnu5gcISO4qiQLwzhsukm2N5IlVSgMWJHw1lywtpBGKWn+XeUUf5oQKxurDQLv/OvKxF7KX+DDdkqb7d+fX9l4/nK/WApcRjSPshTwStGurTO7wJ/k/4GGKE4mk6+S/0QUzGgEhk7l/NgB7I22dtDhEuJlWA5j9+Uav55eAmFkg5Yw8BqabkO2M0+EFyLoNeFCw7NoQ/9NwczJSDUt5MUVeeymofhBdb3Ob0K62EIrOGsENRSnxfe0p8VhIwaTFkfE0o0jy6Mm0wCj0l3U4gMZ2+yQGlngMvUAuSpUg2C132i1dnPjuanO9YaaeFWb71g01wGRrHzFvGaEiPM5rruIg4jdQsLvdiRHGWpP0D5+UzjNAGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01TtuwKrDeBvr2izZwbMqC6U",
+   "input": {
+    "query": "cronjob concurrencyPolicy Forbid activeDeadlineSeconds stuck job"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3296,
+ "model": "claude-opus-4-7",
+ "output_tokens": 218,
+ "stop_reason": "tool_use"
+}

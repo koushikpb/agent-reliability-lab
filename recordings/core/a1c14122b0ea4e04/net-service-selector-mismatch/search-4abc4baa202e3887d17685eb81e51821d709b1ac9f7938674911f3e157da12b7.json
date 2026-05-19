@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-2",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "This confirms that the EndpointSlice controller has found the correct Pods for\nyour Service.  If the `ENDPOINTS` column is `<none>`, you should check that\nthe `spec.selector` field of your Service actually selects for\n`metadata.labels` values on your Pods.  A common mistake is to have a typo or\nother error, such as the Service selecting for `app=hostnames`, but the\nDeployment specifying `run=hostnames`, as in versions previous to 1.18, where\nthe `kubectl run` command could have been also used to create a Deployment."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-1",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Because this Service has no selector, the corresponding EndpointSlice\nobjects are not created automatically. You can map the Service\nto the network address and port where it's running, by adding an EndpointSlice\nobject manually. For example:\n\n```yaml\napiVersion: discovery.k8s.io/v1\nkind: EndpointSlice\nmetadata:\n  name: my-service-1 # by convention, use the name of the Service\n                     # as a prefix for the name of the EndpointSlice\n  labels:\n    # You should set the \"kubernetes.io/service-name\" label.\n    # Set its value to match the name of the Service\n    kubernetes.io/service-name: my-service\naddressType: IPv4\nports:\n  - name: http # should match with the name of the service port defined above\n    appProtocol: http\n    protocol: TCP\n    port: 9376\nendpoints:\n  - addresses:\n      - \"10.4.5.6\"\n  - addresses:\n      - \"10.1.2.3\"\n```\n\n#### Custom EndpointSlices"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#defining-a-service-1",
+  "heading": "Service > Defining a Service",
+  "text": "Kubernetes assigns this Service an IP address (the _cluster IP_),\nthat is used by the virtual IP address mechanism. For more details on that mechanism,\nread [Virtual IPs and Service Proxies](/docs/reference/networking/virtual-ips/).\n\nThe controller for that Service continuously scans for Pods that\nmatch its selector, and then makes any necessary updates to the set of\nEndpointSlices for the Service.\n\nThe name of a Service object must be a valid\n[RFC 1123 label name](/docs/concepts/overview/working-with-objects/names#rfc-1123-label-names).\n\nA Service can map _any_ incoming `port` to a `targetPort`. By default and\nfor convenience, the `targetPort` is set to the same value as the `port`\nfield."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#with-selectors-0",
+  "heading": "Service > Headless Services > With selectors",
+  "text": "For headless Services that define selectors, the endpoints controller creates\nEndpointSlices in the Kubernetes API, and modifies the DNS configuration to return\nA or AAAA records (IPv4 or IPv6 addresses) that point directly to the Pods backing the Service."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-0",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Services most commonly abstract access to Kubernetes Pods thanks to the selector,\nbut when used with a corresponding set of\nEndpointSlices\nobjects and without a selector, the Service can abstract other kinds of backends,\nincluding ones that run outside the cluster.\n\nFor example:\n\n* You want to have an external database cluster in production, but in your\n  test environment you use your own databases.\n* You want to point your Service to a Service in a different\n  namespace or on another cluster.\n* You are migrating a workload to Kubernetes. While evaluating the approach,\n  you run only a portion of your backends in Kubernetes.\n\nIn any of these scenarios you can define a Service _without_ specifying a\nselector to match Pods. For example:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  ports:\n    - name: http\n      protocol: TCP\n      port: 80\n      targetPort: 9376\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-services-0",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Services",
+  "text": "Services provide load balancing across a set of pods. There are several common problems that can make Services\nnot work properly.  The following instructions should help debug Service problems.\n\nFirst, verify that there are endpoints for the service. For every Service object,\nthe apiserver makes one or more `EndpointSlice` resources available.\n\nYou can view these resources with:\n\n```shell\nkubectl get endpointslices -l kubernetes.io/service-name=${SERVICE_NAME}\n```\n\nMake sure that the endpoints in the EndpointSlices match up with the number of pods that you expect to be members of your service.\nFor example, if your Service is for an nginx container with 3 replicas, you would expect to see three different\nIP addresses in the Service's endpoint slices.\n\n#### My service is missing endpoints\n\nIf you are missing endpoints, try listing Pods using the labels in the Service selector.\nFor example, that you have a Service with the following selector:\n\n```yaml\n...\nspec:\n  selector:\n    name: nginx\n    type: frontend\n```"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/topology-spread-constraints#spread-constraint-definition-5",
+  "heading": "Pod Topology Spread Constraints > `topologySpreadConstraints` field > Spread constraint definition",
+  "text": "- **labelSelector** is used to find matching Pods. Pods\n  that match this label selector are counted to determine the\n  number of Pods in their corresponding topology domain.\n  See [Label Selectors](/docs/concepts/overview/working-with-objects/labels/#label-selectors)\n  for more details.\n\n- **matchLabelKeys** is a list of pod label keys to select the group of pods over which \n  the spreading skew will be calculated. At a pod creation, \n  the kube-apiserver uses those keys to lookup values from the incoming pod labels,\n  and those key-value labels will be merged with any existing `labelSelector`.\n  The same key is forbidden to exist in both `matchLabelKeys` and `labelSelector`. \n  `matchLabelKeys` cannot be set when `labelSelector` isn't set. \n  Keys that don't exist in the pod labels will be ignored. \n  A null or empty list means only match against the `labelSelector`."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#pod-selector-0",
+  "heading": "StatefulSets > Components > Pod Selector",
+  "text": "You must set the `.spec.selector` field of a StatefulSet to match the labels of its\n`.spec.template.metadata.labels`. Failing to specify a matching Pod Selector will result in a\nvalidation error during StatefulSet creation."
+ }
+]

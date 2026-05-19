@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-pods-0",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Pods",
+  "text": "The first step in debugging a Pod is taking a look at it. Check the current\nstate of the Pod and recent events with the following command:\n\n```shell\nkubectl describe pods ${POD_NAME}\n```\n\nLook at the state of the containers in the pod. Are they all `Running`?\nHave there been recent restarts?\n\nContinue debugging depending on the state of the pods.\n\n#### My pod stays pending\n\nIf a Pod is stuck in `Pending` it means that it can not be scheduled onto a node.\nGenerally this is because there are insufficient resources of one type or another\nthat prevent scheduling. Look at the output of the `kubectl describe ...` command above.\nThere should be messages from the scheduler about why it can not schedule your pod.\nReasons include:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-scheduling-readiness#observability-0",
+  "heading": "Pod Scheduling Readiness > Observability",
+  "text": "The metric `scheduler_pending_pods` comes with a new label `\"gated\"` to distinguish whether a Pod\nhas been tried scheduling but claimed as unschedulable, or explicitly marked as not ready for\nscheduling. You can use `scheduler_pending_pods{queue=\"gated\"}` to check the metric result."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-1",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My Pods are pending with event message `FailedScheduling`",
+  "text": "In the preceding example, the Pod named \"frontend\" fails to be scheduled due to\ninsufficient CPU resource on any node. Similar error messages can also suggest\nfailure due to insufficient memory (PodExceedsFreeMemory). In general, if a Pod\nis pending with a message of this type, there are several things to try:\n\n- Add more nodes to the cluster.\n- Terminate unneeded Pods to make room for pending Pods.\n- Check that the Pod is not larger than all the nodes. For example, if all the\n  nodes have a capacity of `cpu: 1`, then a Pod with a request of `cpu: 1.1` will\n  never be scheduled.\n- Check for node taints. If most of your nodes are tainted, and the new Pod does\n  not tolerate that taint, the scheduler only considers placements onto the\n  remaining nodes that don't have that taint.\n\nYou can check node capacities and amounts allocated with the\n`kubectl describe nodes` command. For example:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-pods-1",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Pods",
+  "text": "* **You don't have enough resources**: You may have exhausted the supply of CPU\n  or Memory in your cluster, in this case you need to delete Pods, adjust resource\n  requests, or add new nodes to your cluster. See [Compute Resources document](/docs/concepts/configuration/manage-resources-containers/)\n  for more information.\n\n* **You are using `hostPort`**: When you bind a Pod to a `hostPort` there are a\n  limited number of places that pod can be scheduled. In most cases, `hostPort`\n  is unnecessary, try using a Service object to expose your Pod.  If you do require\n  `hostPort` then you can only schedule as many Pods as there are nodes in your Kubernetes cluster.\n\n#### My pod stays waiting"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-scheduling-readiness#usage-example-1",
+  "heading": "Pod Scheduling Readiness > Usage example",
+  "text": "To inform scheduler this Pod is ready for scheduling, you can remove its `schedulingGates` entirely\nby reapplying a modified manifest:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pod\nspec:\n  containers:\n  - name: pause\n    image: registry.k8s.io/pause:3.6\n```\n\nYou can check if the `schedulingGates` is cleared by running:\n\n```bash\nkubectl get pod test-pod -o jsonpath='{.spec.schedulingGates}'\n```\n\nThe output is expected to be empty. And you can check its latest status by running:\n\n```bash\nkubectl get pod test-pod -o wide\n```\n\nGiven the test-pod doesn't request any CPU/memory resources, it's expected that this Pod's state get\ntransited from previous `SchedulingGated` to `Running`:\n\n```none\nNAME       READY   STATUS    RESTARTS   AGE   IP         NODE\ntest-pod   1/1     Running   0          15s   10.0.0.4   node-2\n```"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-scheduling-readiness#intro-0",
+  "heading": "Pod Scheduling Readiness",
+  "text": "Pods were considered ready for scheduling once created. Kubernetes scheduler\ndoes its due diligence to find nodes to place all pending Pods. However, in a\nreal-world case, some Pods may stay in a \"miss-essential-resources\" state for a long period.\nThese Pods actually churn the scheduler (and downstream integrators like Cluster AutoScaler)\nin an unnecessary manner.\n\nBy specifying/removing a Pod's `.spec.schedulingGates`, you can control when a Pod is ready\nto be considered for scheduling."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/podgroup-scheduling#podgroupinitiallyscheduled-0",
+  "heading": "PodGroup Scheduling > PodGroup conditions > `PodGroupInitiallyScheduled`",
+  "text": "When the scheduling cycle succeeds, the condition is set to `True` with reason\n`Scheduled`. For `gang` policy PodGroups, this means at least `minCount` Pods were\nplaced.\n\nWhen scheduling fails, the condition is set to `False` with one of the following\nreasons:\n\n* `Unschedulable` \u2014 the group could not be placed due to resource constraints,\n  affinity or anti-affinity rules, or insufficient capacity for the gang.\n* `SchedulerError` \u2014 scheduling failed because of an internal scheduler error\n  (for example, while parsing scheduling constraints such as `nodeAffinity`).\n\nOnce this condition is set to `True`, it never changes.\n\nYou can check conditions with:\n\n```shell\nkubectl get podgroup <name> -o jsonpath='{.status.conditions}'\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-0",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My Pods are pending with event message `FailedScheduling`",
+  "text": "If the scheduler cannot find any node where a Pod can fit, the Pod remains\nunscheduled until a place can be found. An\n[Event](/docs/reference/kubernetes-api/cluster-resources/event-v1/) is produced\neach time the scheduler fails to find a place for the Pod. You can use `kubectl`\nto view the events for a Pod; for example:\n\n```shell\nkubectl describe pod frontend | grep -A 9999999999 Events\n```\n```\nEvents:\n  Type     Reason            Age   From               Message\n  ----     ------            ----  ----               -------\n  Warning  FailedScheduling  23s   default-scheduler  0/42 nodes available: insufficient cpu\n```"
+ }
+]

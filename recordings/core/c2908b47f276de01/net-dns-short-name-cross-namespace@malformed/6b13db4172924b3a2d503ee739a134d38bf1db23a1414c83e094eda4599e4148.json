@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-4004. The notification-worker email jobs were failing with DNS errors because the SMTP_HOST configuration still referenced `smtp-relay` by short name, which only resolves within the same namespace. After the smtp-relay service was moved to the shared-infra namespace, these lookups started failing. The fix is to update the SMTP_HOST configuration to use the fully qualified domain name `smtp-relay.shared-infra.svc.cluster.local` to reach the service across namespaces.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5215,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 119,
+ "stop_reason": "end_turn"
+}

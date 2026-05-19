@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics",
+  "text": "Any HPA target can be scaled based on the resource usage of the pods in the scaling target.\nWhen defining the pod specification the resource requests like `cpu` and `memory` should\nbe specified. This is used to determine the resource utilization and used by the HPA controller\nto scale the target up or down. To use resource utilization based scaling specify a metric source\nlike this:\n\n```yaml\ntype: Resource\nresource:\n  name: cpu\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nWith this metric the HPA controller will keep the average utilization of the pods in the scaling\ntarget at 60%. Utilization is the ratio between the current usage of resource to the requested\nresources of the pod. See [Algorithm](#algorithm-details) for more details about how the utilization\nis calculated and averaged.\n\nSince the resource usages of all the containers are summed up the total pod utilization may not\naccurately represent the individual container resource usage. This could lead to situations where\na single container might be running with high usage and the HPA will not scale out because the overall\npod usage is still within acceptable limits."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-and-a-cpu-limit-2",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request and a CPU limit",
+  "text": "```\nNAME                        CPU(cores)   MEMORY(bytes)\ncpu-demo                    974m         <something>\n```\n\nRecall that by setting `-cpu \"2\"`, you configured the Container to attempt to use 2 CPUs, but the Container is only being allowed to use about 1 CPU. The container's CPU use is being throttled, because the container is attempting to use more CPU resources than its limit.\n\nAnother possible explanation for the CPU use being below 1.0 is that the Node might not have\nenough CPU resources available. Recall that the prerequisites for this exercise require your cluster to have at least 1 CPU available for use. If your Container runs on a Node that has only 1 CPU, the Container cannot use more than 1 CPU regardless of the CPU limit specified for the Container."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/resize-container-resources#troubleshooting-infeasible-resize-request-1",
+  "heading": "Resize CPU and Memory Resources assigned to Containers > Troubleshooting: Infeasible resize request",
+  "text": "* The `spec.containers[0].resources` reflects the *desired* state (`cpu: \"1000\"`).\n* A condition with `type: PodResizePending` and `reason: Infeasible` was added to the Pod.\n* The condition's `message` will explain why (`Node didn't have enough capacity: cpu, requested: 800000, capacity: ...`)\n* Crucially, `status.containerStatuses[0].resources` will *still show the previous values* (`cpu: 800m`, `memory: 300Mi`),\n  because the infeasible resize was not applied by the Kubelet.\n* The `restartCount` will not have changed due to this failed attempt.\n\nTo fix this, you would need to patch the pod again with feasible resource values."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#meaning-of-cpu-0",
+  "heading": "Resource Management for Pods and Containers > Resource units in Kubernetes > CPU resource units",
+  "text": "Limits and requests for CPU resources are measured in *cpu* units.\nIn Kubernetes, 1 CPU unit is equivalent to **1 physical CPU core**,\nor **1 virtual core**, depending on whether the node is a physical host\nor a virtual machine running inside a physical machine.\n\nFractional requests are allowed. When you define a container with\n`spec.containers[].resources.requests.cpu` set to `0.5`, you are requesting half\nas much CPU time compared to if you asked for `1.0` CPU.\nFor CPU resource units, the [quantity](/docs/reference/kubernetes-api/common-definitions/quantity/) expression `0.1` is equivalent to the\nexpression `100m`, which can be read as \"one hundred millicpu\". Some people say\n\"one hundred millicores\", and this is understood to mean the same thing."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-and-a-cpu-limit-0",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request and a CPU limit",
+  "text": "To specify a CPU request for a container, include the `resources.requests.cpu` field\nin the container\u2019s resource manifest. To specify a CPU limit, include `resources.limits.cpu`.\n\nIn this exercise, you create a Pod that has one container. The container has a request\nof 0.5 CPU and a limit of 1 CPU. Here is the configuration file for the Pod:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: cpu-demo\n  namespace: cpu-example\nspec:\n  containers:\n  - name: cpu-demo-ctr\n    image: vish/stress\n    resources:\n      limits:\n        cpu: \"1\"\n      requests:\n        cpu: \"0.5\"\n    args:\n    - -cpus\n    - \"2\"\n```\n\nThe `args` section of the configuration file provides arguments for the container when it starts.\nThe `-cpus \"2\"` argument tells the Container to attempt to use 2 CPUs.\n\nCreate the Pod:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#cpu-units-0",
+  "heading": "Assign CPU Resources to Containers and Pods > CPU units",
+  "text": "The CPU resource is measured in *CPU* units. One CPU, in Kubernetes, is equivalent to:\n\n* 1 AWS vCPU\n* 1 GCP Core\n* 1 Azure vCore\n* 1 Hyperthread on a bare-metal Intel processor with Hyperthreading\n\nFractional values are allowed. A Container that requests 0.5 CPU is guaranteed half as much\nCPU as a Container that requests 1 CPU. You can use the suffix m to mean milli. For example\n100m CPU, 100 milliCPU, and 0.1 CPU are all the same. Precision finer than 1m is not allowed.\n\nCPU is always requested as an absolute quantity, never as a relative quantity; 0.1 is the same\namount of CPU on a single-core, dual-core, or 48-core machine.\n\nDelete your Pod:\n\n```shell\nkubectl delete pod cpu-demo --namespace=cpu-example\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-2",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request that is too big for your Nodes",
+  "text": "```shell\nkubectl describe pod cpu-demo-2 --namespace=cpu-example\n```\n\nThe output shows that the Container cannot be scheduled because of insufficient\nCPU resources on the Nodes:\n\n```\nEvents:\n  Reason                        Message\n  ------                        -------\n  FailedScheduling      No nodes are available that match all of the following predicates:: Insufficient cpu (3).\n```\n\nDelete your Pod:\n\n```shell\nkubectl delete pod cpu-demo-2 --namespace=cpu-example\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#intro-0",
+  "heading": "Assign CPU Resources to Containers and Pods",
+  "text": "This page shows how to assign a CPU *request* and a CPU *limit* to\na container. Containers cannot use more CPU than the configured limit.\nProvided the system has CPU time free, a container is guaranteed to be\nallocated as much CPU as it requests."
+ }
+]

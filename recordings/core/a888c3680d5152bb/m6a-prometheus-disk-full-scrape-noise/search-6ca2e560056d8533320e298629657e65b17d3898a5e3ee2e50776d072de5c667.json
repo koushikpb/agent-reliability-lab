@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#claims-as-volumes-0",
+  "heading": "Persistent Volumes > Claims As Volumes",
+  "text": "Pods access storage by using the claim as a volume. Claims must exist in the\nsame namespace as the Pod using the claim. The cluster finds the claim in the\nPod's namespace and uses it to get the PersistentVolume backing the claim.\nThe volume is then mounted to the host and into the Pod.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n    - name: myfrontend\n      image: nginx\n      volumeMounts:\n      - mountPath: \"/var/www/html\"\n        name: mypd\n  volumes:\n    - name: mypd\n      persistentVolumeClaim:\n        claimName: myclaim\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#volume-claim-templates-0",
+  "heading": "StatefulSets > Components > Volume Claim Templates",
+  "text": "You can set the `.spec.volumeClaimTemplates` field to create a\n[PersistentVolumeClaim](/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims). \nThis will provide stable storage to the StatefulSet if either:\n\n* The StorageClass specified for the volume claim is set up to use [dynamic\n  provisioning](/docs/concepts/storage/dynamic-provisioning/).\n* The cluster already contains a PersistentVolume with the correct StorageClass\n  and sufficient available storage space."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-2",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "```shell\n    Type:               vSphereVolume (a Persistent Disk resource in vSphere)\n    VolumePath:         [vsanDatastore] d49c4a62-166f-ce12-c464-020077ba5d46/kubernetes-dynamic-pvc-74a498d6-3929-47e8-8c02-078c1ece4d78.vmdk\n    FSType:             ext4\n    StoragePolicyName:  vSAN Default Storage Policy\nEvents:                 <none>\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#resources-0",
+  "heading": "Persistent Volumes > PersistentVolumeClaims > Resources",
+  "text": "Claims, like Pods, can request specific quantities of a resource. In this case,\nthe request is for storage. The same\n[resource model](https://git.k8s.io/design-proposals-archive/scheduling/resources.md)\napplies to both volumes and claims.\n\nFor `Filesystem` volumes, the storage request refers to the \"outer\" volume size\n(i.e. the allocated size from the storage backend).\nThis means that the writeable size may be slightly lower for providers that\nbuild a filesystem on top of a block device, due to filesystem overhead.\nThis is especially visible with XFS, where many metadata features are enabled by default."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#introduction-1",
+  "heading": "Persistent Volumes > Introduction",
+  "text": "A _PersistentVolumeClaim_ (PVC) is a request for storage by a user. It is similar\nto a Pod. Pods consume node resources and PVCs consume PV resources. Pods can\nrequest specific levels of resources (CPU and Memory). Claims can request specific\nsize and access modes (e.g., they can be mounted ReadWriteOnce, ReadOnlyMany,\nReadWriteMany, or ReadWriteOncePod, see [AccessModes](#access-modes)).\n\nWhile PersistentVolumeClaims allow a user to consume abstract storage resources,\nit is common that users need PersistentVolumes with varying properties, such as\nperformance, for different problems. Cluster administrators need to be able to\noffer a variety of PersistentVolumes that differ in more ways than size and access\nmodes, without exposing users to the details of how those volumes are implemented.\nFor these needs, there is the _StorageClass_ resource.\n\nSee the [detailed walkthrough with working examples](/docs/tutorials/configuration/configure-persistent-volume-storage)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-4",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "If expanding underlying storage fails, the cluster administrator can manually\nrecover the Persistent Volume Claim (PVC) state and cancel the resize requests.\nOtherwise, the resize requests are continuously retried by the controller without\nadministrator intervention.\n\n1. Mark the PersistentVolume(PV) that is bound to the PersistentVolumeClaim(PVC)\n   with `Retain` reclaim policy.\n2. Delete the PVC. Since PV has `Retain` reclaim policy - we will not lose any data\n   when we recreate the PVC.\n3. Delete the `claimRef` entry from PV specs, so as new PVC can bind to it.\n   This should make the PV `Available`.\n4. Re-create the PVC with smaller size than PV and set `volumeName` field of the\n   PVC to the name of the PV. This should bind new PVC to existing PV.\n5. Don't forget to restore the reclaim policy of the PV."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reserving-a-persistentvolume-1",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reserving a PersistentVolume",
+  "text": "This method does not guarantee any binding privileges to the PersistentVolume.\nIf other PersistentVolumeClaims could use the PV that you specify, you first\nneed to reserve that storage volume. Specify the relevant PersistentVolumeClaim\nin the `claimRef` field of the PV so that other PVCs can not bind to it.\n\n```yaml\napiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: foo-pv\nspec:\n  storageClassName: \"\"\n  claimRef:\n    name: foo-pvc\n    namespace: foo\n  ...\n```\n\nThis is useful if you want to consume PersistentVolumes that have their `persistentVolumeReclaimPolicy` set\nto `Retain`, including cases where you are reusing an existing PV."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#persistentvolumeclaim-0",
+  "heading": "Volumes > Types of volumes > persistentVolumeClaim",
+  "text": "A `persistentVolumeClaim` volume is used to mount a\n[PersistentVolume](/docs/concepts/storage/persistent-volumes/) into a Pod. PersistentVolumeClaims\nare a way for users to \"claim\" durable storage (such as an iSCSI volume)\nwithout knowing the details of the particular cloud environment.\n\nSee the information about [PersistentVolumes](/docs/concepts/storage/persistent-volumes/) for more\ndetails."
+ }
+]

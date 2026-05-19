@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! The documentation confirms exactly what I found. Let me check one more thing to be thorough - search for documentation on common Service selector issues:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01M71b5xYdnrapzheKePrEX1",
+   "input": {
+    "query": "Service selector endpoints not matching pods label"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4360,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 90,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,45 @@
+{
+ "content": [
+  {
+   "text": "Let me search the Kubernetes documentation for information about ingress controller compatibility, especially regarding regex redirects and ingress-nginx versions.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_018cU6RTxqQUzWDHuwssgRQ8",
+   "input": {
+    "query": "ingress-nginx regex capture groups redirect annotations"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01XMBy8Kdp1nShbGKp5HQzjy",
+   "input": {
+    "query": "ingress controller v1.12.1 breaking changes redirect"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01GkYh4AdCky1j5VtmQHD7u1",
+   "input": {
+    "query": "ingress-nginx rewrite rules regex"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2128,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 180,
+ "stop_reason": "tool_use"
+}

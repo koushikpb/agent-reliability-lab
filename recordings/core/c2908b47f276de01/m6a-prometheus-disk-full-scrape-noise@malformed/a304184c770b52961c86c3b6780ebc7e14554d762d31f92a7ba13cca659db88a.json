@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more specifically for Prometheus storage and retention issues:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CBYAzJcgu9wRbSWHWDeL6y",
+   "input": {
+    "query": "Prometheus storage TSDB retention time configuration"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3899,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 75,
+ "stop_reason": "tool_use"
+}

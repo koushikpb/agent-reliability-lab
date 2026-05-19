@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#pod-sethostnameasfqdn-field-0",
+  "heading": "DNS for Services and Pods > Pods > Pod's setHostnameAsFQDN field",
+  "text": "When a Pod is configured to have fully qualified domain name (FQDN), its\nhostname is the short hostname. For example, if you have a Pod with the fully\nqualified domain name `busybox-1.busybox-subdomain.my-namespace.svc.cluster-domain.example`,\nthen by default the `hostname` command inside that Pod returns `busybox-1` and the\n`hostname --fqdn` command returns the FQDN.\n\nWhen you set `setHostnameAsFQDN: true` in the Pod spec, the kubelet writes the Pod's FQDN\ninto the hostname for that Pod's namespace. In this case, both `hostname` and `hostname --fqdn`\nreturn the Pod's FQDN.\n\nIn Linux, the hostname field of the kernel (the `nodename` field of `struct utsname`) is limited to 64 characters."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-windows-1",
+  "heading": "DNS for Services and Pods > DNS resolution on Windows nodes",
+  "text": "  in the `default` namespace, will have the DNS suffix `default.svc.cluster.local`.\n  Inside a Windows Pod, you can resolve both `kubernetes.default.svc.cluster.local`\n  and `kubernetes`, but not the partially qualified names (`kubernetes.default` or\n  `kubernetes.default.svc`)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-hostname#hostname-with-pod-s-sethostnameasfqdn-fields-0",
+  "heading": "Pod Hostname > Hostname with pod's setHostnameAsFQDN fields",
+  "text": "When a Pod is configured to have fully qualified domain name (FQDN), its\nhostname is the short hostname. For example, if you have a Pod with the fully\nqualified domain name `busybox-1.busybox-subdomain.my-namespace.svc.cluster-domain.example`,\nthen by default the `hostname` command inside that Pod returns `busybox-1` and the\n`hostname --fqdn` command returns the FQDN.\n\nWhen both `setHostnameAsFQDN: true` and the subdomain field is set in the Pod spec,\nthe kubelet writes the Pod's FQDN\ninto the hostname for that Pod's namespace. In this case, both `hostname` and `hostname --fqdn`\nreturn the Pod's FQDN."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-hostname#hostname-with-pod-s-hostnameoverride-0",
+  "heading": "Pod Hostname > Hostname with pod's hostnameOverride",
+  "text": "Setting a value for `hostnameOverride` in the Pod spec causes the kubelet \nto unconditionally set both the Pod's hostname and fully qualified domain name (FQDN)\nto the `hostnameOverride` value. \n\nThe `hostnameOverride` field has a length limitation of 64 characters \nand must adhere to the DNS subdomain names standard defined in [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123).\n\nExample:\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: busybox-2-busybox-example-domain\nspec:\n  hostnameOverride: busybox-2.busybox.example.domain\n  containers:\n  - image: busybox:1.28\n    command:\n      - sleep\n      - \"3600\"\n    name: busybox\n```\n\nThis only affects the hostname within the Pod; it does not affect the Pod's A or AAAA records in the cluster DNS server."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-windows-0",
+  "heading": "DNS for Services and Pods > DNS resolution on Windows nodes",
+  "text": "- `ClusterFirstWithHostNet` is not supported for Pods that run on Windows nodes.\n  Windows treats all names with a `.` as a FQDN and skips FQDN resolution.\n- On Windows, there are multiple DNS resolvers that can be used. As these come with\n  slightly different behaviors, using the\n  [`Resolve-DNSName`](https://docs.microsoft.com/powershell/module/dnsclient/resolve-dnsname)\n  powershell cmdlet for name query resolutions is recommended.\n- On Linux, you have a DNS suffix list, which is used after resolution of a name as fully\n  qualified has failed.\n  On Windows, you can only have 1 DNS suffix, which is the DNS suffix associated with that\n  Pod's namespace (example: `mydns.svc.cluster.local`). Windows can resolve FQDNs, Services,\n  or network name which can be resolved with this single suffix. For example, a Pod spawned"
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#pod-hostname-and-subdomain-field-1",
+  "heading": "DNS for Services and Pods > Pods > Pod's hostname and subdomain fields",
+  "text": "The Pod spec also has an optional `subdomain` field which can be used to indicate\nthat the pod is part of sub-group of the namespace. For example, a Pod with `spec.hostname`\nset to `\"foo\"`, and `spec.subdomain` set to `\"bar\"`, in namespace `\"my-namespace\"`, will\nhave its hostname set to `\"foo\"` and its fully qualified domain name (FQDN) set to\n`\"foo.bar.my-namespace.svc.cluster.local\"` (once more, as observed from within\nthe Pod).\n\nIf there exists a headless Service in the same namespace as the Pod, with\nthe same name as the subdomain, the cluster's DNS Server also returns A and/or AAAA\nrecords for the Pod's fully qualified hostname.\n\nExample:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#a-aaaa-records-1-0",
+  "heading": "DNS for Services and Pods > Pods > A/AAAA records",
+  "text": "Kube-DNS versions, prior to the implementation of the\n[DNS specification](https://github.com/kubernetes/dns/blob/master/docs/specification.md),\nhad the following DNS resolution:\n\n```\n<pod-IPv4-address>.<namespace>.pod.<cluster-domain>\n```\n\nFor example, if a Pod in the `default` namespace has the IP address 172.17.0.3,\nand the domain name for your cluster is `cluster.local`, then the Pod has a DNS name:\n\n```\n172-17-0-3.default.pod.cluster.local\n```\n\nSome cluster DNS mechanisms, like [CoreDNS](https://coredns.io/), also provide `A` records for:\n\n```\n<pod-ipv4-address>.<service-name>.<my-namespace>.svc.<cluster-domain.example>\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-custom-nameservers#configuration-of-stub-domain-and-upstream-nameserver-using-coredns-1",
+  "heading": "Customizing DNS Service > CoreDNS > Configuration of Stub-domain and upstream nameserver using CoreDNS",
+  "text": "The final ConfigMap along with the default `Corefile` configuration looks like:\n\n```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: coredns\n  namespace: kube-system\ndata:\n  Corefile: |\n    .:53 {\n        errors\n        health\n        kubernetes cluster.local in-addr.arpa ip6.arpa {\n           pods insecure\n           fallthrough in-addr.arpa ip6.arpa\n        }\n        prometheus :9153\n        forward . 172.16.0.1\n        cache 30\n        loop\n        reload\n        loadbalance\n    }\n    consul.local:53 {\n        errors\n        cache 30\n        forward . 10.150.0.1\n    }\n```\n\nCoreDNS does not support FQDNs for stub-domains and nameservers (eg: \"ns.foo.com\").\nDuring translation, all FQDN nameservers will be omitted from the CoreDNS config."
+ }
+]

@@ -1,0 +1,26 @@
+{
+ "content": [
+  {
+   "signature": "EugHCqQBCBMYAipAOv2ZnBWXIrGf9zQud16y5SsGo8hb4nKQgHFcszZgvMplD8JUgQAxTPI14DqP1nCmcrnos6o4OYKE0utFdqegpDIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBoNDw1gYSDCCtKTKNxi7nY2bEtRoMI+URH+0+y5sIzxIpIjAl1sgzdy2p9/hTGcL5wLyyizbtRWG/5NYFwKmGZs2ikmmfvrRIy/L1J7Y3QONmEmUq8AXt+QUNvjnJnw2pLJ9jryGVwG2CcjJL+M08/MBrPMVUovSlt9U+NHYXqvpyOyacifWD6rXlDp4V67nXdignJSRFm/7tZ2lmzXbaeK42960mWlVIfOcPkk3bcjmU5fu9v0Mh89MjnkQIRvRkTJXZqSPQouw2VDyNazPbsnrDKLVsN9CrygPWBjlgbSv0zFTBpK9eSDNou0xqUgyjq0HDdwVHYXrLPsiSnMWEUnmNBCfYT6pl4vM5cPOuirCF6xKQTyXByYwe4wOoc4B9AC5nUVQEVutG4gDdQHpg/ZWJk3qMAXgBOB2fdYMrFK/h4iBr99eOW4TN1YPfoq5TAxIHFOBQS+DE2Pthnm/xgBw53cEvWa80DgfEiCJPGJa+WMtYRPAGUsrpC12A7bTMO5tMQt1v7KtYgOpzynRr98rKqArK+ogKHDShqxu36Ur84Jzhar30mihL2beyt1QzO5tFwXyaxNKSPKK+S+G85MJXkHRm5rNZ2fpD8fidjiG/WTzZ6GpPnssjktNyVDVmiLAoyUDaTuzJkq9LtpP+UKEqmh219ZPe+lb+ZBB6LOYEZzcP3tQJaH8C02QXq7XMqor0/HoXWaBaGTWziqv/YAB3SzWaxjhCIUJ/WRRuc8LgkHNiy4EXQP7NcwdDqNn2K9Z/OHBWhgmWxY/1VjAouvZ90r5GO5vZHPDakqWS4jKFRqz98lOKnpxL1/VLVZDsKG2FREg832nFvkgw2x24M239t7GBq6UaWTnlCDGhvsMcFUhMIyweXdx1K98gOn0WsUGfgGpbZ0rIw6UAVTQnVqQFYUJDEM/QWUPxLOBFOpt8oMhk7p1GpKYHyH0s0OSZI4wsqPy/a4GLeAU9NEyjtkIFMCt2OkOEG05l2YIPk++PUyCk3RPoVXDdGcNf9SXHOp67Xo4fVtHYOPkKBCulvttoaWh2yjBTxBzcEasu32OHL4Pkq5H1mfAmq3vNY2T8K1jM33N04SmPriz9Sms/hp+tIPG0JBgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0194QgwSyGkvBpp4p8YQskAR",
+   "input": {
+    "id": "T-3007",
+    "note": "Cause: The zookeeper PDB (selector app=zookeeper, almost certainly minAvailable: 2 \u2014 the example in the docs matches this workload exactly) is being honored by the eviction API [cite: concepts/scheduling-eviction/api-eviction#intro-0]. In the kafka namespace zk-0 and zk-1 are Ready but zk-2 is in CrashLoopBackOff (37 restarts; logs show \"The accepted epoch, 7 is less than the current epoch, 8\" \u2014 a corrupted ZK epoch file). That leaves only 2 healthy pods, so evicting zk-0 would drop healthy replicas below minAvailable=2 and the eviction is refused. With the default UnhealthyPodEvictionPolicy (IfHealthyBudget), a PDB will block drain indefinitely when the budget is already not met [cite: tasks/run-application/configure-pdb#unhealthy-pod-eviction-policy-1][cite: tasks/run-application/configure-pdb#specifying-a-poddisruptionbudget-3].\n\nDo NOT use --disable-eviction or `kubectl delete pod zk-0` to work around this. A 3-node ZK ensemble needs 2 members for quorum; with zk-2 already down, removing zk-0 leaves only zk-1 and the ensemble (and Kafka) loses quorum \u2014 a data/availability risk the PDB exists to prevent.\n\nFix the owner can apply:\n1. Recover zk-2 first (fix the epoch mismatch on its PV \u2014 typically by making `/data/version-2/acceptedEpoch` match `currentEpoch`, or restoring from a zk-1/zk-0 snapshot) so it returns to Ready. Once 3/3 are healthy, the drain of ip-10-0-81-17 will evict zk-0 cleanly under the PDB.\n2. To make future drains more tolerant of a single misbehaving replica, set `spec.unhealthyPodEvictionPolicy: AlwaysAllow` on the zk-pdb. This lets drain evict pods that are Running-but-not-Ready (like a crashlooping zk-2) without blocking, which is the recommended setting for drains [cite: concepts/workloads/pods/disruptions#pod-disruption-budgets-3][cite: tasks/administer-cluster/safely-drain-node#configure-poddisruptionbudget-0]. Note this would unblock evicting zk-2, not zk-0 directly \u2014 you still need a healthy quorum before zk-0 can go.\n\nIf 18:00 is hard and zk-2 cannot be recovered in time, the correct action is to postpone the patch window, not to bypass the PDB.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6603,
+ "model": "claude-opus-4-7",
+ "output_tokens": 1301,
+ "stop_reason": "tool_use"
+}

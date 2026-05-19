@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "The critical information is that [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0] \"the resource requests like `cpu` and `memory` should be specified\" and \"Utilization is the ratio between the current usage of resource to the requested resources of the pod.\"\n\nLooking at the pod specification from `list_pods`, I see that the `log-forwarder` container in version 4.8.0 has **no resource requests defined** (empty `resources: {}`). This is the smoking gun! \n\nWhen a pod has a container without CPU requests, the HPA cannot calculate CPU utilization because it divides actual CPU usage by requested CPU. Without a CPU request in at least one container, the calculation fails and returns `<unknown>`.\n\nLet me update the ticket with this finding and solution.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Duh9FEUgNmz4jR7AaF7V8D",
+   "input": {
+    "id": "T-6001",
+    "note": "CAUSE: The HPA shows CPU as `<unknown>` because the 4.8.0 release added a log-forwarder sidecar container (fluent-bit) without CPU resource requests. The HPA cannot calculate CPU utilization without requests because [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0] \"Utilization is the ratio between the current usage of resource to the requested resources of the pod.\"\n\nEVIDENCE: Pod inspection shows search-api containers have requests: api container has cpu: \"1\", but log-forwarder container has empty resources: {}. The HPA metric for cpu displays as <unknown>/60%.\n\nFIX: Add CPU and memory resource requests to the log-forwarder container in the search-api Deployment. Example:\n- resources:\n    requests:\n      cpu: 100m\n      memory: 256Mi\n    limits:\n      memory: 256Mi\n\nThis will allow the HPA to calculate total pod CPU utilization again and resume scaling up to 8-9 replicas at peak load.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 9344,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 530,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! The documentation is clear. Let me search for more specific guidance about what the proper approach should be:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_015nEWKWZ88YC6dy8naGDqbp",
+   "input": {
+    "query": "least privilege cluster-admin avoid wildcard permissions"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4234,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 84,
+ "stop_reason": "tool_use"
+}

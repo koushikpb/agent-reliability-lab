@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the pods in the finance namespace to see the current state of the cronjob:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011zCv35CjynAY3yRxN4aEg6",
+   "input": {
+    "namespace": "finance"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1316,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 75,
+ "stop_reason": "tool_use"
+}

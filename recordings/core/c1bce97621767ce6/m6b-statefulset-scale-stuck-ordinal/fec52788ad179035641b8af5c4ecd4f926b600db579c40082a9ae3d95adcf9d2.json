@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! This confirms the issue. According to the Kubernetes documentation [cite: concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0], StatefulSet pods are created sequentially and \"Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready.\" \n\nSince docindex-3 is not ready (due to the CLUSTER_SIZE configuration mismatch), the StatefulSet controller is waiting for it to become ready before attempting to create docindex-4.\n\nNow I have a complete understanding of the issue and the fix. Let me resolve the ticket:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01S3p774snFqyrfBPtqVUhpC",
+   "input": {
+    "id": "T-6002",
+    "note": "The scale-up is stalled because docindex-3 is not ready. Root cause: The docindex pod is configured with CLUSTER_SIZE=3 (from environment variable), but the new pod has ordinal 3, which is outside the configured cluster range (0-2). This causes the pod to run as a standby with readiness probe returning 503.\n\nEvidence: Pod logs show \"own ordinal 3 is outside the configured cluster (CLUSTER_SIZE=3); joining as standby, no shards assigned\" and the readiness probe consistently fails with HTTP 503.\n\nAccording to Kubernetes StatefulSet scaling guarantees [cite: concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0], \"Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready.\" This is why docindex-4 never appeared - the controller is waiting for docindex-3 to become ready first.\n\nFix: Update the CLUSTER_SIZE environment variable in the StatefulSet spec to 5 (or the desired final size). This will allow docindex-3 and subsequently docindex-4 to join the cluster as full members with shards assigned, making their readiness probes succeed.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4470,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 499,
+ "stop_reason": "tool_use"
+}

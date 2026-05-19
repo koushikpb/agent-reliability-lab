@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-4002 by identifying that the pdf-exporter deployment was using Kubernetes' default `IfNotPresent` image pull policy, which prevented the kubelet from pulling the new 1.5.0 image from the registry when it was already cached locally. The fix is to update the Deployment manifest to explicitly set `imagePullPolicy: Always` so that the kubelet will always fetch the image from the registry, allowing the rollout to succeed.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8958,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 108,
+ "stop_reason": "end_turn"
+}

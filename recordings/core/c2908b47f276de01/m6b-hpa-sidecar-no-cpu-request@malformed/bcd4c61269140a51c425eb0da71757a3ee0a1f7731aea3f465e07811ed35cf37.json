@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I can see the search-api deployment has 3 pods running, and the containers have CPU requests defined (1 CPU). The issue is that the HPA shows CPU as `<unknown>`. Let me check the logs to see if there are any errors.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0122Kw2aaGnN3Yxso7syKC63",
+   "input": {
+    "pod": "search-api-75d9c8b6f4-2hxkq"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2249,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 129,
+ "stop_reason": "tool_use"
+}

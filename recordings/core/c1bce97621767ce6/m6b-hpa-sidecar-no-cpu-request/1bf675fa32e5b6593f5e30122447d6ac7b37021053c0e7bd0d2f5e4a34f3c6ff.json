@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The key information I found is that [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0] the HPA can track individual containers. The ticket mentions version 4.8.0 was released last Tuesday. Looking at the pod logs, I noticed that the pods have two containers: `api` and `log-forwarder`. The log-forwarder container does NOT have CPU requests specified.\n\nLet me search for more information about how HPA calculates metrics when containers don't have requests.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016QQyrkgLUgzMRygsn8N9oL",
+   "input": {
+    "query": "HPA container without resource requests CPU metrics calculation"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 9530,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 183,
+ "stop_reason": "tool_use"
+}

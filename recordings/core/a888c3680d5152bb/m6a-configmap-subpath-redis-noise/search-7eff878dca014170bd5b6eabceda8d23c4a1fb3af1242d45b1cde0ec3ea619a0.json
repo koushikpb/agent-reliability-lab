@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/encrypt-data#configure-automatic-reloading-0",
+  "heading": "Encrypting Confidential Data at Rest > Configure automatic reloading",
+  "text": "You can configure automatic reloading of encryption provider configuration.\nThat setting determines whether the\nAPI server should\nload the file you specify for `--encryption-provider-config` only once at\nstartup, or automatically whenever you change that file. Enabling this option\nallows you to change the keys for encryption at rest without restarting the\nAPI server.\n\nTo allow automatic reloading, configure the API server to run with:\n`--encryption-provider-config-automatic-reload=true`.\nWhen enabled, file changes are polled every minute to observe the modifications.\nThe `apiserver_encryption_config_controller_automatic_reload_last_timestamp_seconds`\nmetric identifies when the new config becomes effective. This allows\nencryption keys to be rotated without restarting the API server."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "ConfigMaps consumed as environment variables are not updated automatically and require a pod restart. \n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes#using-subpath) volume mount will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#optional-configmaps-2",
+  "heading": "Configure a Pod to Use a ConfigMap > Optional ConfigMaps",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: dapi-test-pod\nspec:\n  containers:\n    - name: test-container\n      image: gcr.io/google_containers/busybox\n      command: [\"/bin/sh\", \"-c\", \"ls /etc/config\"]\n      volumeMounts:\n      - name: config-volume\n        mountPath: /etc/config\n  volumes:\n    - name: config-volume\n      configMap:\n        name: no-config\n        optional: true # mark the source ConfigMap as optional\n  restartPolicy: Never\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Mounted ConfigMaps are updated automatically",
+  "text": "When a mounted ConfigMap is updated, the projected content is eventually updated too.\nThis applies in the case where an optionally referenced ConfigMap comes into\nexistence after a pod has started.\n\nKubelet checks whether the mounted ConfigMap is fresh on every periodic sync. However,\nit uses its local TTL-based cache for getting the current value of the ConfigMap. As a\nresult, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the pod can be as long as kubelet sync period (1\nminute by default) + TTL of ConfigMaps cache (1 minute by default) in kubelet. You\ncan trigger an immediate refresh by updating one of the pod's annotations.\n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes/#using-subpath)\nvolume will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#configmap-immutable-1",
+  "heading": "ConfigMaps > Immutable ConfigMaps",
+  "text": "Once a ConfigMap is marked as immutable, it is _not_ possible to revert this change\nnor to mutate the contents of the `data` or the `binaryData` field. You can\nonly delete and recreate the ConfigMap. Because existing Pods maintain a mount point\nto the deleted ConfigMap, it is recommended to recreate these pods."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-2",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "When a ConfigMap currently consumed in a volume is updated, projected keys are eventually updated as well.\nThe kubelet checks whether the mounted ConfigMap is fresh on every periodic sync.\nHowever, the kubelet uses its local cache for getting the current value of the ConfigMap.\nThe type of the cache is configurable using the `configMapAndSecretChangeDetectionStrategy` field in\nthe [KubeletConfiguration struct](/docs/reference/config-api/kubelet-config.v1beta1/).\nA ConfigMap can be either propagated by watch (default), ttl-based, or by redirecting\nall requests directly to the API server.\nAs a result, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the Pod can be as long as the kubelet sync period + cache\npropagation delay, where the cache propagation delay depends on the chosen cache type"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#optional-configmaps-1",
+  "heading": "Configure a Pod to Use a ConfigMap > Optional ConfigMaps",
+  "text": "If you run this pod, and there is no ConfigMap named `a-config`, the output is empty.\nIf you run this pod, and there is a ConfigMap named `a-config` but that ConfigMap doesn't have\na key named `akey`, the output is also empty. If you do set a value for `akey` in the `a-config`\nConfigMap, this pod prints that value and then terminates.\n\nYou can also mark the volumes and files provided by a ConfigMap as optional. Kubernetes always\ncreates the mount paths for the volume, even if the referenced ConfigMap or key doesn't exist. For\nexample, the following Pod specification marks a volume that references a ConfigMap as optional:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#define-container-environment-variables-with-data-from-multiple-configmaps-1",
+  "heading": "Configure a Pod to Use a ConfigMap > Define container environment variables using ConfigMap data > Define container environment variables with data from multiple ConfigMaps",
+  "text": "  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: dapi-test-pod\nspec:\n  containers:\n    - name: test-container\n      image: registry.k8s.io/busybox:1.27.2\n      command: [ \"/bin/sh\", \"-c\", \"env\" ]\n      env:\n        - name: SPECIAL_LEVEL_KEY\n          valueFrom:\n            configMapKeyRef:\n              name: special-config\n              key: special.how\n        - name: LOG_LEVEL\n          valueFrom:\n            configMapKeyRef:\n              name: env-config\n              key: log_level\n  restartPolicy: Never\n```\n\n  Create the Pod:\n\n  ```shell\n  kubectl create -f https://kubernetes.io/examples/pods/pod-multiple-configmap-env-variable.yaml\n  ```"
+ }
+]

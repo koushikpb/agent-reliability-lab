@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/gateway#intro-0",
+  "heading": "Gateway API",
+  "text": "Make network services available by using an extensible, role-oriented, protocol-aware configuration\nmechanism. [Gateway API](https://gateway-api.sigs.k8s.io/) is an add-on\ncontaining API [kinds](https://gateway-api.sigs.k8s.io/references/spec/) that provide dynamic infrastructure\nprovisioning and advanced traffic routing."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#priority-levels-0",
+  "heading": "API Priority and Fairness > Concepts > Priority Levels",
+  "text": "Without APF enabled, overall concurrency in the API server is limited by the\n`kube-apiserver` flags `--max-requests-inflight` and\n`--max-mutating-requests-inflight`. With APF enabled, the concurrency limits\ndefined by these flags are summed and then the sum is divided up among a\nconfigurable set of _priority levels_. Each incoming request is assigned to a\nsingle priority level, and each priority level will only dispatch as many\nconcurrent requests as its particular limit allows.\n\nThe default configuration, for example, includes separate priority levels for\nleader-election requests, requests from built-in controllers, and requests from\nPods. This means that an ill-behaved Pod that floods the API server with\nrequests cannot prevent leader election or actions by the built-in controllers\nfrom succeeding.\n\nThe concurrency limits of the priority levels are periodically\nadjusted, allowing under-utilized priority levels to temporarily lend\nconcurrency to heavily-utilized levels. These limits are based on\nnominal limits and bounds on how much concurrency a priority level may\nlend and how much it may borrow, all derived from the configuration\nobjects mentioned below."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#how-api-initiated-eviction-works-0",
+  "heading": "API-initiated Eviction > How API-initiated eviction works",
+  "text": "When you request an eviction using the API, the API server performs admission\nchecks and responds in one of the following ways:\n\n* `200 OK`: the eviction is allowed, the `Eviction` subresource is created, and\n  the Pod is deleted, similar to sending a `DELETE` request to the Pod URL.\n* `429 Too Many Requests`: the eviction is not currently allowed because of the\n  configured PodDisruptionBudget.\n  You may be able to attempt the eviction again later. You might also see this\n  response because of API rate limiting.\n* `500 Internal Server Error`: the eviction is not allowed because there is a\n  misconfiguration, like if multiple PodDisruptionBudgets reference the same Pod.\n\nIf the Pod you want to evict isn't part of a workload that has a\nPodDisruptionBudget, the API server always returns `200 OK` and allows the\neviction.\n\nIf the API server allows the eviction, the Pod is deleted as follows:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#prioritylevelconfiguration-0",
+  "heading": "API Priority and Fairness > Resources > PriorityLevelConfiguration",
+  "text": "A PriorityLevelConfiguration represents a single priority level. Each\nPriorityLevelConfiguration has an independent limit on the number of outstanding\nrequests, and limitations on the number of queued requests.\n\nThe nominal concurrency limit for a PriorityLevelConfiguration is not\nspecified in an absolute number of seats, but rather in \"nominal\nconcurrency shares.\" The total concurrency limit for the API Server is\ndistributed among the existing PriorityLevelConfigurations in\nproportion to these shares, to give each level its nominal limit in\nterms of seats. This allows a cluster administrator to scale up or\ndown the total amount of traffic to a server by restarting\n`kube-apiserver` with a different value for `--max-requests-inflight`\n(or `--max-mutating-requests-inflight`), and all\nPriorityLevelConfigurations will see their maximum allowed concurrency\ngo up (or down) by the same fraction."
+ },
+ {
+  "chunk_id": "concepts/services-networking/gateway#resource-model-0",
+  "heading": "Gateway API > Resource model",
+  "text": "Gateway API has four stable API kinds:\n\n* __GatewayClass:__ Defines a set of gateways with common configuration and managed by a controller\n  that implements the class.\n\n* __Gateway:__ Defines an instance of traffic handling infrastructure, such as cloud load balancer.\n\n* __HTTPRoute:__ Defines HTTP-specific rules for mapping traffic from a Gateway listener to a\n  representation of backend network endpoints. These endpoints are often represented as a\n  Service.\n\n* __GRPCRoute:__ Defines gRPC-specific rules for mapping traffic from a Gateway listener to a\nrepresentation of backend network endpoints. These endpoints are often represented as a\n  Service.\n\nGateway API is organized into different API kinds that have interdependent relationships to support\nthe role-oriented nature of organizations. A Gateway object is associated with exactly one GatewayClass;\nthe GatewayClass describes the gateway controller responsible for managing Gateways of this class.\nOne or more route kinds such as HTTPRoute, are then associated to Gateways. A Gateway can filter the routes\nthat may be attached to its `listeners`, forming a bidirectional trust model with routes."
+ },
+ {
+  "chunk_id": "concepts/services-networking/gateway#api-kind-grpcroute-0",
+  "heading": "Gateway API > Resource model > GRPCRoute",
+  "text": "The GRPCRoute kind specifies routing behavior of gRPC requests from a Gateway listener to backend network\nendpoints. For a Service backend, an implementation may represent the backend network endpoint as a Service\nIP or the backing EndpointSlices of the Service. A GRPCRoute represents configuration that is applied to the\nunderlying Gateway implementation. For example, defining a new GRPCRoute may result in configuring additional\ntraffic routes in a cloud load balancer or in-cluster proxy server.\n\nGateways supporting GRPCRoute are required to support HTTP/2 without an initial upgrade from HTTP/1,\nso gRPC traffic is guaranteed to flow properly.\n\nA typical GRPCRoute example:\n\n```yaml\napiVersion: gateway.networking.k8s.io/v1\nkind: GRPCRoute\nmetadata:\n  name: example-grpcroute\nspec:\n  parentRefs:\n  - name: example-gateway\n  hostnames:\n  - \"svc.example.com\"\n  rules:\n  - backendRefs:\n    - name: example-svc\n      port: 50051\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#exempt-requests-0",
+  "heading": "API Priority and Fairness > Concepts > Exempt requests",
+  "text": "Some requests are considered sufficiently important that they are not subject to\nany of the limitations imposed by this feature. These exemptions prevent an\nimproperly-configured flow control configuration from totally disabling an API\nserver."
+ },
+ {
+  "chunk_id": "concepts/services-networking/gateway#design-principles-1",
+  "heading": "Gateway API > Design principles",
+  "text": "* __Role-oriented:__ Gateway API kinds are modeled after organizational roles that are\n  responsible for managing Kubernetes service networking:\n  * __Infrastructure Provider:__ Manages infrastructure that allows multiple isolated clusters\n    to serve multiple tenants, e.g. a cloud provider.\n  * __Cluster Operator:__ Manages clusters and is typically concerned with policies, network\n    access, application permissions, etc.\n  * __Application Developer:__ Manages an application running in a cluster and is typically\n    concerned with application-level configuration and [Service](/docs/concepts/services-networking/service/)\n    composition.\n* __Portable:__ Gateway API specifications are defined as [custom resources](/docs/concepts/extend-kubernetes/api-extension/custom-resources)\n  and are supported by many [implementations](https://gateway-api.sigs.k8s.io/implementations/).\n* __Expressive:__ Gateway API kinds support functionality for common traffic routing use cases\n  such as header-based matching, traffic weighting, and others that were only possible in"
+ }
+]

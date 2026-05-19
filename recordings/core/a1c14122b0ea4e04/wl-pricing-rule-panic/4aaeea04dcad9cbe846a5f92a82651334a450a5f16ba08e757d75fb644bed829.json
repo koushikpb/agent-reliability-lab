@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WFaHzxn9UwT9roqNNSJNa1",
+   "input": {
+    "pod": "pricing-engine-74d9c6b8f-5tnwh"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2374,
+ "model": "claude-opus-4-7",
+ "output_tokens": 88,
+ "stop_reason": "tool_use"
+}

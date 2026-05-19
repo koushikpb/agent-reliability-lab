@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I'll investigate ticket T-2005 for you.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011TfUhuntF7xtT3t3tBvEmq",
+   "input": {
+    "id": "T-2005"
+   },
+   "name": "get_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1160,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 69,
+ "stop_reason": "tool_use"
+}

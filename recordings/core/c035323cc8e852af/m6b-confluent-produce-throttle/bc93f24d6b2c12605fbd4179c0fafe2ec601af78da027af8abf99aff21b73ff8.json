@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:**\n\nI resolved ticket T-6005 by examining the pod logs and identifying that the Kafka broker is actively throttling the producer with persistent rate limiting. The logs showed clear THROTTLE warnings with 2.8s average throttle times and a 96% full producer queue, while CPU usage remained low at only 0.11 cores. This explains why scaling replicas had no effect\u2014the bottleneck is the broker-level producer quota on the client API key, not Kubernetes resources. The recommended fix is for the ticket owner to contact the data platform team to increase the producer rate limits for their clickstream topics.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8152,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 137,
+ "stop_reason": "end_turn"
+}

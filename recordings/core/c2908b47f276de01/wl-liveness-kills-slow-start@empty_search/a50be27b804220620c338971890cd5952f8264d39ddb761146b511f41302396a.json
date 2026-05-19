@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The pods are in CrashLoopBackOff. Let me check the logs from one of the failing pods to see what's happening:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_012vwy8TZZEtsC3VpViN9HwF",
+   "input": {
+    "pod": "catalog-search-7d6f9b8c5-4kxpw"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1945,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 104,
+ "stop_reason": "tool_use"
+}

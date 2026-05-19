@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Let me search for information about what could cause a crash starting at a specific time without any deployment changes:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LcMGbim7w3JbegX4yG3BRB",
+   "input": {
+    "query": "node disk space full eviction triggered crash loop"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_013D4rMVHJVScucYuJZ4giPd",
+   "input": {
+    "query": "kubelet restart evict pods resource pressure"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 10824,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 126,
+ "stop_reason": "tool_use"
+}

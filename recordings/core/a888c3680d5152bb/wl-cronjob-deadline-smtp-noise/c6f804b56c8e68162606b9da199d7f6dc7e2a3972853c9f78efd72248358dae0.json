@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the finance namespace to see the pods and their status.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01FnmEMon7KnWtewfZc6YDJ9",
+   "input": {
+    "namespace": "finance"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1327,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 69,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more specifically:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MZKsirYHTrtyHecoCb2ibN",
+   "input": {
+    "query": "container do not have relevant resource request set CPU utilization Pod will not be defined"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 15895,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 75,
+ "stop_reason": "tool_use"
+}

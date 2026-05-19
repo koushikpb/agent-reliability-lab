@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Excellent! I found the issue. The deployment is failing because the new 1.5.0 pods are being blocked by PodSecurity policy constraints. Let me search the documentation to better understand PodSecurity policies:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01NBfCSWe8m79ytRVvbDBVTt",
+   "input": {
+    "query": "PodSecurity restricted policy securityContext"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2506,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 110,
+ "stop_reason": "tool_use"
+}

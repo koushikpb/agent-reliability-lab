@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I'll start by reading the ticket to understand what needs to be resolved.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011HHczvEiK1MjxigRA5FYhU",
+   "input": {
+    "id": "T-6001"
+   },
+   "name": "get_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1160,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 72,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Resolved T-4003. The cart-service Service selector (`app: cart-service`) no longer matches the 4.2 pods, which the new Helm chart template labels only with `app.kubernetes.io/name=cart-service` etc. The resulting empty EndpointSlice is why the storefront sees \"cart unavailable\" despite healthy pods. Fix: either add `app: cart-service` back to the Deployment's pod labels, or update the Service selector to the new `app.kubernetes.io/*` labels.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7234,
+ "model": "claude-opus-4-7",
+ "output_tokens": 170,
+ "stop_reason": "end_turn"
+}

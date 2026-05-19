@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DDxEAUUT5xNUJpJSM2KCnw",
+   "input": {
+    "id": "T-2005",
+    "note": "Cause: The ledger-export CronJob sets spec.activeDeadlineSeconds: 3600 (1 hour). Row volume has grown past what fits in that window, so the Job is being killed with reason DeadlineExceeded before it finishes. Per the docs, once a Job reaches activeDeadlineSeconds all its running Pods are terminated and the Job status becomes type: Failed with reason: DeadlineExceeded [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-1], and this is a permanent failure requiring manual intervention [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-3].\n\nEvidence:\n- Both failed pods show job_status \"Failed: DeadlineExceeded (Job was active longer than specified deadline)\" and last_state exit code 143 (SIGTERM).\n- Logs show the container receiving SIGTERM at exactly T+60m (01:00 -> 02:00) mid-export: run 29637420 was killed at batch 69/95 of 9,412,770 rows; run 29636980 at batch 71/93 of 9,286,104 rows.\n- The last success (29635540) only had 5,104,388 rows and completed in 44m49s - comfortably under the 1h deadline. So the job itself didn't change; the input size grew past the deadline.\n- The SMTP \"connection refused\" errors are only the progress-notification emails and are unrelated to the failure (they appeared in the successful run too).\n\nFix the owner can apply: raise .spec.jobTemplate.spec.activeDeadlineSeconds on the ledger-export CronJob (e.g. to 10800 for a 3h ceiling, based on current ~90m runtime) and re-apply. Note that activeDeadlineSeconds takes precedence over backoffLimit, so retries won't help while the deadline is too tight [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-2]. Make sure to edit the field on the Job spec level, not inside the Pod template [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-3]. After bumping the deadline, trigger a manual run to backfill the missing CSVs for 2026-05-18 and 2026-05-19. The SMTP outage to 10.20.4.18:587 should be tracked as a separate ticket.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7304,
+ "model": "claude-opus-4-7",
+ "output_tokens": 902,
+ "stop_reason": "tool_use"
+}

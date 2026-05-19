@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/access-application-cluster/configure-access-multiple-clusters#windows-powershell-0",
+  "heading": "Configure Access to Multiple Clusters > Set the KUBECONFIG environment variable > Windows PowerShell",
+  "text": "```powershell\n$Env:KUBECONFIG_SAVED=$ENV:KUBECONFIG\n```\n\n The `KUBECONFIG` environment variable is a list of paths to configuration files. The list is\ncolon-delimited for Linux and Mac, and semicolon-delimited for Windows. If you have\na `KUBECONFIG` environment variable, familiarize yourself with the configuration files\nin the list.\n\nTemporarily append two paths to your `KUBECONFIG` environment variable. For example:"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling#autoscaling-based-on-cluster-size-0",
+  "heading": "Autoscaling Workloads > Scaling workloads automatically > Autoscaling based on cluster size",
+  "text": "For workloads that need to be scaled based on the size of the cluster (for example\n`cluster-dns` or other system components), you can use the\n[_Cluster Proportional Autoscaler_](https://github.com/kubernetes-sigs/cluster-proportional-autoscaler).\nJust like the VPA, it is not part of the Kubernetes core, but hosted as its\nown project on GitHub.\n\nThe Cluster Proportional Autoscaler watches the number of schedulable nodes\nand cores and scales the number of replicas of the target workload accordingly.\n\nIf the number of replicas should stay the same, you can scale your workloads vertically according to the cluster size using\nthe [_Cluster Proportional Vertical Autoscaler_](https://github.com/kubernetes-sigs/cluster-proportional-vertical-autoscaler).\nThe project is **currently in beta** and can be found on GitHub."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling#autoscaling-based-on-cluster-size-1",
+  "heading": "Autoscaling Workloads > Scaling workloads automatically > Autoscaling based on cluster size",
+  "text": "While the Cluster Proportional Autoscaler scales the number of replicas of a workload,\nthe Cluster Proportional Vertical Autoscaler adjusts the resource requests for a workload\n(for example a Deployment or DaemonSet) based on the number of nodes and/or cores in the cluster."
+ },
+ {
+  "chunk_id": "concepts/configuration/organize-cluster-access-kubeconfig#the-kubeconfig-environment-variable-0",
+  "heading": "Organizing Cluster Access Using kubeconfig Files > The KUBECONFIG environment variable",
+  "text": "The `KUBECONFIG` environment variable holds a list of kubeconfig files.\nFor Linux and Mac, the list is colon-delimited. For Windows, the list\nis semicolon-delimited. The `KUBECONFIG` environment variable is not\nrequired. If the `KUBECONFIG` environment variable doesn't exist,\n`kubectl` uses the default kubeconfig file, `$HOME/.kube/config`.\n\nIf the `KUBECONFIG` environment variable does exist, `kubectl` uses\nan effective configuration that is the result of merging the files\nlisted in the `KUBECONFIG` environment variable."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling#scaling-cluster-infrastructure-0",
+  "heading": "Autoscaling Workloads > Scaling cluster infrastructure",
+  "text": "If scaling workloads isn't enough to meet your needs, you can also scale your cluster infrastructure itself.\n\nScaling the cluster infrastructure normally means adding or removing nodes.\nRead [Node autoscaling](/docs/concepts/cluster-administration/node-autoscaling/)\nfor more information."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/configure-upgrade-etcd#scaling-out-etcd-clusters-0",
+  "heading": "Operating etcd clusters for Kubernetes > Scaling out etcd clusters",
+  "text": "Scaling out etcd clusters increases availability by trading off performance.\nScaling does not increase cluster performance nor capability. A general rule\nis not to scale out or in etcd clusters. Do not configure any auto scaling\ngroups for etcd clusters. It is strongly recommended to always run a static\nfive-member etcd cluster for production Kubernetes clusters at any officially\nsupported scale.\n\nA reasonable scaling is to upgrade a three-member cluster to a five-member\none, when more reliability is desired. See\n[etcd reconfiguration documentation](https://etcd.io/docs/current/op-guide/runtime-configuration/#remove-a-member)\nfor information on how to add members into an existing cluster."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-horizontal-autoscaling#tuning-autoscaling-parameters-1",
+  "heading": "Autoscale the DNS Service in a Cluster > Tune DNS autoscaling parameters",
+  "text": "Note that the values of both `coresPerReplica` and `nodesPerReplica` are\nfloats.\n\nThe idea is that when a cluster is using nodes that have many cores,\n`coresPerReplica` dominates. When a cluster is using nodes that have fewer\ncores, `nodesPerReplica` dominates.\n\nThere are other supported scaling patterns. For details, see\n[cluster-proportional-autoscaler](https://github.com/kubernetes-sigs/cluster-proportional-autoscaler)."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#tolerance-1",
+  "heading": "Horizontal Pod Autoscaling > Configurable scaling behavior > Tolerance",
+  "text": "If you don't set this field, the HPA applies the default cluster-wide tolerance of 10%. This\ndefault can be updated for both scale-up and scale-down using the\n[kube-controller-manager](/docs/reference/command-line-tools-reference/kube-controller-manager/)\n`--horizontal-pod-autoscaler-tolerance` command line argument. (You can't use the Kubernetes API\nto configure this default value.)"
+ }
+]

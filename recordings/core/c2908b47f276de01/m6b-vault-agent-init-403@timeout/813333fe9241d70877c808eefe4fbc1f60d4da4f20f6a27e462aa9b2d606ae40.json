@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "These results don't directly address Vault Agent auth. Let me search more specifically for Vault Agent and Kubernetes auth method issues.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01HPssWabdQBS8KXEvm1MSMJ",
+   "input": {
+    "query": "vault-agent-inject Kubernetes authentication"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5109,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 88,
+ "stop_reason": "tool_use"
+}

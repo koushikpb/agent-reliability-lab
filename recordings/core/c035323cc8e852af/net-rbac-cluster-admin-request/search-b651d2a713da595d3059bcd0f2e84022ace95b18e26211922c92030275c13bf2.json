@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/application-security-checklist#rbac-0",
+  "heading": "Application Security Checklist > Base security hardening > Role Based Access Control (RBAC)",
+  "text": "- [ ] Permissions such as **create**, **patch**, **update** and **delete**\n  should be only granted if necessary.\n- [ ] Avoid creating RBAC permissions to create or update roles which can lead to\n  [privilege escalation](/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping).\n- [ ] Review bindings for the `system:unauthenticated` group and remove them where\n  possible, as this gives access to anyone who can contact the API server at a network level.\n\nThe **create**, **update** and **delete** verbs should be permitted judiciously.\nThe **patch** verb if allowed on a Namespace can\n[allow users to update labels on the namespace or deployments](/docs/concepts/security/rbac-good-practices/#namespace-modification)\nwhich can increase the attack surface."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#default-service-accounts-0",
+  "heading": "Service Accounts > What are service accounts? > Default service accounts",
+  "text": "When you create a cluster, Kubernetes automatically creates a ServiceAccount\nobject named `default` for every namespace in your cluster. The `default`\nservice accounts in each namespace get no permissions by default other than the\n[default API discovery permissions](/docs/reference/access-authn-authz/rbac/#default-roles-and-role-bindings)\nthat Kubernetes grants to all authenticated principals if role-based access control (RBAC) is enabled.\nIf you delete the `default` ServiceAccount object in a namespace, the\ncontrol plane\nreplaces it with a new one.\n\nIf you deploy a Pod in a namespace, and you don't\n[manually assign a ServiceAccount to the Pod](#assign-to-pod), Kubernetes\nassigns the `default` ServiceAccount for that namespace to the Pod."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/update-api-object-kubectl-patch#notes-on-the-strategic-merge-patch-0",
+  "heading": "Update API Objects in Place Using kubectl patch > Use a strategic merge patch to update a Deployment > Notes on the strategic merge patch",
+  "text": "The patch you did in the preceding exercise is called a *strategic merge patch*.\nNotice that the patch did not replace the `containers` list. Instead it added a new\nContainer to the list. In other words, the list in the patch was merged with the\nexisting list. This is not always what happens when you use a strategic merge patch on a list.\nIn some cases, the list is replaced, not merged.\n\nWith a strategic merge patch, a list is either replaced or merged depending on its\npatch strategy. The patch strategy is specified by the value of the `patchStrategy` key\nin a field tag in the Kubernetes source code. For example, the `Containers` field of `PodSpec`\nstruct has a `patchStrategy` of `merge`:\n\n```go\ntype PodSpec struct {\n  ...\n  Containers []Container `json:\"containers\" patchStrategy:\"merge\" patchMergeKey:\"name\" ...`\n  ...\n}\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/hardening-dra#grant-scheduler-and-allocation-controller-permissions-0",
+  "heading": "Harden Dynamic Resource Allocation in Your Cluster > Grant least-privilege permissions for synthetic subresources > Grant scheduler and allocation-controller permissions",
+  "text": "Apply a role that allows binding-related updates:\n\n```yaml\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: dra-binding-updater\nrules:\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/status\"]\n    verbs: [\"get\", \"patch\", \"update\"]\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/binding\"]\n    verbs: [\"patch\", \"update\"]\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#updating-a-deployment-0",
+  "heading": "Deployments > Updating a Deployment",
+  "text": "A Deployment's rollout is triggered if and only if the Deployment's Pod template (that is, `.spec.template`)\nis changed, for example if the labels or container images of the template are updated. Other updates, such as scaling the Deployment, do not trigger a rollout.\n\nFollow the steps given below to update your Deployment:\n\n1. Let's update the nginx Pods to use the `nginx:1.16.1` image instead of the `nginx:1.14.2` image.\n\n   ```shell\n   kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.16.1\n   ```\n\n   or use the following command:\n\n   ```shell\n   kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1\n   ```\n   where `deployment/nginx-deployment` indicates the Deployment,\n   `nginx` indicates the Container the update will take place and\n   `nginx:1.16.1` indicates the new image and its tag.\n\n   The output is similar to:"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/kustomization#composing-and-customizing-resources-2",
+  "heading": "Declarative Management of Kubernetes Objects Using Kustomize > Overview of Kustomize > Composing and Customizing Resources",
+  "text": "The resources from `kubectl kustomize ./` contain both the Deployment and the Service objects.\n\n#### Customizing\n\nPatches can be used to apply different customizations to resources. Kustomize supports different patching\nmechanisms through `StrategicMerge` and `Json6902` using the `patches` field. `patches` may be a file or\nan inline string, targeting a single or multiple resources.\n\nThe `patches` field contains a list of patches applied in the order they are specified. The patch target\nselects resources by `group`, `version`, `kind`, `name`, `namespace`, `labelSelector` and `annotationSelector`.\n\nSmall patches that do one thing are recommended. For example, create one patch for increasing the deployment\nreplica number and another patch for setting the memory limit. The target resource is matched using `group`, `version`,\n`kind`, and `name` fields from the patch file."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-0",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use the built-in Kubernetes\n[role-based access control (RBAC)](/docs/reference/access-authn-authz/rbac/)\nmechanism to grant the minimum permissions required by each service account.\nYou create a *role*, which grants access, and then *bind* the role to your\nServiceAccount. RBAC lets you define a minimum set of permissions so that the\nservice account permissions follow the principle of least privilege. Pods that\nuse that service account don't get more permissions than are required to\nfunction correctly.\n\nFor instructions, refer to\n[ServiceAccount permissions](/docs/reference/access-authn-authz/rbac/#service-account-permissions).\n\n#### Cross-namespace access using a ServiceAccount {#cross-namespace}"
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-1",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use RBAC to allow service accounts in one namespace to perform actions\non resources in a different namespace in the cluster. For example, consider a\nscenario where you have a service account and Pod in the `dev` namespace and\nyou want your Pod to see Jobs running in the `maintenance` namespace. You could\ncreate a Role object that grants permissions to list Job objects. Then,\nyou'd create a RoleBinding object in the `maintenance` namespace to bind the\nRole to the ServiceAccount object. Now, Pods in the `dev` namespace can list\nJob objects in the `maintenance` namespace using that service account."
+ }
+]

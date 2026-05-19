@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-budgets-3",
+  "heading": "Disruptions > Pod disruption budgets",
+  "text": "It is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)\nto your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.\nThe default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nbefore the drain can proceed.\n\nWhen a pod is evicted using the eviction API, it is gracefully\n[terminated](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination), honoring the\n`terminationGracePeriodSeconds` setting in its [PodSpec](/docs/reference/generated/kubernetes-api//#podspec-v1-core)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-budgets-1",
+  "heading": "Disruptions > Pod disruption budgets",
+  "text": "For example, the `kubectl drain` subcommand lets you mark a node as going out of\nservice. When you run `kubectl drain`, the tool tries to evict all of the Pods on\nthe Node you're taking out of service. The eviction request that `kubectl` submits on\nyour behalf may be temporarily rejected, so the tool periodically retries all failed\nrequests until all Pods on the target node are terminated, or until a configurable timeout\nis reached.\n\nA PDB specifies the number of replicas that an application can tolerate having, relative to how\nmany it is intended to have.  For example, a Deployment which has a `.spec.replicas: 5` is\nsupposed to have 5 pods at any given time.  If its PDB allows for there to be 4 at a time,\nthen the Eviction API will allow voluntary disruption of one (but not two) pods at a time.\n\nThe group of pods that comprise the application is specified using a label selector, the same\nas the one used by the application's controller (deployment, stateful-set, etc)."
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#specifying-a-poddisruptionbudget-3",
+  "heading": "Specifying a Disruption Budget for your Application > Specifying a PodDisruptionBudget",
+  "text": "If you set `maxUnavailable` to 0% or 0, or you set `minAvailable` to 100% or the number of replicas,\nyou are requiring zero voluntary evictions. When you set zero voluntary evictions for a workload\nobject such as ReplicaSet, then you cannot successfully drain a Node running one of those Pods.\nIf you try to drain a Node where an unevictable Pod is running, the drain never completes.\nThis is permitted as per the semantics of `PodDisruptionBudget`.\n\nYou can find examples of pod disruption budgets defined below. They match pods with the label\n`app: zookeeper`.\n\nExample PDB Using minAvailable:\n\n```yaml\napiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: zk-pdb\nspec:\n  minAvailable: 2\n  selector:\n    matchLabels:\n      app: zookeeper\n```\n\nExample PDB Using maxUnavailable:"
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#unhealthy-pod-eviction-policy-1",
+  "heading": "Specifying a Disruption Budget for your Application > Unhealthy Pod Eviction Policy",
+  "text": ": This policy ensures that running pods of an already disrupted application have\n  the best chance to become healthy. This has negative implications for draining\n  nodes, which can be blocked by misbehaving applications that are guarded by a PDB.\n  More specifically applications with pods in `CrashLoopBackOff` state\n  (due to a bug or misconfiguration), or pods that are just failing to report the\n  `Ready` condition.\n\n`AlwaysAllow`\n: Running pods (`.status.phase=\"Running\"`), but not yet healthy are considered\n  disrupted and can be evicted regardless of whether the criteria in a PDB is met.\n\n: This means prospective running pods of a disrupted application might not get a\n  chance to become healthy. By using this policy, cluster managers can easily evict\n  misbehaving applications that are guarded by a PDB. More specifically applications\n  with pods in `CrashLoopBackOff` state (due to a bug or misconfiguration), or pods\n  that are just failing to report the `Ready` condition.\n\nPods in `Pending`, `Succeeded` or `Failed` phase are always considered for eviction."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#configure-poddisruptionbudget-0",
+  "heading": "Safely Drain a Node > (Optional) Configure a disruption budget",
+  "text": "To ensure that your workloads remain available during maintenance, you can\nconfigure a [PodDisruptionBudget](/docs/concepts/workloads/pods/disruptions/).\n\nIf availability is important for any applications that run or could run on the node(s)\nthat you are draining, [configure a PodDisruptionBudgets](/docs/tasks/run-application/configure-pdb/)\nfirst and then continue following this guide.\n\nIt is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)\nto your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.\nThe default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nbefore the drain can proceed."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-budgets-0",
+  "heading": "Disruptions > Pod disruption budgets",
+  "text": "Kubernetes offers features to help you run highly available applications even when you\nintroduce frequent voluntary disruptions.\n\nAs an application owner, you can create a PodDisruptionBudget (PDB) for each application.\nA PDB limits the number of Pods of a replicated application that are down simultaneously from\nvoluntary disruptions. For example, a quorum-based application would\nlike to ensure that the number of replicas running is never brought below the\nnumber needed for a quorum. A web front end might want to\nensure that the number of replicas serving load never falls below a certain\npercentage of the total.\n\nCluster managers and hosting providers should use tools which\nrespect PodDisruptionBudgets by calling the [Eviction API](/docs/tasks/administer-cluster/safely-drain-node/#eviction-api)\ninstead of directly deleting pods or deployments."
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#unhealthy-pod-eviction-policy-0",
+  "heading": "Specifying a Disruption Budget for your Application > Unhealthy Pod Eviction Policy",
+  "text": "PodDisruptionBudget guarding an application ensures that `.status.currentHealthy` number of pods\ndoes not fall below the number specified in `.status.desiredHealthy` by disallowing eviction of healthy pods.\nBy using `.spec.unhealthyPodEvictionPolicy`, you can also define the criteria when unhealthy pods\nshould be considered for eviction. The default behavior when no policy is specified corresponds\nto the `IfHealthyBudget` policy.\n\nPolicies:\n\n`IfHealthyBudget`\n: Running pods (`.status.phase=\"Running\"`), but not yet healthy can be evicted only\n  if the guarded application is not disrupted (`.status.currentHealthy` is at least\n  equal to `.status.desiredHealthy`)."
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#specifying-a-poddisruptionbudget-2",
+  "heading": "Specifying a Disruption Budget for your Application > Specifying a PodDisruptionBudget",
+  "text": "Example 4: With a `maxUnavailable` of 30%, evictions are allowed as long as the number of \nunhealthy replicas does not exceed 30% of the total number of desired replica rounded up to \nthe nearest integer. If the total number of desired replicas is just one, that single replica\nis still allowed for disruption, leading to an effective unavailability of 100%.\n\nIn typical usage, a single budget would be used for a collection of pods managed by\na controller\u2014for example, the pods in a single ReplicaSet or StatefulSet.\n\nA disruption budget does not truly guarantee that the specified\nnumber/percentage of pods will always be up. For example, a node that hosts a\npod from the collection may fail when the collection is at the minimum size\nspecified in the budget, thus bringing the number of available pods from the\ncollection below the specified size. The budget can only protect against\nvoluntary evictions, not all causes of unavailability."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#termination-with-sidecars-0",
+  "heading": "Pod Lifecycle > Termination of Pods > Pod shutdown and sidecar containers",
+  "text": "If your Pod includes one or more\n[sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/)\n(init containers with an `Always` restart policy), the kubelet will delay sending\nthe TERM signal to these sidecar containers until the last main container has fully terminated.\nThe sidecar containers will be terminated in the reverse order they are defined in the Pod spec.\nThis ensures that sidecar containers continue serving the other containers in the Pod until they\nare no longer needed.\n\nThis means that slow termination of a main container will also delay the termination of the sidecar containers.\nIf the grace period expires before the termination process is complete, the Pod may enter [forced termination](#pod-termination-beyond-grace-period).\nIn this case, all remaining containers in the Pod will be terminated simultaneously with a short grace period."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#jobs-with-sidecar-containers-0",
+  "heading": "Sidecar Containers > Sidecar containers and Pod lifecycle > Jobs with sidecar containers",
+  "text": "If you define a Job that uses sidecar using Kubernetes-style init containers,\nthe sidecar container in each Pod does not prevent the Job from completing after the\nmain container has finished.\n\nHere's an example of a Job with two containers, one of which is a sidecar:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#sidecar-containers-and-pod-lifecycle-1",
+  "heading": "Sidecar Containers > Sidecar containers and Pod lifecycle",
+  "text": "Compared to regular init containers, sidecars defined within `initContainers` continue to\nrun after they have started. This is important when there is more than one entry inside\n`.spec.initContainers` for a Pod. After a sidecar-style init container is running (the kubelet\nhas set the `started` status for that init container to true), the kubelet then starts the\nnext init container from the ordered `.spec.initContainers` list.\nThat status either becomes true because there is a process running in the\ncontainer and no startup probe defined, or as a result of its `startupProbe` succeeding.\n\nUpon Pod [termination](/docs/concepts/workloads/pods/pod-lifecycle/#termination-with-sidecars),\nthe kubelet postpones terminating sidecar containers until the main application container has fully stopped.\nThe sidecar containers are then shut down in the opposite order of their appearance in the Pod specification.\nThis approach ensures that the sidecars remain operational, supporting other containers within the Pod,\nuntil their service is no longer required."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#termination-with-sidecars-1",
+  "heading": "Pod Lifecycle > Termination of Pods > Pod shutdown and sidecar containers",
+  "text": "Similarly, if the Pod has a `preStop` hook that exceeds the termination grace period, emergency termination may occur.\nIn general, if you have used `preStop` hooks to control the termination order without sidecar containers, you can now\nremove them and allow the kubelet to manage sidecar termination automatically."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#differences-from-application-containers-0",
+  "heading": "Sidecar Containers > Differences from application containers",
+  "text": "Sidecar containers run alongside _app containers_ in the same pod. However, they do not\nexecute the primary application logic; instead, they provide supporting functionality to\nthe main application.\n\nSidecar containers have their own independent lifecycles. They can be started, stopped,\nand restarted independently of app containers. This means you can update, scale, or\nmaintain sidecar containers without affecting the primary application.\n\nSidecar containers share the same network and storage namespaces with the primary\ncontainer. This co-location allows them to interact closely and share resources.\n\nFrom a Kubernetes perspective, the sidecar container's graceful termination is less important.\nWhen other containers take all allotted graceful termination time, the sidecar containers\nwill receive the `SIGTERM` signal, followed by the `SIGKILL` signal, before they have time to terminate gracefully. \nSo exit codes different from `0` (`0` indicates successful exit), for sidecar containers are normal\non Pod termination and should be generally ignored by the external tooling."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#handling-pod-and-container-failures-3",
+  "heading": "Jobs > Handling Pod and container failures",
+  "text": "If you specify the `.spec.podFailurePolicy` field, the Job controller does not consider a terminating\nPod (a pod that has a `.metadata.deletionTimestamp` field set) as a failure until that Pod is\nterminal (its `.status.phase` is `Failed` or `Succeeded`). However, the Job controller\ncreates a replacement Pod as soon as the termination becomes apparent. Once the\npod terminates, the Job controller evaluates `.backoffLimit` and `.podFailurePolicy`\nfor the relevant Job, taking this now-terminated Pod into consideration.\n\nIf either of these requirements is not satisfied, the Job controller counts\na terminating Pod as an immediate failure, even if that Pod later terminates\nwith `phase: \"Succeeded\"`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-flow-1",
+  "heading": "Pod Lifecycle > Termination of Pods > Pod Termination Flow",
+  "text": "      If the `preStop` hook is still running after the grace period expires, the kubelet requests\n      a small, one-off grace period extension of 2 seconds.\n\n   If the `preStop` hook needs longer to complete than the default grace period allows,\n   you must modify `terminationGracePeriodSeconds` to suit this.\n\n   1. The kubelet triggers the container runtime to send a TERM signal to process 1 inside each\n      container.\n\n      There is [special ordering](#termination-with-sidecars) if the Pod has any\n      sidecar containers defined.\n      Otherwise, the containers in the Pod receive the TERM signal at different times and in\n      an arbitrary order. If the order of shutdowns matters, consider using a `preStop` hook\n      to synchronize (or switch to using sidecar containers)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-5",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "When you use a `podFailurePolicy`, the job controller only matches Pods in the\n`Failed` phase. Pods with a deletion timestamp that are not in a terminal phase\n(`Failed` or `Succeeded`) are considered still terminating. This implies that\nterminating pods retain a [tracking finalizer](#job-tracking-with-finalizers)\nuntil they reach a terminal phase.\nSince Kubernetes 1.27, Kubelet transitions deleted pods to a terminal phase\n(see: [Pod Phase](/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase)). This\nensures that deleted pods have their finalizers removed by the Job controller.\n\nStarting with Kubernetes v1.28, when Pod failure policy is used, the Job controller recreates\nterminating Pods only once these Pods reach the terminal `Failed` phase. This behavior is similar\nto `podReplacementPolicy: Failed`. For more information, see [Pod replacement policy](#pod-replacement-policy)."
+ }
+]

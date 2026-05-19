@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-container-is-terminated-3",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My container is terminated",
+  "text": "In the preceding example, the `Restart Count:  5` indicates that the `simmemleak`\ncontainer in the Pod was terminated and restarted five times (so far).\nThe `OOMKilled` reason shows that the container tried to use more memory than its limit.\n\nYour next step might be to check the application code for a memory leak. If you\nfind that the application is behaving how you expect, consider setting a higher\nmemory limit (and possibly request) for that container."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-3",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "The Container in this exercise can be restarted, so the kubelet restarts it. Repeat\nthis command several times to see that the Container is repeatedly killed and restarted:\n\n```shell\nkubectl get pod memory-demo-2 --namespace=mem-example\n```\n\nThe output shows that the Container is killed, restarted, killed again, restarted again, and so on:\n\n```\nkubectl get pod memory-demo-2 --namespace=mem-example\nNAME            READY     STATUS      RESTARTS   AGE\nmemory-demo-2   0/1       OOMKilled   1          37s\n```\n```\n\nkubectl get pod memory-demo-2 --namespace=mem-example\nNAME            READY     STATUS    RESTARTS   AGE\nmemory-demo-2   1/1       Running   2          40s\n```\n\nView detailed information about the Pod history:\n\n```\nkubectl describe pod memory-demo-2 --namespace=mem-example\n```\n\nThe output shows that the Container starts and fails repeatedly:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-2",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "```shell\nkubectl get pod memory-demo-2 --namespace=mem-example\n```\n\nAt this point, the Container might be running or killed. Repeat the preceding command until the Container is killed:\n\n```shell\nNAME            READY     STATUS      RESTARTS   AGE\nmemory-demo-2   0/1       OOMKilled   1          24s\n```\n\nGet a more detailed view of the Container status:\n\n```shell\nkubectl get pod memory-demo-2 --output=yaml --namespace=mem-example\n```\n\nThe output shows that the Container was killed because it is out of memory (OOM):\n\n```yaml\nlastState:\n   terminated:\n     containerID: 65183c1877aaec2e8427bc95609cc52677a454b56fcb24340dbd22917c23b10f\n     exitCode: 137\n     finishedAt: 2017-06-20T20:52:19Z\n     reason: OOMKilled\n     startedAt: null\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-0",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "Kubernetes manages container failures within Pods using a [`restartPolicy`](#restart-policy) defined\nin the Pod `spec`. This policy determines how Kubernetes reacts to containers exiting due to errors\nor other reasons, which falls in the following sequence:\n\n1. **Initial crash**: Kubernetes attempts an immediate restart based on the Pod `restartPolicy`.\n1. **Repeated crashes**: After the initial crash Kubernetes applies an exponential\n   backoff delay for subsequent restarts, described in [`restartPolicy`](#restart-policy).\n   This prevents rapid, repeated restart attempts from overloading the system.\n1. **CrashLoopBackOff state**: This indicates that the backoff delay mechanism is currently\n   in effect for a given container that is in a crash loop, failing and restarting repeatedly.\n1. **Backoff reset**: If a container runs successfully for a certain duration\n   (e.g., 10 minutes), Kubernetes resets the backoff delay, treating any new crash\n   as the first one."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-4",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "```\n... Normal  Created   Created container with id 66a3a20aa7980e61be4922780bf9d24d1a1d8b7395c09861225b0eba1b1f8511\n... Warning BackOff   Back-off restarting failed container\n```\n\nView detailed information about your cluster's Nodes:\n\n```\nkubectl describe nodes\n```\n\nThe output includes a record of the Container being killed because of an out-of-memory condition:\n\n```\nWarning OOMKilling Memory cgroup out of memory: Kill process 4481 (stress) score 1994 or sacrifice child\n```\n\nDelete your Pod:\n\n```shell\nkubectl delete pod memory-demo-2 --namespace=mem-example\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-15",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "If your cluster has the feature gate `RestartAllContainersOnContainerExits` enabled, you can specify\n`RestartAllContainers` as an action in `restartPolicyRules` at container level. When a container's exit\nmatches a rule with this action, the entire Pod is terminated and restarted in-place.\n\nThis \"in-place\" restart offers a more efficient way to reset a Pod's state compared to full deletion\nand recreation. This is especially valuable for workloads where rescheduling is costly, such as\nbatch jobs or AI/ML training tasks.\n\n##### How in-place Pod restarts work\n\nWhen a `RestartAllContainers` action is triggered, the kubelet performs the following steps:\n\n1. **Fast Termination**: All running containers in the Pod are terminated.\n   The configured `terminationGracePeriodSeconds` is not respected, and any configured `preStop` hooks\n   are not executed. This ensures a swift shutdown.\n1. **Preservation of Pod Resources**: The Pod's essential resources are preserved:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-1",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "In practice, a `CrashLoopBackOff` is a condition or event that might be seen as output\nfrom the `kubectl` command, while describing or listing Pods, when a container in the Pod\nfails to start properly and then continually tries and fails in a loop.\n\nIn other words, when a container enters the crash loop, Kubernetes applies the\nexponential backoff delay mentioned in the [Container restart policy](#restart-policy).\nThis mechanism prevents a faulty container from overwhelming the system with continuous\nfailed start attempts.\n\nThe `CrashLoopBackOff` can be caused by issues like the following:\n\n* Application errors that cause the container to exit.\n* Configuration errors, such as incorrect environment variables or missing\n  configuration files.\n* Resource constraints, where the container might not have enough memory or CPU\n  to start properly.\n* Health checks failing if the application doesn't start serving within the\n  expected time.\n* Container liveness probes or startup probes returning a `Failure` result\n  as mentioned in the [probes section](#container-probes).\n\nTo investigate the root cause of a `CrashLoopBackOff` issue, a user can:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-2",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "When a pod is failing to start repeatedly, `CrashLoopBackOff` may appear in the `Status` field of some kubectl commands.\nSimilarly, when a pod is being deleted, `Terminating` may appear in the `Status` field of some kubectl commands.\n\nMake sure not to confuse _Status_, a kubectl display field for user intuition, with the pod's `phase`.\nPod phase is an explicit part of the Kubernetes data model and of the\n[Pod API](/docs/reference/kubernetes-api/workload-resources/pod-v1/). \n\n```\n  NAMESPACE               NAME               READY   STATUS             RESTARTS   AGE\n  alessandras-namespace   alessandras-pod    0/1     CrashLoopBackOff   200        2d9h\n```\n\nA Pod is granted a term to terminate gracefully, which defaults to 30 seconds.\nYou can use the flag `--force` to [terminate a Pod by force](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced)."
+ }
+]

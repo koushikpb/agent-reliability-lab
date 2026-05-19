@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-6",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  is an ingress controller driving [Kong Gateway](https://konghq.com/kong/).\n* [Kusk Gateway](https://kusk.kubeshop.io/) is an OpenAPI-driven ingress controller based on [Envoy](https://www.envoyproxy.io).\n* [N42 Gateway](https://n42-gateway.github.io/) is an Ingress and Gateway API controller for [HAProxy](https://www.haproxy.org/#desc).\n* The [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx-ingress-controller/)\n  works with the [NGINX](https://www.nginx.com/resources/glossary/nginx/) webserver (as a proxy)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-7",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* The [ngrok-operator](https://github.com/ngrok/ngrok-operator) is a controller for [ngrok](https://ngrok.com/) that supports both Ingress and Gateway API for adding secure public access to your K8s Services.\n* The [OCI Native Ingress Controller](https://github.com/oracle/oci-native-ingress-controller#readme) is an Ingress controller for Oracle Cloud Infrastructure which allows you to manage the [OCI Load Balancer](https://docs.oracle.com/en-us/iaas/Content/Balance/home.htm).\n* [OpenNJet Ingress Controller](https://gitee.com/njet-rd/open-njet-kic) is a [OpenNJet](https://njet.org.cn/)-based ingress controller."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#deprecated-annotation-0",
+  "heading": "Ingress > Ingress class > Deprecated annotation",
+  "text": "Before the IngressClass resource and `ingressClassName` field were added in\nKubernetes 1.18, Ingress classes were specified with a\n`kubernetes.io/ingress.class` annotation on the Ingress. This annotation was\nnever formally defined, but was widely supported by Ingress controllers.\n\nThe newer `ingressClassName` field on Ingresses is a replacement for that\nannotation, but is not a direct equivalent. While the annotation was generally\nused to reference the name of the Ingress controller that should implement the\nIngress, the field is a reference to an IngressClass resource that contains\nadditional Ingress configuration, including the name of the Ingress controller."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#ingress-class-0",
+  "heading": "Ingress > Ingress class",
+  "text": "Ingresses can be implemented by different controllers, often with different\nconfiguration. Each Ingress should specify a class, a reference to an\nIngressClass resource that contains additional configuration including the name\nof the controller that should implement the class.\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: IngressClass\nmetadata:\n  name: external-lb\nspec:\n  controller: example.com/ingress-controller\n  parameters:\n    apiGroup: k8s.example.com\n    kind: IngressParameters\n    name: external-lb\n```\n\nThe `.spec.parameters` field of an IngressClass lets you reference another\nresource that provides configuration related to that IngressClass.\n\nThe specific type of parameters to use depends on the ingress controller\nthat you specify in the `.spec.controller` field of the IngressClass."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#default-backend-0",
+  "heading": "Ingress > The Ingress resource > DefaultBackend",
+  "text": "An Ingress with no rules sends all traffic to a single default backend and `.spec.defaultBackend`\nis the backend that should handle requests in that case.\nThe `defaultBackend` is conventionally a configuration option of the\n[Ingress controller](/docs/concepts/services-networking/ingress-controllers) and\nis not specified in your Ingress resources.\nIf no `.spec.rules` are specified, `.spec.defaultBackend` must be specified.\nIf `defaultBackend` is not set, the handling of requests that do not match any of the rules will be up to the\ningress controller (consult the documentation for your ingress controller to find out how it handles this case).\n\nIf none of the hosts or paths match the HTTP request in the Ingress objects, the traffic is\nrouted to your default backend."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#using-multiple-ingress-controllers-1",
+  "heading": "Ingress Controllers > Using multiple Ingress controllers",
+  "text": "If you do not specify an IngressClass for an Ingress, and your cluster has exactly one IngressClass marked as default, then Kubernetes [applies](/docs/concepts/services-networking/ingress/#default-ingress-class) the cluster's default IngressClass to the Ingress.\nYou mark an IngressClass as default by setting the [`ingressclass.kubernetes.io/is-default-class` annotation](/docs/reference/labels-annotations-taints/#ingressclass-kubernetes-io-is-default-class) on that IngressClass, with the string value `\"true\"`.\n\nIdeally, all ingress controllers should fulfill this specification, but the various ingress\ncontrollers operate slightly differently.\n\nMake sure you review your ingress controller's documentation to understand the caveats of choosing it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#tls-0",
+  "heading": "Ingress > Types of Ingress > TLS",
+  "text": "You can secure an Ingress by specifying a secret\nthat contains a TLS private key and certificate. The Ingress resource only\nsupports a single TLS port, 443, and assumes TLS termination at the ingress point\n(traffic to the Service and its Pods is in plaintext).\nIf the TLS configuration section in an Ingress specifies different hosts, they are\nmultiplexed on the same port according to the hostname specified through the\nSNI TLS extension (provided the Ingress controller supports SNI). The TLS secret\nmust contain keys named `tls.crt` and `tls.key` that contain the certificate\nand private key to use for TLS. For example:\n\n```yaml\napiVersion: v1\nkind: Secret\nmetadata:\n  name: testsecret-tls\n  namespace: default\ndata:\n  tls.crt: base64 encoded cert\n  tls.key: base64 encoded key\ntype: kubernetes.io/tls\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicationcontroller#running-an-example-replicationcontroller-1",
+  "heading": "ReplicationController > Running an example ReplicationController",
+  "text": "```\nName:        nginx\nNamespace:   default\nSelector:    app=nginx\nLabels:      app=nginx\nAnnotations:    <none>\nReplicas:    3 current / 3 desired\nPods Status: 0 Running / 3 Waiting / 0 Succeeded / 0 Failed\nPod Template:\n  Labels:       app=nginx\n  Containers:\n   nginx:\n    Image:              nginx\n    Port:               80/TCP\n    Environment:        <none>\n    Mounts:             <none>\n  Volumes:              <none>\nEvents:\n  FirstSeen       LastSeen     Count    From                        SubobjectPath    Type      Reason              Message\n  ---------       --------     -----    ----                        -------------    ----      ------              -------\n  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-qrm3m\n  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-3ntk0\n  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-4ok8v\n```"
+ }
+]

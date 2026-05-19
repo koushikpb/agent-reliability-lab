@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try with the correct pod name format:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016UVKVAvmGJ426snPErYQum",
+   "input": {
+    "pod_name": "clickhouse-2"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4375,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 71,
+ "stop_reason": "tool_use"
+}

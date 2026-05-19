@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/volumes#csi-3",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "* `readOnly`: An optional boolean value indicating whether the volume is to be\n  \"ControllerPublished\" (attached) as read-only. Default is false. This value is passed\n  to the CSI driver via the `readonly` field in the `ControllerPublishVolumeRequest`.\n* `fsType`: If the PV's `VolumeMode` is `Filesystem`, then this field may be used\n  to specify the filesystem that should be used to mount the volume. If the\n  volume has not been formatted and formatting is supported, this value will be\n  used to format the volume.\n  This value is passed to the CSI driver via the `VolumeCapability` field of\n  `ControllerPublishVolumeRequest`, `NodeStageVolumeRequest`, and\n  `NodePublishVolumeRequest`.\n* `volumeAttributes`: A map of string to string that specifies static properties\n  of a volume. This map must correspond to the map returned in the\n  `volume.attributes` field of the `CreateVolumeResponse` by the CSI driver as"
+ },
+ {
+  "chunk_id": "concepts/storage/volume-snapshot-classes#driver-0",
+  "heading": "Volume Snapshot Classes > The VolumeSnapshotClass Resource > Driver",
+  "text": "Volume snapshot classes have a driver that determines what CSI volume plugin is\nused for provisioning VolumeSnapshots. This field must be specified."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-1",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "* through a reference to a [PersistentVolumeClaim](#persistentvolumeclaim)\n* with a [generic ephemeral volume](/docs/concepts/storage/ephemeral-volumes/#generic-ephemeral-volumes)\n* with a [CSI ephemeral volume](/docs/concepts/storage/ephemeral-volumes/#csi-ephemeral-volumes)\n  if the driver supports that\n\nThe following fields are available to storage administrators to configure a CSI\npersistent volume:"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-0",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "[Container Storage Interface](https://github.com/container-storage-interface/spec/blob/master/spec.md)\n(CSI) defines a standard interface for container orchestration systems (like\nKubernetes) to expose arbitrary storage systems to their container workloads.\n\nPlease read the [CSI design proposal](https://git.k8s.io/design-proposals-archive/storage/container-storage-interface.md)\nfor more information.\n\nSupport for CSI spec versions 0.2 and 0.3 is deprecated in Kubernetes\nv1.13 and will be removed in a future release.\n\nCSI drivers may not be compatible across all Kubernetes releases.\nPlease check the specific CSI driver's documentation for supported\ndeployment steps for each Kubernetes release and a compatibility matrix.\n\nOnce a CSI-compatible volume driver is deployed on a Kubernetes cluster, users\nmay use the `csi` volume type to attach or mount the volumes exposed by the\nCSI driver.\n\nA `csi` volume can be used in a Pod in three different ways:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#volume-cloning-0",
+  "heading": "Persistent Volumes > Volume Cloning",
+  "text": "[Volume Cloning](/docs/concepts/storage/volume-pvc-datasource/)\nonly available for CSI volume plugins."
+ },
+ {
+  "chunk_id": "concepts/storage/volume-pvc-datasource#introduction-1",
+  "heading": "CSI Volume Cloning > Introduction",
+  "text": "* Cloning support (`VolumePVCDataSource`) is only available for CSI drivers.\n* Cloning support is only available for dynamic provisioners.\n* CSI drivers may or may not have implemented the volume cloning functionality.\n* You can only clone a PVC when it exists in the same namespace as the destination PVC\n  (source and destination must be in the same namespace).\n* Cloning is supported with a different Storage Class.\n  - Destination volume can be the same or a different storage class as the source.\n  - Default storage class can be used and storageClassName omitted in the spec.\n* Cloning can only be performed between two volumes that use the same VolumeMode setting\n  (if you request a block mode volume, the source MUST also be block mode)"
+ },
+ {
+  "chunk_id": "concepts/storage/volume-health-monitoring#health-reported-on-persistentvolumeclaims-0",
+  "heading": "Volume Health Monitoring > Health reported on PersistentVolumeClaims",
+  "text": "Controller-observed volume health is written to `persistentvolumeclaim.status.healthStatus`\nby the `csi-external-health-monitor-controller` sidecar that runs alongside a CSI\ndriver's controller plugin. The sidecar calls `ControllerListVolumeHealth` (or falls\nback to `ControllerGetVolumeHealth` per volume) and writes the result:\n\n```yaml\napiVersion: v1\nkind: PersistentVolumeClaim\n# ...\nstatus:\n  healthStatus:\n    healthConditions:\n    - status: Inaccessible\n      reason: VolumeNotFound\n      message: \"volume not found on the storage backend\"\n    lastTransitionTime: \"2026-07-20T12:00:00Z\"\n```\n\nNo node ever writes this field; only the sidecar, running in the control plane, does.\nThis keeps a compromised or misbehaving node from being able to influence what other\nusers of the cluster see on a PVC."
+ },
+ {
+  "chunk_id": "concepts/storage/volume-pvc-datasource#provisioning-0",
+  "heading": "CSI Volume Cloning > Provisioning",
+  "text": "Clones are provisioned like any other PVC with the exception of adding a dataSource\nthat references an existing PVC in the same namespace.\n\n```yaml\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n    name: clone-of-pvc-1\n    namespace: myns\nspec:\n  accessModes:\n  - ReadWriteOnce\n  storageClassName: cloning\n  resources:\n    requests:\n      storage: 5Gi\n  dataSource:\n    kind: PersistentVolumeClaim\n    name: pvc-1\n```\n\nYou must specify a capacity value for `spec.resources.requests.storage`, and the\nvalue you specify must be the same or larger than the capacity of the source volume.\n\nThe result is a new PVC with the name `clone-of-pvc-1` that has the exact same\ncontent as the specified source `pvc-1`."
+ }
+]

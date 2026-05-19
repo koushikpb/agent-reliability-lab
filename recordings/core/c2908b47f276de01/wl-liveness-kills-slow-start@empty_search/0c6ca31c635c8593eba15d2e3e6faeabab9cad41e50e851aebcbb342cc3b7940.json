@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try a different search:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_017vfF2xNSFjeFBHj7grXr5f",
+   "input": {
+    "query": "liveness readiness probe startup"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2610,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 66,
+ "stop_reason": "tool_use"
+}

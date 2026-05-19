@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! Now I understand the issue. The job is trying to export 95 batches but is being killed at batch 69 due to the 1-hour deadline. Let me search the Kubernetes documentation about job deadlines to understand the options available.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01L8P7D6k4etb7F4jAK9Q4i7",
+   "input": {
+    "query": "activeDeadlineSeconds job timeout deadline"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2685,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 115,
+ "stop_reason": "tool_use"
+}

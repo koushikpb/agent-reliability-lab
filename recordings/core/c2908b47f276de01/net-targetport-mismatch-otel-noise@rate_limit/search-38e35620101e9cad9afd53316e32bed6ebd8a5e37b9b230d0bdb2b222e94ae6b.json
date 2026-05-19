@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/observability#traces-0",
+  "heading": "Observability > Traces",
+  "text": "Traces capture how requests moves across Kubernetes components and applications, linking latency, timing and relationships between operations.By collecting traces, you can visualize end-to-end request flow, diagnose performance issues, and identify bottlenecks or unexpected interactions in the control plane, add-ons, or applications.\n\nKubernetes  can export spans over the [OpenTelemetry Protocol](/docs/concepts/cluster-administration/system-traces/) (OTLP), either directly via built-in gRPC exporters or by forwarding them through an OpenTelemetry Collector.\n\nThe OpenTelemetry Collector receives spans from components and applications, processes them (for example by applying sampling or redaction), and forwards them to a tracing backend for storage and analysis.\n\nFigure 4 outlines a typical distributed tracing pipeline.\n\nflowchart LR\n    subgraph Sources\n        A[Control plane spans]\n        B[Application spans]\n    end\n    A --> X[OTLP exporter]\n    B --> X\n    X --> COL[OpenTelemetry Collector]\n    COL --> TS[(Tracing backend)]\n    TS --> V[Visualization and analysis]"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-traces#trace-collection-0",
+  "heading": "Traces For Kubernetes System Components > Trace Collection",
+  "text": "Kubernetes components have built-in gRPC exporters for OTLP to export traces, either with an OpenTelemetry Collector, \nor without an OpenTelemetry Collector.\n\nFor a complete guide to collecting traces and using the collector, see\n[Getting Started with the OpenTelemetry Collector](https://opentelemetry.io/docs/collector/getting-started/).\nHowever, there are a few things to note that are specific to Kubernetes components.\n\nBy default, Kubernetes components export traces using the grpc exporter for OTLP on the\n[IANA OpenTelemetry port](https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?search=opentelemetry), 4317.\nAs an example, if the collector is running as a sidecar to a Kubernetes component,\nthe following receiver configuration will collect spans and log them to standard output:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-traces#intro-0",
+  "heading": "Traces For Kubernetes System Components",
+  "text": "System component traces record the latency of and relationships between operations in the cluster.\n\nKubernetes components emit traces using the\n[OpenTelemetry Protocol](https://opentelemetry.io/docs/specs/otlp/)\nwith the gRPC exporter and can be collected and routed to tracing backends using an\n[OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector#-opentelemetry-collector)."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-traces#trace-collection-1",
+  "heading": "Traces For Kubernetes System Components > Trace Collection",
+  "text": "```yaml\nreceivers:\n  otlp:\n    protocols:\n      grpc:\nexporters:\n  # Replace this exporter with the exporter for your backend\n  exporters:\n    debug:\n      verbosity: detailed\nservice:\n  pipelines:\n    traces:\n      receivers: [otlp]\n      exporters: [debug]\n```\n\nTo directly emit traces to a backend without utilizing a collector, \nspecify the endpoint field in the Kubernetes tracing configuration file with the desired trace backend address. \nThis method negates the need for a collector and simplifies the overall structure.\n\nFor trace backend header configuration, including authentication details, environment variables can be used with `OTEL_EXPORTER_OTLP_HEADERS`, \nsee [OTLP Exporter Configuration](https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/monitor-node-health#exporter-0",
+  "heading": "Monitor Node Health > Exporter",
+  "text": "An exporter reports the node problems and/or metrics to certain backends.\nThe following exporters are supported:\n\n- **Kubernetes exporter**: this exporter reports node problems to the Kubernetes API server.\n  Temporary problems are reported as Events and permanent problems are reported as Node Conditions.\n\n- **Prometheus exporter**: this exporter reports node problems and metrics locally as Prometheus\n  (or OpenMetrics) metrics. You can specify the IP address and port for the exporter using command\n  line arguments.\n\n- **Stackdriver exporter**: this exporter reports node problems and metrics to the Stackdriver\n  Monitoring API. The exporting behavior can be customized using a\n  [configuration file](https://github.com/kubernetes/node-problem-detector/blob/v0.8.12/config/exporter/stackdriver-exporter.json)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-level-terminationgraceperiodseconds-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields > Probe-level `terminationGracePeriodSeconds`",
+  "text": "```yaml\nspec:\n  terminationGracePeriodSeconds: 3600  # pod-level\n  containers:\n  - name: test\n    image: ...\n\n    ports:\n    - name: liveness-port\n      containerPort: 8080\n\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: liveness-port\n      failureThreshold: 1\n      periodSeconds: 60\n      # Override pod-level terminationGracePeriodSeconds\n      terminationGracePeriodSeconds: 60\n```\n\nProbe-level `terminationGracePeriodSeconds` **cannot** be set for readiness probes.\nIt will be rejected by the API server."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-0",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "Your Deployment may get stuck trying to deploy its newest ReplicaSet without ever completing. This can occur\ndue to some of the following factors:\n\n* Insufficient quota\n* Readiness probe failures\n* Image pull errors\n* Insufficient permissions\n* Limit ranges\n* Application runtime misconfiguration\n\nOne way you can detect this condition is to specify a deadline parameter in your Deployment spec:\n([`.spec.progressDeadlineSeconds`](#progress-deadline-seconds)). `.spec.progressDeadlineSeconds` denotes the\nnumber of seconds the Deployment controller waits before indicating (in the Deployment status) that the\nDeployment progress has stalled.\n\nThe following `kubectl` command sets the spec with `progressDeadlineSeconds` to make the controller report\nlack of progress of a rollout for a Deployment after 10 minutes:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#backoff-limit-per-index-0",
+  "heading": "Jobs > Handling Pod and container failures > Backoff limit per index",
+  "text": "When you run an [indexed](#completion-mode) Job, you can choose to handle retries\nfor pod failures independently for each index. To do so, set the\n`.spec.backoffLimitPerIndex` to specify the maximal number of pod failures\nper index.\n\nWhen the per-index backoff limit is exceeded for an index, Kubernetes considers the index as failed and adds it to the\n`.status.failedIndexes` field. The succeeded indexes, those with a successfully\nexecuted pods, are recorded in the `.status.completedIndexes` field, regardless of whether you set\nthe `backoffLimitPerIndex` field.\n\nNote that a failing index does not interrupt execution of other indexes.\nOnce all indexes finish for a Job where you specified a backoff limit per index,\nif at least one of those indexes did fail, the Job controller marks the overall\nJob as failed, by setting the Failed condition in the status. The Job gets\nmarked as failed even if some, potentially nearly all, of the indexes were\nprocessed successfully."
+ }
+]

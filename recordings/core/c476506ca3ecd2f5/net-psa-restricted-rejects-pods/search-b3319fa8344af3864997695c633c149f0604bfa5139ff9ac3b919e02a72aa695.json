@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#eliminate-non-standard-options-2",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.b. Eliminate options not covered by the Pod Security Standards",
+  "text": "- `.spec.requiredDropCapabilities` - Required to drop `ALL` for the Restricted profile.\n- `.spec.seLinux` - (Only mutating with the `MustRunAs` rule) required to enforce the SELinux\n  requirements of the Baseline & Restricted profiles.\n- `.spec.runAsUser` - (Non-mutating with the `RunAsAny` rule) required to enforce `RunAsNonRoot` for\n  the Restricted profile.\n- `.spec.allowPrivilegeEscalation` - (Only mutating if set to `false`) required for the Restricted\n  profile."
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-admission#pod-security-levels-0",
+  "heading": "Pod Security Admission > Pod Security levels",
+  "text": "Pod Security admission places requirements on a Pod's [Security\nContext](/docs/tasks/configure-pod-container/security-context/) and other related fields according\nto the three levels defined by the [Pod Security\nStandards](/docs/concepts/security/pod-security-standards): `privileged`, `baseline`, and\n`restricted`. Refer to the [Pod Security Standards](/docs/concepts/security/pod-security-standards)\npage for an in-depth look at those requirements."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/user-namespaces#integration-with-pod-security-admission-checks-2",
+  "heading": "User Namespaces > Integration with Pod security admission checks",
+  "text": "with the _Restricted_ pod security standard, a pod still must only use the\ndefault or empty ProcMount."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#is-psa-right-for-you-0",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 0. Decide whether Pod Security Admission is right for you",
+  "text": "Pod Security Admission was designed to meet the most common security needs out of the box, and to\nprovide a standard set of security levels across clusters. However, it is less flexible than\nPodSecurityPolicy. Notably, the following features are supported by PodSecurityPolicy but not Pod\nSecurity Admission:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#eliminate-non-standard-options-0",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.b. Eliminate options not covered by the Pod Security Standards",
+  "text": "There are several fields in PodSecurityPolicy that are not covered by the Pod Security Standards. If\nyou must enforce these options, you will need to supplement Pod Security Admission with an\n[admission webhook](/docs/reference/access-authn-authz/extensible-admission-controllers/),\nwhich is outside the scope of this guide.\n\nFirst, you can remove the purely validating fields that the Pod Security Standards do not cover.\nThese fields (also listed in the\n[Mapping PodSecurityPolicies to Pod Security Standards](/docs/reference/access-authn-authz/psp-to-pod-security-standards/)\nreference with \"no opinion\") are:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/advanced-pod-config#security-context-options-0",
+  "heading": "Advanced Pod Configuration > Pod and container level security context configuration > Security context options",
+  "text": "- **User and Group IDs**: Control which user/group the container runs as\n- **Capabilities**: Add or drop Linux capabilities\n- **Seccomp Profiles**: Set security computing profiles\n- **SELinux Options**: Configure SELinux context\n- **AppArmor**: Configure AppArmor profiles for additional access control\n- **Windows Options**: Configure Windows-specific security settings"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-pod-security-standard-changes-0",
+  "heading": "Pod Security Standards > Pod OS field > Restricted Pod Security Standard changes",
+  "text": "Another important change, made in Kubernetes v1.25 is that the  _Restricted_ policy\nhas been updated to use the `pod.spec.os.name` field. Based on the OS name, certain policies that are specific\nto a particular OS can be relaxed for the other OS.\n\n#### OS-specific policy controls\nRestrictions on the following controls are only required if `.spec.os.name` is not `windows`:\n- Privilege Escalation\n- Seccomp\n- Linux Capabilities"
+ },
+ {
+  "chunk_id": "concepts/security/security-checklist#pod-security-1",
+  "heading": "Security Checklist > Pod security",
+  "text": "The [Pod Security Standards](/docs/concepts/security/pod-security-standards/)\ndefine three different policies, privileged, baseline and restricted that limit\nhow fields can be set in the `PodSpec` regarding security.\nThese standards can be enforced at the namespace level with the new\n[Pod Security](/docs/concepts/security/pod-security-admission/) admission,\nenabled by default, or by third-party admission webhook. Please note that,\ncontrary to the removed PodSecurityPolicy admission it replaces,\n[Pod Security](/docs/concepts/security/pod-security-admission/)\nadmission can be easily combined with admission webhooks and external services."
+ }
+]

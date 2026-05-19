@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! Now I have a clear understanding of the issue. Let me update the ticket with the resolution.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01NfrSABwu3J6BdpWJceGVV2",
+   "input": {
+    "id": "T-3005",
+    "note": "**Root Cause:** The report-generator pods are being evicted due to insufficient ephemeral storage allocation. The previous pods were evicted with the message \"The node was low on resource: ephemeral-storage\" because containers were consuming ~39-40 GiB of ephemeral storage while no ephemeral-storage limit or request was set in the pod specification.\n\n**Evidence:** Pod list shows two recently evicted pods (report-generator-7d9b6c5f8-4hqzt and report-generator-7d9b6c5f8-m2v8k) with phase \"Failed\" and reason \"Evicted\". The eviction messages show that the containers were using 38-39 GiB of ephemeral storage with a request of 0. The pods only have CPU (2) and memory (6Gi) resource requests/limits defined, but no ephemeral-storage configuration [cite: concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-0].\n\n**Fix:** Add ephemeral-storage requests and limits to the report-generator Deployment specification. Since the container currently uses approximately 39-40 GiB, set the limit to at least 45-50 GiB and an appropriate request value. For example:\n```yaml\nresources:\n  requests:\n    cpu: \"2\"\n    memory: \"6Gi\"\n    ephemeral-storage: \"40Gi\"\n  limits:\n    memory: \"6Gi\"\n    ephemeral-storage: \"50Gi\"\n```\n\nThis follows Kubernetes best practices [cite: concepts/storage/ephemeral-storage#requests-limits-0] where ephemeral-storage is measured in byte quantities and can be expressed with suffixes like Gi. The pods will no longer be evicted when they exceed the node's ephemeral storage eviction threshold.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4584,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 536,
+ "stop_reason": "tool_use"
+}

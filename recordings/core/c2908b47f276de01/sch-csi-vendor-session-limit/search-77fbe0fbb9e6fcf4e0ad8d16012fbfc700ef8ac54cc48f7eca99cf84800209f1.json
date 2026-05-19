@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/volumes#csi-0",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "[Container Storage Interface](https://github.com/container-storage-interface/spec/blob/master/spec.md)\n(CSI) defines a standard interface for container orchestration systems (like\nKubernetes) to expose arbitrary storage systems to their container workloads.\n\nPlease read the [CSI design proposal](https://git.k8s.io/design-proposals-archive/storage/container-storage-interface.md)\nfor more information.\n\nSupport for CSI spec versions 0.2 and 0.3 is deprecated in Kubernetes\nv1.13 and will be removed in a future release.\n\nCSI drivers may not be compatible across all Kubernetes releases.\nPlease check the specific CSI driver's documentation for supported\ndeployment steps for each Kubernetes release and a compatibility matrix.\n\nOnce a CSI-compatible volume driver is deployed on a Kubernetes cluster, users\nmay use the `csi` volume type to attach or mount the volumes exposed by the\nCSI driver.\n\nA `csi` volume can be used in a Pod in three different ways:"
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-volumes#csi-ephemeral-volumes-1",
+  "heading": "Ephemeral Volumes > Types of ephemeral volumes > CSI ephemeral volumes",
+  "text": "```yaml\nkind: Pod\napiVersion: v1\nmetadata:\n  name: my-csi-app\nspec:\n  containers:\n    - name: my-frontend\n      image: busybox:1.28\n      volumeMounts:\n      - mountPath: \"/data\"\n        name: my-csi-inline-vol\n      command: [ \"sleep\", \"1000000\" ]\n  volumes:\n    - name: my-csi-inline-vol\n      csi:\n        driver: inline.storage.kubernetes.io\n        volumeAttributes:\n          foo: bar\n```\n\nThe `volumeAttributes` determine what volume is prepared by the\ndriver. These attributes are specific to each driver and not\nstandardized. See the documentation of each CSI driver for further\ninstructions."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-4",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "  defined in the [CSI spec](https://github.com/container-storage-interface/spec/blob/master/spec.md#createvolume).\n  The map is passed to the CSI driver via the `volume_context` field in the\n  `ControllerPublishVolumeRequest`, `NodeStageVolumeRequest`, and\n  `NodePublishVolumeRequest`.\n* `controllerPublishSecretRef`: A reference to the secret object containing\n  sensitive information to pass to the CSI driver to complete the CSI\n  `ControllerPublishVolume` and `ControllerUnpublishVolume` calls. This field is\n  optional, and may be empty if no secret is required. If the Secret\n  contains more than one secret, all secrets are passed.\n* `nodeExpandSecretRef`: A reference to the secret containing sensitive\n  information to pass to the CSI driver to complete the CSI\n  `NodeExpandVolume` call. This field is optional and may be empty if no\n  secret is required. If the object contains more than one secret, all"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-8",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "CSI node plugins need to perform various privileged\noperations like scanning of disk devices and mounting of file systems. These operations\ndiffer for each host operating system. For Linux worker nodes, containerized CSI node\nplugins are typically deployed as privileged containers. For Windows worker nodes,\nprivileged operations for containerized CSI node plugins are supported using\n[csi-proxy](https://github.com/kubernetes-csi/csi-proxy), a community-managed,\nstand-alone binary that needs to be pre-installed on each Windows node.\n\nFor more details, refer to the deployment guide of the CSI plugin you wish to deploy.\n\n#### Migrating to CSI drivers from in-tree plugins\n\nThe `CSIMigration` feature directs operations against existing in-tree\nplugins to corresponding CSI plugins (which are expected to be installed and configured).\nAs a result, operators do not have to make any\nconfiguration changes to existing Storage Classes, PersistentVolumes, or PersistentVolumeClaims\n(referring to in-tree plugins) when transitioning to a CSI driver that supersedes an in-tree plugin."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-2",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "* `driver`: A string value that specifies the name of the volume driver to use.\n  This value must correspond to the value returned in the `GetPluginInfoResponse`\n  by the CSI driver as defined in the\n  [CSI spec](https://github.com/container-storage-interface/spec/blob/master/spec.md#getplugininfo).\n  It is used by Kubernetes to identify which CSI driver to call out to, and by\n  CSI driver components to identify which PV objects belong to the CSI driver.\n* `volumeHandle`: A string value that uniquely identifies the volume. This value\n  must correspond to the value returned in the `volume.id` field of the\n  `CreateVolumeResponse` by the CSI driver as defined in the\n  [CSI spec](https://github.com/container-storage-interface/spec/blob/master/spec.md#createvolume).\n  The value is passed as `volume_id` in all calls to the CSI volume driver when\n  referencing the volume."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#out-of-tree-volume-plugins-0",
+  "heading": "Volumes > Out-of-tree volume plugins",
+  "text": "The out-of-tree volume plugins include\nContainer Storage Interface (CSI), and also\nFlexVolume (which is deprecated). These plugins enable storage vendors to create custom storage plugins\nwithout adding their plugin source code to the Kubernetes repository.\n\nPreviously, all volume plugins were \"in-tree\". The \"in-tree\" plugins were built, linked, compiled,\nand shipped with the core Kubernetes binaries. This meant that adding a new storage system to\nKubernetes (a volume plugin) required checking code into the core Kubernetes code repository.\n\nBoth CSI and FlexVolume allow volume plugins to be developed independently of\nthe Kubernetes code base, and deployed (installed) on Kubernetes clusters as\nextensions.\n\nFor storage vendors looking to create an out-of-tree volume plugin, please refer\nto the [volume plugin FAQ](https://github.com/kubernetes/community/blob/main/sig-storage/volume-plugin-faq.md)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#types-of-persistent-volumes-0",
+  "heading": "Persistent Volumes > Types of Persistent Volumes",
+  "text": "PersistentVolume types are implemented as plugins. Kubernetes currently supports the following plugins:\n\n* [`csi`](/docs/concepts/storage/volumes/#csi) - Container Storage Interface (CSI)\n* [`fc`](/docs/concepts/storage/volumes/#fc) - Fibre Channel (FC) storage\n* [`hostPath`](/docs/concepts/storage/volumes/#hostpath) - HostPath volume\n  (for single node testing only; WILL NOT WORK in a multi-node cluster;\n  consider using `local` volume instead)\n* [`iscsi`](/docs/concepts/storage/volumes/#iscsi) - iSCSI (SCSI over IP) storage\n* [`local`](/docs/concepts/storage/volumes/#local) - local storage devices\n  mounted on nodes.\n* [`nfs`](/docs/concepts/storage/volumes/#nfs) - Network File System (NFS) storage"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#mount-propagation-2",
+  "heading": "Volumes > Mount propagation",
+  "text": "  This mode is equal to `rslave` mount propagation as described in the\n  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)\n\n* `Bidirectional` - This volume mount behaves the same as the `HostToContainer` mount.\n  In addition, all volume mounts created by the container will be propagated\n  back to the host and to all containers of all Pods that use the same volume.\n\n  A typical use case for this mode is a Pod with a FlexVolume or CSI driver, or\n  a Pod that needs to mount something on the host using a `hostPath` volume.\n\n  This mode is equal to `rshared` mount propagation as described in the\n  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)"
+ }
+]

@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! The documentation confirms the issue. The GPU nodes have a `dedicated: gpu` taint, and the pod needs to add a corresponding toleration for it. \n\nBased on my investigation:\n\n**Cause**: The GPU nodes are tainted with `dedicated: gpu` to reserve them for GPU workloads. The doc-embedder pod has a nodeSelector for `pool: gpu` and tolerations for `nvidia.com/gpu`, but it's missing the toleration for the `dedicated: gpu` taint that exists on those nodes. This causes the pod to be unschedulable.\n\n**Evidence**: \n- The pod logs show: \"3 node(s) had untolerated taint {dedicated: gpu}\"\n- The pod already has a toleration for `nvidia.com/gpu` but not for `dedicated: gpu`\n\n**Fix**: Add a toleration for the `dedicated: gpu` taint to the doc-embedder deployment.\n\nLet me update the ticket with the resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01BiokTK2hkV2EmzbvfN3Tcq",
+   "input": {
+    "id": "T-3002",
+    "note": "**Root Cause**: The GPU nodes are tainted with `dedicated: gpu` to reserve them for GPU workloads. The doc-embedder pod has the correct nodeSelector for `pool: gpu` and tolerations for `nvidia.com/gpu`, but is missing a toleration for the `dedicated: gpu` taint on those nodes.\n\n**Evidence**: The pod's scheduling condition shows \"0/9 nodes are available: 3 node(s) had untolerated taint {dedicated: gpu}\". The pod's tolerations array includes nvidia.com/gpu but not the dedicated taint.\n\n**Fix**: Add a toleration for the `dedicated: gpu` taint to your doc-embedder deployment's pod spec. Update your deployment YAML to include:\n```yaml\ntolerations:\n  - key: \"dedicated\"\n    operator: \"Equal\"\n    value: \"gpu\"\n    effect: \"NoSchedule\"\n  - key: \"nvidia.com/gpu\"\n    operator: \"Exists\"\n    effect: \"NoSchedule\"\n```\n\nThis follows the Kubernetes best practice for GPU nodes [cite: concepts/scheduling-eviction/taint-and-toleration#example-use-cases-2], where nodes with specialized hardware are tainted and pods using that hardware must tolerate the taint.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3940,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 598,
+ "stop_reason": "tool_use"
+}

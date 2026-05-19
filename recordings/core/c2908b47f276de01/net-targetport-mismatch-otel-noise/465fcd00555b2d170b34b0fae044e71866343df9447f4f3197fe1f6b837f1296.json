@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the status of the pods in the shop-web namespace to see the current state:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01J3GJ48XhBjxzzvWs7qPmFS",
+   "input": {
+    "namespace": "shop-web"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1366,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 77,
+ "stop_reason": "tool_use"
+}

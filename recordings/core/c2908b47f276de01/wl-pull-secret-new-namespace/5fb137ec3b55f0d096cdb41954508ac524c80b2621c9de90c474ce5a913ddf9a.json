@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the pod status in the analytics namespace to see what's happening with usage-exporter.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019VWN5aYWTmrem7D7hnE6AE",
+   "input": {
+    "namespace": "analytics"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1332,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 76,
+ "stop_reason": "tool_use"
+}

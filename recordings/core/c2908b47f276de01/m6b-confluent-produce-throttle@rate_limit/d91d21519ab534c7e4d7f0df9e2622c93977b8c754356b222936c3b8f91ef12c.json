@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:**\n\nI resolved ticket T-6005 by identifying that the clickstream dashboards are falling behind due to **Kafka broker producer throttling**. The pod logs revealed repeated throttle warnings (2.8-3.0 second delays) with the producer queue at 96% capacity and growing consumer lag of 31+ million messages. The root cause is that the client API key's quota is being exceeded. Scaling from 4 to 8 replicas only worsened the throttling since the underlying quota didn't increase. The fix is for the team to contact the data platform team to raise the producer throughput quota on their Kafka API key to accommodate the required sustained throughput.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9258,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 152,
+ "stop_reason": "end_turn"
+}

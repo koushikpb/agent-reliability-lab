@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#meaning-of-cpu-0",
+  "heading": "Resource Management for Pods and Containers > Resource units in Kubernetes > CPU resource units",
+  "text": "Limits and requests for CPU resources are measured in *cpu* units.\nIn Kubernetes, 1 CPU unit is equivalent to **1 physical CPU core**,\nor **1 virtual core**, depending on whether the node is a physical host\nor a virtual machine running inside a physical machine.\n\nFractional requests are allowed. When you define a container with\n`spec.containers[].resources.requests.cpu` set to `0.5`, you are requesting half\nas much CPU time compared to if you asked for `1.0` CPU.\nFor CPU resource units, the [quantity](/docs/reference/kubernetes-api/common-definitions/quantity/) expression `0.1` is equivalent to the\nexpression `100m`, which can be read as \"one hundred millicpu\". Some people say\n\"one hundred millicores\", and this is understood to mean the same thing."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics",
+  "text": "Any HPA target can be scaled based on the resource usage of the pods in the scaling target.\nWhen defining the pod specification the resource requests like `cpu` and `memory` should\nbe specified. This is used to determine the resource utilization and used by the HPA controller\nto scale the target up or down. To use resource utilization based scaling specify a metric source\nlike this:\n\n```yaml\ntype: Resource\nresource:\n  name: cpu\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nWith this metric the HPA controller will keep the average utilization of the pods in the scaling\ntarget at 60%. Utilization is the ratio between the current usage of resource to the requested\nresources of the pod. See [Algorithm](#algorithm-details) for more details about how the utilization\nis calculated and averaged.\n\nSince the resource usages of all the containers are summed up the total pod utilization may not\naccurately represent the individual container resource usage. This could lead to situations where\na single container might be running with high usage and the HPA will not scale out because the overall\npod usage is still within acceptable limits."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#example-1-0",
+  "heading": "Resource Management for Pods and Containers > Container resources example",
+  "text": "The following Pod has two containers. Both containers are defined with a request for\n0.25 CPU\nand 64MiB (2<sup>26</sup> bytes) of memory. Each container has a limit of 0.5\nCPU and 128MiB of memory. You can say the Pod has a request of 0.5 CPU and 128\nMiB of memory, and a limit of 1 CPU and 256MiB of memory.\n\n```yaml\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: frontend\nspec:\n  containers:\n  - name: app\n    image: images.my-company.example/app:v4\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n  - name: log-aggregator\n    image: images.my-company.example/log-aggregator:v6\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#requests-and-limits-0",
+  "heading": "Resource Management for Pods and Containers > Requests and limits",
+  "text": "If the node where a Pod is running has enough of a resource available, it's possible (and\nallowed) for a container to use more resource than its `request` for that resource specifies.\n\nFor example, if you set a `memory` request of 256 MiB for a container, and that container is in\na Pod scheduled to a Node with 8GiB of memory and no other Pods, then the container can try to use\nmore RAM.\n\nLimits are a different story. Both `cpu` and `memory` limits are applied by the kubelet (and\ncontainer runtime),\nand are ultimately enforced by the kernel. On Linux nodes, the Linux kernel\nenforces limits with\ncgroups.\nThe behavior of `cpu` and `memory` limit enforcement is slightly different.\n\n`cpu` limits are enforced by CPU throttling. When a container approaches\nits `cpu` limit, the kernel will restrict access to the CPU corresponding to the\ncontainer's limit. Thus, a `cpu` limit is a hard limit the kernel enforces.\nContainers may not use more CPU than is specified in their `cpu` limit."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#cpu-units-0",
+  "heading": "Assign CPU Resources to Containers and Pods > CPU units",
+  "text": "The CPU resource is measured in *CPU* units. One CPU, in Kubernetes, is equivalent to:\n\n* 1 AWS vCPU\n* 1 GCP Core\n* 1 Azure vCore\n* 1 Hyperthread on a bare-metal Intel processor with Hyperthreading\n\nFractional values are allowed. A Container that requests 0.5 CPU is guaranteed half as much\nCPU as a Container that requests 1 CPU. You can use the suffix m to mean milli. For example\n100m CPU, 100 milliCPU, and 0.1 CPU are all the same. Precision finer than 1m is not allowed.\n\nCPU is always requested as an absolute quantity, never as a relative quantity; 0.1 is the same\namount of CPU on a single-core, dual-core, or 48-core machine.\n\nDelete your Pod:\n\n```shell\nkubectl delete pod cpu-demo --namespace=cpu-example\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-default-namespace#what-if-you-specify-a-container-s-limit-but-not-its-request-1",
+  "heading": "Configure Default CPU Requests and Limits for a Namespace > What if you specify a container's limit, but not its request?",
+  "text": "The output shows that the container's CPU request is set to match its CPU limit.\nNotice that the container was not assigned the default CPU request value of 0.5 `cpu`:\n\n```\nresources:\n  limits:\n    cpu: \"1\"\n  requests:\n    cpu: \"1\"\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/downward-api#downwardapi-resourceFieldRef-0",
+  "heading": "Downward API > Available fields > Information available via `resourceFieldRef`",
+  "text": "These container-level fields allow you to provide information about\n[requests and limits](/docs/concepts/configuration/manage-resources-containers/#requests-and-limits)\nfor resources such as CPU and memory.\n\nContainer CPU and memory resources can be resized while the container is running.\nIf this happens, a downward API volume will be updated,\nbut environment variables will not be updated unless the container restarts.\nSee [Resize CPU and Memory Resources assigned to Containers](/docs/tasks/configure-pod-container/resize-container-resources/)\nfor more details.\n\n`resource: limits.cpu`\n: A container's CPU limit\n\n`resource: requests.cpu`\n: A container's CPU request\n\n`resource: limits.memory`\n: A container's memory limit\n\n`resource: requests.memory`\n: A container's memory request\n\n`resource: limits.hugepages-*`\n: A container's hugepages limit\n\n`resource: requests.hugepages-*`\n: A container's hugepages request"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#meaning-of-cpu-1",
+  "heading": "Resource Management for Pods and Containers > Resource units in Kubernetes > CPU resource units",
+  "text": "CPU resource is always specified as an absolute amount of resource, never as a relative amount. For example,\n`500m` CPU represents the roughly same amount of computing power whether that container\nruns on a single-core, dual-core, or 48-core machine.\n\nKubernetes doesn't allow you to specify CPU resources with a precision finer than\n`1m` or `0.001` CPU. To avoid accidentally using an invalid CPU quantity, it's useful to specify CPU units using the milliCPU form \ninstead of the decimal form when using less than 1 CPU unit. \n\nFor example, you have a Pod that uses `5m` or `0.005` CPU and would like to decrease\nits CPU resources. By using the decimal form, it's harder to spot that `0.0005` CPU\nis an invalid value, while by using the milliCPU form, it's easier to spot that\n`0.5m` is an invalid value."
+ }
+]

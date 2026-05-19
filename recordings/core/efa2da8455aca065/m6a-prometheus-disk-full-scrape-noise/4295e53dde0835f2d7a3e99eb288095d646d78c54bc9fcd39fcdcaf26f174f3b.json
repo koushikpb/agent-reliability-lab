@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\n**Ticket T-5005 \u2014 resolved.**\n\nThe Grafana dashboard gaps were caused by the Prometheus TSDB storage volume (`prometheus-k8s-db-prometheus-k8s-0`, 100Gi) running completely out of disk space at **03:02 UTC**. Pod logs showed repeated `no space left on device` errors when Prometheus tried to write to its WAL, causing every scrape to be silently dropped \u2014 explaining both the data gaps and the missed alerts.\n\n**The fix** is a one-command, no-downtime PVC resize:\n```bash\nkubectl patch pvc prometheus-k8s-db-prometheus-k8s-0 -n monitoring \\\n  --type merge -p '{\"spec\":{\"resources\":{\"requests\":{\"storage\":\"200Gi\"}}}}'\n```\nThis works because the `gp3-resizable` StorageClass has `allowVolumeExpansion: true` and uses the EBS CSI driver, and `ext4` supports online filesystem expansion while the Pod is running. The ticket note also recommends reducing the 30-day retention window and adding a disk-usage PrometheusRule to prevent recurrence.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 13304,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 272,
+ "stop_reason": "end_turn"
+}

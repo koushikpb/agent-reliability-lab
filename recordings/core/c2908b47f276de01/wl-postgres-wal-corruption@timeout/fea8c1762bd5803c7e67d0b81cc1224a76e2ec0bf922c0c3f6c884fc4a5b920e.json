@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results don't provide PostgreSQL-specific recovery guidance. Let me search more specifically for database recovery approaches.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01FebZDJpFaLn8CRAeYjafce",
+   "input": {
+    "query": "StatefulSet persistent volume recovery data loss"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4568,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 84,
+ "stop_reason": "tool_use"
+}

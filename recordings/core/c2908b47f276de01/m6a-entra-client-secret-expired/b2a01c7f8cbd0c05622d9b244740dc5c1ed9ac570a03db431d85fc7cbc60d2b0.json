@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-5002 by investigating the ops portal login issue. The Kubernetes pods in the internal-tools namespace were running healthy, but the oauth2-proxy logs revealed the root cause: Azure client secret expiration (error code AADSTS7000222). Users can successfully authenticate with Microsoft but fail at the OAuth2 callback stage because the proxy cannot exchange the authorization code with Azure AD. The fix requires the IT identity team to rotate the client secret in the Azure portal, after which the Kubernetes secret storing it must be updated.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 6728,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 120,
+ "stop_reason": "end_turn"
+}

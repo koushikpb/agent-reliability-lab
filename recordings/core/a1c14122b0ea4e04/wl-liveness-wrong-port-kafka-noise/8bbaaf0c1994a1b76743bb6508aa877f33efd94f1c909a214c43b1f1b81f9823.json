@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01E7j2gLPnM8FnZoW8AB2bsj",
+   "input": {
+    "id": "T-2006",
+    "note": "Cause: In orders-consumer 2.0.0+ the default HTTP port changed from 8080 to 9090. The pod logs confirm the new build is listening on 0.0.0.0:9090 for /healthz and /metrics (\"HTTP_PORT unset, using default 9090 (default changed from 8080 in 2.0.0)\"). However the Deployment's liveness probe is still httpGet on port 8080, so every probe gets \"connection refused\" and the kubelet keeps killing the container (exit 143 / SIGTERM) and restarting it \u2014 exactly the restart loop described [cite: tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-http-request-1][cite: concepts/workloads/pods/probes#liveness-probe-0]. The restarts also interrupt Kafka rebalances before offsets can be committed, which is why the backlog keeps growing.\n\nEvidence:\n- Both pods CrashLoopBackOff, 17 restarts, message \"Liveness probe failed: ... :8080: connect: connection refused\".\n- Pod spec: containerPort 8080, liveness http-get :8080/healthz.\n- Logs: \"health and metrics server listening on 0.0.0.0:9090\" then \"received SIGTERM\" ~30s after start.\n\nFix (owner to apply): Update the orders-consumer Deployment so the probe matches the new app port. Either\n  1) set env HTTP_PORT=8080 on the container to keep the old port, or\n  2) change containerPort to 9090 and set livenessProbe.httpGet.port: 9090 (and update the Service/readinessProbe accordingly).\nAfter rollout, verify pods become Ready and that offsets commit without \"Group rebalance in progress\" errors so the backlog drains.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5974,
+ "model": "claude-opus-4-7",
+ "output_tokens": 706,
+ "stop_reason": "tool_use"
+}

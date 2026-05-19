@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-state-waiting-0",
+  "heading": "Pod Lifecycle > Container states > `Waiting`",
+  "text": "If a container is not in either the `Running` or `Terminated` state, it is `Waiting`.\nA container in the `Waiting` state is still running the operations it requires in\norder to complete start up: for example, pulling the container image from a container\nimage registry, or applying Secret\ndata.\nWhen you use `kubectl` to query a Pod with a container that is `Waiting`, you also see\na Reason field to summarize why the container is in that state."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#using-kubectl-describe-pod-to-fetch-details-about-pods-6",
+  "heading": "Debug Running Pods > Using `kubectl describe pod` to fetch details about pods",
+  "text": "Here you can see configuration information about the container(s) and Pod (labels, resource requirements, etc.), as well as status information about the container(s) and Pod (state, readiness, restart count, events, etc.).\n\nThe container state is one of Waiting, Running, or Terminated. Depending on the state, additional information will be provided - here you can see that for a container in Running state, the system tells you when the container started.\n\nReady tells you whether the container passed its last readiness probe. (In this case, the container does not have a readiness probe configured; the container is assumed to be ready if no readiness probe is configured.)\n\nRestart Count tells you how many times the container has been restarted; this information can be useful for detecting crash loops in containers that are configured with a restart policy of `Always`.\n\nCurrently the only Condition associated with a Pod is the binary Ready condition, which indicates that the pod is able to service requests and should be added to the load balancing pools of all matching services."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-16",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "   * Pod UID, IP address, and network namespace\n   * Pod sandbox and any attached devices\n   * All volumes, including `emptyDir` and mounted volumes\n\n1. **Pod Status Update**: The Pod's status is updated with a `PodRestartInPlace` condition set to `True`.\n   This makes the restart process observable.\n1. **Full Restart Sequence**: Once all containers are terminated, the `PodRestartInPlace` condition\n   is set to `False`, and the Pod begins the standard startup process:\n\n   * **Init containers are re-run** in order.\n   * Sidecar and regular containers are started.\n\nA key aspect of this feature is that **all** containers are restarted, including those that\npreviously completed successfully or failed. The `RestartAllContainers` action overrides\nany configured container-level or Pod-level `restartPolicy`.\n\nThis mechanism is useful in scenarios where a clean slate for all containers is necessary, such as:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-ready-to-start-containers-0",
+  "heading": "Pod Lifecycle > Pod conditions > Pod readiness to start containers",
+  "text": "During its early development, this condition was named `PodHasNetwork`.\n\nAfter a Pod gets scheduled on a node, it needs to be admitted by the kubelet and\nto have any required storage volumes mounted. Once these phases are complete,\nthe kubelet works with\na container runtime (using cri) to set up a\nruntime sandbox and configure networking for the Pod. If the Pod uses\n[Dynamic Resource Allocation](/docs/concepts/resource-management/dynamic-resource-allocation/),\nthose resources are also allocated during this phase.\nThe `PodReadyToStartContainers` condition is added to the `status.conditions` field of a Pod.\n\nThe condition is set to `False` by the kubelet when it detects a\nPod does not have a runtime sandbox with networking configured. This occurs in\nthe following scenarios:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-1",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "Value       | Description\n:-----------|:-----------\n`Pending`   | The Pod has been accepted by the Kubernetes cluster, but one or more of the containers has not been set up and made ready to run. This includes time a Pod spends waiting to be scheduled as well as the time spent downloading container images over the network.\n`Running`   | The Pod has been bound to a node, and all of the containers have been created. At least one container is still running, or is in the process of starting or restarting.\n`Succeeded` | All containers in the Pod have terminated in success, and will not be restarted.\n`Failed`    | All containers in the Pod have terminated, and at least one container has terminated in failure. That is, the container either exited with non-zero status or was terminated by the system, and is not set for automatic restarting.\n`Unknown`   | For some reason the state of the Pod could not be obtained. This phase typically occurs due to an error in communicating with the node where the Pod should be running."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#detailed-behavior-0",
+  "heading": "Init Containers > Detailed behavior",
+  "text": "During Pod startup, the kubelet delays running init containers until the networking\nand storage are ready. Then the kubelet runs the Pod's init containers in the order\nthey appear in the Pod's spec.\n\nEach init container must exit successfully before\nthe next container starts. If a container fails to start due to the runtime or\nexits with failure, it is retried according to the Pod `restartPolicy`. However,\nif the Pod `restartPolicy` is set to Always, the init containers use\n`restartPolicy` OnFailure.\n\nA Pod cannot be `Ready` until all init containers have succeeded. The ports on an\ninit container are not aggregated under a Service. A Pod that is initializing\nis in the `Pending` state but should have a condition `Initialized` set to false.\n\nIf the Pod [restarts](#pod-restart-reasons), or is restarted, all init containers\nmust execute again."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#examples-4",
+  "heading": "Init Containers > Using init containers > Examples",
+  "text": "You can start this Pod by running:\n\n```shell\nkubectl apply -f myapp.yaml\n```\nThe output is similar to this:\n```\npod/myapp-pod created\n```\n\nAnd check on its status with:\n```shell\nkubectl get -f myapp.yaml\n```\nThe output is similar to this:\n```\nNAME        READY     STATUS     RESTARTS   AGE\nmyapp-pod   0/1       Init:0/2   0          6m\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-init-containers#getting-details-about-init-containers-0",
+  "heading": "Debug Init Containers > Getting details about Init Containers",
+  "text": "View more detailed information about Init Container execution:\n\n```shell\nkubectl describe pod <pod-name>\n```\n\nFor example, a Pod with two Init Containers might show the following:\n\n```\nInit Containers:\n  <init-container-1>:\n    Container ID:    ...\n    ...\n    State:           Terminated\n      Reason:        Completed\n      Exit Code:     0\n      Started:       ...\n      Finished:      ...\n    Ready:           True\n    Restart Count:   0\n    ...\n  <init-container-2>:\n    Container ID:    ...\n    ...\n    State:           Waiting\n      Reason:        CrashLoopBackOff\n    Last State:      Terminated\n      Reason:        Error\n      Exit Code:     1\n      Started:       ...\n      Finished:      ...\n    Ready:           False\n    Restart Count:   3\n    ...\n```\n\nYou can also access the Init Container statuses programmatically by reading the\n`status.initContainerStatuses` field on the Pod Spec:\n\n```shell\nkubectl get pod <pod-name> --template '{{.status.initContainerStatuses}}'\n```"
+ }
+]

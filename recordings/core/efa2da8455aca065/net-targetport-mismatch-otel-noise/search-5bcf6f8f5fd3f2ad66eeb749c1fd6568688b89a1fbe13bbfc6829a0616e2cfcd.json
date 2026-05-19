@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/service#field-spec-ports-0",
+  "heading": "Service > Defining a Service > Port definitions",
+  "text": "Port definitions in Pods have names, and you can reference these names in the\n`targetPort` attribute of a Service. For example, we can bind the `targetPort`\nof the Service to the Pod port in the following way:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx-service\nspec:\n  selector:\n    app.kubernetes.io/name: proxy\n  ports:\n  - name: name-of-service-port\n    protocol: TCP\n    port: 80\n    targetPort: http-web-svc\n\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx\n  labels:\n    app.kubernetes.io/name: proxy\nspec:\n  containers:\n  - name: nginx\n    image: nginx:stable\n    ports:\n      - containerPort: 80\n        name: http-web-svc\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-4",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "#### Accessing a Service without a selector {#service-no-selector-access}\n\nAccessing a Service without a selector works the same as if it had a selector.\nIn the [example](#services-without-selectors) for a Service without a selector,\ntraffic is routed to one of the two endpoints defined in\nthe EndpointSlice manifest: a TCP connection to 10.1.2.3 or 10.4.5.6, on port 9376.\n\nThe Kubernetes API server does not allow proxying to endpoints that are not mapped to\npods. Actions such as `kubectl port-forward service/<service-name> forwardedPort:servicePort` where the service has no\nselector will fail due to this constraint. This prevents the Kubernetes API server\nfrom being used as a proxy to endpoints the caller may not be authorized to access.\n\nAn `ExternalName` Service is a special case of Service that does not have\nselectors and uses DNS names instead. For more information, see the\n[ExternalName](#externalname) section."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#pod-hostname-and-subdomain-field-2",
+  "heading": "DNS for Services and Pods > Pods > Pod's hostname and subdomain fields",
+  "text": "```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: busybox-subdomain\nspec:\n  selector:\n    name: busybox\n  clusterIP: None\n  ports:\n  - name: foo # name is not required for single-port Services\n    port: 1234\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: busybox1\n  labels:\n    name: busybox\nspec:\n  hostname: busybox-1\n  subdomain: busybox-subdomain\n  containers:\n  - image: busybox:1.28\n    command:\n      - sleep\n      - \"3600\"\n    name: busybox\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: busybox2\n  labels:\n    name: busybox\nspec:\n  hostname: busybox-2\n  subdomain: busybox-subdomain\n  containers:\n  - image: busybox:1.28\n    command:\n      - sleep\n      - \"3600\"\n    name: busybox\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#type-nodeport-2",
+  "heading": "Service > Service type > `type: NodePort`",
+  "text": "```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  type: NodePort\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - port: 80\n      # By default and for convenience, the `targetPort` is set to\n      # the same value as the `port` field.\n      targetPort: 80\n      # Optional field\n      # By default and for convenience, the Kubernetes control plane\n      # will allocate a port from a range (default: 30000-32767)\n      nodePort: 30007\n```\n\n#### Reserve Nodeport ranges to avoid collisions  {#avoid-nodeport-collisions}\n\nThe policy for assigning ports to NodePort services applies to both the auto-assignment and\nthe manual assignment scenarios. When a user wants to create a NodePort service that\nuses a specific port, the target port may conflict with another port that has already been assigned."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/service-access-application-cluster#creating-a-service-for-an-application-running-in-two-pods-2",
+  "heading": "Use a Service to Access an Application in a Cluster > Creating a service for an application running in two pods",
+  "text": "   ```none\n   Name:                   example-service\n   Namespace:              default\n   Labels:                 run=load-balancer-example\n   Annotations:            <none>\n   Selector:               run=load-balancer-example\n   Type:                   NodePort\n   IP:                     10.32.0.16\n   Port:                   <unset> 8080/TCP\n   TargetPort:             8080/TCP\n   NodePort:               <unset> 31496/TCP\n   Endpoints:              10.200.1.4:8080,10.200.2.5:8080\n   Session Affinity:       None\n   Events:                 <none>\n   ```\n\n   Make a note of the NodePort value for the Service. For example,\n   in the preceding output, the NodePort value is 31496.\n\n1. List the pods that are running the Hello World application:\n\n   ```shell\n   kubectl get pods --selector=\"run=load-balancer-example\" --output=wide\n   ```\n\n   The output is similar to this:"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/web-ui-dashboard#specifying-application-details-2",
+  "heading": "Deploy and Access the Kubernetes Dashboard > Deploying containerized applications > Specifying application details",
+  "text": "  Irrespective of the Service type, if you choose to create a Service and your container listens\n  on a port (incoming), you need to specify two ports.\n  The Service will be created mapping the port (incoming) to the target port seen by the container.\n  This Service will route to your deployed Pods. Supported protocols are TCP and UDP.\n  The internal DNS name for this Service will be the value you specified as application name above.\n\nIf needed, you can expand the **Advanced options** section where you can specify more settings:\n\n- **Description**: The text you enter here will be added as an\n  [annotation](/docs/concepts/overview/working-with-objects/annotations/)\n  to the Deployment and displayed in the application's details."
+ },
+ {
+  "chunk_id": "concepts/containers/container-environment#cluster-information-0",
+  "heading": "Container Environment > Container environment > Cluster information",
+  "text": "A list of all services that were running when a Container was created is available to that Container as environment variables.\nThis list is limited to services within the same namespace as the new Container's Pod and Kubernetes control plane services.\n\nFor a service named *foo* that exposes a set of Pods, each running a container named *bar*,\nthe following variables are defined:\n\n```shell\nFOO_SERVICE_HOST=<the host the service is running on>\nFOO_SERVICE_PORT=<the port the service is running on>\n```\n\nServices have dedicated IP addresses and are available to the Container via DNS,\nif [DNS addon](https://releases.k8s.io/v/cluster/addons/dns/) is enabled.\u00a0"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-0",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Services most commonly abstract access to Kubernetes Pods thanks to the selector,\nbut when used with a corresponding set of\nEndpointSlices\nobjects and without a selector, the Service can abstract other kinds of backends,\nincluding ones that run outside the cluster.\n\nFor example:\n\n* You want to have an external database cluster in production, but in your\n  test environment you use your own databases.\n* You want to point your Service to a Service in a different\n  namespace or on another cluster.\n* You are migrating a workload to Kubernetes. While evaluating the approach,\n  you run only a portion of your backends in Kubernetes.\n\nIn any of these scenarios you can define a Service _without_ specifying a\nselector to match Pods. For example:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  ports:\n    - name: http\n      protocol: TCP\n      port: 80\n      targetPort: 9376\n```"
+ }
+]

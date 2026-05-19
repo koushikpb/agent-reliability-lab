@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#create-a-pod-that-uses-your-secret-1",
+  "heading": "Pull an Image from a Private Registry > Create a Pod that uses your Secret",
+  "text": "To pull the image from the private registry, Kubernetes needs credentials.\nThe `imagePullSecrets` field in the configuration file specifies that\nKubernetes should get the credentials from a Secret named `regcred`.\n\nCreate a Pod that uses your Secret, and verify that the Pod is running:\n\n```shell\nkubectl apply -f my-private-reg-pod.yaml\nkubectl get pod private-reg\n```\n\nTo use image pull secrets for a Pod (or a Deployment, or other object that\nhas a pod template that you are using), you need to make sure that the appropriate\nSecret does exist in the right namespace. The namespace to use is the same\nnamespace where you defined the Pod.\n\nAlso, in case the Pod fails to start with the status `ImagePullBackOff`, view the Pod events:\n\n```shell\nkubectl describe pod private-reg\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-imagepullsecrets-0",
+  "heading": "Secrets > Working with Secrets > Container image pull Secrets",
+  "text": "If you want to fetch container images from a private repository, you need a way for\nthe kubelet on each node to authenticate to that repository. You can configure\n_image pull Secrets_ to make this possible. These Secrets are configured at the Pod\nlevel.\n\n#### Using imagePullSecrets\n\nThe `imagePullSecrets` field is a list of references to Secrets in the same namespace.\nYou can use an `imagePullSecrets` to pass a Secret that contains a Docker (or other) image registry\npassword to the kubelet. The kubelet uses this information to pull a private image on behalf of your Pod.\nSee the [PodSpec API](/docs/reference/generated/kubernetes-api//#podspec-v1-core)\nfor more information about the `imagePullSecrets` field.\n\n##### Manually specifying an imagePullSecret"
+ },
+ {
+  "chunk_id": "concepts/containers/images#creating-a-secret-with-a-docker-config-1",
+  "heading": "Images > Using a private registry > Creating a Secret with a Docker config",
+  "text": "This is particularly useful if you are using multiple private container\nregistries, as `kubectl create secret docker-registry` creates a Secret that\nonly works with a single private registry.\n\nPods can only reference image pull secrets in their own namespace,\nso this process needs to be done one time per namespace.\n\n#### Referring to `imagePullSecrets` on a Pod\n\nNow, you can create pods which reference that secret by adding the `imagePullSecrets`\nsection to a Pod definition. Each item in the `imagePullSecrets` array can only\nreference one Secret in the same namespace.\n\nFor example:\n\n```shell\ncat <<EOF > pod.yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: foo\n  namespace: awesomeapps\nspec:\n  containers:\n    - name: foo\n      image: janedoe/awesomeapp:v1\n  imagePullSecrets:\n    - name: myregistrykey\nEOF\n\ncat <<EOF >> ./kustomization.yaml\nresources:\n- pod.yaml\nEOF\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#registry-secret-existing-credentials-0",
+  "heading": "Pull an Image from a Private Registry > Create a Secret based on existing credentials",
+  "text": "A Kubernetes cluster uses the Secret of `kubernetes.io/dockerconfigjson` type to authenticate with\na container registry to pull a private image.\n\nIf you already ran `docker login`, you can copy\nthat credential into Kubernetes:\n\n```shell\nkubectl create secret generic regcred \\\n    --from-file=.dockerconfigjson=<path/to/.docker/config.json> \\\n    --type=kubernetes.io/dockerconfigjson\n```\n\nIf you need more control (for example, to set a namespace or a label on the new\nsecret) then you can customise the Secret before storing it.\nBe sure to:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#create-a-pod-that-uses-your-secret-2",
+  "heading": "Pull an Image from a Private Registry > Create a Pod that uses your Secret",
+  "text": "If you then see an event with the reason set to `FailedToRetrieveImagePullSecret`,\nKubernetes can't find a Secret with name (`regcred`, in this example).\n\nMake sure that the Secret you have specified exists, and that its name is spelled properly.\n```shell\nEvents:\n  ...  Reason                           ...  Message\n       ------                                -------\n  ...  FailedToRetrieveImagePullSecret  ...  Unable to retrieve some image pull secrets (<regcred>); attempting to pull the image may not succeed.\n```"
+ },
+ {
+  "chunk_id": "concepts/containers/images#specifying-imagepullsecrets-on-a-pod-0",
+  "heading": "Images > Using a private registry > Specifying `imagePullSecrets` on a Pod",
+  "text": "This is the recommended approach to run containers based on images\nin private registries.\n\nKubernetes supports specifying container image registry keys on a Pod.\nAll `imagePullSecrets` must be Secrets that exist in the same\nnamespace as the\nPod. These Secrets must be of type `kubernetes.io/dockercfg` or `kubernetes.io/dockerconfigjson`."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#create-a-pod-that-uses-your-secret-0",
+  "heading": "Pull an Image from a Private Registry > Create a Pod that uses your Secret",
+  "text": "Here is a manifest for an example Pod that needs access to your Docker credentials in `regcred`:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: private-reg\nspec:\n  containers:\n  - name: private-reg-container\n    image: <your-private-image>\n  imagePullSecrets:\n  - name: regcred\n```\n\nDownload the above file onto your computer:\n\n```shell\ncurl -L -o my-private-reg-pod.yaml https://k8s.io/examples/pods/private-reg-pod.yaml\n```\n\nIn file `my-private-reg-pod.yaml`, replace `<your-private-image>` with the path to an image in a private registry such as:\n\n```none\nyour.private.registry.example.com/janedoe/jdoe-private:v1\n```"
+ },
+ {
+  "chunk_id": "concepts/containers/images#ensureimagepullcredentialverification-1",
+  "heading": "Images > Using a private registry > Ensure image pull credential verification",
+  "text": " * `NeverVerify`: Mimics the behavior of having this feature gate disabled.\n   If the image is present locally, image pull credentials are not verified.\n * `NeverVerifyPreloadedImages`: Images pulled outside the kubelet are not verified,\n but all other images will have their credentials verified. This is the default behavior.\n * `NeverVerifyAllowListedImages`: Images pulled outside the kubelet and mentioned within the\n   `preloadedImagesVerificationAllowlist` specified in the kubelet config are not verified.\n * `AlwaysVerify`: All images will have their credentials verified\n   before they can be used.\n\nThis verification applies to [pre-pulled images](#pre-pulled-images),\nimages pulled using node-wide secrets, and images pulled using Pod-level secrets.\n\nIn the case of credential rotation, the credentials previously used to pull the image\nwill continue to verify without the need to access the registry. New or rotated credentials\nwill require the image to be re-pulled from the registry."
+ }
+]

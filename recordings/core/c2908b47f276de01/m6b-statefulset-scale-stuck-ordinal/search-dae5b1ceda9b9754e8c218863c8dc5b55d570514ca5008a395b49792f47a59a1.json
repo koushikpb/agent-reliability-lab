@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/access-application-cluster/configure-access-multiple-clusters#windows-powershell-0",
+  "heading": "Configure Access to Multiple Clusters > Set the KUBECONFIG environment variable > Windows PowerShell",
+  "text": "```powershell\n$Env:KUBECONFIG_SAVED=$ENV:KUBECONFIG\n```\n\n The `KUBECONFIG` environment variable is a list of paths to configuration files. The list is\ncolon-delimited for Linux and Mac, and semicolon-delimited for Windows. If you have\na `KUBECONFIG` environment variable, familiarize yourself with the configuration files\nin the list.\n\nTemporarily append two paths to your `KUBECONFIG` environment variable. For example:"
+ },
+ {
+  "chunk_id": "concepts/configuration/organize-cluster-access-kubeconfig#the-kubeconfig-environment-variable-0",
+  "heading": "Organizing Cluster Access Using kubeconfig Files > The KUBECONFIG environment variable",
+  "text": "The `KUBECONFIG` environment variable holds a list of kubeconfig files.\nFor Linux and Mac, the list is colon-delimited. For Windows, the list\nis semicolon-delimited. The `KUBECONFIG` environment variable is not\nrequired. If the `KUBECONFIG` environment variable doesn't exist,\n`kubectl` uses the default kubeconfig file, `$HOME/.kube/config`.\n\nIf the `KUBECONFIG` environment variable does exist, `kubectl` uses\nan effective configuration that is the result of merging the files\nlisted in the `KUBECONFIG` environment variable."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-environment-variable-container#define-an-environment-variable-for-a-container-1",
+  "heading": "Define Environment Variables for a Container > Define an environment variable for a container",
+  "text": "You can read more about [ConfigMap](/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables)\nand [Secret](/docs/tasks/inject-data-application/distribute-credentials-secure/#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables).\n\nThis page explains how to use `env`.\n\nIn this exercise, you create a Pod that runs one container. The configuration\nfile for the Pod defines an environment variable with name `DEMO_GREETING` and\nvalue `\"Hello from the environment\"`. Here is the configuration manifest for the\nPod:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#ingressclass-scope-2",
+  "heading": "Ingress > Ingress class > IngressClass scope",
+  "text": "The `kind` (in combination the `apiGroup`) of the parameters\nrefers to a namespaced API (for example: ConfigMap), and\nthe `name` of the parameters identifies a specific resource\nin the namespace you specified in `namespace`.\n\nNamespace-scoped parameters help the cluster operator delegate control over the\nconfiguration (for example: load balancer settings, API gateway definition)\nthat is used for a workload. If you used a cluster-scoped parameter then either:\n\n- the cluster operator team needs to approve a different team's changes every\n  time there's a new configuration change being applied.\n- the cluster operator must define specific access controls, such as\n  [RBAC](/docs/reference/access-authn-authz/rbac/) roles and bindings, that let\n  the application team make changes to the cluster-scoped parameters resource.\n\nThe IngressClass API itself is always cluster-scoped.\n\nHere is an example of an IngressClass that refers to parameters that are\nnamespaced:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/kubeadm/kubeadm-reconfigure#reconfiguring-the-cluster-0",
+  "heading": "Reconfiguring a kubeadm cluster > Reconfiguring the cluster",
+  "text": "kubeadm writes a set of cluster wide component configuration options in\nConfigMaps and other objects. These objects must be manually edited. The command `kubectl edit`\ncan be used for that.\n\nThe `kubectl edit` command will open a text editor where you can edit and save the object directly.\n\nYou can use the environment variables `KUBECONFIG` and `KUBE_EDITOR` to specify the location of\nthe kubectl consumed kubeconfig file and preferred text editor.\n\nFor example:\n```\nKUBECONFIG=/etc/kubernetes/admin.conf KUBE_EDITOR=nano kubectl edit <parameters>\n```\n\nUpon saving any changes to these cluster objects, components running on nodes may not be\nautomatically updated. The steps below instruct you on how to perform that manually."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#config-helper-init-container-0",
+  "heading": "Configuration > Configuration via sidecar containers or init containers > Init container helper",
+  "text": "Pods can have _init_ containers that start before the main application. Unlike sidecars,\ninit containers complete before the Pod's main (application) containers start up, so the\nconfiguration only gets set once.\n\nYou have two main options for configuration using init containers:\n\n#### Configuration via the filesystem {#init-container-shared-volume}\n\nWith this option, the init container fetches configuration and writes the configuration to\na file, or several files, typically to a Pod-local\nvolume.\n\n#### Configuration via environment variables {#init-container-env-files}\n\nThis is done using a local volume, but only the init container mounts that volume. The kubelet then reads from that volume before starting the app container.\n\nRead [Define Environment Variable Values Using An Init Container](/docs/tasks/inject-data-application/define-environment-variable-via-file/)\nto learn more."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-environment-variable-container#using-environment-variables-inside-of-your-config-0",
+  "heading": "Define Environment Variables for a Container > Using environment variables inside of your config",
+  "text": "Environment variables that you define in a Pod's configuration under \n`.spec.containers[*].env[*]` can be used elsewhere in the configuration, for \nexample in commands and arguments that you set for the Pod's containers.\nIn the example configuration below, the `GREETING`, `HONORIFIC`, and\n`NAME` environment variables are set to `Warm greetings to`, `The Most\nHonorable`, and `Kubernetes`, respectively. The environment variable \n`MESSAGE` combines the set of all these environment variables and then uses it \nas a CLI argument passed to the `env-print-demo` container.\n\nEnvironment variable names may consist of any [printable ASCII characters](https://www.ascii-code.com/characters/printable-characters) except '='."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/configure-access-multiple-clusters#windows-powershell-1-0",
+  "heading": "Configure Access to Multiple Clusters > Set the KUBECONFIG environment variable > Windows PowerShell",
+  "text": "```powershell\n$Env:KUBECONFIG=(\"config-demo;config-demo-2\")\n```\n\nIn your `config-exercise` directory, enter this command:\n\n```shell\nkubectl config view\n```\n\nThe output shows merged information from all the files listed in your `KUBECONFIG`\nenvironment variable. In particular, notice that the merged information has the\n`dev-ramp-up` context from the `config-demo-2` file and the three contexts from\nthe `config-demo` file:\n\n```yaml\ncontexts:\n- context:\n    cluster: development\n    namespace: frontend\n    user: developer\n  name: dev-frontend\n- context:\n    cluster: development\n    namespace: ramp\n    user: developer\n  name: dev-ramp-up\n- context:\n    cluster: development\n    namespace: storage\n    user: developer\n  name: dev-storage\n- context:\n    cluster: test\n    namespace: default\n    user: experimenter\n  name: exp-test\n```"
+ }
+]

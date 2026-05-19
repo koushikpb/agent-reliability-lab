@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The Kubernetes docs don't have specific guidance on Prometheus tsdb issues. However, based on the ticket symptoms (gaps in dashboards since ~03:00, missing alerts) and the pod status showing a 100Gi PVC for Prometheus storage, I need to consider what could cause this. Let me search for PVC and storage issues.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01RmwUFzu1Gq7coqMpvGSamm",
+   "input": {
+    "query": "persistent volume claim storage full disk space"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5765,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 133,
+ "stop_reason": "tool_use"
+}

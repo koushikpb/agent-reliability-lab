@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the issue. The deployment is failing due to PodSecurity violations. The new 1.5.0 image doesn't meet the \"restricted:latest\" PodSecurity policy requirements. Let me search for documentation on PodSecurity policies to provide proper context:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MrnaD13naAKgKSrEFA5c3X",
+   "input": {
+    "query": "PodSecurity policy restricted securityContext"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2566,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 123,
+ "stop_reason": "tool_use"
+}

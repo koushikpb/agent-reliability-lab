@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "Force storage detach on timeout can be disabled by setting the `disable-force-detach-on-timeout`\nconfig field in `kube-controller-manager`. Disabling the force detach on timeout feature means\nthat a volume that is hosted on a node that is unhealthy for more than 6 minutes will not have\nits associated\n[VolumeAttachment](/docs/reference/kubernetes-api/config-and-storage-resources/volume-attachment-v1/)\ndeleted.\n\nAfter this setting has been applied, unhealthy pods still attached to volumes must be recovered\nvia the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure mentioned above.\n\n- Caution must be taken while using the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure.\n- Deviation from the steps documented above can result in data corruption."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-0",
+  "heading": "Safely Drain a Node > Use `kubectl drain` to remove a node from service",
+  "text": "You can use `kubectl drain` to safely evict all of your pods from a\nnode before you perform maintenance on the node (e.g. kernel upgrade,\nhardware maintenance, etc.). Safe evictions allow the pod's containers\nto [gracefully terminate](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination)\nand will respect the PodDisruptionBudgets you have specified.\n\nBy default `kubectl drain` ignores certain system pods on the node\nthat cannot be killed; see\nthe [kubectl drain](/docs/reference/generated/kubectl/kubectl-commands/#drain)\ndocumentation for more details."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#intro-0",
+  "heading": "API-initiated Eviction",
+  "text": " </br>\n\nYou can request eviction by calling the Eviction API directly, or programmatically\nusing a client of the API server, like the `kubectl drain` command. This\ncreates an `Eviction` object, which causes the API server to terminate the Pod.\n\nAPI-initiated evictions respect your configured [`PodDisruptionBudgets`](/docs/tasks/run-application/configure-pdb/)\nand [`terminationGracePeriodSeconds`](/docs/concepts/workloads/pods/pod-lifecycle#pod-termination).\n\nUsing the API to create an Eviction object for a Pod is like performing a\npolicy-controlled [`DELETE` operation](/docs/reference/kubernetes-api/workload-resources/pod-v1/#delete-delete-a-pod)\non the Pod."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#troubleshooting-stuck-evictions-0",
+  "heading": "API-initiated Eviction > Troubleshooting stuck evictions",
+  "text": "In some cases, your applications may enter a broken state, where the Eviction\nAPI will only return `429` or `500` responses until you intervene. This can\nhappen if, for example, a ReplicaSet creates pods for your application but new\npods do not enter a `Ready` state. You may also notice this behavior in cases\nwhere the last evicted Pod had a long termination grace period.\n\nIf you notice stuck evictions, try one of the following solutions:\n\n* Abort or pause the automated operation causing the issue. Investigate the stuck\n  application before you restart the operation.\n* Wait a while, then directly delete the Pod from your cluster control plane\n  instead of using the Eviction API."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-budgets-3",
+  "heading": "Disruptions > Pod disruption budgets",
+  "text": "It is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)\nto your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.\nThe default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nbefore the drain can proceed.\n\nWhen a pod is evicted using the eviction API, it is gracefully\n[terminated](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination), honoring the\n`terminationGracePeriodSeconds` setting in its [PodSpec](/docs/reference/generated/kubernetes-api//#podspec-v1-core)."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#how-api-initiated-eviction-works-1",
+  "heading": "API-initiated Eviction > How API-initiated eviction works",
+  "text": "1. The `Pod` resource in the API server is updated with a deletion timestamp,\n   after which the API server considers the `Pod` resource to be terminated. The\n   `Pod` resource is also marked with the configured grace period.\n1. The kubelet on the node where the local Pod is running notices that the `Pod`\n   resource is marked for termination and starts to gracefully shut down the\n   local Pod.\n1. While the kubelet is shutting the Pod down, the control plane removes the Pod\n   from EndpointSlice\n   objects. As a result, controllers no longer consider the Pod as a valid object.\n1. After the grace period for the Pod expires, the kubelet forcefully terminates\n   the local Pod.\n1. The kubelet tells the API server to remove the `Pod` resource.\n1. The API server deletes the `Pod` resource."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#eviction-signals-5",
+  "heading": "Node-pressure Eviction > Eviction signals and thresholds > Eviction signals",
+  "text": "On nodes with [hugepages](/docs/tasks/manage-hugepages/scheduling-hugepages/)\nconfigured, the kubelet subtracts the node's total hugepage capacity from\n`memory.available` used by eviction manager.\nWithout this adjustment, hugepage-reserved RAM inflates\n`AvailableBytes` because the memory cgroup controller does not track hugetlb\nallocations in its working set. This can delay eviction and lead to OOM kills.\nTo restore the previous behavior, disable the `HugepageAwareEviction`\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/)."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#configure-poddisruptionbudget-0",
+  "heading": "Safely Drain a Node > (Optional) Configure a disruption budget",
+  "text": "To ensure that your workloads remain available during maintenance, you can\nconfigure a [PodDisruptionBudget](/docs/concepts/workloads/pods/disruptions/).\n\nIf availability is important for any applications that run or could run on the node(s)\nthat you are draining, [configure a PodDisruptionBudgets](/docs/tasks/run-application/configure-pdb/)\nfirst and then continue following this guide.\n\nIt is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)\nto your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.\nThe default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nbefore the drain can proceed."
+ }
+]

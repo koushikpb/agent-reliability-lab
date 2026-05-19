@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#deprecated-annotation-0",
+  "heading": "Ingress > Ingress class > Deprecated annotation",
+  "text": "Before the IngressClass resource and `ingressClassName` field were added in\nKubernetes 1.18, Ingress classes were specified with a\n`kubernetes.io/ingress.class` annotation on the Ingress. This annotation was\nnever formally defined, but was widely supported by Ingress controllers.\n\nThe newer `ingressClassName` field on Ingresses is a replacement for that\nannotation, but is not a direct equivalent. While the annotation was generally\nused to reference the name of the Ingress controller that should implement the\nIngress, the field is a reference to an IngressClass resource that contains\nadditional Ingress configuration, including the name of the Ingress controller."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#default-ingress-class-0",
+  "heading": "Ingress > Ingress class > Default IngressClass",
+  "text": "You can mark a particular IngressClass as default for your cluster. Setting the\n`ingressclass.kubernetes.io/is-default-class` annotation to `true` on an\nIngressClass resource will ensure that new Ingresses without an\n`ingressClassName` field specified will be assigned this default IngressClass.\n\nIf you have more than one IngressClass marked as the default for your cluster,\nthe admission controller prevents creating new Ingress objects that don't have\nan `ingressClassName` specified. You can resolve this by ensuring that at most 1\nIngressClass is marked as default in your cluster.\n\nStart by defining a\ndefault IngressClass. It is recommended though, to specify the default\nIngressClass:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: IngressClass\nmetadata:\n  labels:\n    app.kubernetes.io/component: controller\n  name: example-class\n  annotations:\n    ingressclass.kubernetes.io/is-default-class: \"true\"\nspec:\n  controller: k8s.io/example-class\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#using-multiple-ingress-controllers-1",
+  "heading": "Ingress Controllers > Using multiple Ingress controllers",
+  "text": "If you do not specify an IngressClass for an Ingress, and your cluster has exactly one IngressClass marked as default, then Kubernetes [applies](/docs/concepts/services-networking/ingress/#default-ingress-class) the cluster's default IngressClass to the Ingress.\nYou mark an IngressClass as default by setting the [`ingressclass.kubernetes.io/is-default-class` annotation](/docs/reference/labels-annotations-taints/#ingressclass-kubernetes-io-is-default-class) on that IngressClass, with the string value `\"true\"`.\n\nIdeally, all ingress controllers should fulfill this specification, but the various ingress\ncontrollers operate slightly differently.\n\nMake sure you review your ingress controller's documentation to understand the caveats of choosing it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#using-multiple-ingress-controllers-0",
+  "heading": "Ingress Controllers > Using multiple Ingress controllers",
+  "text": "You may deploy any number of ingress controllers using [ingress class](/docs/concepts/services-networking/ingress/#ingress-class)\nwithin a cluster. Note the `.metadata.name` of your ingress class resource. When you create an ingress you would need that name to specify the `ingressClassName` field on your Ingress object (refer to [IngressSpec v1 reference](/docs/reference/kubernetes-api/service-resources/ingress-v1/#IngressSpec)). `ingressClassName` is a replacement of the older [annotation method](/docs/concepts/services-networking/ingress/#deprecated-annotation)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-1",
+  "heading": "Ingress > The Ingress resource",
+  "text": "An Ingress needs `apiVersion`, `kind`, `metadata` and `spec` fields.\nThe name of an Ingress object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).\nFor general information about working with config files, see\n[deploying applications](/docs/tasks/run-application/run-stateless-application-deployment/),\n[configuring containers](/docs/tasks/configure-pod-container/configure-pod-configmap/),\n[managing resources](/docs/concepts/workloads/management/).\nIngress controllers frequently use [annotations](/docs/concepts/overview/working-with-objects/annotations/) to configure behavior.\nReview the documentation for your choice of ingress controller to learn which annotations are expected and / or supported."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#ingressclass-scope-3",
+  "heading": "Ingress > Ingress class > IngressClass scope",
+  "text": "```yaml\n---\napiVersion: networking.k8s.io/v1\nkind: IngressClass\nmetadata:\n  name: external-lb-2\nspec:\n  controller: example.com/ingress-controller\n  parameters:\n    # The parameters for this IngressClass are specified in an\n    # IngressParameter (API group k8s.example.com) named \"external-config\",\n    # that's in the \"external-configuration\" namespace.\n    scope: Namespace\n    apiGroup: k8s.example.com\n    kind: IngressParameter\n    namespace: external-configuration\n    name: external-config\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#ingress-class-0",
+  "heading": "Ingress > Ingress class",
+  "text": "Ingresses can be implemented by different controllers, often with different\nconfiguration. Each Ingress should specify a class, a reference to an\nIngressClass resource that contains additional configuration including the name\nof the controller that should implement the class.\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: IngressClass\nmetadata:\n  name: external-lb\nspec:\n  controller: example.com/ingress-controller\n  parameters:\n    apiGroup: k8s.example.com\n    kind: IngressParameters\n    name: external-lb\n```\n\nThe `.spec.parameters` field of an IngressClass lets you reference another\nresource that provides configuration related to that IngressClass.\n\nThe specific type of parameters to use depends on the ingress controller\nthat you specify in the `.spec.controller` field of the IngressClass."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#ingressclass-scope-1",
+  "heading": "Ingress > Ingress class > IngressClass scope",
+  "text": "```yaml\n---\napiVersion: networking.k8s.io/v1\nkind: IngressClass\nmetadata:\n  name: external-lb-1\nspec:\n  controller: example.com/ingress-controller\n  parameters:\n    # The parameters for this IngressClass are specified in a\n    # ClusterIngressParameter (API group k8s.example.net) named\n    # \"external-config-1\". This definition tells Kubernetes to\n    # look for a cluster-scoped parameter resource.\n    scope: Cluster\n    apiGroup: k8s.example.net\n    kind: ClusterIngressParameter\n    name: external-config-1\n```\n\nIf you set the `.spec.parameters` field and set\n`.spec.parameters.scope` to `Namespace`, then the IngressClass refers\nto a namespaced-scoped resource. You must also set the `namespace`\nfield within `.spec.parameters` to the namespace that contains\nthe parameters you want to use."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-scheduling-readiness#mutable-pod-scheduling-directives-1",
+  "heading": "Pod Scheduling Readiness > Mutable Pod scheduling directives",
+  "text": "3. If `NodeSelectorTerms` was empty, it will be allowed to be set.\n   If not empty, then only additions of `NodeSelectorRequirements` to `matchExpressions`\n   or `fieldExpressions` are allowed, and no changes to existing `matchExpressions`\n   and `fieldExpressions` will be allowed. This is because the terms in\n   `.requiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms`, are ORed\n   while the expressions in `nodeSelectorTerms[].matchExpressions` and\n   `nodeSelectorTerms[].fieldExpressions` are ANDed.\n\n4. For `.preferredDuringSchedulingIgnoredDuringExecution`, all updates are allowed.\n   This is because preferred terms are not authoritative, and so policy controllers\n   don't validate those terms."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#node-affinity-0",
+  "heading": "Assigning Pods to Nodes > Affinity and anti-affinity > Node affinity",
+  "text": "Node affinity is conceptually similar to `nodeSelector`, allowing you to constrain which nodes your\nPod can be scheduled on based on node labels. There are two types of node\naffinity:\n\n- `requiredDuringSchedulingIgnoredDuringExecution`: The scheduler can't\n  schedule the Pod unless the rule is met. This functions like `nodeSelector`,\n  but with a more expressive syntax.\n- `preferredDuringSchedulingIgnoredDuringExecution`: The scheduler tries to\n  find a node that meets the rule. If a matching node is not available, the\n  scheduler still schedules the Pod.\n\nIn the preceding types, `IgnoredDuringExecution` means that if the node labels\nchange after Kubernetes schedules the Pod, the Pod continues to run.\n\nYou can specify node affinities using the `.spec.affinity.nodeAffinity` field in\nyour Pod spec.\n\nFor example, consider the following Pod spec:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-autoscaling#provisioning-pod-constraints-0",
+  "heading": "Node Autoscaling > Node provisioning > Pod scheduling constraints",
+  "text": "Pods can express [scheduling constraints](/docs/concepts/scheduling-eviction/assign-pod-node/) to\nimpose limitations on the kind of Nodes they can be scheduled on. Node autoscalers take these\nconstraints into account to ensure that the pending Pods can be scheduled on the provisioned Nodes.\n\nThe most common kind of scheduling constraints are the resource requests specified by Pod\ncontainers. Autoscalers will make sure that the provisioned Nodes have enough resources to satisfy\nthe requests. However, they don't directly take into account the real resource usage of the Pods\nafter they start running. In order to autoscale Nodes based on actual workload resource usage, you\ncan combine [horizontal workload autoscaling](#horizontal-workload-autoscaling) with Node\nautoscaling."
+ },
+ {
+  "chunk_id": "concepts/containers/runtime-class#scheduling-0",
+  "heading": "Runtime Class > Scheduling",
+  "text": "By specifying the `scheduling` field for a RuntimeClass, you can set constraints to\nensure that Pods running with this RuntimeClass are scheduled to nodes that support it.\nIf `scheduling` is not set, this RuntimeClass is assumed to be supported by all nodes.\n\nTo ensure pods land on nodes supporting a specific RuntimeClass, that set of nodes should have a\ncommon label which is then selected by the `runtimeclass.scheduling.nodeSelector` field. The\nRuntimeClass's nodeSelector is merged with the pod's nodeSelector in admission, effectively taking\nthe intersection of the set of nodes selected by each. If there is a conflict, the pod will be\nrejected.\n\nIf the supported nodes are tainted to prevent other RuntimeClass pods from running on the node, you\ncan add `tolerations` to the RuntimeClass. As with the `nodeSelector`, the tolerations are merged\nwith the pod's tolerations in admission, effectively taking the union of the set of nodes tolerated\nby each."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#preemption-0",
+  "heading": "Pod Priority and Preemption > Preemption",
+  "text": "When Pods are created, they go to a queue and wait to be scheduled. The\nscheduler picks a Pod from the queue and tries to schedule it on a Node. If no\nNode is found that satisfies all the specified requirements of the Pod,\npreemption logic is triggered for the pending Pod. Let's call the pending Pod P.\nPreemption logic tries to find a Node where removal of one or more Pods with\nlower priority than P would enable P to be scheduled on that Node. If such a\nNode is found, one or more lower priority Pods get evicted from the Node. After\nthe Pods are gone, P can be scheduled on the Node."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#higher-priority-pods-are-preempted-before-lower-priority-pods-0",
+  "heading": "Pod Priority and Preemption > Troubleshooting > Higher priority Pods are preempted before lower priority pods",
+  "text": "The scheduler tries to find nodes that can run a pending Pod. If no node is\nfound, the scheduler tries to remove Pods with lower priority from an arbitrary\nnode in order to make room for the pending pod.\nIf a node with low priority Pods is not feasible to run the pending Pod, the scheduler\nmay choose another node with higher priority Pods (compared to the Pods on the\nother node) for preemption. The victims must still have lower priority than the\npreemptor Pod.\n\nWhen there are multiple nodes available for preemption, the scheduler tries to\nchoose the node with a set of Pods with lowest priority. However, if such Pods\nhave PodDisruptionBudget that would be violated if they are preempted then the\nscheduler may choose another node with higher priority Pods.\n\nWhen multiple nodes exist for preemption and none of the above scenarios apply,\nthe scheduler chooses a node with the lowest priority."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#inter-pod-affinity-and-anti-affinity-16",
+  "heading": "Assigning Pods to Nodes > Affinity and anti-affinity > Inter-pod affinity and anti-affinity",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  labels:\n    # Assume that all relevant Pods have a \"tenant\" label set\n    tenant: tenant-a\n...\nspec:\n  affinity:\n    podAffinity:\n      requiredDuringSchedulingIgnoredDuringExecution:\n      # ensure that Pods associated with this tenant land on the correct node pool\n      - matchLabelKeys:\n          - tenant\n        labelSelector: {}\n        topologyKey: node-pool\n    podAntiAffinity:\n      requiredDuringSchedulingIgnoredDuringExecution:\n      # ensure that Pods associated with this tenant can't schedule to nodes used for another tenant\n      - mismatchLabelKeys:\n        - tenant # whatever the value of the \"tenant\" label for this Pod, prevent\n                 # scheduling to nodes in any pool where any Pod from a different\n                 # tenant is running.\n        labelSelector:\n          # We have to have the labelSelector which selects only Pods with the tenant label,\n          # otherwise this Pod would have anti-affinity against Pods from daemonsets as well, for example,\n```"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#node-affinity-3",
+  "heading": "Assigning Pods to Nodes > Affinity and anti-affinity > Node affinity",
+  "text": "If you specify both `nodeSelector` and `nodeAffinity`, *both* must be satisfied\nfor the Pod to be scheduled onto a node.\n\nIf you specify multiple terms in `nodeSelectorTerms` associated with `nodeAffinity`\ntypes, then the Pod can be scheduled onto a node if one of the specified terms\ncan be satisfied (terms are ORed).\n\nIf you specify multiple expressions in a single `matchExpressions` field associated with a\nterm in `nodeSelectorTerms`, then the Pod can be scheduled onto a node only\nif all the expressions are satisfied (expressions are ANDed).\n\nSee [Assign Pods to Nodes using Node Affinity](/docs/tasks/configure-pod-container/assign-pods-nodes-using-node-affinity/)\nfor more information.\n\n#### Node affinity weight"
+ }
+]

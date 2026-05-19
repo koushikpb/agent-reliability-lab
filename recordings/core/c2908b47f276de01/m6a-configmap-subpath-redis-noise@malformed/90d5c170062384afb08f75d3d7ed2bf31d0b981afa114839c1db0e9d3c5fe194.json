@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I've found the root cause. Now I have all the information I need to resolve this ticket. The issue is clear: the gateway pods are using subPath volume mounts with the gateway-limits ConfigMap, and according to Kubernetes documentation, containers using ConfigMaps as subPath volume mounts do not receive ConfigMap updates automatically.\n\nLet me update the ticket with the resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01HTkujaczHdVQzBqFbPwkpo",
+   "input": {
+    "id": "T-5004",
+    "note": "**Root Cause:** The api-gateway pods in the edge namespace are mounting the gateway-limits ConfigMap using a `subPath` volume mount. According to Kubernetes documentation, containers using a ConfigMap as a subPath volume mount will not receive ConfigMap updates [cite: concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4]. Even though you updated the ConfigMap at 09:10, the gateway pods continued using the old cached configuration with the 100 req/s limit.\n\n**Evidence:** The pod volume mount configuration shows: `\"subPath\": \"limits.yaml\"` for the limits volume mounting the gateway-limits ConfigMap. Additionally, the pods have been running since 2026-05-21T06:02:05Z and have 0 restarts, confirming they were never restarted after the ConfigMap update.\n\n**Fix:** To allow the gateway to pick up limit changes without restarting, you need to:\n1. Remove the `subPath` from the volume mount in the api-gateway Deployment spec, or\n2. Restart the api-gateway pods to pick up the updated ConfigMap immediately\n\nThe first approach is recommended as it enables automatic hot-reload of limit changes in the future [cite: concepts/storage/volumes#configmap-2]. After removing the subPath, the kubelet will automatically propagate ConfigMap changes to the pods (with a delay of up to kubelet sync period + cache TTL, typically 1-2 minutes) [cite: tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5890,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 534,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/pod-security-policy#intro-0",
+  "heading": "Pod Security Policies",
+  "text": "PodSecurityPolicy was [deprecated](/blog/2021/04/08/kubernetes-1-21-release-announcement/#podsecuritypolicy-deprecation)\nin Kubernetes v1.21, and removed from Kubernetes in v1.25.\n\nInstead of using PodSecurityPolicy, you can enforce similar restrictions on Pods using\neither or both:\n\n- [Pod Security Admission](/docs/concepts/security/pod-security-admission/)\n- a 3rd party admission plugin, that you deploy and configure yourself\n\nFor a migration guide, see [Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller](/docs/tasks/configure-pod-container/migrate-from-psp/).\nFor more information on the removal of this API,\nsee [PodSecurityPolicy Deprecation: Past, Present, and Future](/blog/2021/04/06/podsecuritypolicy-deprecation-past-present-and-future/)."
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#policy-instantiation-0",
+  "heading": "Pod Security Standards > Policy Instantiation",
+  "text": "Decoupling policy definition from policy instantiation allows for a common understanding and\nconsistent language of policies across clusters, independent of the underlying enforcement\nmechanism.\n\nAs mechanisms mature, they will be defined below on a per-policy basis. The methods of enforcement\nof individual policies are not defined here.\n\n[**Pod Security Admission Controller**](/docs/concepts/security/pod-security-admission/)\n\n- Privileged namespace\n- Baseline namespace\n- Restricted namespace"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#is-psa-right-for-you-0",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 0. Decide whether Pod Security Admission is right for you",
+  "text": "Pod Security Admission was designed to meet the most common security needs out of the box, and to\nprovide a standard set of security levels across clusters. However, it is less flexible than\nPodSecurityPolicy. Notably, the following features are supported by PodSecurityPolicy but not Pod\nSecurity Admission:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#is-psa-right-for-you-3",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 0. Decide whether Pod Security Admission is right for you",
+  "text": "Even if Pod Security Admission does not meet all of your needs it was designed to be _complementary_\nto other policy enforcement mechanisms, and can provide a useful fallback running alongside other\nadmission webhooks."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#is-psa-right-for-you-2",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 0. Decide whether Pod Security Admission is right for you",
+  "text": "  to enforce those policies.\n- **Sub-namespace policy granularity** - PodSecurityPolicy lets you bind different policies to\n  different Service Accounts or users, even within a single namespace. This approach has many\n  pitfalls and is not recommended, but if you require this feature anyway you will\n  need to use a 3rd party webhook instead. The exception to this is if you only need to completely exempt\n  specific users or [RuntimeClasses](/docs/concepts/containers/runtime-class/), in which case Pod\n  Security Admission does expose some\n  [static configuration for exemptions](/docs/concepts/security/pod-security-admission/#exemptions)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#simplify-psps-0",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies",
+  "text": "In this section, you will reduce mutating PodSecurityPolicies and remove options that are outside\nthe scope of the Pod Security Standards. You should make the changes recommended here to an offline\ncopy of the original PodSecurityPolicy being modified. The cloned PSP should have a different\nname that is alphabetically before the original (for example, prepend a `0` to it). Do not create the\nnew policies in Kubernetes yet - that will be covered in the [Rollout the updated\npolicies](#psp-update-rollout) section below."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#identify-appropriate-level-3",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 3. Update Namespaces > 3.a. Identify an appropriate Pod Security level",
+  "text": "Options 2 & 3 above are based on _existing_ pods, and may miss workloads that aren't currently\nrunning, such as CronJobs, scale-to-zero workloads, or other workloads that haven't rolled out."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#eliminate-non-standard-options-0",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.b. Eliminate options not covered by the Pod Security Standards",
+  "text": "There are several fields in PodSecurityPolicy that are not covered by the Pod Security Standards. If\nyou must enforce these options, you will need to supplement Pod Security Admission with an\n[admission webhook](/docs/reference/access-authn-authz/extensible-admission-controllers/),\nwhich is outside the scope of this guide.\n\nFirst, you can remove the purely validating fields that the Pod Security Standards do not cover.\nThese fields (also listed in the\n[Mapping PodSecurityPolicies to Pod Security Standards](/docs/reference/access-authn-authz/psp-to-pod-security-standards/)\nreference with \"no opinion\") are:"
+ }
+]

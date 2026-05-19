@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-6002 by identifying that the incomplete scale-up was caused by docindex-3 being stuck in an unready state. StatefulSets use OrderedReady pod management by default, which requires pods to be created sequentially in ordinal order with each predecessor becoming Ready before the next pod is created. Since docindex-3 has been failing its readiness probe (HTTP 503) repeatedly, docindex-4 was never created. The ticket owner needs to investigate why docindex-3 is returning 503 errors\u2014likely an application initialization, resource, or connectivity issue\u2014and once fixed, the scale-up will complete automatically.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7457,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 147,
+ "stop_reason": "end_turn"
+}

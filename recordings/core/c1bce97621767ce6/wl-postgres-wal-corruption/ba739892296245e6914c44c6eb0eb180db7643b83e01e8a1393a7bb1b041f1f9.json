@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results don't specifically address PostgreSQL corruption recovery. Let me search more specifically for solutions to this issue.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01PL8JA5QbwFP8ySagxPUbXw",
+   "input": {
+    "query": "pod persistent volume reattach failed node crash recovery"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6621,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 86,
+ "stop_reason": "tool_use"
+}

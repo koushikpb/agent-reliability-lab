@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me get the pod logs to see if there's more information about the error:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MGi2ETkqXNC2vNhQuZ1kAj",
+   "input": {
+    "pod": "clickhouse-2"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4630,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 76,
+ "stop_reason": "tool_use"
+}

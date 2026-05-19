@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The logs show a PostgreSQL crash recovery issue - \"invalid primary checkpoint record\". This typically happens when the database was not shut down gracefully. Let me search the documentation to understand the best recovery approach.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_014sX4fcw5QurciuMUSegaHS",
+   "input": {
+    "query": "PostgreSQL crash recovery checkpoint record corruption"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2279,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 101,
+ "stop_reason": "tool_use"
+}

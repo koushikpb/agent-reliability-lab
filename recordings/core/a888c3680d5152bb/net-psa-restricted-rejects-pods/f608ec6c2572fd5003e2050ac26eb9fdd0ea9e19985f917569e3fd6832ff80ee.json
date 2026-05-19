@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try with the correct pod name format:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01J1QkkAZsCtA233KmVxdZmA",
+   "input": {
+    "pod_name": "deploy-pdf-exporter-28591340-wq7mz"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2092,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 83,
+ "stop_reason": "tool_use"
+}

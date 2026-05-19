@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "signature": "EpkJCqgBCBMYAipASQEMmhQ2tSYuwnZAwDSr8RvdTdbQChk5/8HEb7iRt2iIRIJz6kBiAZsazPJjRSlB4H1plxKC8OByhm6q4VkQ7jIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAfH18NYGEgwHd8IeN0EeJoj9dgQaDOg5bP8sn9wOm45wiSIw0PzmamTOmE/JEY/zd3xsKTJyMWtmsM3KsIC6/tPPg8UMvU8GuM9K5AAxm0QTdw9NKp0HD/Iz8eQzZ3cEJc6loNgClahFU+QRu+sfXkhFs/63to/1HgrjpUnPdCp+w9EsWe9WaoNkFyG3G5N5uiG5p3/xf2Qc7YiIzyNhoqPNZpD5PTO6/v+a2om+A5cwtK4o3QagBG3U2eDo/lvElIo9wP7fm/OlCiNndMyxXOAIjcRICdmIRSSff0yWTEooXQwFSlgRhdQ7JWn8HgLUe87fhSbAEoGsR6Mw4QlvQQX7tz88J/w83XLE5eee/pxg+OR+8p8MUNsi2ooAPv9rOhioR0e9DQkPjg9HBn/2pC59nGxYmFHtxd5tb7Gl4/7cqgxOkAahRWeS0mGlHcGIQ8DTlJbcressPFhT7DSDcZB2bInhsOtvAbKYU44JiuLjdFDPm5+mZKKCSGxOmSwWNniexs6HsyfbGmknOYBDvVrgg9hb7fCOnXXbQquOxPd+gZ2RXppMP8Nwml0D/CnP3DOCh+zsMnTnf9KrZhhqsS/PugTsuaODagrS5xDEEwAq79TOeMKgovw0NeOUXd4w4b/rmv0KWGRCPyUKSPryKMIZ1Cte+sBaLICUc+dT/ZOLTFJHOkjaROg4HQsn3U55Hpq1QZpeVdqEbndtZJLkWl0aiS5axIlWumIMkh7i48IpwBI9HXeXI4EE6u7A2cyfhvEzxPNe9j+XdW+9p50ebl9TS1DbgPQ28uKcvWfSwRIksctgvXPu5V7Lk/uywvmvUKaW5XDRgN1DSF4wvA21HZfMsLP1osKNR3+mgZkC9Eo6VneeWsFYT8qdZHAELNYl2+pRjKdL1tEL9nZheIFXo2hzSv6mMKENzratkGbr+tLKg6mMR+j89dwX/D9B6bLlqWhX+tNhE+r9zPys5RmahKUVqwxhweOu6QIItiICqJVUyQkNL33dWV0jq0K1XuLkI8/+wx6QzSj6UajLuaM+BTmjwM4Wk47aM/x/PN/xLVNd3zScqULfBib3FOLwJIZFCWjuvzzjBczmEiDAX3dgiG/f7eTWlOfXmdE/awCqj6LEkw23/0ZfQ2XdrypcQk+KRbYuEwQFPhHwsLwMZLDSXkCcdbWMGFlR8YKQ50UnQRpSusQWS36DkEXfE8j2Ah1ftycF7UY9o1z3wQYq0gl+tLCYTnfCyQgi6kuULKogve+PRjvp5KTdr++N3zDK360zOakvY7q9CYrDaO7v3kMLQkDLju++nI36MKlUmN93JdBjCziDyU30S6GHYSNmJr4kl5dkGhgB",
+   "thinking": "Now I have all the information I need. The issue is clear:\n\n1. The deploy pipeline applied the new 1.5.0 image tag to the `pdf-exporter` deployment.\n2. The `documents` namespace enforces PodSecurity `restricted:latest`.\n3. The new 1.5.0 pod manifest doesn't include required security context fields:\n   - `securityContext.allowPrivilegeEscalation=false`\n   - `securityContext.capabilities.drop=[\"ALL\"]`\n   - `securityContext.runAsNonRoot=true`\n   - `securityContext.seccompProfile.type=RuntimeDefault` or `Localhost`\n   \nAs a result the new ReplicaSet's pods get rejected by PodSecurity admission, so no replicas ever start, the rollout stalls and times out, and the old 1.4.2 pods keep running. The fix is to add the proper security context to the 1.5.0 manifest's exporter container \u2014 I'll go update the ticket now.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "I have a complete picture of the issue. Let me resolve the ticket now.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01SQGytupAkDq8WehxJNQx2h",
+   "input": {
+    "id": "T-4002",
+    "note": "**Root cause: PodSecurity admission is blocking all new 1.5.0 pods from being created.**\n\n**Evidence observed:**\n- The `documents` namespace enforces the `restricted:latest` PodSecurity profile.\n- The pipeline job (`deploy-pdf-exporter-28591340-wq7mz`, status: Error / exit code 1) successfully patched the image to `1.5.0`, but the new ReplicaSet (`pdf-exporter-5f6b8d9c47`) immediately emitted a `FailedCreate` warning with the message:\n  > *pods \"pdf-exporter-5f6b8d9c47-8xq2d\" is forbidden: violates PodSecurity \"restricted:latest\": allowPrivilegeEscalation != false (container \"exporter\" must set securityContext.allowPrivilegeEscalation=false), unrestricted capabilities (container \"exporter\" must set securityContext.capabilities.drop=[\"ALL\"]), runAsNonRoot != true (pod or container \"exporter\" must set securityContext.runAsNonRoot=true), seccompProfile (pod or container \"exporter\" must set securityContext.seccompProfile.type to \"RuntimeDefault\" or \"Localhost\")*\n- Because 0 new pods could be scheduled, `kubectl rollout status` timed out after 10 minutes.\n- The 1.4.2 pods remain Running because they were already present and are not replaced until new pods come up [cite: concepts/workloads/controllers/deployment#updating-a-deployment-4].\n\n**Why this wasn't a problem with 1.4.2:**\nThe 1.4.2 pod template apparently satisfied (or pre-dated) the `restricted` policy. The only change made for 1.5.0 was the image tag, so the `securityContext` fields were likely stripped or never added in the new manifest.\n\n**Required fix \u2014 add a compliant `securityContext` to the `exporter` container in the Deployment manifest:**\n\nThe `restricted` PodSecurity profile requires all of the following on every container [cite: concepts/security/pod-security-standards#restricted-3] [cite: concepts/security/pod-security-standards#restricted-9] [cite: concepts/workloads/pods/advanced-pod-config#container-level-security-context-0]:\n\n```yaml\ncontainers:\n  - name: exporter\n    image: registry.internal/docs/pdf-exporter:1.5.0\n    securityContext:\n      allowPrivilegeEscalation: false\n      runAsNonRoot: true\n      capabilities:\n        drop:\n          - ALL\n      seccompProfile:\n        type: RuntimeDefault\n```\n\nAfter updating the manifest with these fields, re-run the pipeline. The rollout should proceed normally. If a `runAsUser` is required, set it to a non-zero UID as well.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 9558,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 1072,
+ "stop_reason": "tool_use"
+}

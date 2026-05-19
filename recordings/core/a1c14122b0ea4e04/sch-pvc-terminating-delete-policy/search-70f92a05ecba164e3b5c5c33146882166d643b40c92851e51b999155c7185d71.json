@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-1",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "```shell\nkubectl describe pv pvc-74a498d6-3929-47e8-8c02-078c1ece4d78\nName:            pvc-74a498d6-3929-47e8-8c02-078c1ece4d78\nLabels:          <none>\nAnnotations:     kubernetes.io/createdby: vsphere-volume-dynamic-provisioner\n                 pv.kubernetes.io/bound-by-controller: yes\n                 pv.kubernetes.io/provisioned-by: kubernetes.io/vsphere-volume\nFinalizers:      [kubernetes.io/pv-protection kubernetes.io/pv-controller]\nStorageClass:    vcp-sc\nStatus:          Bound\nClaim:           default/vcp-pvc-1\nReclaim Policy:  Delete\nAccess Modes:    RWO\nVolumeMode:      Filesystem\nCapacity:        1Gi\nNode Affinity:   <none>\nMessage:\nSource:\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-6",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "When the `CSIMigration{provider}` feature flag is enabled for a specific in-tree volume plugin,\nthe `kubernetes.io/pv-controller` finalizer is replaced by the\n`external-provisioner.volume.kubernetes.io/finalizer` finalizer.\n\nThe finalizers ensure that the PV object is removed only after the volume is deleted\nfrom the storage backend provided the reclaim policy of the PV is `Delete`. This\nalso ensures that the volume is deleted from storage backend irrespective of the\norder of deletion of PV and PVC."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-4",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "```shell\nName:            pvc-2f0bab97-85a8-4552-8044-eb8be45cf48d\nLabels:          <none>\nAnnotations:     pv.kubernetes.io/provisioned-by: csi.vsphere.vmware.com\nFinalizers:      [kubernetes.io/pv-protection external-provisioner.volume.kubernetes.io/finalizer]\nStorageClass:    fast\nStatus:          Bound\nClaim:           demo-app/nginx-logs\nReclaim Policy:  Delete\nAccess Modes:    RWO\nVolumeMode:      Filesystem\nCapacity:        200Mi\nNode Affinity:   <none>\nMessage:\nSource:\n    Type:              CSI (a Container Storage Interface (CSI) volume source)\n    Driver:            csi.vsphere.vmware.com\n    FSType:            ext4\n    VolumeHandle:      44830fa8-79b4-406b-8b58-621ba25353fd\n    ReadOnly:          false\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-1",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "```shell\nkubectl describe pvc hostpath\nName:          hostpath\nNamespace:     default\nStorageClass:  example-hostpath\nStatus:        Terminating\nVolume:\nLabels:        <none>\nAnnotations:   volume.beta.kubernetes.io/storage-class=example-hostpath\n               volume.beta.kubernetes.io/storage-provisioner=example.com/hostpath\nFinalizers:    [kubernetes.io/pvc-protection]\n...\n```\n\nYou can see that a PV is protected when the PV's status is `Terminating` and\nthe `Finalizers` list includes `kubernetes.io/pv-protection` too:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-tracking-with-finalizers-0",
+  "heading": "Jobs > Advanced usage > Job tracking with finalizers",
+  "text": "The control plane keeps track of the Pods that belong to any Job and notices if\nany such Pod is removed from the API server. To do that, the Job controller\ncreates Pods with the finalizer `batch.kubernetes.io/job-tracking`. The\ncontroller removes the finalizer only after the Pod has been accounted for in\nthe Job status, allowing the Pod to be removed by other controllers or users.\n\nSee [My pod stays terminating](/docs/tasks/debug/debug-application/debug-pods/) if you\nobserve that pods from a Job are stuck with the tracking finalizer."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/create-external-load-balancer#garbage-collecting-load-balancers-0",
+  "heading": "Create an External Load Balancer > Garbage collecting load balancers",
+  "text": "In usual case, the correlating load balancer resources in cloud provider should\nbe cleaned up soon after a LoadBalancer type Service is deleted. But it is known\nthat there are various corner cases where cloud resources are orphaned after the\nassociated Service is deleted. Finalizer Protection for Service LoadBalancers was\nintroduced to prevent this from happening. By using finalizers, a Service resource\nwill never be deleted until the correlating load balancer resources are also deleted.\n\nSpecifically, if a Service has `type` LoadBalancer, the service controller will attach\na finalizer named `service.kubernetes.io/load-balancer-cleanup`.\nThe finalizer will only be removed after the load balancer resource is cleaned up.\nThis prevents dangling load balancer resources even in corner cases such as the\nservice controller crashing."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-5",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "When you use a `podFailurePolicy`, the job controller only matches Pods in the\n`Failed` phase. Pods with a deletion timestamp that are not in a terminal phase\n(`Failed` or `Succeeded`) are considered still terminating. This implies that\nterminating pods retain a [tracking finalizer](#job-tracking-with-finalizers)\nuntil they reach a terminal phase.\nSince Kubernetes 1.27, Kubelet transitions deleted pods to a terminal phase\n(see: [Pod Phase](/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase)). This\nensures that deleted pods have their finalizers removed by the Job controller.\n\nStarting with Kubernetes v1.28, when Pod failure policy is used, the Job controller recreates\nterminating Pods only once these Pods reach the terminal `Failed` phase. This behavior is similar\nto `podReplacementPolicy: Failed`. For more information, see [Pod replacement policy](#pod-replacement-policy)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "The purpose of the Storage Object in Use Protection feature is to ensure that\nPersistentVolumeClaims (PVCs) in active use by a Pod and PersistentVolume (PVs)\nthat are bound to PVCs are not removed from the system, as this may result in data loss.\n\nPVC is in active use by a Pod when a Pod object exists that is using the PVC.\n\nIf a user deletes a PVC in active use by a Pod, the PVC is not removed immediately.\nPVC removal is postponed until the PVC is no longer actively used by any Pods. Also,\nif an admin deletes a PV that is bound to a PVC, the PV is not removed immediately.\nPV removal is postponed until the PV is no longer bound to a PVC.\n\nYou can see that a PVC is protected when the PVC's status is `Terminating` and the\n`Finalizers` list includes `kubernetes.io/pvc-protection`:"
+ }
+]

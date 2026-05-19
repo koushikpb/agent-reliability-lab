@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Resolved T-2003. \n\nSummary: Checked pods in the `search` namespace \u2014 both catalog-search replicas were in CrashLoopBackOff with liveness-probe \"connection refused\" messages. Logs showed each pod was partway through loading a 48-shard / 12.4 GiB index (opens the HTTP listener only after loading) when it got SIGTERMed. The liveness probe (initialDelaySeconds=30, period=10, failureThreshold=3) fires before the index finishes loading. Recommended fix in the resolution note: add a startupProbe on /healthz with failureThreshold*periodSeconds covering worst-case load (e.g. 30\u00d710 = 5 min), leaving the liveness probe unchanged, with doc citations.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8148,
+ "model": "claude-opus-4-7",
+ "output_tokens": 251,
+ "stop_reason": "end_turn"
+}

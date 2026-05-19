@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The pod is in CrashLoopBackOff with 23 restarts and exiting with code 1. Let me search for information about StatefulSet pod recovery after node reboot and volume attachment issues:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Gm1CAPc8uKrnujpYZ8kxEA",
+   "input": {
+    "query": "StatefulSet pod stuck terminating after node shutdown volume attachment"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6287,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 111,
+ "stop_reason": "tool_use"
+}

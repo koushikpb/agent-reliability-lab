@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#deprecated-annotation-0",
+  "heading": "Ingress > Ingress class > Deprecated annotation",
+  "text": "Before the IngressClass resource and `ingressClassName` field were added in\nKubernetes 1.18, Ingress classes were specified with a\n`kubernetes.io/ingress.class` annotation on the Ingress. This annotation was\nnever formally defined, but was widely supported by Ingress controllers.\n\nThe newer `ingressClassName` field on Ingresses is a replacement for that\nannotation, but is not a direct equivalent. While the annotation was generally\nused to reference the name of the Ingress controller that should implement the\nIngress, the field is a reference to an IngressClass resource that contains\nadditional Ingress configuration, including the name of the Ingress controller."
+ },
+ {
+  "chunk_id": "concepts/workloads/management#updating-annotations-0",
+  "heading": "Managing Workloads > Updating annotations",
+  "text": "Sometimes you would want to attach annotations to resources. Annotations are arbitrary\nnon-identifying metadata for retrieval by API clients such as tools or libraries.\nThis can be done with `kubectl annotate`. For example:\n\n```shell\nkubectl annotate pods my-nginx-v4-9gw19 description='my frontend running nginx'\nkubectl get pods my-nginx-v4-9gw19 -o yaml\n```\n\n```shell\napiVersion: v1\nkind: pod\nmetadata:\n  annotations:\n    description: my frontend running nginx\n...\n```\n\nFor more information, see [annotations](/docs/concepts/overview/working-with-objects/annotations/)\nand [kubectl annotate](/docs/reference/kubectl/generated/kubectl_annotate/)."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-update-objects-9",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to update objects",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # The annotation contains the updated image to nginx 1.16.1,\n    # but does not contain the updated replicas to 2\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.16.1\",\"name\":\"nginx\",\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merge-patch-calculation-7",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merge patch calculation",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # The annotation contains the updated image to nginx 1.16.1,\n    # but does not contain the updated replicas to 2\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.16.1\",\"name\":\"nginx\",\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/run-stateless-application-deployment#creating-and-exploring-an-nginx-deployment-1",
+  "heading": "Run a Stateless Application Using a Deployment > Creating and exploring an nginx deployment",
+  "text": "   ```\n   Name:     nginx-deployment\n   Namespace:    default\n   CreationTimestamp:  Tue, 30 Aug 2016 18:11:37 -0700\n   Labels:     app=nginx\n   Annotations:    deployment.kubernetes.io/revision=1\n   Selector:   app=nginx\n   Replicas:   2 desired | 2 updated | 2 total | 2 available | 0 unavailable\n   StrategyType:   RollingUpdate\n   MinReadySeconds:  0\n   RollingUpdateStrategy:  1 max unavailable, 1 max surge\n   Pod Template:\n     Labels:       app=nginx\n     Containers:\n       nginx:\n       Image:              nginx:1.14.2\n       Port:               80/TCP\n       Environment:        <none>\n       Mounts:             <none>\n     Volumes:              <none>\n   Conditions:\n     Type          Status  Reason\n     ----          ------  ------\n     Available     True    MinimumReplicasAvailable\n     Progressing   True    NewReplicaSetAvailable\n   OldReplicaSets:   <none>\n   NewReplicaSet:    nginx-deployment-1771418926 (2/2 replicas created)\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicationcontroller#running-an-example-replicationcontroller-1",
+  "heading": "ReplicationController > Running an example ReplicationController",
+  "text": "```\nName:        nginx\nNamespace:   default\nSelector:    app=nginx\nLabels:      app=nginx\nAnnotations:    <none>\nReplicas:    3 current / 3 desired\nPods Status: 0 Running / 3 Waiting / 0 Succeeded / 0 Failed\nPod Template:\n  Labels:       app=nginx\n  Containers:\n   nginx:\n    Image:              nginx\n    Port:               80/TCP\n    Environment:        <none>\n    Mounts:             <none>\n  Volumes:              <none>\nEvents:\n  FirstSeen       LastSeen     Count    From                        SubobjectPath    Type      Reason              Message\n  ---------       --------     -----    ----                        -------------    ----      ------              -------\n  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-qrm3m\n  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-3ntk0\n  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-4ok8v\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rolling-back-to-a-previous-revision-2",
+  "heading": "Deployments > Rolling Back a Deployment > Rolling Back to a Previous Revision",
+  "text": "   The output is similar to this:\n   ```\n   NAME               READY   UP-TO-DATE   AVAILABLE   AGE\n   nginx-deployment   3/3     3            3           30m\n   ```\n3. Get the description of the Deployment:\n   ```shell\n   kubectl describe deployment nginx-deployment\n   ```\n   The output is similar to this:\n   ```\n   Name:                   nginx-deployment\n   Namespace:              default\n   CreationTimestamp:      Sun, 02 Sep 2018 18:17:55 -0500\n   Labels:                 app=nginx\n   Annotations:            deployment.kubernetes.io/revision=4\n   Selector:               app=nginx\n   Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable\n   StrategyType:           RollingUpdate\n   MinReadySeconds:        0\n   RollingUpdateStrategy:  25% max unavailable, 25% max surge\n   Pod Template:\n     Labels:  app=nginx\n     Containers:\n      nginx:\n       Image:        nginx:1.16.1\n       Port:         80/TCP\n       Host Port:    0/TCP\n       Environment:  <none>\n       Mounts:       <none>\n     Volumes:        <none>\n   Conditions:\n     Type           Status  Reason"
+ }
+]

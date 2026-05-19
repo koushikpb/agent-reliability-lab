@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now I have a clear picture of the issue. The pods are receiving SIGTERM during startup before they finish loading their index shards. The liveness probe has a 30-second delay before it starts checking, but the pod is being terminated before that. This suggests the pod is being killed due to a default 30-second termination grace period expiring before the startup is complete.\n\nLet me search for more information about startup probes being the solution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_014UM7Wntf3gGFfU4ojK7Bx6",
+   "input": {
+    "query": "startup probe protect slow starting containers initialization"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 8975,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 155,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/delete-stateful-set#persistent-volumes-0",
+  "heading": "Delete a StatefulSet > Deleting a StatefulSet > Persistent Volumes",
+  "text": "Deleting the Pods in a StatefulSet will not delete the associated volumes.\nThis is to ensure that you have the chance to copy data off the volume before\ndeleting it. Deleting the PVC after the pods have terminated might trigger\ndeletion of the backing Persistent Volumes depending on the storage class\nand reclaim policy. You should never assume ability to access a volume\nafter claim deletion.\n\nUse caution when deleting a PVC, as it may lead to data loss."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#stable-storage-0",
+  "heading": "StatefulSets > Pod Identity > Stable Storage",
+  "text": "For each VolumeClaimTemplate entry defined in a StatefulSet, each Pod receives one\nPersistentVolumeClaim. In the nginx example above, each Pod receives a single PersistentVolume\nwith a StorageClass of `my-storage-class` and 1 GiB of provisioned storage. If no StorageClass\nis specified, then the default StorageClass will be used. When a Pod is (re)scheduled\nonto a node, its `volumeMounts` mount the PersistentVolumes associated with its\nPersistentVolume Claims. Note that, the PersistentVolumes associated with the\nPods' PersistentVolume Claims are not deleted when the Pods, or StatefulSet are deleted.\nThis must be done manually."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-1",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "`Delete`\n: The PVCs created from the StatefulSet `volumeClaimTemplate` are deleted for each Pod\n  affected by the policy. With the `whenDeleted` policy all PVCs from the\n  `volumeClaimTemplate` are deleted after their Pods have been deleted. With the\n  `whenScaled` policy, only PVCs corresponding to Pod replicas being scaled down are\n  deleted, after their Pods have been deleted.\n\n`Retain` (default)\n: PVCs from the `volumeClaimTemplate` are not affected when their Pod is\n  deleted. This is the behavior before this new feature.\n\nBear in mind that these policies **only** apply when Pods are being removed due to the\nStatefulSet being deleted or scaled down. For example, if a Pod associated with a StatefulSet\nfails due to node failure, and the control plane creates a replacement Pod, the StatefulSet\nretains the existing PVC.  The existing volume is unaffected, and the cluster will attach it to\nthe node where the new Pod is about to launch.\n\nThe default for policies is `Retain`, matching the StatefulSet behavior before this new feature.\n\nHere is an example policy:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-2",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "```yaml\napiVersion: apps/v1\nkind: StatefulSet\n...\nspec:\n  persistentVolumeClaimRetentionPolicy:\n    whenDeleted: Retain\n    whenScaled: Delete\n...\n```\n\nThe StatefulSet controller adds\n[owner references](/docs/concepts/overview/working-with-objects/owners-dependents/#owner-references-in-object-specifications)\nto its PVCs, which are then deleted by the garbage collector after the Pod is terminated. This enables the Pod to\ncleanly unmount all volumes before the PVCs are deleted (and before the backing PV and\nvolume are deleted, depending on the retain policy).  When you set the `whenDeleted`\npolicy to `Delete`, an owner reference to the StatefulSet instance is placed on all PVCs\nassociated with that StatefulSet."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#limitations-0",
+  "heading": "StatefulSets > Limitations",
+  "text": "* The storage for a given Pod must either be provisioned by a\n  [PersistentVolume Provisioner](/docs/concepts/storage/dynamic-provisioning/)\n  based on the requested _storage class_, or pre-provisioned by an admin.\n* Deleting and/or scaling a StatefulSet down will _not_ delete the volumes associated with the\n  StatefulSet. This is done to ensure data safety, which is generally more valuable than an\n  automatic purge of all related StatefulSet resources.\n* StatefulSets currently require a [Headless Service](/docs/concepts/services-networking/service/#headless-services)\n  to be responsible for the network identity of the Pods. You are responsible for creating this\n  Service.\n* StatefulSets do not provide any guarantees on the termination of pods when a StatefulSet is\n  deleted. To achieve ordered and graceful termination of the pods in the StatefulSet, it is\n  possible to scale the StatefulSet down to 0 prior to deletion.\n* When using [Rolling Updates](#rolling-updates) with the default"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#volume-claim-templates-0",
+  "heading": "StatefulSets > Components > Volume Claim Templates",
+  "text": "You can set the `.spec.volumeClaimTemplates` field to create a\n[PersistentVolumeClaim](/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims). \nThis will provide stable storage to the StatefulSet if either:\n\n* The StorageClass specified for the volume claim is set up to use [dynamic\n  provisioning](/docs/concepts/storage/dynamic-provisioning/).\n* The cluster already contains a PersistentVolume with the correct StorageClass\n  and sufficient available storage space."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#using-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Using",
+  "text": "Pods use claims as volumes. The cluster inspects the claim to find the bound\nvolume and mounts that volume for a Pod. For volumes that support multiple\naccess modes, the user specifies which mode is desired when using their claim\nas a volume in a Pod.\n\nOnce a user has a claim and that claim is bound, the bound PV belongs to the\nuser for as long as they need it. Users schedule Pods and access their claimed\nPVs by including a `persistentVolumeClaim` section in a Pod's `volumes` block.\nSee [Claims As Volumes](#claims-as-volumes) for more details on this."
+ },
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-2",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "Kubernetes volumes enable complex\napplications, with data persistence and Pod volume sharing requirements, to be deployed\non Kubernetes. Management of persistent volumes associated with a specific storage\nback-end or protocol includes actions such as provisioning/de-provisioning/resizing\nof volumes, attaching/detaching a volume to/from a Kubernetes node and\nmounting/dismounting a volume to/from individual containers in a pod that needs to\npersist data.\n\nVolume management components are shipped as Kubernetes volume\n[plugin](/docs/concepts/storage/volumes/#volume-types).\nThe following broad classes of Kubernetes volume plugins are supported on Windows:\n\n* [`FlexVolume plugins`](/docs/concepts/storage/volumes/#flexvolume)\n  * Please note that FlexVolumes have been deprecated as of 1.23\n* [`CSI Plugins`](/docs/concepts/storage/volumes/#csi)\n\n##### In-tree volume plugins\n\nThe following in-tree plugins support persistent storage on Windows nodes:"
+ }
+]

@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01U6PWcQjznhhr8n6g1M8XHY",
+   "input": {
+    "namespace": "catalog"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019bo7c4t5yU6QgqP4CsWZHn",
+   "input": {
+    "query": "HPA cpu unknown target metric resource requests"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1889,
+ "model": "claude-opus-4-7",
+ "output_tokens": 128,
+ "stop_reason": "tool_use"
+}

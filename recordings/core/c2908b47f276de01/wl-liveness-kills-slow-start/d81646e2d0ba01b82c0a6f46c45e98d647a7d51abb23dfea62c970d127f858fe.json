@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-2003 by identifying that the catalog-search pods are in a crash loop due to an undersized liveness probe delay. The pods need 50+ seconds to load their index shards before becoming ready, but the current liveness probe configuration with a 30-second delay and only 3 failure attempts kills the container during startup. The fix is to add a Kubernetes startup probe with sufficient failureThreshold to allow the initialization to complete before the liveness probe takes over.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8118,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 111,
+ "stop_reason": "end_turn"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#taint-nodes-by-condition-2",
+  "heading": "Taints and Tolerations > Taint Nodes by Condition",
+  "text": "  * `node.kubernetes.io/memory-pressure`\n  * `node.kubernetes.io/disk-pressure`\n  * `node.kubernetes.io/pid-pressure` (1.14 or later)\n  * `node.kubernetes.io/unschedulable` (1.10 or later)\n  * `node.kubernetes.io/network-unavailable` (*host network only*)\n\nAdding these tolerations ensures backward compatibility. You can also add\narbitrary tolerations to DaemonSets."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-6",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "```yaml\ntolerations:\n- key: \"key1\"\n  operator: \"Equal\"\n  value: \"value1\"\n  effect: \"NoSchedule\"\n- key: \"key1\"\n  operator: \"Equal\"\n  value: \"value1\"\n  effect: \"NoExecute\"\n```\n\nIn this case, the pod will not be able to schedule onto the node, because there is no\ntoleration matching the third taint. But it will be able to continue running if it is\nalready running on the node when the taint is added, because the third taint is the only\none of the three that is not tolerated by the pod.\n\nNormally, if a taint with effect `NoExecute` is added to a node, then any pods that do\nnot tolerate the taint will be evicted immediately, and pods that do tolerate the\ntaint will never be evicted. However, a toleration with `NoExecute` effect can specify\nan optional `tolerationSeconds` field that dictates how long the pod will stay bound\nto the node after the taint is added. For example,"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#node-conditions-3",
+  "heading": "Node-pressure Eviction > Node conditions",
+  "text": "The control plane also [maps](/docs/concepts/scheduling-eviction/taint-and-toleration/#taint-nodes-by-condition)\nthese node conditions to taints.\n\nThe kubelet updates the node conditions based on the configured\n`--node-status-update-frequency`, which defaults to `10s`."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#taint-based-evictions-5",
+  "heading": "Taints and Tolerations > Taint based Evictions",
+  "text": "[DaemonSet](/docs/concepts/workloads/controllers/daemonset/) pods are created with\n`NoExecute` tolerations for the following taints with no `tolerationSeconds`:\n\n  * `node.kubernetes.io/unreachable`\n  * `node.kubernetes.io/not-ready`\n\nThis ensures that DaemonSet pods are never evicted due to these problems.\n\nThe node controller was responsible for adding taints to nodes and evicting pods. But after 1.29,\nthe taint-based eviction implementation has been moved out of node controller into a separate,\nand independent component called taint-eviction-controller. Users can optionally disable taint-based\neviction by setting `--controllers=-taint-eviction-controller` in kube-controller-manager."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#taint-based-evictions-3",
+  "heading": "Taints and Tolerations > Taint based Evictions",
+  "text": "In case a node is to be drained, the node controller or the kubelet adds relevant taints\nwith `NoExecute` effect. This effect is added by default for the\n`node.kubernetes.io/not-ready` and `node.kubernetes.io/unreachable` taints.\nIf the fault condition returns to normal, the kubelet or node\ncontroller can remove the relevant taint(s).\n\nIn some cases when the node is unreachable, the API server is unable to communicate\nwith the kubelet on the node. The decision to delete the pods cannot be communicated to\nthe kubelet until communication with the API server is re-established. In the meantime,\nthe pods that are scheduled for deletion may continue to run on the partitioned node.\n\nThe control plane limits the rate of adding new taints to nodes. This rate limiting\nmanages the number of evictions that are triggered when many nodes become unreachable at\nonce (for example: if there is a network disruption)."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-4",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "`PreferNoSchedule`\n: `PreferNoSchedule` is a \"preference\" or \"soft\" version of `NoSchedule`.\n  The control plane will *try* to avoid placing a Pod that does not tolerate\n  the taint on the node, but it is not guaranteed.\n\nYou can put multiple taints on the same node and multiple tolerations on the same pod.\nThe way Kubernetes processes multiple taints and tolerations is like a filter: start\nwith all of a node's taints, then ignore the ones for which the pod has a matching toleration; the\nremaining un-ignored taints have the indicated effects on the pod. In particular,"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#device-taints-and-tolerations-0",
+  "heading": "Taints and Tolerations > Device taints and tolerations",
+  "text": "Instead of tainting entire nodes, administrators can also [taint individual devices](/docs/concepts/resource-management/dynamic-resource-allocation/device-taints/#device-taints-and-tolerations)\nwhen the cluster uses [dynamic resource allocation](/docs/concepts/resource-management/dynamic-resource-allocation/)\nto manage special hardware. The advantage is that tainting can be targeted towards exactly the hardware that\nis faulty or needs maintenance. Tolerations are also supported and can be specified when requesting\ndevices. Like taints they apply to all pods which share the same allocated device."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-7",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "```yaml\ntolerations:\n- key: \"key1\"\n  operator: \"Equal\"\n  value: \"value1\"\n  effect: \"NoExecute\"\n  tolerationSeconds: 3600\n```\n\nmeans that if this pod is running and a matching taint is added to the node, then\nthe pod will stay bound to the node for 3600 seconds, and then be evicted. If the\ntaint is removed before that time, the pod will not be evicted."
+ }
+]

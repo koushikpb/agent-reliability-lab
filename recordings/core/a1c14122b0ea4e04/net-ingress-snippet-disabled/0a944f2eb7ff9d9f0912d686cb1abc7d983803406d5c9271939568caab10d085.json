@@ -1,0 +1,41 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01BAjyGw95wXnAjPHQ3XhFWx",
+   "input": {
+    "namespace": "legacy"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MX3Afb7VVjsyHfEMif7eP8",
+   "input": {
+    "namespace": "ingress-nginx"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01UkHqHNRsMYco2jLusUcd3D",
+   "input": {
+    "query": "ingress-nginx configuration-snippet annotation disabled default"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1911,
+ "model": "claude-opus-4-7",
+ "output_tokens": 186,
+ "stop_reason": "tool_use"
+}

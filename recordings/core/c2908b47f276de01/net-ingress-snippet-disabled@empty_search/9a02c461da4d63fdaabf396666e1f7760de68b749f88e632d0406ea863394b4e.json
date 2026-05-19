@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Based on the evidence I've found in the logs, I can now resolve this ticket. The issue is clear: the ingress controller was upgraded and now has `allow-snippet-annotations=false` enabled, which disables the `configuration-snippet` annotation that was being used for the regex redirects.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Qciy8BTPAKiiZyzgWF7HGo",
+   "input": {
+    "id": "T-4008",
+    "note": "Root Cause: The ingress controller upgrade enabled allow-snippet-annotations=false, which disables the nginx.ingress.kubernetes.io/configuration-snippet annotation that was used for regex-based redirects in the legacy-portal Ingress.\n\nEvidence: The ingress controller logs show: \"W0517 02:03:12.882455 7 store.go:951] skipping annotation nginx.ingress.kubernetes.io/configuration-snippet on ingress legacy/legacy-portal: Snippet directives are disabled by the Ingress administrator (allow-snippet-annotations=false)\". The legacy-portal pods are healthy and running, confirming the issue is with the ingress configuration, not the backend service.\n\nFix: The platform team needs to either:\n1. Re-enable snippet annotations by setting allow-snippet-annotations=true in the ingress controller configuration, or\n2. Migrate the regex redirects to a method supported by standard annotations (such as rewrite-target with regex patterns if available in the new version), or\n3. Use a different ingress controller version that supports the needed functionality.\n\nThis is a platform configuration issue that needs to be handled by the infrastructure team.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2858,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 411,
+ "stop_reason": "tool_use"
+}

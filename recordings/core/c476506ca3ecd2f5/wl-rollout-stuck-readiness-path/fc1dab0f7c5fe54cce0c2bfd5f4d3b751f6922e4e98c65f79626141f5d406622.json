@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:** The `accounts-api 3.1.0` rollout was stuck because the new version removed the legacy `/healthz` health endpoint (replacing it with `/livez` and `/readyz`), but the Deployment's readiness probe was still pointing at `/healthz`. Every probe returned 404, so the new pod never became Ready, and Kubernetes' rolling update controller \u2014 which requires new pods to be Ready before terminating old ones \u2014 was permanently blocked. The fix is to update the readiness probe path in the Deployment spec from `/healthz` to `/readyz` (and optionally the liveness probe to `/livez`), then re-apply. A `kubectl rollout undo` is available as an immediate escape hatch if needed.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8594,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 167,
+ "stop_reason": "end_turn"
+}

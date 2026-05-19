@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary of what I did:**\n\n1. **Read ticket T-3002** \u2014 `doc-embedder` in the `vision` namespace stuck Pending after being moved to the GPU node pool.\n2. **Inspected the pod** \u2014 The scheduler condition message pinpointed the issue: *\"3 node(s) had untolerated taint {dedicated: gpu}\"*. The pod's toleration list covered `nvidia.com/gpu:NoSchedule` but was missing a toleration for the `dedicated=gpu:NoSchedule` taint that the GPU nodes carry.\n3. **Searched the docs** \u2014 Confirmed that every taint on a node must be matched by a toleration in the pod spec before the scheduler will place it there.\n4. **Resolved the ticket** with the root cause, evidence, and a one-stanza YAML fix: add `dedicated=gpu:NoSchedule` to the Deployment's tolerations.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5351,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 213,
+ "stop_reason": "end_turn"
+}

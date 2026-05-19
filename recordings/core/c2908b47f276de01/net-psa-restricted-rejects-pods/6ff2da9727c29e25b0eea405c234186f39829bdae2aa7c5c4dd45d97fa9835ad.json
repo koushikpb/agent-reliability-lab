@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I now have all the information I need. The issue is clear: the pdf-exporter 1.5.0 image doesn't have the required security context settings to pass the \"restricted:latest\" PodSecurity policy. Let me update the ticket with the solution.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019SZ4qGNUtSncZstbxMLNoD",
+   "input": {
+    "id": "T-4002",
+    "note": "**Cause:** The deployment rollout failed due to PodSecurity policy violations. The documents namespace enforces the \"restricted:latest\" PodSecurity policy, and the pdf-exporter 1.5.0 image doesn't meet the required security context settings.\n\n**Evidence:** The deploy pod logs show the following error from the PodSecurity admission controller:\n- allowPrivilegeEscalation must be set to false\n- capabilities must have ALL dropped\n- runAsNonRoot must be true\n- seccompProfile must be set to RuntimeDefault or Localhost\n\nThe 1.4.2 pods are still running because they were deployed before or meet the policy requirements.\n\n**Fix:** You need to update your pdf-exporter deployment manifest to add the required security context settings to pass the Restricted policy [cite: concepts/workloads/pods/advanced-pod-config#container-level-security-context-0]:\n\n```yaml\nspec:\n  containers:\n  - name: exporter\n    image: registry.internal/docs/pdf-exporter:1.5.0\n    securityContext:\n      allowPrivilegeEscalation: false\n      runAsNonRoot: true\n      capabilities:\n        drop:\n        - ALL\n      seccompProfile:\n        type: RuntimeDefault\n```\n\nAdd these securityContext settings to the exporter container in your deployment manifest, then redeploy. This will satisfy the PodSecurity \"restricted:latest\" policy [cite: concepts/security/pod-security-standards#restricted-0] and allow the 1.5.0 rollout to proceed.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6695,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 511,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-tcp-liveness-probe-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a TCP liveness probe",
+  "text": "As you can see, configuration for a TCP check is quite similar to an HTTP check.\nThis example uses both readiness and liveness probes. The kubelet will run the\nfirst liveness probe 15 seconds after the container starts. This will attempt to\nconnect to the `goproxy` container on port 8080. If the liveness probe fails,\nthe container will be restarted. The kubelet will continue to run this check\nevery 10 seconds.\n\nIn addition to the liveness probe, this configuration includes a readiness\nprobe. The kubelet will run the first readiness probe 15 seconds after the\ncontainer starts. Similar to the liveness probe, this will attempt to connect to\nthe `goproxy` container on port 8080. If the probe succeeds, the Pod will be\nmarked as ready and will receive traffic from services. If the readiness probe\nfails, the pod will be marked unready and will not receive traffic from any\nservices.\n\nTo try the TCP liveness check, create a Pod:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-level-terminationgraceperiodseconds-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields > Probe-level `terminationGracePeriodSeconds`",
+  "text": "```yaml\nspec:\n  terminationGracePeriodSeconds: 3600  # pod-level\n  containers:\n  - name: test\n    image: ...\n\n    ports:\n    - name: liveness-port\n      containerPort: 8080\n\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: liveness-port\n      failureThreshold: 1\n      periodSeconds: 60\n      # Override pod-level terminationGracePeriodSeconds\n      terminationGracePeriodSeconds: 60\n```\n\nProbe-level `terminationGracePeriodSeconds` **cannot** be set for readiness probes.\nIt will be rejected by the API server."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-tcp-liveness-probe-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a TCP liveness probe",
+  "text": "A third type of liveness probe uses a TCP socket. With this configuration, the\nkubelet will attempt to open a socket to your container on the specified port.\nIf it can establish a connection, the container is considered healthy, if it\ncan't it is considered a failure.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: goproxy\n  labels:\n    app: goproxy\nspec:\n  containers:\n  - name: goproxy\n    image: registry.k8s.io/goproxy:0.1\n    ports:\n    - containerPort: 8080\n    readinessProbe:\n      tcpSocket:\n        port: 8080\n      initialDelaySeconds: 15\n      periodSeconds: 10\n    livenessProbe:\n      tcpSocket:\n        port: 8080\n      initialDelaySeconds: 15\n      periodSeconds: 10\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Protect slow starting containers with startup probes",
+  "text": "Sometimes, you have to deal with applications that require additional startup\ntime on their first initialization. In such cases, it can be tricky to set up\nliveness probe parameters without compromising the fast response to deadlocks\nthat motivated such a probe. The solution is to set up a startup probe with the\nsame command, HTTP or TCP check, with a `failureThreshold * periodSeconds` long\nenough to cover the worst case startup time.\n\nSo, the previous example would become:\n\n```yaml\nports:\n- name: liveness-port\n  containerPort: 8080\n\nlivenessProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n  failureThreshold: 1\n  periodSeconds: 10\n\nstartupProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n  failureThreshold: 30\n  periodSeconds: 10\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-grpc-liveness-probe-3",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a gRPC liveness probe",
+  "text": "- The probes run against the pod IP address or its hostname.\n  Be sure to configure your gRPC endpoint to listen on the Pod's IP address.\n- The probes connect over plaintext by default. See\n  [Use TLS with gRPC probes](#grpc-probe-tls) for how to enable TLS.\n- There are no error codes for built-in probes. All errors are considered as probe failures.\n- If `ExecProbeTimeout` feature gate is set to `false`, grpc-health-probe does **not**\n  respect the `timeoutSeconds` setting (which defaults to 1s), while built-in probe would fail on timeout."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#liveness-probe-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Types of probe > Liveness probe",
+  "text": "Incorrect implementation of liveness probes can lead to cascading failures.\nThis results in restarting of container under high load; failed client requests\nas your application became less scalable; and increased workload on remaining\npods due to some failed pods. Understand the difference between liveness and\nreadiness probes and when to apply them for your app."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-http-request-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a liveness HTTP request",
+  "text": "In the configuration file, you can see that the Pod has a single container.\nThe `periodSeconds` field specifies that the kubelet should perform a liveness\nprobe every 3 seconds. The `initialDelaySeconds` field tells the kubelet that it\nshould wait 3 seconds before performing the first probe. To perform a probe, the\nkubelet sends an HTTP GET request to the server that is running in the container\nand listening on port 8080. If the handler for the server's `/healthz` path\nreturns a success code, the kubelet considers the container to be alive and\nhealthy. If the handler returns a failure code, the kubelet kills the container\nand restarts it.\n\nAny code greater than or equal to 200 and less than 400 indicates success. Any\nother code indicates failure.\n\nYou can see the source code for the server in\n[server.go](https://github.com/kubernetes/kubernetes/blob/master/test/images/agnhost/liveness/server.go)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-2",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "`successThreshold`\n: Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. Must be 1 for liveness and startup Probes. Minimum value is 1.\n\n`failureThreshold`\n: After a probe fails `failureThreshold` times in a row, Kubernetes considers that the overall check has failed: the container is _not_ ready/healthy/live. Defaults to 3. Minimum value is 1. For the case of a startup or liveness probe, if at least `failureThreshold` probes have failed, Kubernetes treats the container as unhealthy and triggers a restart for that specific container. The kubelet honors the setting of `terminationGracePeriodSeconds` for that container. For a failed readiness probe, the kubelet continues running the container that failed checks, and also continues to run more probes; because the check failed, the kubelet sets the `Ready` [condition](/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions) on the Pod to `false`."
+ }
+]

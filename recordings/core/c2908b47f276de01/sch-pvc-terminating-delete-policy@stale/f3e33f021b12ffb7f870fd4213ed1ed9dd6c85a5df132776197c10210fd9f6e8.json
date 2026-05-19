@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I now have all the information I need. Let me search for more specific information about why a PVC gets stuck in Terminating state when a pod is still using it.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_018b1hcS7M2kkPqDqHTzWhsr",
+   "input": {
+    "query": "PVC terminating pod using volume still running"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4309,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 100,
+ "stop_reason": "tool_use"
+}

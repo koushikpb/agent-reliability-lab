@@ -1,0 +1,35 @@
+{
+ "content": [
+  {
+   "signature": "EqADCqQBCBMYAipAcj2md59OCivC6r5uILVqMeRxVmAfGs/qDBZ/dZoNVadl4udYjoyzcXU3yHY7nXl4rHhiZYE2spyKFPmZeUzJ5jIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB19Dw1gYSDLrT6leVzHgcT0B8oRoMkils9m9AtFokUDhbIjBh+1shECk2nKS/iVglkeOS96OqxAnPjtn8Gq28vBDu3rISt3dNtjqoAqyGKurEO3YqqAHpYtYPlUJHHekLHWV5xY+NYa8zi4Zu/lq0rLDztBdE3/ryog8Y2bNYl15Z9O5czcr5l/kww+1OOBcxS/MbXDIE0vFGQZgK8q3Ml6Q5uzDTOdjG3FNkyHEOl9f01K5k6U0AcRseJ/wKu5Bt46gBhZGbm7yyjBlSt0gzwaUMWlI+5KsDfjnmFJ5Hr1+mk9p0KpiLTKJcoKYtIQ1nDT5kSAxXmgZjmuWuuk4YAQ==",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DUnH7rVdYofuKV4iNgcLKG",
+   "input": {
+    "query": "LimitRange default memory limit namespace"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_015MACRRqMDiTSnvqzgYkg46",
+   "input": {
+    "query": "OOMKilled exit code 137 container memory limit"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2640,
+ "model": "claude-opus-4-7",
+ "output_tokens": 213,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-3",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "`terminationGracePeriodSeconds`\n: configure a grace period for the kubelet to wait between triggering a shut down of the failed container, and then forcing the container runtime to stop that container. The default is to inherit the Pod-level value for `terminationGracePeriodSeconds` (30 seconds if not specified), and the minimum value is 1. See [probe-level `terminationGracePeriodSeconds`](#probe-level-terminationgraceperiodseconds) for more detail.\n\nIncorrect implementation of readiness probes may result in an ever growing\nnumber of processes in the container, and resource starvation if this is left\nunchecked."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-level-terminationgraceperiodseconds-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields > Probe-level `terminationGracePeriodSeconds`",
+  "text": "In 1.25 and above, users can specify a probe-level `terminationGracePeriodSeconds`\nas part of the probe specification. When both a pod- and probe-level\n`terminationGracePeriodSeconds` are set, the kubelet will use the probe-level\nvalue.\n\nWhen setting the `terminationGracePeriodSeconds`, note the following:\n\n* The kubelet always honors the probe-level `terminationGracePeriodSeconds`\n  field if it is present on a Pod.\n* If you have existing Pods where the `terminationGracePeriodSeconds` field is\n  set and you no longer wish to use per-probe termination grace periods, you\n  must delete those existing Pods.\n\nFor example:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-level-terminationgraceperiodseconds-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields > Probe-level `terminationGracePeriodSeconds`",
+  "text": "```yaml\nspec:\n  terminationGracePeriodSeconds: 3600  # pod-level\n  containers:\n  - name: test\n    image: ...\n\n    ports:\n    - name: liveness-port\n      containerPort: 8080\n\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: liveness-port\n      failureThreshold: 1\n      periodSeconds: 60\n      # Override pod-level terminationGracePeriodSeconds\n      terminationGracePeriodSeconds: 60\n```\n\nProbe-level `terminationGracePeriodSeconds` **cannot** be set for readiness probes.\nIt will be rejected by the API server."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "`initialDelaySeconds`\n: Number of seconds after the container has started before startup, liveness or readiness probes are initiated. If a startup probe is defined, liveness and readiness probe delays do not begin until the startup probe has succeeded. In some older Kubernetes versions, the initialDelaySeconds might be ignored if periodSeconds was set to a value higher than initialDelaySeconds. However, in current versions, initialDelaySeconds is always honored and the probe will not start until after this initial delay. Defaults to 0 seconds. Minimum value is 0.\n\n`periodSeconds`\n: How often (in seconds) to perform the probe. Default to 10 seconds. The minimum value is 1. While a container is not Ready, the readiness probe may be executed at times other than the configured `periodSeconds` interval. This is to make the Pod ready faster.\n\n`timeoutSeconds`\n: Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#when-should-you-use-a-startup-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > When to use each probe > When should you use a startup probe?",
+  "text": "Startup probes are useful for Pods that have containers that take a long time to\ncome into service. Rather than set a long liveness interval, you can configure a\nseparate configuration for probing the container as it starts up, allowing a\ntime longer than the liveness interval would allow.\n\nIf your container usually starts in more than\n\\\\( initialDelaySeconds + failureThreshold \\times  periodSeconds \\\\), you should specify a\nstartup probe that checks the same endpoint as the liveness probe. The default\nfor `periodSeconds` is 10s. You should then set its `failureThreshold` high\nenough to allow the container to start, without changing the default values of\nthe liveness probe. This helps to protect against deadlocks."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Protect slow starting containers with startup probes",
+  "text": "Thanks to the startup probe, the application will have a maximum of 5 minutes\n(30 * 10 = 300s) to finish its startup.\nOnce the startup probe has succeeded once, the liveness probe takes over to\nprovide a fast response to container deadlocks.\nIf the startup probe never succeeds, the container is killed after 300s and\nsubject to the pod's `restartPolicy`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#startup-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Types of probe > Startup probe",
+  "text": "Startup probes verify whether the application within a container is started.\nIf a startup probe is configured, Kubernetes does not execute liveness or \nreadiness probes until the startup probe succeeds, allowing the application\ntime to finish its initialization.\n\nThis type of probe is only executed at startup, unlike liveness and readiness\nprobes, which are run periodically.\nIf the startup probe fails, the kubelet kills the container, and the container\nis subjected to its [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Protect slow starting containers with startup probes",
+  "text": "Sometimes, you have to deal with applications that require additional startup\ntime on their first initialization. In such cases, it can be tricky to set up\nliveness probe parameters without compromising the fast response to deadlocks\nthat motivated such a probe. The solution is to set up a startup probe with the\nsame command, HTTP or TCP check, with a `failureThreshold * periodSeconds` long\nenough to cover the worst case startup time.\n\nSo, the previous example would become:\n\n```yaml\nports:\n- name: liveness-port\n  containerPort: 8080\n\nlivenessProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n  failureThreshold: 1\n  periodSeconds: 10\n\nstartupProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n  failureThreshold: 30\n  periodSeconds: 10\n```"
+ }
+]

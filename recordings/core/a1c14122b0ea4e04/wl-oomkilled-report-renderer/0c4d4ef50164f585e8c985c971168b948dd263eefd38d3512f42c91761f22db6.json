@@ -1,0 +1,26 @@
+{
+ "content": [
+  {
+   "signature": "EqEDCqQBCBMYAipAPuJsYJ3ZuCbOyqsD6xB4axC4ClTBCJWVEFJpYqGlcbO4gi1+dwlqrPQwZH0RjT83s5ZX2Qt6Xx3U2GK0ScAjkzIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBm9Lw1gYSDB8wTpvg52J/OW02zBoMyno6x/AZcctnOeFYIjBNhLnSNnml6h/viuZhoT1YrnoJO7bp4IH2pT/8unk1r+9NH6lMu4tcymaGDTzxDHMqqQH96qiLabWkk2vkTlEIK/aOmncaW6tfm46OThD4A2RKPVW8UzF0Mna56xUnDTTgkfxqzUDPDpT3f2zRJmZk+w3o70Ea+FJDK7TZgYwNOsP018Hj8ul3MzqOBWa0qdsfu5Z3on2F2uFK9HCg5QnO26Ss7y0V2pjiRgxbMJMdTA+uvnx98LhfnN85EYXXcbn1YnL5VptY1UV/9LQuvzYq4HqsX0n0Mkdn2JfaGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KqWNC3uMS6PVHpyrivCyQt",
+   "input": {
+    "id": "T-2001",
+    "note": "Cause: The report-renderer containers are being killed by the kernel OOM killer when rendering large quarterly statements. Their memory limit is 512Mi, but the renderer's heap grows past that during rasterization of embedded charts for large reports.\n\nEvidence:\n- Pods in the `reports` namespace show `last_state: Terminated (OOMKilled), exit code 137` with a pod currently in CrashLoopBackOff and 9 restarts. Exit code 137 with reason OOMKilled is the standard signature of a container exceeding its memory limit [cite: tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-2].\n- The container spec has `resources.limits.memory: 512Mi`.\n- Logs from the crashing pod show the renderer picking up a `quarterly-statement` job, loading 1,846 line-item pages, then logging `rasterizing embedded charts at 300dpi, heap_in_use=431MiB` right before being killed during layout pass 2/3 \u2014 i.e. it is climbing toward the 512Mi ceiling. Small reports (which never approach the limit) succeed, matching the reporter's observation.\n- Memory limits are enforced reactively by the kernel via OOM kill when a container exceeds its limit [cite: concepts/configuration/manage-resources-containers#requests-and-limits-1], and the kubelet then restarts the container, producing the retry/CrashLoopBackOff pattern seen here [cite: tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-3].\n\nFix: Raise the memory limit (and ideally the request) on the report-renderer container in its Deployment so quarterly-statement jobs fit in memory. The Kubernetes docs recommend exactly this when an application is behaving as expected but is being OOMKilled: set a higher memory limit (and possibly request) for that container [cite: concepts/configuration/manage-resources-containers#my-container-is-terminated-3]. Based on the observed ~431MiB heap partway through a 3-pass layout, start by roughly doubling the limit (e.g. request 512Mi, limit 1Gi) and tune from there by watching peak usage during a quarterly run. No new deploy is needed on our side \u2014 only a resources change in the report-renderer Deployment manifest.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5907,
+ "model": "claude-opus-4-7",
+ "output_tokens": 975,
+ "stop_reason": "tool_use"
+}

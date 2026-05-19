@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Mounted ConfigMaps are updated automatically",
+  "text": "When a mounted ConfigMap is updated, the projected content is eventually updated too.\nThis applies in the case where an optionally referenced ConfigMap comes into\nexistence after a pod has started.\n\nKubelet checks whether the mounted ConfigMap is fresh on every periodic sync. However,\nit uses its local TTL-based cache for getting the current value of the ConfigMap. As a\nresult, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the pod can be as long as kubelet sync period (1\nminute by default) + TTL of ConfigMaps cache (1 minute by default) in kubelet. You\ncan trigger an immediate refresh by updating one of the pod's annotations.\n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes/#using-subpath)\nvolume will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "ConfigMaps consumed as environment variables are not updated automatically and require a pod restart. \n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes#using-subpath) volume mount will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-2",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "When a ConfigMap currently consumed in a volume is updated, projected keys are eventually updated as well.\nThe kubelet checks whether the mounted ConfigMap is fresh on every periodic sync.\nHowever, the kubelet uses its local cache for getting the current value of the ConfigMap.\nThe type of the cache is configurable using the `configMapAndSecretChangeDetectionStrategy` field in\nthe [KubeletConfiguration struct](/docs/reference/config-api/kubelet-config.v1beta1/).\nA ConfigMap can be either propagated by watch (default), ttl-based, or by redirecting\nall requests directly to the API server.\nAs a result, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the Pod can be as long as the kubelet sync period + cache\npropagation delay, where the cache propagation delay depends on the chosen cache type"
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-1",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "This is an example of a Pod that mounts a ConfigMap in a volume:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: mypod\n    image: redis\n    volumeMounts:\n    - name: foo\n      mountPath: \"/etc/foo\"\n      readOnly: true\n  volumes:\n  - name: foo\n    configMap:\n      name: myconfigmap\n```\n\nEach ConfigMap you want to use needs to be referred to in `.spec.volumes`.\n\nIf there are multiple containers in the Pod, then each container needs its\nown `volumeMounts` block, but only one `.spec.volumes` is needed per ConfigMap.\n\n#### Mounted ConfigMaps are updated automatically"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#mount-propagation-0",
+  "heading": "Volumes > Mount propagation",
+  "text": "Mount propagation is a low-level feature that does not work consistently on all\nvolume types. The Kubernetes project recommends only using mount propagation with `hostPath`\nor memory-backed `emptyDir` volumes. See\n[Kubernetes issue #95049](https://github.com/kubernetes/kubernetes/issues/95049)\nfor more context.\n\nMount propagation allows for sharing volumes mounted by a container to\nother containers in the same Pod, or even to other Pods on the same node.\n\nMount propagation of a volume is controlled by the `mountPropagation` field\nin `containers[*].volumeMounts`. Its values are:\n\n* `None` - This volume mount will not receive any subsequent mounts\n  that are mounted to this volume or any of its subdirectories by the host.\n  In a similar fashion, no mounts created by the container will be visible on\n  the host. This is the default mode."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#add-configmap-data-to-a-specific-path-in-the-volume-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Add ConfigMap data to a specific path in the Volume",
+  "text": "Use the `path` field to specify the desired file path for specific ConfigMap items.\nIn this case, the `SPECIAL_LEVEL` item will be mounted in the `config-volume` volume at `/etc/config/keys`.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: dapi-test-pod\nspec:\n  containers:\n    - name: test-container\n      image: registry.k8s.io/busybox:1.27.2\n      command: [ \"/bin/sh\",\"-c\",\"cat /etc/config/keys\" ]\n      volumeMounts:\n      - name: config-volume\n        mountPath: /etc/config\n  volumes:\n    - name: config-volume\n      configMap:\n        name: special-config\n        items:\n        - key: SPECIAL_LEVEL\n          path: keys\n  restartPolicy: Never\n```\n\nCreate the Pod:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#populate-a-volume-with-data-stored-in-a-configmap-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Populate a Volume with data stored in a ConfigMap",
+  "text": "Add the ConfigMap name under the `volumes` section of the Pod specification.\nThis adds the ConfigMap data to the directory specified as `volumeMounts.mountPath` (in this\ncase, `/etc/config`). The `command` section lists directory files with names that match the\nkeys in ConfigMap."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#optional-references-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Optional references",
+  "text": "A ConfigMap reference may be marked _optional_. If the ConfigMap is non-existent, the mounted\nvolume will be empty. If the ConfigMap exists, but the referenced key is non-existent, the path\nwill be absent beneath the mount point. See [Optional ConfigMaps](#optional-configmaps) for more\ndetails."
+ }
+]

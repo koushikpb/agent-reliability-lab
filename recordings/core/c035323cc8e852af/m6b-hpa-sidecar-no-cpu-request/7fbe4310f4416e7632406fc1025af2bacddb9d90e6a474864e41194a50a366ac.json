@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I can see the search-api is running with 3 replicas (all ready). The container has CPU requests set to 1 core. Let me check the logs of one of the pods to understand what might be happening.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01RGBy65jjST4ynhc8C9Zm81",
+   "input": {
+    "pod": "search-api-75d9c8b6f4-2hxkq"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2204,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 122,
+ "stop_reason": "tool_use"
+}

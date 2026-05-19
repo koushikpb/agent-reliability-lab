@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-0",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use the built-in Kubernetes\n[role-based access control (RBAC)](/docs/reference/access-authn-authz/rbac/)\nmechanism to grant the minimum permissions required by each service account.\nYou create a *role*, which grants access, and then *bind* the role to your\nServiceAccount. RBAC lets you define a minimum set of permissions so that the\nservice account permissions follow the principle of least privilege. Pods that\nuse that service account don't get more permissions than are required to\nfunction correctly.\n\nFor instructions, refer to\n[ServiceAccount permissions](/docs/reference/access-authn-authz/rbac/#service-account-permissions).\n\n#### Cross-namespace access using a ServiceAccount {#cross-namespace}"
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#access-controls-1",
+  "heading": "Multi-tenancy > Control plane isolation > Access controls",
+  "text": "Role-based access control (RBAC) is commonly used to enforce authorization in the Kubernetes\ncontrol plane, for both users and workloads (service accounts).\n[Roles](/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and\n[RoleBindings](/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) are\nKubernetes objects that are used at a namespace level to enforce access control in your\napplication; similar objects exist for authorizing access to cluster-level objects, though these\nare less useful for multi-tenant clusters.\n\nIn a multi-team environment, RBAC must be used to restrict tenants' access to the appropriate\nnamespaces, and ensure that cluster-wide resources can only be accessed or modified by privileged\nusers such as cluster administrators."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#default-service-accounts-0",
+  "heading": "Service Accounts > What are service accounts? > Default service accounts",
+  "text": "When you create a cluster, Kubernetes automatically creates a ServiceAccount\nobject named `default` for every namespace in your cluster. The `default`\nservice accounts in each namespace get no permissions by default other than the\n[default API discovery permissions](/docs/reference/access-authn-authz/rbac/#default-roles-and-role-bindings)\nthat Kubernetes grants to all authenticated principals if role-based access control (RBAC) is enabled.\nIf you delete the `default` ServiceAccount object in a namespace, the\ncontrol plane\nreplaces it with a new one.\n\nIf you deploy a Pod in a namespace, and you don't\n[manually assign a ServiceAccount to the Pod](#assign-to-pod), Kubernetes\nassigns the `default` ServiceAccount for that namespace to the Pod."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-1",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use RBAC to allow service accounts in one namespace to perform actions\non resources in a different namespace in the cluster. For example, consider a\nscenario where you have a service account and Pod in the `dev` namespace and\nyou want your Pod to see Jobs running in the `maintenance` namespace. You could\ncreate a Role object that grants permissions to list Job objects. Then,\nyou'd create a RoleBinding object in the `maintenance` namespace to bind the\nRole to the ServiceAccount object. Now, Pods in the `dev` namespace can list\nJob objects in the `maintenance` namespace using that service account."
+ },
+ {
+  "chunk_id": "concepts/security/application-security-checklist#rbac-0",
+  "heading": "Application Security Checklist > Base security hardening > Role Based Access Control (RBAC)",
+  "text": "- [ ] Permissions such as **create**, **patch**, **update** and **delete**\n  should be only granted if necessary.\n- [ ] Avoid creating RBAC permissions to create or update roles which can lead to\n  [privilege escalation](/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping).\n- [ ] Review bindings for the `system:unauthenticated` group and remove them where\n  possible, as this gives access to anyone who can contact the API server at a network level.\n\nThe **create**, **update** and **delete** verbs should be permitted judiciously.\nThe **patch** verb if allowed on a Namespace can\n[allow users to update labels on the namespace or deployments](/docs/concepts/security/rbac-good-practices/#namespace-modification)\nwhich can increase the attack surface."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#workload-creation-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Workload creation",
+  "text": "Permission to create workloads (either Pods, or\n[workload resources](/docs/concepts/workloads/controllers/) that manage Pods) in a namespace\nimplicitly grants access to many other resources in that namespace, such as Secrets, ConfigMaps, and\nPersistentVolumes that can be mounted in Pods. Additionally, since Pods can run as any\n[ServiceAccount](/docs/reference/access-authn-authz/service-accounts-admin/), granting permission\nto create workloads also implicitly grants the API access levels of any service account in that\nnamespace."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#access-controls-2",
+  "heading": "Multi-tenancy > Control plane isolation > Access controls",
+  "text": "If a policy ends up granting a user more permissions than they need, this is likely a signal that\nthe namespace containing the affected resources should be refactored into finer-grained\nnamespaces. Namespace management tools may simplify the management of these finer-grained\nnamespaces by applying common RBAC policies to different namespaces, while still allowing\nfine-grained policies where necessary."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#workload-creation-1",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Workload creation",
+  "text": "Users who can run privileged Pods can use that access to gain node access and potentially to\nfurther elevate their privileges. Where you do not fully trust a user or other principal\nwith the ability to create suitably secure and isolated Pods, you should enforce either the\n**Baseline** or **Restricted** Pod Security Standard.\nYou can use [Pod Security admission](/docs/concepts/security/pod-security-admission/)\nor other (third party) mechanisms to implement that enforcement.\n\nFor these reasons, namespaces should be used to separate resources requiring different levels of\ntrust or tenancy. It is still considered best practice to follow [least privilege](#least-privilege)\nprinciples and assign the minimum set of permissions, but boundaries within a namespace should be\nconsidered weak."
+ }
+]

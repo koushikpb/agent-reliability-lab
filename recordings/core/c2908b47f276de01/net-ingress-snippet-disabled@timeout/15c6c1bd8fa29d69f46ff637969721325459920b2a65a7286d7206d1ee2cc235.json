@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Let me try the update again:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0172Hsv2PcrNnoLwj2bkoBH8",
+   "input": {
+    "id": "T-4008",
+    "note": "**Root Cause:** The ingress-nginx controller was upgraded to v1.12.1 with `allow-snippet-annotations=false`, which disables the `nginx.ingress.kubernetes.io/configuration-snippet` annotation your legacy-portal Ingress uses for regex redirects.\n\n**Evidence:** Controller logs show: \"skipping annotation nginx.ingress.kubernetes.io/configuration-snippet on ingress legacy/legacy-portal: Snippet directives are disabled by the Ingress administrator (allow-snippet-annotations=false)\". GET requests to `/old/reports/2024` return 404 because the redirect rule is not being applied.\n\n**Fix:** Update your Ingress to use standard rewrite annotations instead:\n- Add `nginx.ingress.kubernetes.io/rewrite-target: /portal/$1`\n- Add `nginx.ingress.kubernetes.io/use-regex: \"true\"`\n- Update the path pattern to capture your regex group (e.g., `path: /old/(.*)$` with `pathType: ImplementationSpecific`)\n\nThis uses the standard annotation system which works with the hardened controller.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 12066,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 350,
+ "stop_reason": "tool_use"
+}

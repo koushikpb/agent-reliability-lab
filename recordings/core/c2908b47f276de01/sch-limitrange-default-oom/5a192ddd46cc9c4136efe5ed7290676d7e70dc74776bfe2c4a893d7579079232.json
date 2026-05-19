@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The pods are being killed with OOMKilled (exit code 137), which indicates an out-of-memory issue. Let me check the logs to understand better:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01TABfNrvGSYrwLSRrjxiNKd",
+   "input": {
+    "pod": "ingest-worker-7f6c8b5d9-2kqvx"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2006,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 110,
+ "stop_reason": "tool_use"
+}

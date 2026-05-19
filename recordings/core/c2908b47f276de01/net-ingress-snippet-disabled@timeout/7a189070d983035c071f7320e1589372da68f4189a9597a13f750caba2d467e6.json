@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Based on my investigation, I have found the root cause. Let me update the ticket with the resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016sZ99jFpCzH5Ff5jMrUnnk",
+   "input": {
+    "id": "T-4008",
+    "note": "**Root Cause:** The ingress-nginx controller was upgraded to v1.12.1 over the weekend with `allow-snippet-annotations=false` enabled as a security hardening measure. This disabled support for the `nginx.ingress.kubernetes.io/configuration-snippet` annotation that your legacy-portal Ingress relies on for the regex-based redirect rules.\n\n**Evidence:** The controller logs show: \"W0517 02:03:12.882455 skipping annotation nginx.ingress.kubernetes.io/configuration-snippet on ingress legacy/legacy-portal: Snippet directives are disabled by the Ingress administrator (allow-snippet-annotations=false)\". Requests to `/old/...` return 404 because the redirect rule is not being processed.\n\n**Fix:** To restore the redirects, use the standard ingress-nginx rewrite annotations instead of configuration-snippet. Replace your configuration-snippet annotation with:\n```\nnginx.ingress.kubernetes.io/rewrite-target: /portal/$1\nnginx.ingress.kubernetes.io/use-regex: \"true\"\n```\n\nAnd update your Ingress path pattern to capture the regex group (e.g., `^/old/(.*)$`). This approach doesn't require snippet directives and will work with the security-hardened controller. See the ingress-nginx documentation for `rewrite-target` and `use-regex` annotations for the exact syntax needed for your URL mapping.\n\nAlternatively, if the standard annotations cannot express your redirect logic, contact the platform team about enabling `allow-snippet-annotations=true` on the controller, though this carries security implications.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 11567,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 472,
+ "stop_reason": "tool_use"
+}

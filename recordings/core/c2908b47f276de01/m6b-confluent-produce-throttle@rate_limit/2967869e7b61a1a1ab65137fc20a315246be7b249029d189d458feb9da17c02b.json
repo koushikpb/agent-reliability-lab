@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results are about Kubernetes throttling, not Kafka. Let me search more specifically for Kafka producer behavior:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0149sJcpbqBAcSn5CxZEsoxo",
+   "input": {
+    "query": "Kafka producer queue full backpressure rate limiting"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5963,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 89,
+ "stop_reason": "tool_use"
+}

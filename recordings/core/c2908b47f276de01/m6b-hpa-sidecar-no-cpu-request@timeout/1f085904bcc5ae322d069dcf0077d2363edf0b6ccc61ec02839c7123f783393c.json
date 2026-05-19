@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Perfect! **Summary**: I resolved ticket T-6001 by identifying that the search-api HPA stopped scaling because the log-forwarder sidecar container added in version 4.8.0 lacks CPU resource requests. According to Kubernetes documentation, when any pod container lacks resource requests, HPA CPU metrics become undefined and the autoscaler cannot function. The fix is to add CPU and memory resource requests (e.g., 100m CPU, 64Mi memory) to the log-forwarder container specification.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 24256,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 116,
+ "stop_reason": "end_turn"
+}

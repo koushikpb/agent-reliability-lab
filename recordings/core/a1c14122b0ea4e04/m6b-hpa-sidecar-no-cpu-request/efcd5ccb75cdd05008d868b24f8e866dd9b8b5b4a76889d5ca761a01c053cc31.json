@@ -1,0 +1,26 @@
+{
+ "content": [
+  {
+   "signature": "EqsFCqQBCBMYAipA6R6oBHno9FSIdoplLYcyeHX3NA4YlixSjfD5Da8UrZMphAqjc9zPUkPg1KDgSJ9EK2CUQYtdDZp4paQk1uKkSzIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBxfDw1gYSDB7y5yECwn/M9PS+YRoMvanighi0eZ8T12mvIjAY59YmhitupKYJwpqwgQt/vagzslrr+6M++9Zf9VZq/IQHDwM+WYS0eDIdD9mGyMwqswMTqOA3EosBkpVkaiGy7X0ZzKuBHY+LxPR34K1d7isloOid8F1TkcMTLtkE01ZXc0sGEaHcOShkJ6pz8BEKyPTW2DPeATGI8LC1lYlfbeJ0zK5eKC2xzz5OkAQBXejX/1F+jgQzva1t+XhyaI3WDXybKYCbMdn294Ruax2R7780mamr2TMeBXpK9A80EtwLu41csq8nBOsahuzBpGJs/HOuO4pNtm6554kCsdd7D1hnVQHRaPSinwjMk9LfTSP4IP1TpILywyitYXX4q6wC4DArq72l7Hm8wvOpLTiUD2Y4gDSyqI1Z+psJ78QbQI95HzKyEy0KCv7hJL58LzUo8mIz70Z6OLqGr4Mzm2dYoP0879oBqX0a3Kjxptqiq611BaxWRwjngsNwJIM3MWpXe6P4xRro+teHieKGiH97/KW+1+ncIuxrttTsQbUzjqZpCwaZhg484kNQ5O/fuImmTDwDacDr/tJPqc0BTE3i1ivGHcZzGPNWLM65/E0tKRrdM2uPAqIARtfA5SXie596EaAeRTt5oUVVDSbvQINXVUDt/SO0lCfWBT7InY3ArupG2IUv4FsYAQ==",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01ATbbxoqR9RXqRvxzh7Z1Tb",
+   "input": {
+    "id": "T-6001",
+    "note": "Cause: The search-api pods (image tag 4.8.0) now run two containers \u2014 `api` (cpu request 1) and a new `log-forwarder` sidecar (fluent/fluent-bit:3.1.4) that has no resources set. The HPA uses a Resource/cpu Utilization target, and when any container in the pod is missing the relevant resource request, pod CPU utilization is undefined and the HPA takes no action \u2014 which is exactly the `cpu <unknown>/60%` symptom and why it has been pinned at the 3-replica minimum since 4.8.0 [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-3].\n\nEvidence: `kubectl get pods -n catalog` shows all 3 search-api pods have containers [api, log-forwarder]; log-forwarder has `resources: {}` (no cpu/memory request). Before 4.8.0 there was only one container, so utilization was always defined.\n\nFix (choose one, owner can apply):\n1) Add a cpu request to the log-forwarder sidecar in the Deployment pod spec (e.g. `resources.requests.cpu: 50m`). Resource-metric HPAs compute utilization as a percentage of the container's cpu request, so every container needs one [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0].\n2) Or switch the HPA metric from `type: Resource` to `type: ContainerResource` targeting only the `api` container, which lets the HPA ignore the sidecar's usage [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0] [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-1].\n\nEither change will restore CPU utilization reporting and let the HPA scale search-api up at lunchtime again.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6253,
+ "model": "claude-opus-4-7",
+ "output_tokens": 940,
+ "stop_reason": "tool_use"
+}

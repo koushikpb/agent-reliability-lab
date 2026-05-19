@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/access-application-cluster/web-ui-dashboard#specifying-application-details-2",
+  "heading": "Deploy and Access the Kubernetes Dashboard > Deploying containerized applications > Specifying application details",
+  "text": "  Irrespective of the Service type, if you choose to create a Service and your container listens\n  on a port (incoming), you need to specify two ports.\n  The Service will be created mapping the port (incoming) to the target port seen by the container.\n  This Service will route to your deployed Pods. Supported protocols are TCP and UDP.\n  The internal DNS name for this Service will be the value you specified as application name above.\n\nIf needed, you can expand the **Advanced options** section where you can specify more settings:\n\n- **Description**: The text you enter here will be added as an\n  [annotation](/docs/concepts/overview/working-with-objects/annotations/)\n  to the Deployment and displayed in the application's details."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#field-spec-ports-0",
+  "heading": "Service > Defining a Service > Port definitions",
+  "text": "Port definitions in Pods have names, and you can reference these names in the\n`targetPort` attribute of a Service. For example, we can bind the `targetPort`\nof the Service to the Pod port in the following way:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx-service\nspec:\n  selector:\n    app.kubernetes.io/name: proxy\n  ports:\n  - name: name-of-service-port\n    protocol: TCP\n    port: 80\n    targetPort: http-web-svc\n\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx\n  labels:\n    app.kubernetes.io/name: proxy\nspec:\n  containers:\n  - name: nginx\n    image: nginx:stable\n    ports:\n      - containerPort: 80\n        name: http-web-svc\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#defining-a-service-1",
+  "heading": "Service > Defining a Service",
+  "text": "Kubernetes assigns this Service an IP address (the _cluster IP_),\nthat is used by the virtual IP address mechanism. For more details on that mechanism,\nread [Virtual IPs and Service Proxies](/docs/reference/networking/virtual-ips/).\n\nThe controller for that Service continuously scans for Pods that\nmatch its selector, and then makes any necessary updates to the set of\nEndpointSlices for the Service.\n\nThe name of a Service object must be a valid\n[RFC 1123 label name](/docs/concepts/overview/working-with-objects/names#rfc-1123-label-names).\n\nA Service can map _any_ incoming `port` to a `targetPort`. By default and\nfor convenience, the `targetPort` is set to the same value as the `port`\nfield."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#setup-2",
+  "heading": "Debug Services > Setup",
+  "text": "```shell\nkubectl get pods -l app=hostnames \\\n    -o go-template='{{range .items}}{{.status.podIP}}{{\"\\n\"}}{{end}}'\n```\n```none\n10.244.0.5\n10.244.0.6\n10.244.0.7\n```\n\nThe example container used for this walk-through serves its own hostname\nvia HTTP on port 9376, but if you are debugging your own app, you'll want to\nuse whatever port number your Pods are listening on.\n\nFrom within a pod:\n\n```shell\nfor ep in 10.244.0.5:9376 10.244.0.6:9376 10.244.0.7:9376; do\n    wget -qO- $ep\ndone\n```\n\nThis should produce something like:\n\n```\nhostnames-632524106-bbpiw\nhostnames-632524106-ly40y\nhostnames-632524106-tlaok\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-the-service-defined-correctly-3",
+  "heading": "Debug Services > Is the Service defined correctly?",
+  "text": "* Is the Service port you are trying to access listed in `spec.ports[]`?\n* Is the `targetPort` correct for your Pods (some Pods use a different port than the Service)?\n* If you meant to use a numeric port, is it a number (9376) or a string \"9376\"?\n* If you meant to use a named port, do your Pods expose a port with the same name?\n* Is the port's `protocol` correct for your Pods?"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#type-nodeport-1",
+  "heading": "Service > Service type > `type: NodePort`",
+  "text": "For a node port Service, Kubernetes additionally allocates a port (TCP, UDP or\nSCTP to match the protocol of the Service). Every node in the cluster configures\nitself to listen on that assigned port and to forward traffic to one of the ready\nendpoints associated with that Service. You'll be able to contact the `type: NodePort`\nService, from outside the cluster, by connecting to any node using the appropriate\nprotocol (for example: TCP), and the appropriate port (as assigned to that Service).\n\n#### Choosing your own port {#nodeport-custom-port}\n\nIf you want a specific port number, you can specify a value in the `nodePort`\nfield. The control plane will either allocate you that port or report that\nthe API transaction failed.\nThis means that you need to take care of possible port collisions yourself.\nYou also have to use a valid port number, one that's inside the range configured\nfor NodePort use.\n\nHere is an example manifest for a Service of `type: NodePort` that specifies\na NodePort value (30007, in this example):"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#defining-a-service-0",
+  "heading": "Service > Defining a Service",
+  "text": "A Service is an object\n(the same way that a Pod or a ConfigMap is an object). You can create,\nview or modify Service definitions using the Kubernetes API. Usually\nyou use a tool such as `kubectl` to make those API calls for you.\n\nFor example, suppose you have a set of Pods that each listen on TCP port 9376\nand are labelled as `app.kubernetes.io/name=MyApp`. You can define a Service to\npublish that TCP listener:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n      targetPort: 9376\n```\n\nApplying this manifest creates a new Service named \"my-service\" with the default\nClusterIP [service type](#publishing-services-service-types). The Service\ntargets TCP port 9376 on any Pod with the `app.kubernetes.io/name: MyApp` label."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/port-forward-access-application-cluster#forward-a-local-port-to-a-port-on-the-pod-0",
+  "heading": "Use Port Forwarding to Access Applications in a Cluster > Forward a local port to a port on the Pod",
+  "text": "1. `kubectl port-forward` allows using resource name, such as a pod name, to select a matching pod to port forward to.\n\n   ```shell\n   # Change mongo-75f59d57f4-4nd6q to the name of the Pod\n   kubectl port-forward mongo-75f59d57f4-4nd6q 28015:27017\n   ```\n\n   which is the same as\n\n   ```shell\n   kubectl port-forward pods/mongo-75f59d57f4-4nd6q 28015:27017\n   ```\n\n   or\n\n   ```shell\n   kubectl port-forward deployment/mongo 28015:27017\n   ```\n\n   or\n\n   ```shell\n   kubectl port-forward replicaset/mongo-75f59d57f4 28015:27017\n   ```\n\n   or\n\n   ```shell\n   kubectl port-forward service/mongo 28015:27017\n   ```\n\n   Any of the above commands works. The output is similar to this:"
+ }
+]

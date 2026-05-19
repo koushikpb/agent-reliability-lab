@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me retry after waiting:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Hj9kTAbWw9CBPgUxtTRCXr",
+   "input": {
+    "namespace": "shop-web"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1470,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 62,
+ "stop_reason": "tool_use"
+}

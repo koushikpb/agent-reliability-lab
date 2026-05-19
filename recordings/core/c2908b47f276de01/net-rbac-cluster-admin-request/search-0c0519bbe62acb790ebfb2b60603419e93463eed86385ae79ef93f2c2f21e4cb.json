@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-1",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "- Assign permissions at the namespace level where possible. Use RoleBindings as opposed to\n  ClusterRoleBindings to give users rights only within a specific namespace.\n- Avoid providing wildcard permissions when possible, especially to all resources.\n  As Kubernetes is an extensible system, providing wildcard access gives rights\n  not just to all object types that currently exist in the cluster, but also to all object types\n  which are created in the future.\n- Administrators should not use `cluster-admin` accounts except where specifically needed.\n  Providing a low privileged account with\n  [impersonation rights](/docs/reference/access-authn-authz/authentication/#user-impersonation)\n  can avoid accidental modification of cluster resources.\n- Avoid adding users to the `system:masters` group. Any user who is a member of this group\n  bypasses all RBAC rights checks and will always have unrestricted superuser access, which cannot be\n  revoked by removing RoleBindings or ClusterRoleBindings. As an aside, if a cluster is"
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-0",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use the built-in Kubernetes\n[role-based access control (RBAC)](/docs/reference/access-authn-authz/rbac/)\nmechanism to grant the minimum permissions required by each service account.\nYou create a *role*, which grants access, and then *bind* the role to your\nServiceAccount. RBAC lets you define a minimum set of permissions so that the\nservice account permissions follow the principle of least privilege. Pods that\nuse that service account don't get more permissions than are required to\nfunction correctly.\n\nFor instructions, refer to\n[ServiceAccount permissions](/docs/reference/access-authn-authz/rbac/#service-account-permissions).\n\n#### Cross-namespace access using a ServiceAccount {#cross-namespace}"
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-1",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use RBAC to allow service accounts in one namespace to perform actions\non resources in a different namespace in the cluster. For example, consider a\nscenario where you have a service account and Pod in the `dev` namespace and\nyou want your Pod to see Jobs running in the `maintenance` namespace. You could\ncreate a Role object that grants permissions to list Job objects. Then,\nyou'd create a RoleBinding object in the `maintenance` namespace to bind the\nRole to the ServiceAccount object. Now, Pods in the `dev` namespace can list\nJob objects in the `maintenance` namespace using that service account."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#namespace-modification-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Namespace modification",
+  "text": "Users who can perform **patch** operations on Namespace objects (through a namespaced RoleBinding to a Role with that access) can modify\nlabels on that namespace. In clusters where Pod Security Admission is used, this may allow a user to configure the namespace\nfor a more permissive policy than intended by the administrators.\nFor clusters where NetworkPolicy is used, users may be set labels that indirectly allow\naccess to services that an administrator did not intend to allow.\nFor clusters using Dynamic Resource Allocation, labeling a namespace with\n`resource.kubernetes.io/admin-access: \"true\"` allows any user who can create ResourceClaims in that namespace\nto request admin access to devices already allocated to any other claim in any namespace."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#access-controls-1",
+  "heading": "Multi-tenancy > Control plane isolation > Access controls",
+  "text": "Role-based access control (RBAC) is commonly used to enforce authorization in the Kubernetes\ncontrol plane, for both users and workloads (service accounts).\n[Roles](/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and\n[RoleBindings](/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) are\nKubernetes objects that are used at a namespace level to enforce access control in your\napplication; similar objects exist for authorizing access to cluster-level objects, though these\nare less useful for multi-tenant clusters.\n\nIn a multi-team environment, RBAC must be used to restrict tenants' access to the appropriate\nnamespaces, and ensure that cluster-wide resources can only be accessed or modified by privileged\nusers such as cluster administrators."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#workload-creation-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Workload creation",
+  "text": "Permission to create workloads (either Pods, or\n[workload resources](/docs/concepts/workloads/controllers/) that manage Pods) in a namespace\nimplicitly grants access to many other resources in that namespace, such as Secrets, ConfigMaps, and\nPersistentVolumes that can be mounted in Pods. Additionally, since Pods can run as any\n[ServiceAccount](/docs/reference/access-authn-authz/service-accounts-admin/), granting permission\nto create workloads also implicitly grants the API access levels of any service account in that\nnamespace."
+ },
+ {
+  "chunk_id": "concepts/storage/volume-populators-and-data-sources#cross-namespace-data-sources-0",
+  "heading": "Volume Populators and Data Sources > Cross namespace data sources",
+  "text": "Kubernetes supports cross namespace volume data sources.\nTo use cross namespace volume data sources, you must enable the `AnyVolumeDataSource`\nand `CrossNamespaceVolumeDataSource`\n[feature gates](/docs/reference/command-line-tools-reference/feature-gates/) for\nthe kube-apiserver and kube-controller-manager.\nAlso, you must enable the `CrossNamespaceVolumeDataSource` feature gate for the csi-provisioner.\n\nEnabling the `CrossNamespaceVolumeDataSource` feature gate allows you to specify\na namespace in the dataSourceRef field."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#cross-namespace-pod-affinity-scope-0",
+  "heading": "Resource Quotas > Quota scopes > Cross-namespace pod affinity scope",
+  "text": "You can use `CrossNamespacePodAffinity` [quota scope](#quota-scopes) to limit which namespaces are allowed to\nhave pods with affinity terms that cross namespaces. Specifically, it controls which pods are allowed\nto set `namespaces` or `namespaceSelector` fields in pod [(anti)affinity terms](/docs/concepts/scheduling-eviction/assign-pod-node).\n\nPreventing users from using cross-namespace affinity terms might be desired since a pod\nwith anti-affinity constraints can block pods from all other namespaces\nfrom getting scheduled in a failure domain.\n\nUsing this scope, you (as a cluster administrator) can prevent certain namespaces - such as `foo-ns` in the example below -\nfrom having pods that use cross-namespace pod affinity. You configure this creating a ResourceQuota object in\nthat namespace with `CrossNamespacePodAffinity` scope and hard limit of 0:"
+ }
+]

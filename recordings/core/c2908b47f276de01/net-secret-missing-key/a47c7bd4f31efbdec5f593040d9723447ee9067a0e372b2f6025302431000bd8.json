@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-4001 by investigating the failing pod deployment. The new invoice-api 3.8.0 pods were stuck in `CreateContainerConfigError` status because the deployment was trying to reference a missing Secret key `STRIPE_WEBHOOK_SECRET`. The fix is for the team to add this key to the `billing/invoice-api-secrets` Secret with the appropriate Stripe webhook secret value, then restart the rollout.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 4913,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 102,
+ "stop_reason": "end_turn"
+}

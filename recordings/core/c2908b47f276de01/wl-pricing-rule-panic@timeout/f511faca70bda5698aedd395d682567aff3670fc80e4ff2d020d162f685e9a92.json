@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "text": "Let me try again with the escalation:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MGW6r46nyYuB1G191Vr1vk",
+   "input": {
+    "id": "T-2009",
+    "reason": "Off-by-one bug triggered by new pricing rule. Needs investigation of rule data or code fix by engineering team."
+   },
+   "name": "escalate",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5402,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 105,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DwrFKFDKfXJLdwJnRMP34z",
+   "input": {
+    "id": "T-6003",
+    "note": "Cause: The 14:15 run of the stock-sync CronJob (pod stock-sync-29656215-wq7fz) is still Running after ~19h22m. Its logs show the SFTP download from sftp.northwind-supply.example stalled at \"11.2 MB / 38.4 MB\" and no further progress has been made. The CronJob has `concurrencyPolicy: Forbid`, so while that Job is still running every subsequent scheduled run is skipped \u2014 which is exactly why stock levels stopped updating at ~14:00 yesterday [cite: concepts/workloads/controllers/cron-jobs#concurrency-policy-0] [cite: concepts/workloads/controllers/cron-jobs#job-creation-1]. The Job has no `activeDeadlineSeconds` set (`job_spec.activeDeadlineSeconds: null`), so nothing will ever time out and kill the hung Pod on its own \u2014 by default a Job runs uninterrupted [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-1].\n\nEvidence:\n- Pod stock-sync-29656215-wq7fz: Running, age 19h22m, started 2026-05-21T14:15:01Z (owner Job/stock-sync-29656215, CronJob stock-sync, schedule \"*/15 * * * *\", concurrencyPolicy: Forbid, activeDeadlineSeconds: null).\n- Logs end with: `sftp: downloading /outbound/stock_20260521_1415.csv (38.4 MB)` then two timestamps 26s apart both showing `11.2 MB / 38.4 MB` with no further progress. (The pushgateway \"connection refused\" errors are unrelated noise.)\n- Previous runs at 13:45 and 14:00 completed with exit code 0; nothing has run since because Forbid is skipping them.\n\nFix (owner to apply):\n1. Immediate: delete the hung Job so the next schedule can fire, e.g. `kubectl -n warehouse delete job stock-sync-29656215` (this also removes the stuck Pod). The next */15 tick will then create a fresh Job.\n2. Prevent recurrence: set `.spec.jobTemplate.spec.activeDeadlineSeconds` on the CronJob to a sensible upper bound (e.g. 600 for a job that normally finishes in 3\u20134 minutes). When reached, Kubernetes terminates the Pods and marks the Job Failed with reason DeadlineExceeded, which releases the Forbid lock so the next scheduled run can start [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-1] [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-2].\n3. Investigate separately why the SFTP transfer from sftp.northwind-supply.example stalled mid-download (network/peer issue upstream of the cluster).",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6534,
+ "model": "claude-opus-4-7",
+ "output_tokens": 1082,
+ "stop_reason": "tool_use"
+}

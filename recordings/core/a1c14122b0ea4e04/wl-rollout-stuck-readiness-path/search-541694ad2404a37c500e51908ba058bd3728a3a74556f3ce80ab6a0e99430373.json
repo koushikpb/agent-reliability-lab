@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-0",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "Your Deployment may get stuck trying to deploy its newest ReplicaSet without ever completing. This can occur\ndue to some of the following factors:\n\n* Insufficient quota\n* Readiness probe failures\n* Image pull errors\n* Insufficient permissions\n* Limit ranges\n* Application runtime misconfiguration\n\nOne way you can detect this condition is to specify a deadline parameter in your Deployment spec:\n([`.spec.progressDeadlineSeconds`](#progress-deadline-seconds)). `.spec.progressDeadlineSeconds` denotes the\nnumber of seconds the Deployment controller waits before indicating (in the Deployment status) that the\nDeployment progress has stalled.\n\nThe following `kubectl` command sets the spec with `progressDeadlineSeconds` to make the controller report\nlack of progress of a rollout for a Deployment after 10 minutes:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-results-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe results",
+  "text": "The kubelet evaluates the result of each probe execution and takes action\naccordingly. Each probe has one of three results:\n\n`Success`\n: The container passed the diagnostic.\n\n`Failure`\n: The container failed the diagnostic. For liveness and startup probes, the\n  kubelet kills the container, and the container is subjected to its\n  [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy).\n  For readiness probes, the kubelet marks the container as not ready, and the\n  Pod stops receiving traffic from matching Services.\n\n`Unknown`\n: The diagnostic failed (no action should be taken, and the kubelet will make\n  further checks).\n\nIf a container does not provide a particular probe, the kubelet always\nconsiders the result as `Success`. For readiness probes specifically,\nthe result is considered `Failure` before the initial delay."
+ },
+ {
+  "chunk_id": "tasks/run-application/run-replicated-stateful-application#break-the-readiness-probe-0",
+  "heading": "Run a Replicated Stateful Application > Simulate Pod and Node failure > Break the Readiness probe",
+  "text": "The [readiness probe](/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes)\nfor the `mysql` container runs the command `mysql -h 127.0.0.1 -e 'SELECT 1'`\nto make sure the server is up and able to execute queries.\n\nOne way to force this readiness probe to fail is to break that command:\n\n```shell\nkubectl exec mysql-2 -c mysql -- mv /usr/bin/mysql /usr/bin/mysql.off\n```\n\nThis reaches into the actual container's filesystem for Pod `mysql-2` and\nrenames the `mysql` command so the readiness probe can't find it.\nAfter a few seconds, the Pod should report one of its containers as not Ready,\nwhich you can check by running:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-readiness-probes-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define readiness probes",
+  "text": "Sometimes, applications are temporarily unable to serve traffic.\nFor example, an application might need to load large data or configuration\nfiles during startup, or depend on external services after startup.\nIn such cases, you don't want to kill the application,\nbut you don't want to send it requests either. Kubernetes provides\nreadiness probes to detect and mitigate these situations. A pod with containers\nreporting that they are not ready does not receive traffic through Kubernetes\nServices.\n\nReadiness probes run on the container during its whole lifecycle.\n\nThe readiness and liveness probes do not depend on each other to succeed.\nIf you want to wait before executing a readiness probe, you should use\n`initialDelaySeconds` or a `startupProbe`.\n\nReadiness probes are configured similarly to liveness probes. The only difference\nis that you use the `readinessProbe` field instead of the `livenessProbe` field.\n\n```yaml\nreadinessProbe:\n  exec:\n    command:\n    - /bin/cat\n    - /tmp/healthy\n  initialDelaySeconds: 5\n  periodSeconds: 5\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-2",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "`successThreshold`\n: Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. Must be 1 for liveness and startup Probes. Minimum value is 1.\n\n`failureThreshold`\n: After a probe fails `failureThreshold` times in a row, Kubernetes considers that the overall check has failed: the container is _not_ ready/healthy/live. Defaults to 3. Minimum value is 1. For the case of a startup or liveness probe, if at least `failureThreshold` probes have failed, Kubernetes treats the container as unhealthy and triggers a restart for that specific container. The kubelet honors the setting of `terminationGracePeriodSeconds` for that container. For a failed readiness probe, the kubelet continues running the container that failed checks, and also continues to run more probes; because the check failed, the kubelet sets the `Ready` [condition](/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions) on the Pod to `false`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#when-should-you-use-a-readiness-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > When to use each probe > When should you use a readiness probe?",
+  "text": "To start sending traffic to a Pod only when a probe succeeds, specify a\nreadiness probe. The readiness probe might be the same as the liveness probe,\nbut the existence of the readiness probe in the spec means that the Pod will\nstart without receiving any traffic and only start receiving traffic after the\nprobe starts succeeding.\n\nYou can also use a readiness probe to let a container take itself down for\nmaintenance, by checking an endpoint specific to readiness that is different\nfrom the liveness probe.\n\nWhen your app has a strict dependency on back-end services, you can implement\nboth a liveness and a readiness probe. The liveness probe passes when the app\nitself is healthy, but the readiness probe additionally checks that each\nrequired back-end service is available. This helps you avoid directing traffic\nto Pods that can only respond with error messages."
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#detecting-a-stalled-rollout-0",
+  "heading": "Update a Deployment Without Downtime > Configuring rolling update strategy > Detecting a stalled rollout",
+  "text": "If a rollout does not make progress within the time specified by\n`.spec.progressDeadlineSeconds` (default: 600 seconds), Kubernetes marks the Deployment condition `Progressing` as `False`. You can check for this condition by describing the Deployment:\n\n```shell\nkubectl describe deployment nginx-deployment\n```\n\nLook for the `Progressing` condition in the `Conditions` section of the output. A stalled rollout usually indicates that new Pods are failing to start. The `Events` section of the output can help diagnose the issue."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#readiness-probe-0",
+  "heading": "Pod Lifecycle > Container probes > Readiness probe",
+  "text": "Readiness probes determine when a container is ready to accept traffic.\nThis is useful when waiting for an application to perform time-consuming initial\ntasks, such as establishing network connections, loading files, and warming\ncaches.\nReadiness probes can also be useful later in the container's lifecycle,\nfor example, when recovering from temporary faults or overloads.\n\nIf the readiness probe returns a failed state, the\nEndpointSlice\ncontroller removes the Pod's IP address from the EndpointSlices of all Services\nthat match the Pod.\n\nReadiness probes run on the container during its whole lifecycle."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Mounted ConfigMaps are updated automatically",
+  "text": "When a mounted ConfigMap is updated, the projected content is eventually updated too.\nThis applies in the case where an optionally referenced ConfigMap comes into\nexistence after a pod has started.\n\nKubelet checks whether the mounted ConfigMap is fresh on every periodic sync. However,\nit uses its local TTL-based cache for getting the current value of the ConfigMap. As a\nresult, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the pod can be as long as kubelet sync period (1\nminute by default) + TTL of ConfigMaps cache (1 minute by default) in kubelet. You\ncan trigger an immediate refresh by updating one of the pod's annotations.\n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes/#using-subpath)\nvolume will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-2",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "When a ConfigMap currently consumed in a volume is updated, projected keys are eventually updated as well.\nThe kubelet checks whether the mounted ConfigMap is fresh on every periodic sync.\nHowever, the kubelet uses its local cache for getting the current value of the ConfigMap.\nThe type of the cache is configurable using the `configMapAndSecretChangeDetectionStrategy` field in\nthe [KubeletConfiguration struct](/docs/reference/config-api/kubelet-config.v1beta1/).\nA ConfigMap can be either propagated by watch (default), ttl-based, or by redirecting\nall requests directly to the API server.\nAs a result, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the Pod can be as long as the kubelet sync period + cache\npropagation delay, where the cache propagation delay depends on the chosen cache type"
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "ConfigMaps consumed as environment variables are not updated automatically and require a pod restart. \n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes#using-subpath) volume mount will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#configmaps-and-pods-1",
+  "heading": "ConfigMaps > ConfigMaps and Pods",
+  "text": "There are four different ways that you can use a ConfigMap to configure\na container inside a Pod:\n\n1. Inside a container command and args\n1. Environment variables for a container\n1. Add a file in read-only volume, for the application to read\n1. Write code to run inside the Pod that uses the Kubernetes API to read a ConfigMap\n\nThese different methods lend themselves to different ways of modeling\nthe data being consumed.\nFor the first three methods, the\nkubelet uses the data from\nthe ConfigMap when it launches container(s) for a Pod.\n\nThe fourth method means you have to write code to read the ConfigMap and its data.\nHowever, because you're using the Kubernetes API directly, your application can\nsubscribe to get updates whenever the ConfigMap changes, and react\nwhen that happens. By accessing the Kubernetes API directly, this\ntechnique also lets you access a ConfigMap in a different namespace.\n\nHere's an example Pod that uses values from `game-demo` to configure a Pod:"
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-1",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "This is an example of a Pod that mounts a ConfigMap in a volume:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: mypod\n    image: redis\n    volumeMounts:\n    - name: foo\n      mountPath: \"/etc/foo\"\n      readOnly: true\n  volumes:\n  - name: foo\n    configMap:\n      name: myconfigmap\n```\n\nEach ConfigMap you want to use needs to be referred to in `.spec.volumes`.\n\nIf there are multiple containers in the Pod, then each container needs its\nown `volumeMounts` block, but only one `.spec.volumes` is needed per ConfigMap.\n\n#### Mounted ConfigMaps are updated automatically"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#intro-0",
+  "heading": "Configure a Pod to Use a ConfigMap",
+  "text": "Many applications rely on configuration which is used during either application initialization or runtime.\nMost times, there is a requirement to adjust values assigned to configuration parameters.\nConfigMaps are a Kubernetes mechanism that let you inject configuration data into application\npods.\n\nThe ConfigMap concept allow you to decouple configuration artifacts from image content to\nkeep containerized applications portable. For example, you can download and run the same\ncontainer image to spin up containers for \nthe purposes of local development, system test, or running a live end-user workload.\n\nThis page provides a series of usage examples demonstrating how to create ConfigMaps and\nconfigure Pods using data stored in ConfigMaps."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#resizing-by-launching-replacement-pods-0",
+  "heading": "Pod Lifecycle > Resizing Pods > Resizing by launching replacement Pods",
+  "text": "The more cloud native approach to changing a Pod's resources is through the\nworkload resource that manages it (such as a Deployment or StatefulSet).\nWhen you update the resource specifications in the Pod template,\nthe workload's controller creates new Pods with the updated resources and terminates\nthe old Pods according to its update strategy.\n\nThis approach:\n- Works with any Kubernetes version.\n- Can change any Pod specification, not just resources.\n- Results in Pod replacement, so you should design your workload to handle\n  [planned disruptions](/docs/concepts/workloads/pods/disruptions/). Consider using a\n  [PodDisruptionBudget](/docs/tasks/run-application/configure-pdb/) to control availability.\n- Requires that your Pods are managed by a workload resource.\n\nYou can also use a\n[VerticalPodAutoscaler](/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/)\nto automatically manage Pod resource recommendations and updates."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/topology-spread-constraints#spread-constraint-definition-6",
+  "heading": "Pod Topology Spread Constraints > `topologySpreadConstraints` field > Spread constraint definition",
+  "text": "  It's not recommended to use `matchLabelKeys` with labels that might be updated directly on pods.\n  Even if you edit the pod's label that is specified at `matchLabelKeys` **directly**,\n  (that is, you edit the Pod and not a Deployment),\n  kube-apiserver doesn't reflect the label update onto the merged `labelSelector`.\n\n  With `matchLabelKeys`, you don't need to update the `pod.spec` between different revisions.\n  The controller/operator just needs to set different values to the same label key for different\n  revisions. For example, if you are configuring a Deployment, you can use the label keyed with\n  [pod-template-hash](/docs/concepts/workloads/controllers/deployment/#pod-template-hash-label), which\n  is added automatically by the Deployment controller, to distinguish between different revisions\n  in a single Deployment."
+ }
+]

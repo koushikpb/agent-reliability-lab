@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-emptydir-volume-mode#intro-0",
+  "heading": "Set Permissions on an emptyDir Volume",
+  "text": "This page shows how to set Unix permission bits on an `emptyDir` volume directory\nusing the `mode` field."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#recursive-read-only-mounts-1",
+  "heading": "Volumes > Read-only mounts > Recursive read-only mounts",
+  "text": "* `IfPossible`: attempts to apply `Enabled`, and falls back to `Disabled`\n  if the feature is not supported by the kernel or the runtime class.\n\nExample:\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: rro\nspec:\n  volumes:\n    - name: mnt\n      hostPath:\n        # tmpfs is mounted on /mnt/tmpfs\n        path: /mnt\n  containers:\n    - name: busybox\n      image: busybox\n      args: [\"sleep\", \"infinity\"]\n      volumeMounts:\n        # /mnt-rro/tmpfs is not writable\n        - name: mnt\n          mountPath: /mnt-rro\n          readOnly: true\n          mountPropagation: None\n          recursiveReadOnly: Enabled\n        # /mnt-ro/tmpfs is writable\n        - name: mnt\n          mountPath: /mnt-ro\n          readOnly: true\n        # /mnt-rw/tmpfs is writable\n        - name: mnt\n          mountPath: /mnt-rw\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#read-only-mounts-0",
+  "heading": "Volumes > Read-only mounts",
+  "text": "A mount can be made read-only by setting the `.spec.containers[*].volumeMounts[*].readOnly`\nfield to `true`.\nThis does not make the volume itself read-only, but that specific container will\nnot be able to write to it.\nOther containers in the Pod may mount the same volume as read-write.\n\nOn Linux, read-only mounts are not recursively read-only by default.\nFor example, consider a Pod that mounts the hosts `/mnt` as a `hostPath` volume. If\nthere is another filesystem mounted read-write on `/mnt/<SUBMOUNT>` (such as tmpfs,\nNFS, or USB storage), the volume mounted into the container(s) will also have a writeable\n`/mnt/<SUBMOUNT>`, even if the mount itself was specified as read-only."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-3",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "The `emptyDir.mode` field lets you set Unix permission bits on the emptyDir directory,\nspecifying a value between `0000` and `01777` (octal). This follows the same pattern as the\n`defaultMode` field on Secret and ConfigMap volumes. If `mode` is not specified, the\ndirectory is created with the default `0777` permissions.\n\nSetting a custom mode is useful when you want to restrict access to owner and group only\n(for example, `0750`), or set the sticky bit on a shared directory so that only file owners\ncan delete their own files (for example, `01777`).\n\nIf `fsGroup` is set in the Pod's security context, the group permissions applied by\n`fsGroup` override the `mode` specified here. The `mode` field has no effect on Windows.\n\n#### emptyDir configuration example"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-3",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "* `readOnly`: An optional boolean value indicating whether the volume is to be\n  \"ControllerPublished\" (attached) as read-only. Default is false. This value is passed\n  to the CSI driver via the `readonly` field in the `ControllerPublishVolumeRequest`.\n* `fsType`: If the PV's `VolumeMode` is `Filesystem`, then this field may be used\n  to specify the filesystem that should be used to mount the volume. If the\n  volume has not been formatted and formatting is supported, this value will be\n  used to format the volume.\n  This value is passed to the CSI driver via the `VolumeCapability` field of\n  `ControllerPublishVolumeRequest`, `NodeStageVolumeRequest`, and\n  `NodePublishVolumeRequest`.\n* `volumeAttributes`: A map of string to string that specifies static properties\n  of a volume. This map must correspond to the map returned in the\n  `volume.attributes` field of the `CreateVolumeResponse` by the CSI driver as"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-0",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "For a Pod that defines an `emptyDir` volume, the volume is created when the Pod is assigned to a node.\nAs the name says, the `emptyDir` volume is initially empty. All containers in the Pod can read and write the same\nfiles in the `emptyDir` volume, though that volume can be mounted at the same\nor different paths in each container. When a Pod is removed from a node for\nany reason, the data in the `emptyDir` is deleted permanently.\n\nA container crashing does *not* remove a Pod from a node. The data in an `emptyDir` volume\nis safe across container crashes.\n\nSome uses for an `emptyDir` are:\n\n* scratch space, such as for a disk-based merge sort\n* checkpointing a long computation for recovery from crashes\n* holding files that a content-manager container fetches while a webserver\n  container serves the data"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#user-ownership-uid-2",
+  "heading": "Volumes > File owner > User ownership (UID)",
+  "text": "#### Implementations {#implementations-rro}\n\nThe following container runtimes are known to support recursive read-only mounts.\n\nCRI-level:\n\n- [containerd](https://containerd.io/), since v2.0\n- [CRI-O](https://cri-o.io/), since v1.30\n\nOCI-level:\n\n- [runc](https://runc.io/), since v1.1\n- [crun](https://github.com/containers/crun), since v1.8.6"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-emptydir-volume-mode#create-pod-0",
+  "heading": "Set Permissions on an emptyDir Volume > Create a Pod that uses an emptyDir volume with custom permissions",
+  "text": "The `emptyDir.mode` field lets you set Unix permission bits (from `0000` to `01777` in octal)\non the volume directory. If not specified, the directory is created with the default `0777`\npermissions.\n\nFor example, to create a shared `/tmp` directory with the sticky bit set so that only file\nowners can delete their own files:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: emptydir-mode-demo\nspec:\n  containers:\n  - image: registry.k8s.io/busybox\n    name: test-container\n    command: [\"sleep\", \"3600\"]\n    volumeMounts:\n    - mountPath: /tmp\n      name: tmp-volume\n  volumes:\n  - name: tmp-volume\n    emptyDir:\n      mode: 01777\n```\n\n1. Create the pod on your cluster:\n\n   ```shell\n   kubectl apply -f https://k8s.io/examples/pods/emptydir-volume-mode.yaml\n   ```"
+ }
+]

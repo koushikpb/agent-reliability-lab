@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Based on my investigation, I now understand the issue. The logs show the pods were being killed during startup with SIGTERM, which indicates a liveness probe failure. The pods are currently taking ~9 seconds to load each shard (48 shards total = ~9+ minutes to fully start), but the liveness probe has an `initialDelaySeconds` of 30 seconds and a period of 10 seconds with a failureThreshold of 3. This means:\n\n- Liveness probe starts at 30 seconds after container start\n- If it fails 3 times (with 10-second intervals), the pod gets killed around 60 seconds\n- But the application needs several minutes to load all shards before it can respond to the `/healthz` endpoint\n\nThe application is \"too slow\" to start and the liveness probe is too aggressive. Let me resolve this ticket with the fix:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01W7ZeGJ8KCf9HitpxbE3Xsk",
+   "input": {
+    "id": "T-2003",
+    "note": "**Root Cause**: The catalog-search pods were being killed by the liveness probe during startup because the application takes several minutes to load its 48-shard index snapshot (12.4 GiB) into memory before the HTTP listener becomes ready to respond. The current liveness probe configuration with a 30-second `initialDelaySeconds` and 1-second `timeoutSeconds` begins probing too early and fails before the application completes initialization.\n\n**Evidence**: Pod logs show both containers receiving SIGTERM while still loading shards (around 9+ minutes worth of shard loading). The logs from 09:14:02Z show the first pod was killed after loading only 23/48 shards, and similarly for the second pod.\n\n**Fix**: Add or reconfigure a startup probe to allow the application adequate time to initialize before liveness probes begin. According to Kubernetes documentation [cite: concepts/workloads/pods/probes#startup-probe-0], startup probes verify whether an application is started and \"allow the application time to finish its initialization.\" \n\nRecommended changes to your deployment:\n1. Add a startup probe with a higher `failureThreshold` and `periodSeconds` to cover the worst-case startup time (e.g., `failureThreshold: 60` and `periodSeconds: 10` = 600 seconds maximum startup time)\n2. Optionally increase the liveness probe `initialDelaySeconds` to at least 600+ seconds\n3. The startup probe will prevent the liveness probe from running until the application has successfully started [cite: concepts/workloads/pods/pod-lifecycle#startup-probe-0]\n\nThis is a deployment configuration issue that requires updating your pod spec to add startup probe protection.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 8674,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 670,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-the-service-defined-correctly-3",
+  "heading": "Debug Services > Is the Service defined correctly?",
+  "text": "* Is the Service port you are trying to access listed in `spec.ports[]`?\n* Is the `targetPort` correct for your Pods (some Pods use a different port than the Service)?\n* If you meant to use a numeric port, is it a number (9376) or a string \"9376\"?\n* If you meant to use a named port, do your Pods expose a port with the same name?\n* Is the port's `protocol` correct for your Pods?"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-the-service-defined-correctly-0",
+  "heading": "Debug Services > Is the Service defined correctly?",
+  "text": "It might sound silly, but you should really double and triple check that your\nService is correct and matches your Pod's port.  Read back your Service\nand verify it:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/windows#troubleshooting-network-2",
+  "heading": "Windows debugging tips > Network troubleshooting",
+  "text": "   ```conf\n   \"ExceptionList\": [\n                   \"10.244.0.0/16\",  # Cluster subnet\n                   \"10.96.0.0/12\",   # Service subnet\n                   \"10.127.130.0/24\" # Management (host) subnet\n               ]\n   ```\n\n1. My Windows node cannot access `NodePort` type Services\n\n   Local NodePort access from the node itself fails. This is a known\n   limitation. NodePort access works from other nodes or external clients.\n\n1. vNICs and HNS endpoints of containers are being deleted\n\n   This issue can be caused when the `hostname-override` parameter is not passed to\n   [kube-proxy](/docs/reference/command-line-tools-reference/kube-proxy/). To resolve\n   it, users need to pass the hostname to kube-proxy as follows:\n\n   ```powershell\n   C:\\k\\kube-proxy.exe --hostname-override=$(hostname)\n   ```\n\n1. My Windows node cannot access my services using the service IP"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#field-spec-ports-0",
+  "heading": "Service > Defining a Service > Port definitions",
+  "text": "Port definitions in Pods have names, and you can reference these names in the\n`targetPort` attribute of a Service. For example, we can bind the `targetPort`\nof the Service to the Pod port in the following way:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx-service\nspec:\n  selector:\n    app.kubernetes.io/name: proxy\n  ports:\n  - name: name-of-service-port\n    protocol: TCP\n    port: 80\n    targetPort: http-web-svc\n\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx\n  labels:\n    app.kubernetes.io/name: proxy\nspec:\n  containers:\n  - name: nginx\n    image: nginx:stable\n    ports:\n      - containerPort: 80\n        name: http-web-svc\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#type-nodeport-3",
+  "heading": "Service > Service type > `type: NodePort`",
+  "text": "To avoid this problem, the port range for NodePort services is divided into two bands.\nDynamic port assignment uses the upper band by default, and it may use the lower band once the\nupper band has been exhausted. Users can then allocate from the lower band with a lower risk of port collision.\n\nWhen using the default NodePort range 30000-32767, the bands are partitioned as follows: \n\n- Static band: 30000-30085\n- Dynamic band: 30086-32767\n\nSee [Avoid Collisions Assigning Ports to NodePort Services](/blog/2023/05/11/nodeport-dynamic-and-static-allocation/)\nfor more details on how the static and dynamic bands are calculated.\n\n#### IP address configuration for `type: NodePort` Services {#service-nodeport-custom-listen-address}"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#use-a-named-port-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Use a named port",
+  "text": "You can use a named [`port`](/docs/reference/kubernetes-api/workload-resources/pod-v1/#ports)\nfor HTTP and TCP probes. gRPC probes do not support named ports.\n\nFor example:\n\n```yaml\nports:\n- name: liveness-port\n  containerPort: 8080\n\nlivenessProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#type-nodeport-2",
+  "heading": "Service > Service type > `type: NodePort`",
+  "text": "```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  type: NodePort\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - port: 80\n      # By default and for convenience, the `targetPort` is set to\n      # the same value as the `port` field.\n      targetPort: 80\n      # Optional field\n      # By default and for convenience, the Kubernetes control plane\n      # will allocate a port from a range (default: 30000-32767)\n      nodePort: 30007\n```\n\n#### Reserve Nodeport ranges to avoid collisions  {#avoid-nodeport-collisions}\n\nThe policy for assigning ports to NodePort services applies to both the auto-assignment and\nthe manual assignment scenarios. When a user wants to create a NodePort service that\nuses a specific port, the target port may conflict with another port that has already been assigned."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#type-nodeport-7",
+  "heading": "Service > Service type > `type: NodePort`",
+  "text": "  - When using `iptables` mode, with a `--nodeport-addresses` value that includes\n    `127.0.0.1`, NodePort services will be available on `127.0.0.1`. However, this\n    requires enabling a kernel sysctl (`route_localnet`) that may have insecure side\n    effects in some clusters. IPTables localhost NodePorts can be disabled by passing\n    `--iptables-localhost-nodeports false` to kube-proxy, or by setting\n    `--nodeport-addresses` to a range that does not include `127.0.0.1`.\n\n  - When using `ipvs` mode, or `iptables` mode in a single-stack IPv6 clusters, NodePorts\n    Services are not available on localhost."
+ }
+]

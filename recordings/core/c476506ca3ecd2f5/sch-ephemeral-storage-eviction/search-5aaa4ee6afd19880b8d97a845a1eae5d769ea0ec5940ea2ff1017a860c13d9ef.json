@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#how-api-initiated-eviction-works-0",
+  "heading": "API-initiated Eviction > How API-initiated eviction works",
+  "text": "When you request an eviction using the API, the API server performs admission\nchecks and responds in one of the following ways:\n\n* `200 OK`: the eviction is allowed, the `Eviction` subresource is created, and\n  the Pod is deleted, similar to sending a `DELETE` request to the Pod URL.\n* `429 Too Many Requests`: the eviction is not currently allowed because of the\n  configured PodDisruptionBudget.\n  You may be able to attempt the eviction again later. You might also see this\n  response because of API rate limiting.\n* `500 Internal Server Error`: the eviction is not allowed because there is a\n  misconfiguration, like if multiple PodDisruptionBudgets reference the same Pod.\n\nIf the Pod you want to evict isn't part of a workload that has a\nPodDisruptionBudget, the API server always returns `200 OK` and allows the\neviction.\n\nIf the API server allows the eviction, the Pod is deleted as follows:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#schedulable-resources-and-eviction-policies-1",
+  "heading": "Node-pressure Eviction > Good practices > Schedulable resources and eviction policies",
+  "text": "The node can reach the eviction threshold if a pod is using more than its request,\nor if the system is using more than 1GiB of memory, which makes the `memory.available`\nsignal fall below 500MiB and triggers the threshold."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#local-ephemeral-storage-0",
+  "heading": "Resource Management for Pods and Containers > Local ephemeral storage",
+  "text": "For general concepts about local ephemeral storage and hints about\nconfiguring the requests and/or limits of ephemeral storage for a container,\nplease check the [local ephemeral storage](/docs/concepts/storage/ephemeral-storage/)\npage."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#requests-limits-1",
+  "heading": "Local ephemeral storage > Setting requests and limits for local ephemeral storage",
+  "text": "Pay attention to the case of the suffixes. If you request `400m` of ephemeral-storage, this is a request\nfor 0.4 bytes. Someone who types that probably meant to ask for 400 mebibytes (`400Mi`)\nor 400 megabytes (`400M`).\n\nIn the following example, the Pod has two containers. Each container has a request of\n2GiB of local ephemeral storage. Each container has a limit of 4GiB of local ephemeral\nstorage. Therefore, the Pod has a request of 4GiB of local ephemeral storage, and\na limit of 8GiB of local ephemeral storage. 500Mi of that limit could be\nconsumed by the `emptyDir` volume."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#requests-limits-2",
+  "heading": "Local ephemeral storage > Setting requests and limits for local ephemeral storage",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: frontend\nspec:\n  containers:\n  - name: app\n    image: images.my-company.example/app:v4\n    resources:\n      requests:\n        ephemeral-storage: \"2Gi\"\n      limits:\n        ephemeral-storage: \"4Gi\"\n    volumeMounts:\n    - name: ephemeral\n      mountPath: \"/tmp\"\n  - name: log-aggregator\n    image: images.my-company.example/log-aggregator:v6\n    resources:\n      requests:\n        ephemeral-storage: \"2Gi\"\n      limits:\n        ephemeral-storage: \"4Gi\"\n    volumeMounts:\n    - name: ephemeral\n      mountPath: \"/tmp\"\n  volumes:\n    - name: ephemeral\n      emptyDir:\n        sizeLimit: 500Mi\n```"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#eviction-thresholds-2",
+  "heading": "Node-pressure Eviction > Eviction signals and thresholds > Eviction thresholds",
+  "text": "- `eviction-soft`: A set of eviction thresholds like `memory.available<1.5Gi`\n  that can trigger pod eviction if held over the specified grace period.\n- `eviction-soft-grace-period`: A set of eviction grace periods like `memory.available=1m30s`\n  that define how long a soft eviction threshold must hold before triggering a Pod eviction.\n- `eviction-max-pod-grace-period`: The maximum allowed grace period (in seconds)\n  to use when terminating pods in response to a soft eviction threshold being met.\n\n#### Hard eviction thresholds {#hard-eviction-thresholds}\n\nA hard eviction threshold has no grace period. When a hard eviction threshold is\nmet, the kubelet kills pods immediately without graceful termination to reclaim\nthe starved resource.\n\nYou can use the `eviction-hard` flag to configure a set of hard eviction\nthresholds like `memory.available<1Gi`.\n\nThe kubelet has the following default hard eviction thresholds:"
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#intro-1",
+  "heading": "Local ephemeral storage",
+  "text": "* An admin sets the resource quota for ephemeral-storage in a namespace.\n* A user needs to specify limits for the ephemeral-storage resource in the Pod spec.\n\nIf the user doesn't specify the ephemeral-storage resource limit in the Pod spec,\nthe resource quota is not enforced on ephemeral-storage.\n\nKubernetes lets you track, reserve and limit the amount\nof ephemeral local storage a Pod can consume."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#pod-selection-for-kubelet-eviction-1",
+  "heading": "Node-pressure Eviction > Node conditions > Pod selection for kubelet eviction",
+  "text": "The kubelet does not use the pod's [QoS class](/docs/concepts/workloads/pods/pod-qos/) to determine the eviction order.\nYou can use the QoS class to estimate the most likely pod eviction order when\nreclaiming resources like memory. QoS classification does not apply to EphemeralStorage requests,\nso the above scenario will not apply if the node is, for example, under `DiskPressure`."
+ }
+]

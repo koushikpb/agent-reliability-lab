@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Good, I can see the failed deployment job. Let me get the logs to see the specific error:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LShgqEpHQCmrgKHRuf5bRe",
+   "input": {
+    "pod": "deploy-payments-api-28592110-7tgkp"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1940,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 91,
+ "stop_reason": "tool_use"
+}

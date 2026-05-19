@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Now let me investigate the cluster. I'll check the pods in the notify namespace to see the state of notification-worker and related components.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019EHhiosZ8eVUGFVgbRvi6c",
+   "input": {
+    "namespace": "notify"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01UbuyQHy6Kz8hgkoR8VnbZu",
+   "input": {
+    "namespace": "shared-infra"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1377,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 121,
+ "stop_reason": "tool_use"
+}

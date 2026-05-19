@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-pods-2",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Pods",
+  "text": "If a Pod is stuck in the `Waiting` state, then it has been scheduled to a worker node, \nbut it can't run on that machine. Again, the information from `kubectl describe ...`\nshould be informative. The most common cause of `Waiting` pods is a failure to pull the image.\nThere are three things to check:\n\n* Make sure that you have the name of the image correct.\n* Have you pushed the image to the registry?\n* Try to manually pull the image to see if the image can be pulled. For example,\n  if you use Docker on your PC, run `docker pull <image>`.\n\n#### My pod stays terminating\n\nIf a Pod is stuck in the `Terminating` state, it means that a deletion has been\nissued for the Pod, but the control plane is unable to delete the Pod object."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-init-containers#before-you-begin-0",
+  "heading": "Debug Init Containers > Before you begin",
+  "text": "* You should be familiar with the basics of\n  [Init Containers](/docs/concepts/workloads/pods/init-containers/).\n* You should have [Configured an Init Container](/docs/tasks/configure-pod-container/configure-pod-initialization/#create-a-pod-that-has-an-init-container)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-state-terminated-0",
+  "heading": "Pod Lifecycle > Container states > `Terminated`",
+  "text": "A container in the `Terminated` state began execution and then either ran to\ncompletion or failed for some reason. When you use `kubectl` to query a Pod with\na container that is `Terminated`, you see a reason, an exit code, and the start and\nfinish time for that container's period of execution.\n\nIf a container has a `preStop` hook configured, this hook runs before the container enters\nthe `Terminated` state."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-2",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "When a pod is failing to start repeatedly, `CrashLoopBackOff` may appear in the `Status` field of some kubectl commands.\nSimilarly, when a pod is being deleted, `Terminating` may appear in the `Status` field of some kubectl commands.\n\nMake sure not to confuse _Status_, a kubectl display field for user intuition, with the pod's `phase`.\nPod phase is an explicit part of the Kubernetes data model and of the\n[Pod API](/docs/reference/kubernetes-api/workload-resources/pod-v1/). \n\n```\n  NAMESPACE               NAME               READY   STATUS             RESTARTS   AGE\n  alessandras-namespace   alessandras-pod    0/1     CrashLoopBackOff   200        2d9h\n```\n\nA Pod is granted a term to terminate gracefully, which defaults to 30 seconds.\nYou can use the flag `--force` to [terminate a Pod by force](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-the-service-defined-correctly-0",
+  "heading": "Debug Services > Is the Service defined correctly?",
+  "text": "It might sound silly, but you should really double and triple check that your\nService is correct and matches your Pod's port.  Read back your Service\nand verify it:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#example-debugging-pending-pods-10",
+  "heading": "Debug Running Pods > Example: debugging Pending Pods",
+  "text": "```yaml\n        startedAt: \"2022-02-17T21:51:05Z\"\n  hostIP: 192.168.0.113\n  phase: Running\n  podIP: 10.88.0.3\n  podIPs:\n  - ip: 10.88.0.3\n  - ip: 2001:db8::1\n  qosClass: Guaranteed\n  startTime: \"2022-02-17T21:51:01Z\"\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-3",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "Note that both the Job spec and the [Pod template spec](/docs/concepts/workloads/pods/init-containers/#detailed-behavior)\nwithin the Job have an `activeDeadlineSeconds` field. Ensure that you set this field at the proper level.\n\nKeep in mind that the `restartPolicy` applies to the Pod, and not to the Job itself:\nthere is no automatic Job restart once the Job status is `type: Failed`.\nThat is, the Job termination mechanisms activated with `.spec.activeDeadlineSeconds`\nand `.spec.backoffLimit` result in a permanent Job failure that requires manual intervention to resolve."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-1",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "Value       | Description\n:-----------|:-----------\n`Pending`   | The Pod has been accepted by the Kubernetes cluster, but one or more of the containers has not been set up and made ready to run. This includes time a Pod spends waiting to be scheduled as well as the time spent downloading container images over the network.\n`Running`   | The Pod has been bound to a node, and all of the containers have been created. At least one container is still running, or is in the process of starting or restarting.\n`Succeeded` | All containers in the Pod have terminated in success, and will not be restarted.\n`Failed`    | All containers in the Pod have terminated, and at least one container has terminated in failure. That is, the container either exited with non-zero status or was terminated by the system, and is not set for automatic restarting.\n`Unknown`   | For some reason the state of the Pod could not be obtained. This phase typically occurs due to an error in communicating with the node where the Pod should be running."
+ }
+]

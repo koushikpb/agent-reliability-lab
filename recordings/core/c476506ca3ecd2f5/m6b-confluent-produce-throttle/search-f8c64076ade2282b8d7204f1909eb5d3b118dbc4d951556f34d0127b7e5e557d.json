@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/multi-tenancy#qos-1",
+  "heading": "Multi-tenancy > Additional Considerations > Quality-of-Service (QoS)",
+  "text": "Typically, all pods on a node share a network interface. Without network QoS, some pods may\nconsume an unfair share of the available bandwidth at the expense of other pods.\nThe Kubernetes [bandwidth plugin](https://www.cni.dev/plugins/current/meta/bandwidth/) creates an\n[extended resource](/docs/concepts/configuration/manage-resources-containers/#extended-resources)\nfor networking that allows you to use Kubernetes resources constructs, i.e. requests/limits, to\napply rate limits to pods by using Linux tc queues.\nBe aware that the plugin is considered experimental as per the\n[Network Plugins](/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/#support-traffic-shaping)\ndocumentation and should be thoroughly tested before use in production environments."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#notes-2",
+  "heading": "Configure Quotas for API Objects > Notes",
+  "text": "<tr><td>\"services.nodeports\"</td><td>Service of type NodePort</td></tr>\n<tr><td>\"services.loadbalancers\"</td><td>Service of type LoadBalancer</td></tr>\n</table>"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#prioritylevelconfiguration-0",
+  "heading": "API Priority and Fairness > Resources > PriorityLevelConfiguration",
+  "text": "A PriorityLevelConfiguration represents a single priority level. Each\nPriorityLevelConfiguration has an independent limit on the number of outstanding\nrequests, and limitations on the number of queued requests.\n\nThe nominal concurrency limit for a PriorityLevelConfiguration is not\nspecified in an absolute number of seats, but rather in \"nominal\nconcurrency shares.\" The total concurrency limit for the API Server is\ndistributed among the existing PriorityLevelConfigurations in\nproportion to these shares, to give each level its nominal limit in\nterms of seats. This allows a cluster administrator to scale up or\ndown the total amount of traffic to a server by restarting\n`kube-apiserver` with a different value for `--max-requests-inflight`\n(or `--max-mutating-requests-inflight`), and all\nPriorityLevelConfigurations will see their maximum allowed concurrency\ngo up (or down) by the same fraction."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#create-a-resourcequota-0",
+  "heading": "Configure Quotas for API Objects > Create a ResourceQuota",
+  "text": "Here is the configuration file for a ResourceQuota object:\n\n```yaml\napiVersion: v1\nkind: ResourceQuota\nmetadata:\n  name: object-quota-demo\nspec:\n  hard:\n    persistentvolumeclaims: \"1\"\n    services.loadbalancers: \"2\"\n    services.nodeports: \"0\"\n```\n\nCreate the ResourceQuota:\n\n```shell\nkubectl apply -f https://k8s.io/examples/admin/resource/quota-objects.yaml --namespace=quota-object-example\n```\n\nView detailed information about the ResourceQuota:\n\n```shell\nkubectl get resourcequota object-quota-demo --namespace=quota-object-example --output=yaml\n```\n\nThe output shows that in the quota-object-example namespace, there can be at most\none PersistentVolumeClaim, at most two Services of type LoadBalancer, and no Services\nof type NodePort."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-qos#memory-throttling-0",
+  "heading": "Pod Quality of Service Classes > Memory QoS with cgroup v2 > Memory throttling",
+  "text": "Memory throttling is controlled by the `kubelet` configuration field\n`memoryThrottlingFactor`. Its default value is `nil`, which means that the\n`kubelet` does not set `memory.high`. To enable memory throttling, set\n`memoryThrottlingFactor` to a value greater than 0 and less than or equal to 1.\n\nFor Burstable Pods, the kubelet uses `memory.high` to throttle memory allocation\nbefore the workload hits its hard limit (`memory.max`). The throttling threshold\nfor a container is calculated as:\n\n```\nmemory.high = requests + memoryThrottlingFactor * (limits - requests)\n```\n\nFor example, with `memoryThrottlingFactor` set to `0.9`, a container with a\n`256 MiB` request and a `1 GiB` limit gets `memory.high` set to roughly `947 MiB`.\nIf a Burstable container has no memory limit, the kubelet uses node allocatable\nmemory in place of the limit."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#batching-1",
+  "heading": "Auditing > Event batching",
+  "text": "- `--audit-webhook-batch-buffer-size` defines the number of events to buffer before batching.\n  If the rate of incoming events overflows the buffer, events are dropped. The default value is 10000.\n- `--audit-webhook-batch-max-size` defines the maximum number of events in one batch. The default value is 400.\n- `--audit-webhook-batch-max-wait` defines the maximum amount of time to wait before unconditionally\n  batching events in the queue. The default value is 30 seconds.\n- `--audit-webhook-batch-throttle-enable` defines whether batching throttling is enabled. Throttling is enabled by default.\n- `--audit-webhook-batch-throttle-qps` defines the maximum average number of batches generated\n  per second. The default value is 10.\n- `--audit-webhook-batch-throttle-burst` defines the maximum number of batches generated at the same\n  moment if the allowed QPS was underutilized previously. The default value is 15."
+ },
+ {
+  "chunk_id": "concepts/policy/limit-range#example-resource-constraints-0",
+  "heading": "Limit Ranges > Example resource constraints",
+  "text": "Examples of policies that could be created using LimitRange are:\n\n- In a 2 node cluster with a capacity of 8 GiB RAM and 16 cores, constrain Pods in a\n  namespace to request 100m of CPU with a max limit of 500m for CPU and request 200Mi\n  for Memory with a max limit of 600Mi for Memory.\n- Define default CPU limit and request to 150m and memory default request to 300Mi for\n  Containers started with no cpu and memory requests in their specs.\n\nIn the case where the total limits of the namespace is less than the sum of the limits\nof the Pods/Containers, there may be contention for resources. In this case, the\nContainers or Pods will not be created.\n\nNeither contention nor changes to a LimitRange will affect already created resources."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#intro-0",
+  "heading": "Configure Quotas for API Objects",
+  "text": "This page shows how to configure quotas for API objects, including\nPersistentVolumeClaims and Services. A quota restricts the number of\nobjects, of a particular type, that can be created in a namespace.\nYou specify quotas in a\n[ResourceQuota](/docs/reference/generated/kubernetes-api//#resourcequota-v1-core)\nobject."
+ }
+]

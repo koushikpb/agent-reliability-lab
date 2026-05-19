@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the status of the pods in the relevant namespaces:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WnokGEWUiaM55oWiax4CWx",
+   "input": {
+    "namespace": "legacy"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WjWcRoFzUw4jWvCnoGvZwt",
+   "input": {
+    "namespace": "ingress-nginx"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1385,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 109,
+ "stop_reason": "tool_use"
+}

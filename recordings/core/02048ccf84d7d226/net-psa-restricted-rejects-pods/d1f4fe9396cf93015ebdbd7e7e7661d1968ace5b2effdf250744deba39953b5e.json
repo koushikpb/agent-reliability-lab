@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "I have everything I need. Let me now update the ticket with the full diagnosis and fix.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KXsND1w9mmrWuDecpTSP2N",
+   "input": {
+    "id": "T-4002",
+    "note": "**Root Cause**\n\nThe `documents` namespace enforces the `restricted:latest` PodSecurity policy. The 1.5.0 manifest is missing the required security context fields, so the PodSecurity admission controller blocks every pod creation attempt \u2014 no new pods ever start, and the old 1.4.2 pods keep running.\n\n**Evidence**\n\nThe deploy job pod (`deploy-pdf-exporter-28591340-wq7mz` in the `ci` namespace) exited with code 1. Its logs show a Kubernetes `FailedCreate` warning event against the new ReplicaSet `pdf-exporter-5f6b8d9c47`:\n\n```\nError creating: pods \"pdf-exporter-5f6b8d9c47-8xq2d\" is forbidden:\n  violates PodSecurity \"restricted:latest\":\n    allowPrivilegeEscalation != false (container \"exporter\" must set securityContext.allowPrivilegeEscalation=false),\n    unrestricted capabilities (container \"exporter\" must set securityContext.capabilities.drop=[\"ALL\"]),\n    runAsNonRoot != true (pod or container \"exporter\" must set securityContext.runAsNonRoot=true),\n    seccompProfile (pod or container \"exporter\" must set securityContext.seccompProfile.type to \"RuntimeDefault\" or \"Localhost\")\n```\n\nAll four violations are requirements of the `restricted` Pod Security Standard [cite: concepts/security/pod-security-standards#restricted-3].\n\n**Fix**\n\nAdd the following security context to the `exporter` container in the 1.5.0 Deployment manifest, then re-trigger the pipeline [cite: concepts/workloads/pods/advanced-pod-config#container-level-security-context-0]:\n\n```yaml\nsecurityContext:\n  allowPrivilegeEscalation: false\n  runAsNonRoot: true\n  capabilities:\n    drop:\n      - ALL\n  seccompProfile:\n    type: RuntimeDefault\n```\n\nOnce these fields are present the admission controller will allow pod creation and the rollout will complete normally. Note that the 1.4.2 pods already satisfy these requirements; the security context was likely present in the 1.4.2 manifest but inadvertently dropped when only the image tag was updated for 1.5.0.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5294,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 657,
+ "stop_reason": "tool_use"
+}

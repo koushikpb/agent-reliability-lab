@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/advanced-pod-config#container-level-security-context-0",
+  "heading": "Advanced Pod Configuration > Pod and container level security context configuration > Container-level security context",
+  "text": "You can specify the security context just for a specific container.\nHere's an example:\n\n#### Example Pod {#container-level-security-context-example}\n\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo-2\nspec:\n  containers:\n  - name: sec-ctx-demo-2\n    image: gcr.io/google-samples/node-hello:1.0\n    securityContext:\n      allowPrivilegeEscalation: false\n      runAsNonRoot: true\n      runAsUser: 1000\n      capabilities:\n        drop:\n        - ALL\n      seccompProfile:\n        type: RuntimeDefault"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-3",
+  "heading": "Pod Security Standards > Profile Details > Restricted",
+  "text": "\t\t\t\t<p>Privilege escalation (such as via set-user-ID or set-group-ID file mode) should not be allowed. <em><a href=\"#os-specific-policy-controls\">This is Linux only policy</a> in v1.25+ <code>(spec.os.name != windows)</code></em></p>\n\t\t\t\t<p><strong>Restricted Fields</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>spec.containers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t\t<li><code>spec.initContainers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t\t<li><code>spec.ephemeralContainers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<p><strong>Allowed Values</strong></p>\n\t\t\t\t<ul>"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-8",
+  "heading": "Pod Security Standards > Profile Details > Restricted",
+  "text": "\t\t\t\t\t<li><code>spec.ephemeralContainers[*].securityContext.seccompProfile.type</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<p><strong>Allowed Values</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>RuntimeDefault</code></li>\n\t\t\t\t\t<li><code>Localhost</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<small>\n\t\t\t\t\tThe container fields may be undefined/<code>nil</code> if the pod-level\n\t\t\t\t\t<code>spec.securityContext.seccompProfile.type</code> field is set appropriately.\n\t\t\t\t\tConversely, the pod-level field may be undefined/<code>nil</code> if _all_ container-\n\t\t\t\t\tlevel fields are set.\n\t\t\t\t</small>\n  \t\t\t</td>\n  \t\t</tr>\n\t\t  <tr>\n\t\t\t<td style=\"white-space: nowrap\">Capabilities (v1.22+)</td>\n\t\t\t<td>\n\t\t\t\t<p>"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-5",
+  "heading": "Pod Security Standards > Profile Details > Restricted",
+  "text": "\t\t\t\t\t<li><code>true</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<small>\n\t\t\t\t\tThe container fields may be undefined/<code>nil</code> if the pod-level\n\t\t\t\t\t<code>spec.securityContext.runAsNonRoot</code> is set to <code>true</code>.\n\t\t\t\t</small>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"white-space: nowrap\">Running as Non-root user (v1.23+)</td>\n\t\t\t<td>\n\t\t\t\t<p>Containers must not set <tt>runAsUser</tt> to 0</p>\n\t\t\t\t<p><strong>Restricted Fields</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>spec.securityContext.runAsUser</code></li>\n\t\t\t\t    <li><code>spec.containers[*].securityContext.runAsUser</code></li>"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#set-the-security-context-for-a-pod-1",
+  "heading": "Configure a Security Context for a Pod or Container > Set the security context for a Pod",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo\nspec:\n  securityContext:\n    runAsUser: 1000\n    runAsGroup: 3000\n    fsGroup: 2000\n    supplementalGroups: [4000]\n  volumes:\n  - name: sec-ctx-vol\n    emptyDir: {}\n  containers:\n  - name: sec-ctx-demo\n    image: busybox:1.28\n    command: [ \"sh\", \"-c\", \"sleep 1h\" ]\n    volumeMounts:\n    - name: sec-ctx-vol\n      mountPath: /data/demo\n    securityContext:\n      allowPrivilegeEscalation: false\n```"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-pod-security-standard-changes-0",
+  "heading": "Pod Security Standards > Pod OS field > Restricted Pod Security Standard changes",
+  "text": "Another important change, made in Kubernetes v1.25 is that the  _Restricted_ policy\nhas been updated to use the `pod.spec.os.name` field. Based on the OS name, certain policies that are specific\nto a particular OS can be relaxed for the other OS.\n\n#### OS-specific policy controls\nRestrictions on the following controls are only required if `.spec.os.name` is not `windows`:\n- Privilege Escalation\n- Seccomp\n- Linux Capabilities"
+ },
+ {
+  "chunk_id": "concepts/security/application-security-checklist#security-context-pod-0",
+  "heading": "Application Security Checklist > Base security hardening > Pod-level `securityContext` recommendations",
+  "text": "- [ ] Set `runAsNonRoot: true`.\n- [ ] Configure the container to execute as a less privileged user\n  (for example, using `runAsUser` and `runAsGroup`), and configure appropriate\n  permissions on files or directories inside the container image.\n- [ ] Optionally add a supplementary group with `fsGroup` to access persistent volumes.\n- [ ] The application deploys into a namespace that enforces an appropriate\n  [Pod security standard](/docs/concepts/security/pod-security-standards/).\n  If you cannot control this enforcement for the cluster(s) where the application is\n  deployed, take this into account either through documentation or additional defense in depth."
+ },
+ {
+  "chunk_id": "concepts/security/security-checklist#pod-security-1",
+  "heading": "Security Checklist > Pod security",
+  "text": "The [Pod Security Standards](/docs/concepts/security/pod-security-standards/)\ndefine three different policies, privileged, baseline and restricted that limit\nhow fields can be set in the `PodSpec` regarding security.\nThese standards can be enforced at the namespace level with the new\n[Pod Security](/docs/concepts/security/pod-security-admission/) admission,\nenabled by default, or by third-party admission webhook. Please note that,\ncontrary to the removed PodSecurityPolicy admission it replaces,\n[Pod Security](/docs/concepts/security/pod-security-admission/)\nadmission can be easily combined with admission webhooks and external services."
+ }
+]

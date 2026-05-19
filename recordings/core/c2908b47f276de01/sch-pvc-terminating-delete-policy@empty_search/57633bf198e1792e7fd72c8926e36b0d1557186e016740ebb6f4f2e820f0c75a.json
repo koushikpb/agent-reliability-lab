@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Let me try different search terms.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016ZSS4XPxTvMUg5y8KFpM6s",
+   "input": {
+    "query": "PVC stuck terminating pod still using volume"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_012BRPm7DesYDfyTEhJhDZoJ",
+   "input": {
+    "query": "storage volumes deletion finalizers"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2430,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 109,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01ApVzXQbv2s46tCEuj2tbvF",
+   "input": {
+    "id": "T-2003",
+    "note": "Cause: The catalog-search container needs to load a 12.4 GiB / 48-shard index snapshot into memory before it opens its :8080 HTTP listener. Logs show the pod gets to roughly shard 20-23 of 48 (~90s in) and is then killed by SIGTERM. Kubelet events confirm this is the liveness probe killing the container: \"Liveness probe failed: Get http://.../healthz: connect: connection refused ... Container search failed liveness probe, will be restarted\". The liveness probe is configured with initialDelaySeconds=30, periodSeconds=10, failureThreshold=3, so it starts failing ~30s after start and kills the pod ~60s later \u2014 well before the index finishes loading. Nothing changed in the image (still 5.2.0); the snapshot simply grew past what the current probe timing tolerates. Both replicas are in CrashLoopBackOff for the same reason, which is why product search is down.\n\nFix (owner to apply to the Deployment in the search namespace): add a startupProbe hitting the same /healthz endpoint, with a failureThreshold * periodSeconds large enough to cover worst-case index load (e.g. failureThreshold: 30, periodSeconds: 10 gives 5 minutes). Once the startup probe succeeds, the existing liveness probe takes over unchanged, so deadlock detection is preserved [cite: tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0] [cite: tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-1]. This is exactly the recommended pattern for containers whose typical start time exceeds initialDelaySeconds + failureThreshold * periodSeconds of the liveness probe [cite: concepts/workloads/pods/probes#when-should-you-use-a-startup-probe-0]. While the startup probe is pending, the kubelet will not run liveness or readiness probes, so the loader will no longer be SIGTERMed mid-load [cite: concepts/workloads/pods/probes#startup-probe-0]. Simply bumping initialDelaySeconds would also work but is discouraged because it delays deadlock detection for the life of the pod [cite: concepts/workloads/pods/probes#liveness-probe-0].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6347,
+ "model": "claude-opus-4-7",
+ "output_tokens": 887,
+ "stop_reason": "tool_use"
+}

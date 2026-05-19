@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-1",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "In practice, a `CrashLoopBackOff` is a condition or event that might be seen as output\nfrom the `kubectl` command, while describing or listing Pods, when a container in the Pod\nfails to start properly and then continually tries and fails in a loop.\n\nIn other words, when a container enters the crash loop, Kubernetes applies the\nexponential backoff delay mentioned in the [Container restart policy](#restart-policy).\nThis mechanism prevents a faulty container from overwhelming the system with continuous\nfailed start attempts.\n\nThe `CrashLoopBackOff` can be caused by issues like the following:\n\n* Application errors that cause the container to exit.\n* Configuration errors, such as incorrect environment variables or missing\n  configuration files.\n* Resource constraints, where the container might not have enough memory or CPU\n  to start properly.\n* Health checks failing if the application doesn't start serving within the\n  expected time.\n* Container liveness probes or startup probes returning a `Failure` result\n  as mentioned in the [probes section](#container-probes).\n\nTo investigate the root cause of a `CrashLoopBackOff` issue, a user can:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#copying-a-pod-while-changing-its-command-0",
+  "heading": "Debug Running Pods > Debugging using a copy of the Pod > Copying a Pod while changing its command",
+  "text": "Sometimes it's useful to change the command for a container, for example to\nadd a debugging flag or because the application is crashing.\n\nTo simulate a crashing application, use `kubectl run` to create a container\nthat immediately exits:\n\n```\nkubectl run --image=busybox:1.28 myapp -- false\n```\n\nYou can see using `kubectl describe pod myapp` that this container is crashing:\n\n```\nContainers:\n  myapp:\n    Image:         busybox\n    ...\n    Args:\n      false\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    1\n```\n\nYou can use `kubectl debug` to create a copy of this Pod with the command\nchanged to an interactive shell:\n\n```\nkubectl debug myapp -it --copy-to=myapp-debug --container=myapp -- sh\n```\n\n```\nIf you don't see a command prompt, try pressing enter.\n/ #\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-init-containers#getting-details-about-init-containers-0",
+  "heading": "Debug Init Containers > Getting details about Init Containers",
+  "text": "View more detailed information about Init Container execution:\n\n```shell\nkubectl describe pod <pod-name>\n```\n\nFor example, a Pod with two Init Containers might show the following:\n\n```\nInit Containers:\n  <init-container-1>:\n    Container ID:    ...\n    ...\n    State:           Terminated\n      Reason:        Completed\n      Exit Code:     0\n      Started:       ...\n      Finished:      ...\n    Ready:           True\n    Restart Count:   0\n    ...\n  <init-container-2>:\n    Container ID:    ...\n    ...\n    State:           Waiting\n      Reason:        CrashLoopBackOff\n    Last State:      Terminated\n      Reason:        Error\n      Exit Code:     1\n      Started:       ...\n      Finished:      ...\n    Ready:           False\n    Restart Count:   3\n    ...\n```\n\nYou can also access the Init Container statuses programmatically by reading the\n`status.initContainerStatuses` field on the Pod Spec:\n\n```shell\nkubectl get pod <pod-name> --template '{{.status.initContainerStatuses}}'\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/troubleshooting-cni-plugin-related-errors#an-example-containerd-configuration-file-3",
+  "heading": "Troubleshooting CNI plugin-related errors > An example containerd configuration file",
+  "text": "```bash\n     \"capabilities\": {\"portMappings\": true},\n     \"externalSetMarkChain\": \"KUBE-MARK-MASQ\"\n   }\n ]\n}\nEOF\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/troubleshooting-cni-plugin-related-errors#an-example-containerd-configuration-file-0",
+  "heading": "Troubleshooting CNI plugin-related errors > An example containerd configuration file",
+  "text": "The following example shows a configuration for `containerd` runtime v1.6.x,\nwhich supports a recent version of the CNI specification (v1.0.0).\n\nPlease see the documentation from your plugin and networking provider for\nfurther instructions on configuring your system."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-2",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "1. **Check logs**: Use `kubectl logs <name-of-pod>` to check the logs of the container.\n   This is often the most direct way to diagnose the issue causing the crashes.\n1. **Inspect events**: Use `kubectl describe pod <name-of-pod>` to see events\n   for the Pod, which can provide hints about configuration or resource issues.\n1. **Review configuration**: Ensure that the Pod configuration, including\n   environment variables and mounted volumes, is correct and that all required\n   external resources are available.\n1. **Check resource limits**: Make sure that the container has enough CPU\n   and memory allocated. Sometimes, increasing the resources in the Pod definition\n   can resolve the issue.\n1. **Debug application**: There might exist bugs or misconfigurations in the\n   application code. Running this container image locally or in a development\n   environment can help diagnose application specific issues."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-13",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: fail-pod-if-init-fails\nspec:\n  restartPolicy: Always\n  initContainers:\n  - name: init-once      # This init container will only try once. If it fails, the pod will fail.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'echo \"Failing initialization\" && sleep 10 && exit 1']\n    restartPolicy: Never\n  containers:\n  - name: main-container # This container will always be restarted once initialization succeeds.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'sleep 1800 && exit 0']\n```\n\nA Pod with Never restart policy with a container that ignores and restarts on specific exit codes.\nThis is useful to differentiate between restartable errors and non-restartable errors:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-0",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "Kubernetes manages container failures within Pods using a [`restartPolicy`](#restart-policy) defined\nin the Pod `spec`. This policy determines how Kubernetes reacts to containers exiting due to errors\nor other reasons, which falls in the following sequence:\n\n1. **Initial crash**: Kubernetes attempts an immediate restart based on the Pod `restartPolicy`.\n1. **Repeated crashes**: After the initial crash Kubernetes applies an exponential\n   backoff delay for subsequent restarts, described in [`restartPolicy`](#restart-policy).\n   This prevents rapid, repeated restart attempts from overloading the system.\n1. **CrashLoopBackOff state**: This indicates that the backoff delay mechanism is currently\n   in effect for a given container that is in a crash loop, failing and restarting repeatedly.\n1. **Backoff reset**: If a container runs successfully for a certain duration\n   (e.g., 10 minutes), Kubernetes resets the backoff delay, treating any new crash\n   as the first one."
+ }
+]

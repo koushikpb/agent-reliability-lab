@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try with the full pod name format:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01H3w3XkmMshYsp1qmEtCcdi",
+   "input": {
+    "pod": "inventory-db-0 -n inventory"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1920,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 74,
+ "stop_reason": "tool_use"
+}

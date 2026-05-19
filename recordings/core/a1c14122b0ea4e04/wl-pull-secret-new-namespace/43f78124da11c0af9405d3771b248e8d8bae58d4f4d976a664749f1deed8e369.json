@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01E7j7AxN6fk43Fj6BSzJ22p",
+   "input": {
+    "id": "T-2002",
+    "note": "Cause: The usage-exporter pod in the analytics namespace is stuck in ImagePullBackOff because the image pull Secret `harbor-pull` does not exist in the analytics namespace. The pod references `imagePullSecrets: [harbor-pull]`, and the kubelet emitted a `FailedToRetrieveImagePullSecret` event (\"Unable to retrieve some image pull secrets (<harbor-pull>)\"), followed by a 401 Unauthorized from Harbor when the pull was retried anonymously. The same manifest works in the `reporting` namespace only because the `harbor-pull` Secret exists there.\n\nEvidence:\n- analytics/usage-exporter-6b4d9c8f7-2vjxq: status ImagePullBackOff; event `FailedToRetrieveImagePullSecret ... (<harbor-pull>)`; pull error `401 Unauthorized` from harbor.acme.internal.\n- reporting/usage-exporter-84c7f9d5b-lm6wd: Running with the same image and same `harbor-pull` secret reference.\n\nWhy: `imagePullSecrets` is namespace-scoped \u2014 \"All imagePullSecrets must be Secrets that exist in the same namespace as the Pod\" [cite: concepts/containers/images#specifying-imagepullsecrets-on-a-pod-0], and \"Pods can only reference image pull secrets in their own namespace, so this process needs to be done one time per namespace\" [cite: concepts/containers/images#creating-a-secret-with-a-docker-config-1]. The observed event matches the documented symptom for a missing pull secret [cite: tasks/configure-pod-container/pull-image-private-registry#create-a-pod-that-uses-your-secret-2].\n\nFix: Recreate the Harbor pull secret in the analytics namespace, e.g.:\n  kubectl -n analytics create secret docker-registry harbor-pull \\\n    --docker-server=harbor.acme.internal \\\n    --docker-username=<user> --docker-password=<pass> --docker-email=<email>\nOnce the Secret exists, delete the failing pod (or let the Deployment retry) and the image pull will succeed. Optionally attach it to the namespace's default ServiceAccount so future workloads inherit it [cite: concepts/configuration/secret#using-imagepullsecrets-1].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5480,
+ "model": "claude-opus-4-7",
+ "output_tokens": 898,
+ "stop_reason": "tool_use"
+}

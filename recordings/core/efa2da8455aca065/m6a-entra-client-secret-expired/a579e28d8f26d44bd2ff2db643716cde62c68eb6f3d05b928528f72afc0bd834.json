@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary of what I did:**\n\n1. **Read ticket T-5002** \u2014 users getting a 500 after successfully authenticating with Microsoft on the ops portal.\n2. **Listed pods in `internal-tools`** \u2014 all three pods (oauth2-proxy + 2 portal replicas) were Running and Ready with zero restarts, ruling out crash loops or infra issues.\n3. **Pulled oauth2-proxy logs** \u2014 found repeated Azure AD error `AADSTS7000222: The provided client secret keys for app '...' are expired` on every OAuth2 callback since ~08:00, perfectly matching the reported symptom.\n4. **Searched documentation** \u2014 confirmed that Kubernetes Secret volume mounts (non-subPath) propagate updates automatically [cite: concepts/configuration/secret#using-secrets-as-files-from-a-pod-0], so a rollout restart after updating the Secret is the fastest path to recovery.\n5. **Resolved the ticket** with the two-step fix: IT Identity team generates a new Azure client secret; platform team updates the Kubernetes Secret and restarts the oauth2-proxy deployment.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 11842,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 257,
+ "stop_reason": "end_turn"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The pods are in CrashLoopBackOff due to liveness probe failures. Let me get the logs from one of the failing pods:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01GL9mfq3CuFM9XkSH9EKRor",
+   "input": {
+    "pod": "catalog-search-7d6f9b8c5-4kxpw"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1909,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 105,
+ "stop_reason": "tool_use"
+}

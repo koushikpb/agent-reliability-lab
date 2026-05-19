@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the critical issue. The documentation shows that **a container using a ConfigMap as a `subPath` volume mount will NOT receive ConfigMap updates** [cite: tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0] and [cite: concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-2].\n\nLooking back at the pod spec, I can see the gateway pods are mounted with:\n```\nsubPath: \"limits.yaml\"\n```\n\nThis is the problem! The pods won't automatically pick up ConfigMap changes because they use `subPath`. The only way to get the new limits is to restart the pods so they reload the ConfigMap.\n\nNow I have the complete picture. Let me update the ticket with the resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Aaw8WSCqVrP3eeRwNdgUZj",
+   "input": {
+    "id": "T-5004",
+    "note": "**Root Cause**: The API gateway pods use a ConfigMap volume mount with `subPath: \"limits.yaml\"`. According to Kubernetes documentation, containers using ConfigMaps as `subPath` volume mounts will not receive ConfigMap updates automatically [cite: concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-2]. \n\n**Evidence**: Both gateway pods (api-gateway-7c9f8d6b54-x2kqp and api-gateway-7c9f8d6b54-r7tmw) show in their logs that the limits file hash remains unchanged at sha256=9c1e4b07 from startup (06:02 UTC) through 11:29 UTC. The logs consistently show `limit_rps=100` for acme-logistics, not the updated 500 rps limit that was supposedly changed at 09:10 UTC.\n\n**Fix**: The gateway pods must be restarted to reload the updated ConfigMap. You can trigger this by:\n1. Scaling the deployment down and back up, or\n2. Deleting the pods to force recreation\n3. Using `kubectl rollout restart deployment/api-gateway -n edge`\n\nAfter the pods restart, they will load the new limits from the updated gateway-limits ConfigMap.\n\n**Alternative Long-term Solution**: To avoid this issue in the future, consider mounting the entire ConfigMap as a volume (without `subPath`) instead of just the limits.yaml file. This will allow automatic updates without pod restarts [cite: tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6802,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 652,
+ "stop_reason": "tool_use"
+}

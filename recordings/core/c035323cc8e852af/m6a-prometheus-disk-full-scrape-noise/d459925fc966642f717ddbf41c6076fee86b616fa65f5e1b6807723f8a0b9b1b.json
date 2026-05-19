@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more specifically about PersistentVolumeClaim expansion:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016ArGgmR5D9TUpe8QcUGS23",
+   "input": {
+    "query": "PersistentVolumeClaim expansion requesting larger storage"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7477,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 81,
+ "stop_reason": "tool_use"
+}

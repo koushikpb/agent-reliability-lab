@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/multi-tenancy#dns-0",
+  "heading": "Multi-tenancy > Additional Considerations > DNS",
+  "text": "Kubernetes clusters include a Domain Name System (DNS) service to provide translations from names\nto IP addresses, for all Services and Pods. By default, the Kubernetes DNS service allows lookups\nacross all namespaces in the cluster.\n\nIn multi-tenant environments where tenants can access pods and other Kubernetes resources, or where\nstronger isolation is required, it may be necessary to prevent pods from looking up services in other\nNamespaces.\nYou can restrict cross-namespace DNS lookups by configuring security rules for the DNS service.\nFor example, CoreDNS (the default DNS service for Kubernetes) can leverage Kubernetes metadata\nto restrict queries to Pods and Services within a namespace. For more information, read an\n[example](https://github.com/coredns/policy#kubernetes-metadata-multi-tenancy-policy) of\nconfiguring this within the CoreDNS documentation."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-work-by-dns-name-1",
+  "heading": "Debug Services > Does the Service work by DNS name?",
+  "text": "If this works, you'll need to adjust your app to use a cross-namespace name, or\nrun your app and Service in the same Namespace.  If this still fails, try a\nfully-qualified name:\n\n```shell\nnslookup hostnames.default.svc.cluster.local\n```\n```none\nAddress 1: 10.0.0.10 kube-dns.kube-system.svc.cluster.local\n\nName:      hostnames.default.svc.cluster.local\nAddress 1: 10.0.1.175 hostnames.default.svc.cluster.local\n```\n\nNote the suffix here: \"default.svc.cluster.local\".  The \"default\" is the\nNamespace you're operating in.  The \"svc\" denotes that this is a Service.\nThe \"cluster.local\" is your cluster domain, which COULD be different in your\nown cluster.\n\nYou can also try this from a Node in the cluster:\n\n10.0.0.10 is the cluster's DNS Service IP, yours might be different."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#dns-0",
+  "heading": "Service > Discovering services > DNS",
+  "text": "You can (and almost always should) set up a DNS service for your Kubernetes\ncluster using an [add-on](/docs/concepts/cluster-administration/addons/).\n\nA cluster-aware DNS server, such as CoreDNS, watches the Kubernetes API for new\nServices and creates a set of DNS records for each one.  If DNS has been enabled\nthroughout your cluster then all Pods should automatically be able to resolve\nServices by their DNS name.\n\nFor example, if you have a Service called `my-service` in a Kubernetes\nnamespace `my-ns`, the control plane and the DNS Service acting together\ncreate a DNS record for `my-service.my-ns`. Pods in the `my-ns` namespace\nshould be able to find the service by doing a name lookup for `my-service`\n(`my-service.my-ns` would also work).\n\nPods in other namespaces must qualify the name as `my-service.my-ns`. These names\nwill resolve to the cluster IP assigned for the Service."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/namespaces#understanding-namespaces-and-dns-0",
+  "heading": "Share a Cluster with Namespaces > Understanding namespaces and DNS",
+  "text": "When you create a [Service](/docs/concepts/services-networking/service/), it creates a corresponding\n[DNS entry](/docs/concepts/services-networking/dns-pod-service/).\nThis entry is of the form `<service-name>.<namespace-name>.svc.cluster.local`, which means\nthat if a container uses `<service-name>` it will resolve to the service which\nis local to a namespace.  This is useful for using the same configuration across\nmultiple namespaces such as Development, Staging and Production.  If you want to reach\nacross namespaces, you need to use the fully qualified domain name (FQDN)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-records-0",
+  "heading": "DNS for Services and Pods > Namespaces of Services > DNS Records",
+  "text": "What objects get DNS records?\n\n1. Services\n1. Pods\n\nThe following sections detail the supported DNS record types and layout that is\nsupported. Any other layout or names or queries that happen to work are\nconsidered implementation details and are subject to change without warning.\nFor more up-to-date specification, see\n[Kubernetes DNS-Based Service Discovery](https://github.com/kubernetes/dns/blob/master/docs/specification.md)."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#are-you-in-the-right-namespace-for-the-service-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Are you in the right namespace for the service?",
+  "text": "DNS queries that don't specify a namespace are limited to the pod's \nnamespace. \n\nIf the namespace of the pod and service differ, the DNS query must include \nthe namespace of the service.\n\nThis query is limited to the pod's namespace:\n```shell\nkubectl exec -i -t dnsutils -- nslookup <service-name>\n```\n\nThis query specifies the namespace:\n```shell\nkubectl exec -i -t dnsutils -- nslookup <service-name>.<namespace>\n```\n\nTo learn more about name resolution, see \n[DNS for Services and Pods](/docs/concepts/services-networking/dns-pod-service/#what-things-get-dns-names). "
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#namespaces-of-services-0",
+  "heading": "DNS for Services and Pods > Namespaces of Services",
+  "text": "A DNS query may return different results based on the namespace of the Pod making\nit. DNS queries that don't specify a namespace are limited to the Pod's\nnamespace. Access Services in other namespaces by specifying it in the DNS query.\n\nFor example, consider a Pod in a `test` namespace. A `data` Service is in\nthe `prod` namespace.\n\nA query for `data` returns no results, because it uses the Pod's `test` namespace.\n\nA query for `data.prod` returns the intended result, because it specifies the\nnamespace."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-horizontal-autoscaling#find-scaling-target-0",
+  "heading": "Autoscale the DNS Service in a Cluster > Get the name of your DNS Deployment",
+  "text": "List the DNS deployments in your cluster in the kube-system namespace:\n\n```shell\nkubectl get deployment -l k8s-app=kube-dns --namespace=kube-system\n```\n\nThe output is similar to this:\n\n    NAME      READY   UP-TO-DATE   AVAILABLE   AGE\n    ...\n    coredns   2/2     2            2           ...\n    ...\n\nIf you don't see a Deployment for DNS services, you can also look for it by name:\n\n```shell\nkubectl get deployment --namespace=kube-system\n```\n\nand look for a deployment named `coredns`.\n\nYour scale target is\n\n    Deployment/<your-deployment-name>\n\nwhere `<your-deployment-name>` is the name of your DNS Deployment. For example, if\nthe name of your Deployment for DNS is coredns, your scale target is Deployment/coredns."
+ }
+]

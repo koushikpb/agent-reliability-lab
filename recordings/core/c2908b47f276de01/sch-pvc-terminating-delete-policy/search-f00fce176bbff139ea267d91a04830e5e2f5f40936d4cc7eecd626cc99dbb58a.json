@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/cloud-native-security#protection-runtime-access-1",
+  "heading": "Cloud Native Security and Kubernetes > _Runtime_ lifecycle phase > Runtime protection: access",
+  "text": "Kubernetes uses TLS to protect API traffic; make sure to deploy the cluster using\nTLS (including for traffic between nodes and the control plane) and protect the\nencryption keys. If you use Kubernetes' own API for\n[CertificateSigningRequests](/docs/reference/access-authn-authz/certificate-signing-requests/#certificate-signing-requests),\npay special attention to restricting misuse there."
+ },
+ {
+  "chunk_id": "concepts/security/cloud-native-security#protection-runtime-compute-0",
+  "heading": "Cloud Native Security and Kubernetes > _Runtime_ lifecycle phase > Runtime protection: compute",
+  "text": "Containers provide two\nthings: isolation between applications and a mechanism to combine\nthose isolated applications to run on the same host computer. Those two\naspects\u2014isolation and aggregation\u2014mean that runtime security involves\nidentifying trade-offs and finding an appropriate balance.\n\nKubernetes relies on a container runtime\nto set up and run containers. The Kubernetes project does\nnot recommend a specific container runtime, and you should make sure that\nthe runtime(s) you choose meet your information security needs.\n\nTo protect your compute at runtime, you can:\n\n1. Enforce [Pod Security Standards](/docs/concepts/security/pod-security-standards/)\n   for applications to help ensure they run with only the necessary privileges.\n1. Run a specialized operating system on your nodes that is designed specifically\n   for running containerized workloads. This is typically based on a read-only\n   operating system (_immutable image_) that provides only the services\n   essential for running containers."
+ },
+ {
+  "chunk_id": "concepts/security/cloud-native-security#observability-and-runtime-security-0",
+  "heading": "Cloud Native Security and Kubernetes > _Runtime_ lifecycle phase > Observability and runtime security",
+  "text": "Kubernetes lets you extend your cluster with extra tooling. You can set up third\nparty solutions to help you monitor or troubleshoot your applications and the\nclusters they are running. You also get some basic observability features built\nin to Kubernetes itself. Your code running in containers can generate logs,\npublish metrics, or provide other observability data; at deploy time, you need to\nmake sure your cluster provides an appropriate level of protection there.\n\nIf you set up a metrics dashboard or something similar, review the chain of components\nthat populate data into that dashboard, as well as the dashboard itself. Make sure\nthat the whole chain is designed with enough resilience and integrity protection\nthat you can rely on it even during an incident where your cluster might be degraded.\n\nWhere appropriate, deploy security measures below the Kubernetes layer,\nsuch as cryptographically measured boot or authenticated distribution\nof time (which helps ensure the fidelity of logs and audit records).\n\nFor a high-assurance environment, deploy cryptographic protections to ensure that\nlogs are both tamper-proof and confidential."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "The purpose of the Storage Object in Use Protection feature is to ensure that\nPersistentVolumeClaims (PVCs) in active use by a Pod and PersistentVolume (PVs)\nthat are bound to PVCs are not removed from the system, as this may result in data loss.\n\nPVC is in active use by a Pod when a Pod object exists that is using the PVC.\n\nIf a user deletes a PVC in active use by a Pod, the PVC is not removed immediately.\nPVC removal is postponed until the PVC is no longer actively used by any Pods. Also,\nif an admin deletes a PV that is bound to a PVC, the PV is not removed immediately.\nPV removal is postponed until the PV is no longer bound to a PVC.\n\nYou can see that a PVC is protected when the PVC's status is `Terminating` and the\n`Finalizers` list includes `kubernetes.io/pvc-protection`:"
+ },
+ {
+  "chunk_id": "concepts/security/cloud-native-security#protection-runtime-access-0",
+  "heading": "Cloud Native Security and Kubernetes > _Runtime_ lifecycle phase > Runtime protection: access",
+  "text": "The Kubernetes API is what makes your cluster work. Protecting this API is key\nto providing effective cluster security.\n\nOther pages in the Kubernetes documentation have more detail about how to set up\nspecific aspects of access control. The [security checklist](/docs/concepts/security/security-checklist/)\nprovides suggested basic checks for your cluster.\n\nBeyond that, securing your cluster means implementing effective\n[authentication](/docs/concepts/security/controlling-access/#authentication) and\n[authorization](/docs/concepts/security/controlling-access/#authorization) for API access. Use [ServiceAccounts](/docs/concepts/security/service-accounts/) to\nprovide and manage security identities for workloads and cluster\ncomponents."
+ },
+ {
+  "chunk_id": "concepts/security/_index#control-plane-protection-0",
+  "heading": "Security > Kubernetes security mechanisms > Control plane protection",
+  "text": "A key security mechanism for any Kubernetes cluster is to\n[control access to the Kubernetes API](/docs/concepts/security/controlling-access).\n\nKubernetes expects you to configure and use TLS to provide\n[data encryption in transit](/docs/tasks/tls/managing-tls-in-a-cluster/)\nwithin the control plane, and between the control plane and its clients.\nYou can also enable [encryption at rest](/docs/tasks/administer-cluster/encrypt-data/)\nfor the data stored within Kubernetes control plane; this is separate from using\nencryption at rest for your own workloads' data, which might also be a good idea."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#unused-pvc-tracking-0",
+  "heading": "Persistent Volumes > PersistentVolumeClaims > Unused PVC tracking",
+  "text": "When enabled, the PVC protection controller adds an `Unused`\n[condition](/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions) to each\nPersistentVolumeClaim to indicate whether it is currently referenced by any\nnon-terminal Pod.\n\nThe condition has two states:\n\n`Unused` with status `\"True\"` (reason `NoPodsUsingPVC`)\n: No non-terminal Pod references this PVC. The `lastTransitionTime` records when\n  the PVC became unused.\n\n`Unused` with status `\"False\"` (reason `PodUsingPVC`)\n: At least one non-terminal Pod currently references this PVC. The\n  `lastTransitionTime` records when the PVC started being used.\n\nA Pod is considered non-terminal if its phase is not `Succeeded` or `Failed`.\nThis means that a Pending Pod (even one that has not yet been scheduled) counts\nas using the PVC."
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/authentication-mechanisms#openid-connect-token-authentication-0",
+  "heading": "Hardening Guide - Authentication Mechanisms > OpenID Connect token authentication",
+  "text": "Kubernetes supports integrating external authentication services with the Kubernetes API using\n[OpenID Connect (OIDC)](/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).\nThere is a wide variety of software that can be used to integrate Kubernetes with an identity\nprovider. However, when using OIDC authentication in Kubernetes, it is important to consider the\nfollowing hardening measures:\n\n- The software installed in the cluster to support OIDC authentication should be isolated from\n  general workloads as it will run with high privileges.\n- Some Kubernetes managed services are limited in the OIDC providers that can be used.\n- As with TokenRequest tokens, OIDC tokens should have a short lifespan to reduce the impact of\n  compromised tokens."
+ }
+]

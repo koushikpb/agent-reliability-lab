@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#startup-probe-0",
+  "heading": "Pod Lifecycle > Container probes > Startup probe",
+  "text": "Startup probes verify whether the application within a container is started.\nIf a startup probe is configured, Kubernetes does not execute liveness or\nreadiness probes until the startup probe succeeds, allowing the application\ntime to finish its initialization.\n\nThis type of probe is only executed at startup, unlike liveness and readiness\nprobes, which are run periodically.\n\nIf the startup probe fails, the kubelet kills the container, and the container\nis subjected to its [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Protect slow starting containers with startup probes",
+  "text": "Thanks to the startup probe, the application will have a maximum of 5 minutes\n(30 * 10 = 300s) to finish its startup.\nOnce the startup probe has succeeded once, the liveness probe takes over to\nprovide a fast response to container deadlocks.\nIf the startup probe never succeeds, the container is killed after 300s and\nsubject to the pod's `restartPolicy`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#reduced-container-restart-delay-0",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Reduced container restart delay",
+  "text": "With the alpha feature gate `ReduceDefaultCrashLoopBackOffDecay` enabled,\ncontainer start retries across your cluster will be reduced to begin at 1s\n(instead of 10s) and increase exponentially by 2x each restart until a maximum\ndelay of 60s (instead of 300s which is 5 minutes).\n\nIf you use this feature along with the alpha feature\n`KubeletCrashLoopBackOffMax` (described below), individual nodes may have\ndifferent maximum delays."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#intro-0",
+  "heading": "Pod Lifecycle",
+  "text": "This page describes the lifecycle of a Pod. Pods follow a defined lifecycle, starting\nin the `Pending` [phase](#pod-phase), moving through `Running` if at least one\nof its primary containers starts OK, and then through either the `Succeeded` or\n`Failed` phases depending on whether any container in the Pod terminated in failure.\n\nWhile a Pod runs, the kubelet manages containers and translates the Pod's spec\nfor the container runtime. The kubelet also manages executing\n[probes](#container-probes) that track the health of your application."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#configurable-container-restart-delay-1",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Configurable container restart delay",
+  "text": "```yaml\n# container restart delays will start at 10s, increasing\n# 2x each time they are restarted, to a maximum of 100s\nkind: KubeletConfiguration\ncrashLoopBackOff:\n    maxContainerRestartPeriod: \"100s\"\n```\n\n```yaml\n# delays between container restarts will always be 2s\nkind: KubeletConfiguration\ncrashLoopBackOff:\n    maxContainerRestartPeriod: \"2s\"\n```\n\nIf you use this feature along with the alpha feature\n`ReduceDefaultCrashLoopBackOffDecay` (described above), your cluster defaults\nfor initial backoff and maximum backoff will no longer be 10s and 300s, but 1s\nand 60s. Per node configuration takes precedence over the defaults set by\n`ReduceDefaultCrashLoopBackOffDecay`, even if this would result in a node having\na longer maximum backoff than other nodes in the cluster."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-16",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "   * Pod UID, IP address, and network namespace\n   * Pod sandbox and any attached devices\n   * All volumes, including `emptyDir` and mounted volumes\n\n1. **Pod Status Update**: The Pod's status is updated with a `PodRestartInPlace` condition set to `True`.\n   This makes the restart process observable.\n1. **Full Restart Sequence**: Once all containers are terminated, the `PodRestartInPlace` condition\n   is set to `False`, and the Pod begins the standard startup process:\n\n   * **Init containers are re-run** in order.\n   * Sidecar and regular containers are started.\n\nA key aspect of this feature is that **all** containers are restarted, including those that\npreviously completed successfully or failed. The `RestartAllContainers` action overrides\nany configured container-level or Pod-level `restartPolicy`.\n\nThis mechanism is useful in scenarios where a clean slate for all containers is necessary, such as:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#startup-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Types of probe > Startup probe",
+  "text": "Startup probes verify whether the application within a container is started.\nIf a startup probe is configured, Kubernetes does not execute liveness or \nreadiness probes until the startup probe succeeds, allowing the application\ntime to finish its initialization.\n\nThis type of probe is only executed at startup, unlike liveness and readiness\nprobes, which are run periodically.\nIf the startup probe fails, the kubelet kills the container, and the container\nis subjected to its [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-lifetime-1",
+  "heading": "Pod Lifecycle > Pod lifetime",
+  "text": "Pods are only [scheduled](/docs/concepts/scheduling-eviction/) once in their lifetime;\nassigning a Pod to a specific node is called _binding_, and the process of selecting\nwhich node to use is called _scheduling_.\nOnce a Pod has been scheduled and is bound to a node, Kubernetes tries\nto run that Pod on the node. The Pod runs on that node until it stops, or until the Pod\nis [terminated](#pod-termination); if Kubernetes isn't able to start the Pod on the selected\nnode (for example, if the node crashes before the Pod starts), then that particular Pod\nnever starts.\n\nYou can use [Pod Scheduling Readiness](/docs/concepts/scheduling-eviction/pod-scheduling-readiness/)\nto delay scheduling for a Pod until all its _scheduling gates_ are removed. For example,\nyou might want to define a set of Pods but only trigger scheduling once all the Pods\nhave been created."
+ }
+]

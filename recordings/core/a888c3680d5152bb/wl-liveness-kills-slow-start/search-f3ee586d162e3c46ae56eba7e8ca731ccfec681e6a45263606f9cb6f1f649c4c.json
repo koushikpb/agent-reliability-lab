@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-1",
+  "heading": "Pod Lifecycle > Termination of Pods",
+  "text": "Typically, with this graceful termination of the pod, kubelet makes requests to the container runtime\nto attempt to stop the containers in the pod by first sending a TERM (aka. SIGTERM) signal,\nwith a grace period timeout, to the main process in each container.\nThe requests to stop the containers are processed by the container runtime asynchronously.\nThere is no guarantee to the order of processing for these requests.\nMany container runtimes respect the `STOPSIGNAL` value defined in the container image and,\nif different, send the container image configured STOPSIGNAL instead of TERM.\nOnce the grace period has expired, the KILL signal is sent to any remaining\nprocesses, and the Pod is then deleted from the\nAPI Server. If the kubelet or the\ncontainer runtime's management service is restarted while waiting for processes to terminate, the\ncluster retries from the start including the full original grace period."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#differences-from-application-containers-0",
+  "heading": "Sidecar Containers > Differences from application containers",
+  "text": "Sidecar containers run alongside _app containers_ in the same pod. However, they do not\nexecute the primary application logic; instead, they provide supporting functionality to\nthe main application.\n\nSidecar containers have their own independent lifecycles. They can be started, stopped,\nand restarted independently of app containers. This means you can update, scale, or\nmaintain sidecar containers without affecting the primary application.\n\nSidecar containers share the same network and storage namespaces with the primary\ncontainer. This co-location allows them to interact closely and share resources.\n\nFrom a Kubernetes perspective, the sidecar container's graceful termination is less important.\nWhen other containers take all allotted graceful termination time, the sidecar containers\nwill receive the `SIGTERM` signal, followed by the `SIGKILL` signal, before they have time to terminate gracefully. \nSo exit codes different from `0` (`0` indicates successful exit), for sidecar containers are normal\non Pod termination and should be generally ignored by the external tooling."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-state-terminated-0",
+  "heading": "Pod Lifecycle > Container states > `Terminated`",
+  "text": "A container in the `Terminated` state began execution and then either ran to\ncompletion or failed for some reason. When you use `kubectl` to query a Pod with\na container that is `Terminated`, you see a reason, an exit code, and the start and\nfinish time for that container's period of execution.\n\nIf a container has a `preStop` hook configured, this hook runs before the container enters\nthe `Terminated` state."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-container-is-terminated-1",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My container is terminated",
+  "text": "The output is similar to:\n```\nName:                           simmemleak-hra99\nNamespace:                      default\nImage(s):                       saadali/simmemleak\nNode:                           kubernetes-node-tf0f/10.240.216.66\nLabels:                         name=simmemleak\nStatus:                         Running\nReason:\nMessage:\nIP:                             10.244.2.75\nContainers:\n  simmemleak:\n    Image:  saadali/simmemleak:latest\n    Limits:\n      cpu:          100m\n      memory:       50Mi\n    State:          Running\n      Started:      Tue, 07 Jul 2019 12:54:41 -0700\n    Last State:     Terminated\n      Reason:       OOMKilled\n      Exit Code:    137\n      Started:      Fri, 07 Jul 2019 12:54:30 -0700\n      Finished:     Fri, 07 Jul 2019 12:54:33 -0700\n    Ready:          False\n    Restart Count:  5\nConditions:\n  Type      Status\n  Ready     False\nEvents:\n  Type    Reason     Age   From               Message\n  ----    ------     ----  ----               -------"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-init-containers#getting-details-about-init-containers-0",
+  "heading": "Debug Init Containers > Getting details about Init Containers",
+  "text": "View more detailed information about Init Container execution:\n\n```shell\nkubectl describe pod <pod-name>\n```\n\nFor example, a Pod with two Init Containers might show the following:\n\n```\nInit Containers:\n  <init-container-1>:\n    Container ID:    ...\n    ...\n    State:           Terminated\n      Reason:        Completed\n      Exit Code:     0\n      Started:       ...\n      Finished:      ...\n    Ready:           True\n    Restart Count:   0\n    ...\n  <init-container-2>:\n    Container ID:    ...\n    ...\n    State:           Waiting\n      Reason:        CrashLoopBackOff\n    Last State:      Terminated\n      Reason:        Error\n      Exit Code:     1\n      Started:       ...\n      Finished:      ...\n    Ready:           False\n    Restart Count:   3\n    ...\n```\n\nYou can also access the Init Container statuses programmatically by reading the\n`status.initContainerStatuses` field on the Pod Spec:\n\n```shell\nkubectl get pod <pod-name> --template '{{.status.initContainerStatuses}}'\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-stop-signals-0",
+  "heading": "Pod Lifecycle > Termination of Pods > Stop Signals",
+  "text": "The stop signal used to kill the container can be defined in the container image with the `STOPSIGNAL` instruction.\nIf no stop signal is defined in the image, the default signal of the container runtime\n(SIGTERM for both containerd and CRI-O) would be used to kill the container."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-14",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: restart-on-exit-codes\nspec:\n  restartPolicy: Never\n  containers:\n  - name: restart-on-exit-codes\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'sleep 60 && exit 0']\n    restartPolicy: Never     # Container restart policy must be specified if rules are specified\n    restartPolicyRules:      # Only restart the container if it exits with code 42\n    - action: Restart\n      exitCodes:\n        operator: In\n        values: [42]\n```\n\nRestart rules can be used for many more advanced lifecycle management scenarios. Note, restart rules\nare affected by the same inconsistencies as the regular restart policy. The kubelet restarts, container\nruntime garbage collection, intermitted connectivity issues with the control plane may cause the state\nloss and containers may be re-run even when you expect a container not to be restarted.\n\n#### Restart All Containers {#restart-all-containers}"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#defining-custom-stop-signals-0",
+  "heading": "Pod Lifecycle > Termination of Pods > Defining custom stop signals",
+  "text": "If the `ContainerStopSignals` feature gate is enabled, you can configure a custom stop signal\nfor your containers from the container Lifecycle. We require the Pod's `spec.os.name` field\nto be present as a requirement for defining stop signals in the container lifecycle.\nThe list of signals that are valid depends on the OS the Pod is scheduled to.\nFor Pods scheduled to Windows nodes, we only support SIGTERM and SIGKILL as valid signals.\n\nHere is an example Pod spec defining a custom stop signal:\n\n```yaml\nspec:\n  os:\n    name: linux\n  containers:\n    - name: my-container\n      image: container-image:latest\n      lifecycle:\n        stopSignal: SIGUSR1\n```\n\nIf a stop signal is defined in the lifecycle, this will override the signal defined in the container image.\nIf no stop signal is defined in the container spec, the container would fall back to the default behavior."
+ }
+]

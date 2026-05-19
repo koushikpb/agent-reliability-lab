@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/service#dns-0",
+  "heading": "Service > Discovering services > DNS",
+  "text": "You can (and almost always should) set up a DNS service for your Kubernetes\ncluster using an [add-on](/docs/concepts/cluster-administration/addons/).\n\nA cluster-aware DNS server, such as CoreDNS, watches the Kubernetes API for new\nServices and creates a set of DNS records for each one.  If DNS has been enabled\nthroughout your cluster then all Pods should automatically be able to resolve\nServices by their DNS name.\n\nFor example, if you have a Service called `my-service` in a Kubernetes\nnamespace `my-ns`, the control plane and the DNS Service acting together\ncreate a DNS record for `my-service.my-ns`. Pods in the `my-ns` namespace\nshould be able to find the service by doing a name lookup for `my-service`\n(`my-service.my-ns` would also work).\n\nPods in other namespaces must qualify the name as `my-service.my-ns`. These names\nwill resolve to the cluster IP assigned for the Service."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#dns-1",
+  "heading": "Service > Discovering services > DNS",
+  "text": "Kubernetes also supports DNS SRV (Service) records for named ports.  If the\n`my-service.my-ns` Service has a port named `http` with the protocol set to\n`TCP`, you can do a DNS SRV query for `_http._tcp.my-service.my-ns` to discover\nthe port number for `http`, as well as the IP address.\n\nThe Kubernetes DNS server is the only way to access `ExternalName` Services.\nYou can find more information about `ExternalName` resolution in\n[DNS for Services and Pods](/docs/concepts/services-networking/dns-pod-service/)."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#dns-0",
+  "heading": "Multi-tenancy > Additional Considerations > DNS",
+  "text": "Kubernetes clusters include a Domain Name System (DNS) service to provide translations from names\nto IP addresses, for all Services and Pods. By default, the Kubernetes DNS service allows lookups\nacross all namespaces in the cluster.\n\nIn multi-tenant environments where tenants can access pods and other Kubernetes resources, or where\nstronger isolation is required, it may be necessary to prevent pods from looking up services in other\nNamespaces.\nYou can restrict cross-namespace DNS lookups by configuring security rules for the DNS service.\nFor example, CoreDNS (the default DNS service for Kubernetes) can leverage Kubernetes metadata\nto restrict queries to Pods and Services within a namespace. For more information, read an\n[example](https://github.com/coredns/policy#kubernetes-metadata-multi-tenancy-policy) of\nconfiguring this within the CoreDNS documentation."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-custom-nameservers#configuration-of-stub-domain-and-upstream-nameserver-using-coredns-1",
+  "heading": "Customizing DNS Service > CoreDNS > Configuration of Stub-domain and upstream nameserver using CoreDNS",
+  "text": "The final ConfigMap along with the default `Corefile` configuration looks like:\n\n```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: coredns\n  namespace: kube-system\ndata:\n  Corefile: |\n    .:53 {\n        errors\n        health\n        kubernetes cluster.local in-addr.arpa ip6.arpa {\n           pods insecure\n           fallthrough in-addr.arpa ip6.arpa\n        }\n        prometheus :9153\n        forward . 172.16.0.1\n        cache 30\n        loop\n        reload\n        loadbalance\n    }\n    consul.local:53 {\n        errors\n        cache 30\n        forward . 10.150.0.1\n    }\n```\n\nCoreDNS does not support FQDNs for stub-domains and nameservers (eg: \"ns.foo.com\").\nDuring translation, all FQDN nameservers will be omitted from the CoreDNS config."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-custom-nameservers#introduction-0",
+  "heading": "Customizing DNS Service > Introduction",
+  "text": "DNS is a built-in Kubernetes service launched automatically\nusing the _addon manager_ [cluster add-on](https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/addon-manager/README.md).\n\nThe CoreDNS Service is named `kube-dns` in the `metadata.name` field.  \nThe intent is to ensure greater interoperability with workloads that relied on\nthe legacy `kube-dns` Service name to resolve addresses internal to the cluster.\nUsing a Service named `kube-dns` abstracts away the implementation detail of\nwhich DNS provider is running behind that common name.\n\nIf you are running CoreDNS as a Deployment, it will typically be exposed as\na Kubernetes Service with a static IP address.\nThe kubelet passes DNS resolver information to each container with the\n`--cluster-dns=<dns-service-ip>` flag."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/coredns#about-coredns-0",
+  "heading": "Using CoreDNS for Service Discovery > About CoreDNS",
+  "text": "[CoreDNS](https://coredns.io) is a flexible, extensible DNS server\nthat is the default implementation of Kubernetes cluster DNS.\nLike Kubernetes, the CoreDNS project is hosted by the\nCNCF."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-records-0",
+  "heading": "DNS for Services and Pods > Namespaces of Services > DNS Records",
+  "text": "What objects get DNS records?\n\n1. Services\n1. Pods\n\nThe following sections detail the supported DNS record types and layout that is\nsupported. Any other layout or names or queries that happen to work are\nconsidered implementation details and are subject to change without warning.\nFor more up-to-date specification, see\n[Kubernetes DNS-Based Service Discovery](https://github.com/kubernetes/dns/blob/master/docs/specification.md)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/cluster-ip-allocation#why-do-you-need-to-reserve-service-cluster-ips-1",
+  "heading": "Service ClusterIP allocation > Why do you need to reserve Service Cluster IPs?",
+  "text": "```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  labels:\n    k8s-app: kube-dns\n    kubernetes.io/cluster-service: \"true\"\n    kubernetes.io/name: CoreDNS\n  name: kube-dns\n  namespace: kube-system\nspec:\n  clusterIP: 10.96.0.10\n  ports:\n  - name: dns\n    port: 53\n    protocol: UDP\n    targetPort: 53\n  - name: dns-tcp\n    port: 53\n    protocol: TCP\n    targetPort: 53\n  selector:\n    k8s-app: kube-dns\n  type: ClusterIP\n```\n\nBut, as it was explained before, the IP address 10.96.0.10 has not been reserved.\nIf other Services are created before or in parallel with dynamic allocation, there is a chance they can allocate this IP.\nHence, you will not be able to create the DNS Service because it will fail with a conflict error."
+ }
+]

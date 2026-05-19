@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-2",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "```shell\nkubectl get pod memory-demo-2 --namespace=mem-example\n```\n\nAt this point, the Container might be running or killed. Repeat the preceding command until the Container is killed:\n\n```shell\nNAME            READY     STATUS      RESTARTS   AGE\nmemory-demo-2   0/1       OOMKilled   1          24s\n```\n\nGet a more detailed view of the Container status:\n\n```shell\nkubectl get pod memory-demo-2 --output=yaml --namespace=mem-example\n```\n\nThe output shows that the Container was killed because it is out of memory (OOM):\n\n```yaml\nlastState:\n   terminated:\n     containerID: 65183c1877aaec2e8427bc95609cc52677a454b56fcb24340dbd22917c23b10f\n     exitCode: 137\n     finishedAt: 2017-06-20T20:52:19Z\n     reason: OOMKilled\n     startedAt: null\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-3",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "The Container in this exercise can be restarted, so the kubelet restarts it. Repeat\nthis command several times to see that the Container is repeatedly killed and restarted:\n\n```shell\nkubectl get pod memory-demo-2 --namespace=mem-example\n```\n\nThe output shows that the Container is killed, restarted, killed again, restarted again, and so on:\n\n```\nkubectl get pod memory-demo-2 --namespace=mem-example\nNAME            READY     STATUS      RESTARTS   AGE\nmemory-demo-2   0/1       OOMKilled   1          37s\n```\n```\n\nkubectl get pod memory-demo-2 --namespace=mem-example\nNAME            READY     STATUS    RESTARTS   AGE\nmemory-demo-2   1/1       Running   2          40s\n```\n\nView detailed information about the Pod history:\n\n```\nkubectl describe pod memory-demo-2 --namespace=mem-example\n```\n\nThe output shows that the Container starts and fails repeatedly:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-4",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "```\n... Normal  Created   Created container with id 66a3a20aa7980e61be4922780bf9d24d1a1d8b7395c09861225b0eba1b1f8511\n... Warning BackOff   Back-off restarting failed container\n```\n\nView detailed information about your cluster's Nodes:\n\n```\nkubectl describe nodes\n```\n\nThe output includes a record of the Container being killed because of an out-of-memory condition:\n\n```\nWarning OOMKilling Memory cgroup out of memory: Kill process 4481 (stress) score 1994 or sacrifice child\n```\n\nDelete your Pod:\n\n```shell\nkubectl delete pod memory-demo-2 --namespace=mem-example\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-default-namespace#create-a-limitrange-and-a-pod-0",
+  "heading": "Configure Default Memory Requests and Limits for a Namespace > Create a LimitRange and a Pod",
+  "text": "Here's a manifest for an example LimitRange.\nThe manifest specifies a default memory\nrequest and a default memory limit.\n\n```yaml\napiVersion: v1\nkind: LimitRange\nmetadata:\n  name: mem-limit-range\nspec:\n  limits:\n  - default:\n      memory: 512Mi\n    defaultRequest:\n      memory: 256Mi\n    type: Container\n```\n\nCreate the LimitRange in the default-mem-example namespace:\n\n```shell\nkubectl apply -f https://k8s.io/examples/admin/resource/memory-defaults.yaml --namespace=default-mem-example\n```\n\nNow if you create a Pod in the default-mem-example namespace, and any container\nwithin that Pod does not specify its own values for memory request and memory limit,\nthen the control plane\napplies default values: a memory request of 256MiB and a memory limit of 512MiB.\n\nHere's an example manifest for a Pod that has one container. The container\ndoes not specify a memory request and limit."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-constraint-namespace#enforcement-of-minimum-and-maximum-memory-constraints-0",
+  "heading": "Configure Minimum and Maximum Memory Constraints for a Namespace > Enforcement of minimum and maximum memory constraints",
+  "text": "The maximum and minimum memory constraints imposed on a namespace by a LimitRange are enforced only\nwhen a Pod is created or updated. If you change the LimitRange, it does not affect\nPods that were created previously.\n\nWhen using [in-place Pod resize](/docs/tasks/configure-pod-container/resize-container-resources/),\nthe memory constraints are also enforced. If a resize would cause the Pod's memory values\nto violate the LimitRange constraints (either exceeding the maximum or falling below the minimum),\nthe resize will be rejected and the Pod's resources remain at their previous values."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-constraint-namespace#create-a-limitrange-and-a-pod-1",
+  "heading": "Configure Minimum and Maximum Memory Constraints for a Namespace > Create a LimitRange and a Pod",
+  "text": "```\n  limits:\n  - default:\n      memory: 1Gi\n    defaultRequest:\n      memory: 1Gi\n    max:\n      memory: 1Gi\n    min:\n      memory: 500Mi\n    type: Container\n```\n\nNow whenever you define a Pod within the constraints-mem-example namespace, Kubernetes\nperforms these steps:\n\n* If any container in that Pod does not specify its own memory request and limit, \nthe control plane assigns the default memory request and limit to that container.\n\n* Verify that every container in that Pod requests at least 500 MiB of memory.\n\n* Verify that every container in that Pod requests no more than 1024 MiB (1 GiB)\n  of memory.\n\nHere's a manifest for a Pod that has one container. Within the Pod spec, the sole\ncontainer specifies a memory request of 600 MiB and a memory limit of 800 MiB. These satisfy the\nminimum and maximum memory constraints imposed by the LimitRange."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-constraint-namespace#create-a-limitrange-and-a-pod-3",
+  "heading": "Configure Minimum and Maximum Memory Constraints for a Namespace > Create a LimitRange and a Pod",
+  "text": "The output shows that the container within that Pod has a memory request of 600 MiB and\na memory limit of 800 MiB. These satisfy the constraints imposed by the LimitRange for\nthis namespace:\n\n```yaml\nresources:\n  limits:\n     memory: 800Mi\n  requests:\n    memory: 600Mi\n```\n\nDelete your Pod:\n\n```shell\nkubectl delete pod constraints-mem-demo --namespace=constraints-mem-example\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-container-is-terminated-3",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My container is terminated",
+  "text": "In the preceding example, the `Restart Count:  5` indicates that the `simmemleak`\ncontainer in the Pod was terminated and restarted five times (so far).\nThe `OOMKilled` reason shows that the container tried to use more memory than its limit.\n\nYour next step might be to check the application code for a memory leak. If you\nfind that the application is behaving how you expect, consider setting a higher\nmemory limit (and possibly request) for that container."
+ }
+]

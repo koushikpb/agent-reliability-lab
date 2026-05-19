@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merging-changes-for-fields-of-type-list-5",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merging changes for fields of type list",
+  "text": "**Explanation:**\n\n- The container named \"nginx-helper-a\" was deleted because no container\n  named \"nginx-helper-a\" appeared in the configuration file.\n- The container named \"nginx-helper-b\" retained the changes to `args`\n  in the live configuration. `kubectl apply` was able to identify\n  that \"nginx-helper-b\" in the live configuration was the same\n  \"nginx-helper-b\" as in the configuration file, even though their fields\n  had different values (no `args` in the configuration file). This is\n  because the `patchMergeKey` field value (name) was identical in both.\n- The container named \"nginx-helper-c\" was added because no container\n  with that name appeared in the live configuration, but one with\n  that name appeared in the configuration file.\n- The container named \"nginx-helper-d\" was retained because\n  no element with that name appeared in the last-applied-configuration."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-1",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "```yaml\nspec:\n  rules:\n  - host: foo.bar.com\n    http:\n      paths:\n      - backend:\n          service:\n            name: service1\n            port:\n              number: 80\n        path: /foo\n        pathType: Prefix\n  - host: bar.baz.com\n    http:\n      paths:\n      - backend:\n          service:\n            name: service2\n            port:\n              number: 80\n        path: /foo\n        pathType: Prefix\n..\n```\n\nAfter you save your changes, kubectl updates the resource in the API server, which tells the\nIngress controller to reconfigure the load balancer.\n\nVerify this:\n\n```shell\nkubectl describe ingress test\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merging-changes-for-fields-of-type-list-4",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merging changes for fields of type list",
+  "text": "```yaml\n    - name: nginx-helper-b\n      image: helper:1.3\n      args: [\"run\"] # Field will be retained\n    - name: nginx-helper-d # key: nginx-helper-d; will be retained\n      image: helper:1.3\n# result after merge\n    containers:\n    - name: nginx\n      image: nginx:1.16\n      # Element nginx-helper-a was deleted\n    - name: nginx-helper-b\n      image: helper:1.3\n      args: [\"run\"] # Field was retained\n    - name: nginx-helper-c # Element was added\n      image: helper:1.3\n    - name: nginx-helper-d # Element was ignored\n      image: helper:1.3\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-update-objects-7",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to update objects",
+  "text": "Update the `simple_deployment.yaml` configuration file to change the image from\n`nginx:1.14.2` to `nginx:1.16.1`, and delete the `minReadySeconds` field:\n\n```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx-deployment\nspec:\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.16.1 # update the image\n        ports:\n        - containerPort: 80\n```\n\nApply the changes made to the configuration file:\n\n```shell\nkubectl diff -f https://k8s.io/examples/application/update_deployment.yaml\nkubectl apply -f https://k8s.io/examples/application/update_deployment.yaml\n```\n\nPrint the live configuration using `kubectl get`:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-0",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "To update an existing Ingress to add a new Host, you can update it by editing the resource:\n\n```shell\nkubectl describe ingress test\n```\n\n```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     35s                loadbalancer-controller  default/test\n```\n\n```shell\nkubectl edit ingress test\n```\n\nThis pops up an editor with the existing configuration in YAML format.\nModify it to include the new Host:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-6",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  is an ingress controller driving [Kong Gateway](https://konghq.com/kong/).\n* [Kusk Gateway](https://kusk.kubeshop.io/) is an OpenAPI-driven ingress controller based on [Envoy](https://www.envoyproxy.io).\n* [N42 Gateway](https://n42-gateway.github.io/) is an Ingress and Gateway API controller for [HAProxy](https://www.haproxy.org/#desc).\n* The [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx-ingress-controller/)\n  works with the [NGINX](https://www.nginx.com/resources/glossary/nginx/) webserver (as a proxy)."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merging-changes-for-fields-of-type-list-3",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merging changes for fields of type list",
+  "text": "```yaml\n# last-applied-configuration value\n    containers:\n    - name: nginx\n      image: nginx:1.16\n    - name: nginx-helper-a # key: nginx-helper-a; will be deleted in result\n      image: helper:1.3\n    - name: nginx-helper-b # key: nginx-helper-b; will be retained\n      image: helper:1.3\n# configuration file value\n    containers:\n    - name: nginx\n      image: nginx:1.16\n    - name: nginx-helper-b\n      image: helper:1.3\n    - name: nginx-helper-c # key: nginx-helper-c; will be added in result\n      image: helper:1.3\n# live configuration\n    containers:\n    - name: nginx\n      image: nginx:1.16\n    - name: nginx-helper-a\n      image: helper:1.3\n```"
+ }
+]

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the pods in the ml-training namespace to see the current state of the trainer job.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011dCvNXnSfgvx96hZsV3M5P",
+   "input": {
+    "namespace": "ml-training"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1368,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 78,
+ "stop_reason": "tool_use"
+}

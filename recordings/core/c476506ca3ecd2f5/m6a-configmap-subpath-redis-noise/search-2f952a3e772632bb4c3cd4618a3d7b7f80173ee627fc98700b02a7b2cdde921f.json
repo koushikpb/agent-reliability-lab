@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#interim-cleanup-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Interim cleanup",
+  "text": "Before proceeding, clean up some of the ConfigMaps you made:\n\n```bash\nkubectl delete configmap special-config\nkubectl delete configmap env-config\nkubectl delete configmap -l 'game-config in (config-4,config-5)'\n```\n\nNow that you have learned to define ConfigMaps, you can move on to the next\nsection, and learn how to use these objects with Pods.\n\n---"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#optional-configmaps-2",
+  "heading": "Configure a Pod to Use a ConfigMap > Optional ConfigMaps",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: dapi-test-pod\nspec:\n  containers:\n    - name: test-container\n      image: gcr.io/google_containers/busybox\n      command: [\"/bin/sh\", \"-c\", \"ls /etc/config\"]\n      volumeMounts:\n      - name: config-volume\n        mountPath: /etc/config\n  volumes:\n    - name: config-volume\n      configMap:\n        name: no-config\n        optional: true # mark the source ConfigMap as optional\n  restartPolicy: Never\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#create-a-configmap-from-generator-4",
+  "heading": "Configure a Pod to Use a ConfigMap > Create a ConfigMap > Create a ConfigMap from generator",
+  "text": "Notice that the generated ConfigMap name has a suffix appended by hashing the contents. This\nensures that a new ConfigMap is generated each time the content is modified.\n\n#### Define the key to use when generating a ConfigMap from a file\n\nYou can define a key other than the file name to use in the ConfigMap generator.\nFor example, to generate a ConfigMap from files `configure-pod-container/configmap/game.properties`\nwith the key `game-special-key`\n\n```shell\n# Create a kustomization.yaml file with ConfigMapGenerator\ncat <<EOF >./kustomization.yaml\nconfigMapGenerator:\n- name: game-config-5\n  options:\n    labels:\n      game-config: config-5\n  files:\n  - game-special-key=configure-pod-container/configmap/game.properties\nEOF\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#configmap-immutable-1",
+  "heading": "ConfigMaps > Immutable ConfigMaps",
+  "text": "Once a ConfigMap is marked as immutable, it is _not_ possible to revert this change\nnor to mutate the contents of the `data` or the `binaryData` field. You can\nonly delete and recreate the ConfigMap. Because existing Pods maintain a mount point\nto the deleted ConfigMap, it is recommended to recreate these pods."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Mounted ConfigMaps are updated automatically",
+  "text": "When a mounted ConfigMap is updated, the projected content is eventually updated too.\nThis applies in the case where an optionally referenced ConfigMap comes into\nexistence after a pod has started.\n\nKubelet checks whether the mounted ConfigMap is fresh on every periodic sync. However,\nit uses its local TTL-based cache for getting the current value of the ConfigMap. As a\nresult, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the pod can be as long as kubelet sync period (1\nminute by default) + TTL of ConfigMaps cache (1 minute by default) in kubelet. You\ncan trigger an immediate refresh by updating one of the pod's annotations.\n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes/#using-subpath)\nvolume will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/_index#pod-update-and-replacement-0",
+  "heading": "Pods > Pod update and replacement",
+  "text": "As mentioned in the previous section, when the Pod template for a workload\nresource is changed, the controller creates new Pods based on the updated\ntemplate instead of updating or patching the existing Pods.\n\nKubernetes doesn't prevent you from managing Pods directly. It is possible to\nupdate some fields of a running Pod, in place. However, Pod update operations\nlike\n[`patch`](/docs/reference/generated/kubernetes-api//#patch-pod-v1-core), and\n[`replace`](/docs/reference/generated/kubernetes-api//#replace-pod-v1-core)\nhave some limitations:\n\n- Most of the metadata about a Pod is immutable. For example, you cannot\n  change the `namespace`, `name`, `uid`, or `creationTimestamp` fields."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#create-a-configmap-from-generator-6",
+  "heading": "Configure a Pod to Use a ConfigMap > Create a ConfigMap > Create a ConfigMap from generator",
+  "text": "Apply the kustomization directory to create the ConfigMap object:\n```shell\nkubectl apply -k .\n```\n```\nconfigmap/special-config-2-c92b5mmcf2 created\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#add-configmap-data-to-a-specific-path-in-the-volume-1",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Add ConfigMap data to a specific path in the Volume",
+  "text": "```shell\nkubectl create -f https://kubernetes.io/examples/pods/pod-configmap-volume-specific-key.yaml\n```\n\nWhen the pod runs, the command `cat /etc/config/keys` produces the output below:\n\n```\nvery\n```\n\nLike before, all previous files in the `/etc/config/` directory will be inaccessible.\n\nDelete that Pod:\n```shell\nkubectl delete pod dapi-test-pod --now\n```"
+ }
+]

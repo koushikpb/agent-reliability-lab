@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/containers/images#image-pull-policy-6",
+  "heading": "Images > Updating images > Image pull policy",
+  "text": "- Set the `imagePullPolicy` of the container to `Always`.\n- Omit the `imagePullPolicy` and use `:latest` as the tag for the image to use;\n  Kubernetes will set the policy to `Always` when you submit the Pod.\n- Omit the `imagePullPolicy` and the tag for the image to use;\n  Kubernetes will set the policy to `Always` when you submit the Pod.\n- Enable the [AlwaysPullImages](/docs/reference/access-authn-authz/admission-controllers/#alwayspullimages)\n  admission controller."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#image-0",
+  "heading": "Volumes > Types of volumes > image",
+  "text": "An `image` volume source represents an OCI object (a container image or\nartifact) which is available on the kubelet's host machine.\n\nAn example of using the `image` volume source is:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: image-volume\nspec:\n  containers:\n  - name: shell\n    command: [\"sleep\", \"infinity\"]\n    image: debian\n    volumeMounts:\n    - name: volume\n      mountPath: /volume\n  volumes:\n  - name: volume\n    image:\n      reference: quay.io/crio/artifact:v2\n      pullPolicy: IfNotPresent\n```\n\nThe volume is resolved at Pod startup, depending on which `pullPolicy` value is\nprovided:\n\n`Always`\n: The kubelet always attempts to pull the reference. If the pull fails,\n  the kubelet sets the Pod to `Failed`.\n\n`Never`\n: The kubelet never pulls the reference and only uses a local image or artifact.\n  The Pod becomes `Failed` if any layers of the image aren't already present locally,\n  or if the manifest for that image isn't already cached."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#add-image-pull-secret-to-service-account-1",
+  "heading": "Configure Service Accounts for Pods > Add ImagePullSecrets to a service account > Add image pull secret to service account",
+  "text": "Using your editor, delete the line with key `resourceVersion`, add lines for\n`imagePullSecrets:` and save it. Leave the `uid` value set the same as you found it.\n\nAfter you made those changes, the edited ServiceAccount looks something like this:\n\n```yaml\napiVersion: v1\nkind: ServiceAccount\nmetadata:\n  creationTimestamp: 2021-07-07T22:02:39Z\n  name: default\n  namespace: default\n  uid: 052fb0f4-3d50-11e5-b066-42010af0d7b6\nimagePullSecrets:\n  - name: myregistrykey\n```"
+ },
+ {
+  "chunk_id": "concepts/containers/images#ensureimagepullcredentialverification-1",
+  "heading": "Images > Using a private registry > Ensure image pull credential verification",
+  "text": " * `NeverVerify`: Mimics the behavior of having this feature gate disabled.\n   If the image is present locally, image pull credentials are not verified.\n * `NeverVerifyPreloadedImages`: Images pulled outside the kubelet are not verified,\n but all other images will have their credentials verified. This is the default behavior.\n * `NeverVerifyAllowListedImages`: Images pulled outside the kubelet and mentioned within the\n   `preloadedImagesVerificationAllowlist` specified in the kubelet config are not verified.\n * `AlwaysVerify`: All images will have their credentials verified\n   before they can be used.\n\nThis verification applies to [pre-pulled images](#pre-pulled-images),\nimages pulled using node-wide secrets, and images pulled using Pod-level secrets.\n\nIn the case of credential rotation, the credentials previously used to pull the image\nwill continue to verify without the need to access the registry. New or rotated credentials\nwill require the image to be re-pulled from the registry."
+ },
+ {
+  "chunk_id": "concepts/containers/images#serial-and-parallel-image-pulls-1",
+  "heading": "Images > Serial and parallel image pulls",
+  "text": "The kubelet never pulls multiple images in parallel on behalf of one Pod. For example,\nif you have a Pod that has an init container and an application container, the image\npulls for the two containers will not be parallelized. However, if you have two\nPods that use different images, and the parallel image pull feature is enabled,\nthe kubelet will pull the images in parallel on behalf of the two different Pods."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/windows#troubleshooting-node-0",
+  "heading": "Windows debugging tips > Node-level troubleshooting",
+  "text": "1. My Pods are stuck at \"Container Creating\" or restarting over and over\n\n   Ensure that your pause image is compatible with your Windows OS version.\n   See [Pause container](/docs/concepts/windows/intro/#pause-container)\n   to see the latest / recommended pause image and/or get more information.\n\n   If using containerd as your container runtime the pause image is specified in the\n   `plugins.plugins.cri.sandbox_image` field of the of config.toml configuration file.\n\n1. My pods show status as `ErrImgPull` or `ImagePullBackOff`\n\n   Ensure that your Pod is getting scheduled to a\n   [compatible](https://docs.microsoft.com/virtualization/windowscontainers/deploy-containers/version-compatibility)\n   Windows Node.\n\n   More information on how to specify a compatible node for your Pod can be found in\n   [this guide](/docs/concepts/windows/user-guide/#ensuring-os-specific-workloads-land-on-the-appropriate-container-host)."
+ },
+ {
+  "chunk_id": "concepts/containers/images#image-pull-policy-3",
+  "heading": "Images > Updating images > Image pull policy",
+  "text": "When using image tags, if the image registry were to change the code that the tag on that image\nrepresents, you might end up with a mix of Pods running the old and new code. An image digest\nuniquely identifies a specific version of the image, so Kubernetes runs the same code every time\nit starts a container with that image name and digest specified. Specifying an image by digest\npins the code that you run so that a change at the registry cannot lead to that mix of versions.\n\nThere are third-party [admission controllers](/docs/reference/access-authn-authz/admission-controllers/)\nthat mutate Pods (and PodTemplates) when they are created, so that the\nrunning workload is defined based on an image digest rather than a tag.\nThat might be useful if you want to make sure that your entire workload is\nrunning the same code no matter what tag changes happen at the registry.\n\n#### Default image pull policy {#imagepullpolicy-defaulting}"
+ },
+ {
+  "chunk_id": "concepts/containers/images#image-pull-per-runtime-class-0",
+  "heading": "Images > Updating images > Image pull per runtime class",
+  "text": "Kubernetes includes alpha support for performing image pulls based on the RuntimeClass of a Pod.\n\nIf you enable the `RuntimeClassInImageCriApi` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/),\nthe kubelet references container images by a tuple of image name and runtime handler\nrather than just the image name or digest. Your\ncontainer runtime\nmay adapt its behavior based on the selected runtime handler.\nPulling images based on runtime class is useful for VM-based containers, such as\nWindows Hyper-V containers."
+ }
+]

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search the Kubernetes documentation for information about Prometheus storage and data gaps.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MAfiguiazzmWEPiL3JtKvL",
+   "input": {
+    "query": "Prometheus storage gaps missing metrics"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2140,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 76,
+ "stop_reason": "tool_use"
+}

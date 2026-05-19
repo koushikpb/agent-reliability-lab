@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-1",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "The \"RESTARTS\" column says that these pods are not crashing frequently or being\nrestarted.  Frequent restarts could lead to intermittent connectivity issues.\nIf the restart count is high, read more about how to [debug pods](/docs/tasks/debug/debug-application/debug-pods).\n\nInside the Kubernetes system is a control loop which evaluates the selector of\nevery Service and saves the results into one or more EndpointSlice objects.\n\n```shell\nkubectl get endpointslices -l kubernetes.io/service-name=hostnames\n\nNAME              ADDRESSTYPE   PORTS   ENDPOINTS\nhostnames-ytpni   IPv4          9376    10.244.0.5,10.244.0.6,10.244.0.7\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-services-0",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Services",
+  "text": "Services provide load balancing across a set of pods. There are several common problems that can make Services\nnot work properly.  The following instructions should help debug Service problems.\n\nFirst, verify that there are endpoints for the service. For every Service object,\nthe apiserver makes one or more `EndpointSlice` resources available.\n\nYou can view these resources with:\n\n```shell\nkubectl get endpointslices -l kubernetes.io/service-name=${SERVICE_NAME}\n```\n\nMake sure that the endpoints in the EndpointSlices match up with the number of pods that you expect to be members of your service.\nFor example, if your Service is for an nginx container with 3 replicas, you would expect to see three different\nIP addresses in the Service's endpoint slices.\n\n#### My service is missing endpoints\n\nIf you are missing endpoints, try listing Pods using the labels in the Service selector.\nFor example, that you have a Service with the following selector:\n\n```yaml\n...\nspec:\n  selector:\n    name: nginx\n    type: frontend\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#are-dns-endpoints-exposed-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Are DNS endpoints exposed?",
+  "text": "You can verify that DNS endpoints are exposed by using the `kubectl get endpointslice`\ncommand.\n\n```shell\nkubectl get endpointslice -l kubernetes.io/service-name=kube-dns --namespace=kube-system\n```\n```\nNAME             ADDRESSTYPE   PORTS   ENDPOINTS                  AGE\ncoredns-zxoja    IPv4          53      10.180.3.17,10.180.3.17    1h\n```\n\nIf you do not see the endpoints, see the endpoints section in the\n[debugging Services](/docs/tasks/debug/debug-application/debug-service/) documentation."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#a-pod-fails-to-reach-itself-via-the-service-ip-0",
+  "heading": "Debug Services > Is the kube-proxy working? > Edge case: A Pod fails to reach itself via the Service IP",
+  "text": "This might sound unlikely, but it does happen and it is supposed to work.\n\nThis can happen when the network is not properly configured for \"hairpin\"\ntraffic, usually when `kube-proxy` is running in `iptables` mode and Pods\nare connected with bridge network. The `Kubelet` exposes a `hairpin-mode`\n[flag](/docs/reference/command-line-tools-reference/kubelet/) that allows endpoints of a Service to loadbalance\nback to themselves if they try to access their own Service VIP. The\n`hairpin-mode` flag must either be set to `hairpin-veth` or\n`promiscuous-bridge`.\n\nThe common steps to trouble shoot this are as follows:\n\n* Confirm `hairpin-mode` is set to `hairpin-veth` or `promiscuous-bridge`.\nYou should see something like the below. `hairpin-mode` is set to\n`promiscuous-bridge` in the following example."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-kube-proxy-running-11",
+  "heading": "Debug Services > Is the kube-proxy working? > Is kube-proxy running?",
+  "text": "For each port of each Service, plus any NodePorts, external IPs, and\nload-balancer IPs, kube-proxy will create a virtual server.  For each Pod\nendpoint, it will create corresponding real servers. In this example, service\nhostnames(`10.0.1.175:80`) has 3 endpoints(`10.244.0.5:9376`,\n`10.244.0.6:9376`, `10.244.0.7:9376`)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/windows#troubleshooting-network-2",
+  "heading": "Windows debugging tips > Network troubleshooting",
+  "text": "   ```conf\n   \"ExceptionList\": [\n                   \"10.244.0.0/16\",  # Cluster subnet\n                   \"10.96.0.0/12\",   # Service subnet\n                   \"10.127.130.0/24\" # Management (host) subnet\n               ]\n   ```\n\n1. My Windows node cannot access `NodePort` type Services\n\n   Local NodePort access from the node itself fails. This is a known\n   limitation. NodePort access works from other nodes or external clients.\n\n1. vNICs and HNS endpoints of containers are being deleted\n\n   This issue can be caused when the `hostname-override` parameter is not passed to\n   [kube-proxy](/docs/reference/command-line-tools-reference/kube-proxy/). To resolve\n   it, users need to pass the hostname to kube-proxy as follows:\n\n   ```powershell\n   C:\\k\\kube-proxy.exe --hostname-override=$(hostname)\n   ```\n\n1. My Windows node cannot access my services using the service IP"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-4",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "#### Accessing a Service without a selector {#service-no-selector-access}\n\nAccessing a Service without a selector works the same as if it had a selector.\nIn the [example](#services-without-selectors) for a Service without a selector,\ntraffic is routed to one of the two endpoints defined in\nthe EndpointSlice manifest: a TCP connection to 10.1.2.3 or 10.4.5.6, on port 9376.\n\nThe Kubernetes API server does not allow proxying to endpoints that are not mapped to\npods. Actions such as `kubectl port-forward service/<service-name> forwardedPort:servicePort` where the service has no\nselector will fail due to this constraint. This prevents the Kubernetes API server\nfrom being used as a proxy to endpoints the caller may not be authorized to access.\n\nAn `ExternalName` Service is a special case of Service that does not have\nselectors and uses DNS names instead. For more information, see the\n[ExternalName](#externalname) section."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-exist-1",
+  "heading": "Debug Services > Does the Service exist?",
+  "text": "```shell\nkubectl expose deployment hostnames --port=80 --target-port=9376\n```\n```none\nservice/hostnames exposed\n```\n\nAnd read it back:\n\n```shell\nkubectl get svc hostnames\n```\n```none\nNAME        TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE\nhostnames   ClusterIP   10.0.1.175   <none>        80/TCP    5s\n```\n\nNow you know that the Service exists.\n\nAs before, this is the same as if you had started the Service with YAML:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  labels:\n    app: hostnames\n  name: hostnames\nspec:\n  selector:\n    app: hostnames\n  ports:\n  - name: default\n    protocol: TCP\n    port: 80\n    targetPort: 9376\n```\n\nIn order to highlight the full range of configuration, the Service you created\nhere uses a different port number than the Pods.  For many real-world\nServices, these values might be the same."
+ }
+]

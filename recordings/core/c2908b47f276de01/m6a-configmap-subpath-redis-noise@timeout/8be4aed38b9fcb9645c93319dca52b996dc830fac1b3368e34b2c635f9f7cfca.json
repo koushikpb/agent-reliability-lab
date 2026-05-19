@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Perfect! \n\n## Summary\n\nI've resolved ticket T-5004. The issue was that the API gateway pods in the edge namespace were mounting the `gateway-limits` ConfigMap using `subPath: \"limits.yaml\"`. According to Kubernetes documentation, containers using ConfigMap with subPath mounts do not receive updates when the ConfigMap is changed. The pod logs confirmed this - the limits watcher consistently showed the file as \"unchanged\" hours after the limit was raised, and the gateway continued enforcing the old 100 rps limit.\n\n**The fix:** Remove the `subPath` specification from the gateway pod deployment so it mounts the entire ConfigMap directory instead. This will enable automatic ConfigMap propagation (within ~2 minutes) and allow the new 500 rps limit to take effect.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 6985,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 175,
+ "stop_reason": "end_turn"
+}

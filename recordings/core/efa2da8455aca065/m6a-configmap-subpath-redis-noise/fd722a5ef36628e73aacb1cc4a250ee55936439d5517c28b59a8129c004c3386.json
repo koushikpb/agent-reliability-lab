@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Ticket T-5004 resolved.** Here's a summary of what I did:\n\n1. **Read the ticket** \u2014 acme-logistics still rate-limited at 100 RPS despite a ConfigMap update to 500 RPS 2+ hours earlier.\n2. **Inspected the `edge` namespace pods** \u2014 found both `api-gateway` pods mount `gateway-limits` via a `subPath: limits.yaml` volume mount.\n3. **Searched the docs** \u2014 confirmed that Kubernetes **does not propagate ConfigMap updates to containers using a `subPath` volume mount** [cite: tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0][cite: concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4].\n4. **Checked pod logs** \u2014 both pods have been reporting `limits.yaml unchanged (sha256=9c1e4b07)` every 30 seconds since startup at 06:02, confirming the file on disk never changed despite the ConfigMap being updated at 09:10. The old 100 RPS limit is still being enforced.\n5. **Resolved with the fix**: `kubectl rollout restart deployment/<api-gateway-deployment-name> -n edge` so the pods reload with the updated ConfigMap. Also flagged that removing `subPath` from the volume mount is the long-term fix to enable live reloads, and noted a separate Redis connectivity issue worth investigating.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9171,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 352,
+ "stop_reason": "end_turn"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me check the logs from the payout-sender pod to see if there are any error messages.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01T48J63xQwRSCqxAQseSZkU",
+   "input": {
+    "pod": "payout-sender-6d8f7b9c5-m3kxt"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1641,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 95,
+ "stop_reason": "tool_use"
+}

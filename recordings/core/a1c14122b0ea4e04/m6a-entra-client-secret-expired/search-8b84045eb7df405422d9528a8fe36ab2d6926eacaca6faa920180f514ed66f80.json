@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Mounted ConfigMaps are updated automatically",
+  "text": "When a mounted ConfigMap is updated, the projected content is eventually updated too.\nThis applies in the case where an optionally referenced ConfigMap comes into\nexistence after a pod has started.\n\nKubelet checks whether the mounted ConfigMap is fresh on every periodic sync. However,\nit uses its local TTL-based cache for getting the current value of the ConfigMap. As a\nresult, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the pod can be as long as kubelet sync period (1\nminute by default) + TTL of ConfigMaps cache (1 minute by default) in kubelet. You\ncan trigger an immediate refresh by updating one of the pod's annotations.\n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes/#using-subpath)\nvolume will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-secrets-as-files-from-a-pod-2",
+  "heading": "Secrets > Working with Secrets > Using Secrets as files from a Pod",
+  "text": "As a result, the total delay from the moment when the Secret is updated to the moment\nwhen new keys are projected to the Pod can be as long as the kubelet sync period + cache\npropagation delay, where the cache propagation delay depends on the chosen cache type\n(following the same order listed in the previous paragraph, these are:\nwatch propagation delay, the configured cache TTL, or zero for direct polling)."
+ },
+ {
+  "chunk_id": "concepts/security/security-checklist#secrets-1",
+  "heading": "Security Checklist > Secrets",
+  "text": "Pods needing secrets should have these automatically mounted through volumes,\npreferably stored in memory like with the [`emptyDir.medium` option](/docs/concepts/storage/volumes/#emptydir).\nMechanism can be used to also inject secrets from third-party storages as\nvolume, like the [Secrets Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/).\nThis should be done preferentially as compared to providing the pods service\naccount RBAC access to secrets. This would allow adding secrets into the pod as\nenvironment variables or files. Please note that the environment variable method\nmight be more prone to leakage due to crash dumps in logs and the\nnon-confidential nature of environment variable in Linux, as opposed to the\npermission mechanism on files."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#editing-a-secret-1",
+  "heading": "Secrets > Working with Secrets > Editing a Secret",
+  "text": "Depending on how you created the Secret, as well as how the Secret is used in\nyour Pods, updates to existing `Secret` objects are propagated automatically to\nPods that use the data. For more information, refer to [Using Secrets as files from a Pod](#using-secrets-as-files-from-a-pod) section."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#secret-0",
+  "heading": "Volumes > Types of volumes > secret",
+  "text": "A `secret` volume is used to pass sensitive information, such as passwords, to\nPods. You can store secrets in the Kubernetes API and mount them as files for\nuse by Pods without coupling to Kubernetes directly. `secret` volumes are\nbacked by tmpfs (a RAM-backed filesystem), so they are never written to\nnon-volatile storage.\n\n* You must create a Secret in the Kubernetes API before you can use it.\n\n* A Secret is always mounted as `readOnly`.\n\n* A container using a Secret as a [`subPath`](#using-subpath) volume mount will not\n  receive Secret updates.\n\nFor more details, see [Configuring Secrets](/docs/concepts/configuration/secret/)."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-secrets-as-files-from-a-pod-0",
+  "heading": "Secrets > Working with Secrets > Using Secrets as files from a Pod",
+  "text": "If you want to access data from a Secret in a Pod, one way to do that is to\nhave Kubernetes make the value of that Secret be available as a file inside\nthe filesystem of one or more of the Pod's containers.\n\nFor instructions, refer to\n[Create a Pod that has access to the secret data through a Volume](/docs/tasks/inject-data-application/distribute-credentials-secure/#create-a-pod-that-has-access-to-the-secret-data-through-a-volume).\n\nWhen a volume contains data from a Secret, and that Secret is updated, Kubernetes tracks\nthis and updates the data in the volume, using an eventually-consistent approach.\n\nA container using a Secret as a\n[subPath](/docs/concepts/storage/volumes#using-subpath) volume mount does not receive\nautomated Secret updates."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-projected-volume-storage#configure-a-projected-volume-for-a-pod-0",
+  "heading": "Configure a Pod to Use a Projected Volume for Storage > Configure a projected volume for a pod",
+  "text": "In this exercise, you create username and password Secrets from local files. You then create a Pod that runs one container, using a [`projected`](/docs/concepts/storage/volumes/#projected) Volume to mount the Secrets into the same shared directory.\n\nHere is the configuration file for the Pod:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-projected-volume\nspec:\n  containers:\n  - name: test-projected-volume\n    image: busybox:1.28\n    args:\n    - sleep\n    - \"86400\"\n    volumeMounts:\n    - name: all-in-one\n      mountPath: \"/projected-volume\"\n      readOnly: true\n  volumes:\n  - name: all-in-one\n    projected:\n      sources:\n      - secret:\n          name: user\n      - secret:\n          name: pass\n```\n\n1. Create the Secrets:"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#project-secret-keys-to-specific-file-paths-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Create a Pod that has access to the secret data through a Volume > Project Secret keys to specific file paths",
+  "text": "You can also control the paths within the volume where Secret keys are projected. Use the\n`.spec.volumes[].secret.items` field to change the target path of each key:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: mypod\n    image: redis\n    volumeMounts:\n    - name: foo\n      mountPath: \"/etc/foo\"\n      readOnly: true\n  volumes:\n  - name: foo\n    secret:\n      secretName: mysecret\n      items:\n      - key: username\n        path: my-group/my-username\n```\n\nWhen you deploy this Pod, the following happens:\n\n- The `username` key from `mysecret` is available to the container at the path\n  `/etc/foo/my-group/my-username` instead of at `/etc/foo/username`.\n- The `password` key from that Secret object is not projected.\n\nIf you list keys explicitly using `.spec.volumes[].secret.items`, consider the\nfollowing:"
+ }
+]

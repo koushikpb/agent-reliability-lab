@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/job#terminal-job-conditions-1",
+  "heading": "Jobs > Job termination and cleanup > Terminal Job conditions",
+  "text": "Jobs fail for the following reasons:\n- The number of Pod failures exceeded the specified `.spec.backoffLimit` in the Job\n  specification. For details, see [Pod backoff failure policy](#pod-backoff-failure-policy).\n- The Job runtime exceeded the specified `.spec.activeDeadlineSeconds`\n- An indexed Job that used `.spec.backoffLimitPerIndex` has failed indexes.\n  For details, see [Backoff limit per index](#backoff-limit-per-index).\n- The number of failed indexes in the Job exceeded the specified\n  `spec.maxFailedIndexes`. For details, see [Backoff limit per index](#backoff-limit-per-index)\n- A failed Pod matches a rule in `.spec.podFailurePolicy` that has the `FailJob`\n   action. For details about how Pod failure policy rules might affect failure\n   evaluation, see [Pod failure policy](#pod-failure-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-conditions-2",
+  "heading": "Disruptions > Pod disruption conditions",
+  "text": "A Pod disruption might be interrupted. The control plane might re-attempt to\ncontinue the disruption of the same Pod, but it is not guaranteed. As a result,\nthe `DisruptionTarget` condition might be added to a Pod, but that Pod might then not actually be\ndeleted. In such a situation, after some time, the\nPod disruption condition will be cleared.\n\nAlong with cleaning up the pods, the Pod garbage collector (PodGC) will also mark them as failed if they are in a non-terminal\nphase (see also [Pod garbage collection](/docs/concepts/workloads/pods/pod-lifecycle/#pod-garbage-collection)).\n\nWhen using a Job (or CronJob), you may want to use these Pod disruption conditions as part of your Job's\n[Pod failure policy](/docs/concepts/workloads/controllers/job#pod-failure-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-condition#disruption-target-2",
+  "heading": "Pod Conditions > Other Pod conditions > DisruptionTarget",
+  "text": "A Pod disruption might be interrupted. The control plane might re-attempt to\ncontinue the disruption of the same Pod, but it is not guaranteed. As a result,\nthe `DisruptionTarget` condition might be added to a Pod, but that Pod might then not actually be\ndeleted. In such a situation, after some time, the\nPod disruption condition will be cleared.\n\nAlong with cleaning up the pods, the Pod garbage collector (PodGC) will also mark them as failed if they are in a non-terminal\nphase (see also [Pod garbage collection](/docs/concepts/workloads/pods/pod-lifecycle/#pod-garbage-collection)).\n\nWhen using a Job (or CronJob), you may want to use these Pod disruption conditions as part of your Job's\n[Pod failure policy](/docs/concepts/workloads/controllers/job#pod-failure-policy).\n\nFor more details, see [Disruptions](/docs/concepts/workloads/pods/disruptions/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#backoff-limit-per-index-2",
+  "heading": "Jobs > Handling Pod and container failures > Backoff limit per index",
+  "text": "```yaml\n  status:\n    completedIndexes: 1,3,5,7,9\n    failedIndexes: 0,2,4,6,8\n    succeeded: 5          # 1 succeeded pod for each of 5 succeeded indexes\n    failed: 10            # 2 failed pods (1 retry) for each of 5 failed indexes\n    conditions:\n    - message: Job has failed indexes\n      reason: FailedIndexes\n      status: \"True\"\n      type: FailureTarget\n    - message: Job has failed indexes\n      reason: FailedIndexes\n      status: \"True\"\n      type: Failed\n```\n\nThe Job controller adds the `FailureTarget` Job condition to trigger\n[Job termination and cleanup](#job-termination-and-cleanup). When all of the\nJob Pods are terminated, the Job controller adds the `Failed` condition\nwith the same values for `reason` and `message` as the `FailureTarget` Job\ncondition. For details, see [Termination of Job Pods](#termination-of-job-pods)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#example-debugging-a-down-unreachable-node-3",
+  "heading": "Troubleshooting Clusters > Listing your cluster > Example: debugging a down/unreachable node",
+  "text": "```none\n  Type                 Status    LastHeartbeatTime                 LastTransitionTime                Reason              Message\n  ----                 ------    -----------------                 ------------------                ------              -------\n  NetworkUnavailable   False     Thu, 17 Feb 2022 17:09:13 -0500   Thu, 17 Feb 2022 17:09:13 -0500   WeaveIsUp           Weave pod has set this\n  MemoryPressure       Unknown   Thu, 17 Feb 2022 17:12:40 -0500   Thu, 17 Feb 2022 17:13:52 -0500   NodeStatusUnknown   Kubelet stopped posting node status.\n  DiskPressure         Unknown   Thu, 17 Feb 2022 17:12:40 -0500   Thu, 17 Feb 2022 17:13:52 -0500   NodeStatusUnknown   Kubelet stopped posting node status.\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-4",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "```\n... Normal  Created   Created container with id 66a3a20aa7980e61be4922780bf9d24d1a1d8b7395c09861225b0eba1b1f8511\n... Warning BackOff   Back-off restarting failed container\n```\n\nView detailed information about your cluster's Nodes:\n\n```\nkubectl describe nodes\n```\n\nThe output includes a record of the Container being killed because of an out-of-memory condition:\n\n```\nWarning OOMKilling Memory cgroup out of memory: Kill process 4481 (stress) score 1994 or sacrifice child\n```\n\nDelete your Pod:\n\n```shell\nkubectl delete pod memory-demo-2 --namespace=mem-example\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#handling-pod-and-container-failures-3",
+  "heading": "Jobs > Handling Pod and container failures",
+  "text": "If you specify the `.spec.podFailurePolicy` field, the Job controller does not consider a terminating\nPod (a pod that has a `.metadata.deletionTimestamp` field set) as a failure until that Pod is\nterminal (its `.status.phase` is `Failed` or `Succeeded`). However, the Job controller\ncreates a replacement Pod as soon as the termination becomes apparent. Once the\npod terminates, the Job controller evaluates `.backoffLimit` and `.podFailurePolicy`\nfor the relevant Job, taking this now-terminated Pod into consideration.\n\nIf either of these requirements is not satisfied, the Job controller counts\na terminating Pod as an immediate failure, even if that Pod later terminates\nwith `phase: \"Succeeded\"`."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#ttl-mechanism-for-finished-jobs-2",
+  "heading": "Jobs > Clean up finished jobs automatically > TTL mechanism for finished Jobs",
+  "text": "It is recommended to set `ttlSecondsAfterFinished` field because unmanaged jobs\n(Jobs that you created directly, and not indirectly through other workload APIs\nsuch as CronJob) have a default deletion\npolicy of `orphanDependents` causing Pods created by an unmanaged Job to be left around\nafter that Job is fully deleted.\nEven though the control plane eventually\n[garbage collects](/docs/concepts/workloads/pods/pod-lifecycle/#pod-garbage-collection)\nthe Pods from a deleted Job after they either fail or complete, sometimes those\nlingering pods may cause cluster performance degradation or in worst case cause the\ncluster to go offline due to this degradation.\n\nYou can use [LimitRanges](/docs/concepts/policy/limit-range/) and\n[ResourceQuotas](/docs/concepts/policy/resource-quotas/) to place a\ncap on the amount of resources that a particular namespace can\nconsume."
+ }
+]

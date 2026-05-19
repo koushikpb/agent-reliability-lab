@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI investigated ticket T-2007 regarding the inventory-db pod crashing after a node reboot. The issue is **PostgreSQL database corruption**: the pod logs show \"invalid primary checkpoint record\" errors, indicating the database files on the persistent volume were corrupted during the ungraceful shutdown. With 23 restart attempts and the database unable to perform crash recovery, this situation requires manual database recovery intervention (such as pg_resetwal or restore from backup) that risks data loss. I've escalated this ticket to a human engineer who can apply the appropriate database recovery procedure safely.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7204,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 126,
+ "stop_reason": "end_turn"
+}

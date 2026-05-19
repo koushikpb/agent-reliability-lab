@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#batching-1",
+  "heading": "Auditing > Event batching",
+  "text": "- `--audit-webhook-batch-buffer-size` defines the number of events to buffer before batching.\n  If the rate of incoming events overflows the buffer, events are dropped. The default value is 10000.\n- `--audit-webhook-batch-max-size` defines the maximum number of events in one batch. The default value is 400.\n- `--audit-webhook-batch-max-wait` defines the maximum amount of time to wait before unconditionally\n  batching events in the queue. The default value is 30 seconds.\n- `--audit-webhook-batch-throttle-enable` defines whether batching throttling is enabled. Throttling is enabled by default.\n- `--audit-webhook-batch-throttle-qps` defines the maximum average number of batches generated\n  per second. The default value is 10.\n- `--audit-webhook-batch-throttle-burst` defines the maximum number of batches generated at the same\n  moment if the allowed QPS was underutilized previously. The default value is 15."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduler-perf-tuning#enabling-opportunistic-batching-2",
+  "heading": "Scheduler Performance Tuning > Enabling Opportunistic Batching",
+  "text": "Also, to enable this feature, the scheduler configuration needs to:\n1. Disable [default topology spread](/docs/concepts/scheduling-eviction/topology-spread-constraints/#internal-default-constraints) (set empty)\n1. Set `IgnorePreferredTermsOfExistingPods` of [InterPodAffinityArgs](/docs/reference/config-api/kube-scheduler-config.v1/#kubescheduler-config-k8s-io-v1-InterPodAffinityArgs)\nto `true` to make the batching more efficient\n\nNote that whenever:\n1. Existing pods use pod affinity constraints that match any of the scheduled pods' labels, the feature may bring no benefit\n1. Custom plugins are used, they need to implement the Signature extension point\n\nThe restrictions and conditions are expected to evolve in future releases."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#batching-3",
+  "heading": "Auditing > Event batching",
+  "text": "- `--audit-log-batch-buffer-size` defines the number of events to buffer before batching.\n  If the rate of incoming events overflows the buffer, events are dropped.\n- `--audit-log-batch-max-size` defines the maximum number of events in one batch.\n- `--audit-log-batch-max-wait` defines the maximum amount of time to wait before unconditionally\n  batching events in the queue.\n- `--audit-log-batch-throttle-enable` defines whether batching throttling is enabled.\n- `--audit-log-batch-throttle-qps` defines the maximum average number of batches generated\n  per second.\n- `--audit-log-batch-throttle-burst` defines the maximum number of batches generated at the same\n  moment if the allowed QPS was underutilized previously."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduler-perf-tuning#enabling-opportunistic-batching-0",
+  "heading": "Scheduler Performance Tuning > Enabling Opportunistic Batching",
+  "text": "When scheduling large workloads, Pods often have equivalent scheduling constraints and require the scheduler\nto perform the same operations over and over again. The [Opportunistic Batching](/docs/reference/command-line-tools-reference/feature-gates/#OpportunisticBatching)\nfeature allows the scheduler to reuse the filtering and scoring results between scheduling cycles\nwhich greatly speeds up the scheduling process.\n\nWith rescoring, the scheduler can continue batching in that situation. When the next Pod can still fit on\nthe previously chosen Node, the scheduler updates that Node's score and puts it back into the cached candidate list.\nIf rescoring does not succeed, the scheduler falls back to the existing behavior and flushes the cache.\n\nBasically, this feature works like:\n1. The scheduler schedules pod-1 and caches the scheduling result.\n1. The scheduler schedules pod-2, 3, ... with the cached results.\n1. The cache expires after 0.5 second. The scheduler schedules the next pod which builds a new cache."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduler-perf-tuning#enabling-opportunistic-batching-1",
+  "heading": "Scheduler Performance Tuning > Enabling Opportunistic Batching",
+  "text": "Pods with equivalent scheduling constraints have to come to the scheduling cycle back to back. When the scheduler schedules a pod with different constraints, the cache is not used, but replaced with a new one.\n\nWe apply this batching scheduling to specific pods that:\n1. Don't have inter pod affinity/anti-affinity\n1. Don't have topology spread constraints\n1. Don't have DRA (i.e., don't have any Resource Claims)\n1. Don't request extended resources that are backed by DRA"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduler-perf-tuning#setting-the-threshold-0",
+  "heading": "Scheduler Performance Tuning > Setting the threshold",
+  "text": "The `percentageOfNodesToScore` option accepts whole numeric values between 0\nand 100. The value 0 is a special number which indicates that the kube-scheduler\nshould use its compiled-in default.\nIf you set `percentageOfNodesToScore` above 100, kube-scheduler acts as if you\nhad set a value of 100.\n\nTo change the value, edit the\n[kube-scheduler configuration file](/docs/reference/config-api/kube-scheduler-config.v1/)\nand then restart the scheduler.\nIn many cases, the configuration file can be found at `/etc/kubernetes/config/kube-scheduler.yaml`.\n\nAfter you have made this change, you can run\n\n```bash\nkubectl get pods -n kube-system | grep kube-scheduler\n```\n\nto verify that the kube-scheduler component is healthy."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/kubelet-config-file#kubelet-configuration-merging-order-0",
+  "heading": "Set Kubelet Parameters Via A Configuration File > Drop-in directory for kubelet configuration files > Kubelet configuration merging order",
+  "text": "On startup, the kubelet merges configuration from:\n\n* Feature gates specified over the command line (lowest precedence).\n* The kubelet configuration.\n* Drop-in configuration files, according to sort order.\n* Command line arguments excluding feature gates (highest precedence).\n\nThe config drop-in dir mechanism for the kubelet is similar but different from how the `kubeadm` tool allows you to patch configuration.\nThe `kubeadm` tool uses a specific [patching strategy](/docs/setup/production-environment/tools/kubeadm/control-plane-flags/#patches)\nfor its configuration, whereas the only patch strategy for kubelet configuration drop-in files is `replace`.\nThe kubelet determines the order of merges based on sorting the **suffixes** alphanumerically,\nand replaces every field present in a higher priority file."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduler-perf-tuning#example-0",
+  "heading": "Scheduler Performance Tuning > Example",
+  "text": "Below is an example configuration that sets `percentageOfNodesToScore` to 50%.\n\n```yaml\napiVersion: kubescheduler.config.k8s.io/v1alpha1\nkind: KubeSchedulerConfiguration\nalgorithmSource:\n  provider: DefaultProvider\n\n...\n\npercentageOfNodesToScore: 50\n```"
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#unhealthy-pod-eviction-policy-0",
+  "heading": "Specifying a Disruption Budget for your Application > Unhealthy Pod Eviction Policy",
+  "text": "PodDisruptionBudget guarding an application ensures that `.status.currentHealthy` number of pods\ndoes not fall below the number specified in `.status.desiredHealthy` by disallowing eviction of healthy pods.\nBy using `.spec.unhealthyPodEvictionPolicy`, you can also define the criteria when unhealthy pods\nshould be considered for eviction. The default behavior when no policy is specified corresponds\nto the `IfHealthyBudget` policy.\n\nPolicies:\n\n`IfHealthyBudget`\n: Running pods (`.status.phase=\"Running\"`), but not yet healthy can be evicted only\n  if the guarded application is not disrupted (`.status.currentHealthy` is at least\n  equal to `.status.desiredHealthy`)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-budgets-3",
+  "heading": "Disruptions > Pod disruption budgets",
+  "text": "It is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)\nto your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.\nThe default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nbefore the drain can proceed.\n\nWhen a pod is evicted using the eviction API, it is gracefully\n[terminated](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination), honoring the\n`terminationGracePeriodSeconds` setting in its [PodSpec](/docs/reference/generated/kubernetes-api//#podspec-v1-core)."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#intro-0",
+  "heading": "API-initiated Eviction",
+  "text": " </br>\n\nYou can request eviction by calling the Eviction API directly, or programmatically\nusing a client of the API server, like the `kubectl drain` command. This\ncreates an `Eviction` object, which causes the API server to terminate the Pod.\n\nAPI-initiated evictions respect your configured [`PodDisruptionBudgets`](/docs/tasks/run-application/configure-pdb/)\nand [`terminationGracePeriodSeconds`](/docs/concepts/workloads/pods/pod-lifecycle#pod-termination).\n\nUsing the API to create an Eviction object for a Pod is like performing a\npolicy-controlled [`DELETE` operation](/docs/reference/kubernetes-api/workload-resources/pod-v1/#delete-delete-a-pod)\non the Pod."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#how-api-initiated-eviction-works-0",
+  "heading": "API-initiated Eviction > How API-initiated eviction works",
+  "text": "When you request an eviction using the API, the API server performs admission\nchecks and responds in one of the following ways:\n\n* `200 OK`: the eviction is allowed, the `Eviction` subresource is created, and\n  the Pod is deleted, similar to sending a `DELETE` request to the Pod URL.\n* `429 Too Many Requests`: the eviction is not currently allowed because of the\n  configured PodDisruptionBudget.\n  You may be able to attempt the eviction again later. You might also see this\n  response because of API rate limiting.\n* `500 Internal Server Error`: the eviction is not allowed because there is a\n  misconfiguration, like if multiple PodDisruptionBudgets reference the same Pod.\n\nIf the Pod you want to evict isn't part of a workload that has a\nPodDisruptionBudget, the API server always returns `200 OK` and allows the\neviction.\n\nIf the API server allows the eviction, the Pod is deleted as follows:"
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#specifying-a-poddisruptionbudget-1",
+  "heading": "Specifying a Disruption Budget for your Application > Specifying a PodDisruptionBudget",
+  "text": "You can specify only one of `maxUnavailable` and `minAvailable` in a single `PodDisruptionBudget`.\n`maxUnavailable` can only be used to control the eviction of pods\nthat all have the same associated controller managing them. In the examples below, \"desired replicas\"\nis the `scale` of the controller managing the pods being selected by the\n`PodDisruptionBudget`.\n\nExample 1: With a `minAvailable` of 5, evictions are allowed as long as they leave behind\n5 or more [healthy](#healthiness-of-a-pod) pods among those selected by the PodDisruptionBudget's `selector`.\n\nExample 2: With a `minAvailable` of 30%, evictions are allowed as long as at least 30%\nof the number of desired replicas are healthy.\n\nExample 3: With a `maxUnavailable` of 5, evictions are allowed as long as there are at most 5\nunhealthy replicas among the total number of desired replicas."
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#specifying-a-poddisruptionbudget-0",
+  "heading": "Specifying a Disruption Budget for your Application > Specifying a PodDisruptionBudget",
+  "text": "A `PodDisruptionBudget` has three fields:\n\n- A label selector `.spec.selector` to specify the set of\n  pods to which it applies. This field is required.\n- `.spec.minAvailable` which is a description of the number of pods from that\n  set that must still be available after the eviction, even in the absence\n  of the evicted pod. `minAvailable` can be either an absolute number or a percentage.\n- `.spec.maxUnavailable` which is a description\n  of the number of pods from that set that can be unavailable after the eviction.\n  It can be either an absolute number or a percentage.\n\nAn empty selector (`{}`) matches every pod in the namespace."
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#specifying-a-poddisruptionbudget-3",
+  "heading": "Specifying a Disruption Budget for your Application > Specifying a PodDisruptionBudget",
+  "text": "If you set `maxUnavailable` to 0% or 0, or you set `minAvailable` to 100% or the number of replicas,\nyou are requiring zero voluntary evictions. When you set zero voluntary evictions for a workload\nobject such as ReplicaSet, then you cannot successfully drain a Node running one of those Pods.\nIf you try to drain a Node where an unevictable Pod is running, the drain never completes.\nThis is permitted as per the semantics of `PodDisruptionBudget`.\n\nYou can find examples of pod disruption budgets defined below. They match pods with the label\n`app: zookeeper`.\n\nExample PDB Using minAvailable:\n\n```yaml\napiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: zk-pdb\nspec:\n  minAvailable: 2\n  selector:\n    matchLabels:\n      app: zookeeper\n```\n\nExample PDB Using maxUnavailable:"
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#unhealthy-pod-eviction-policy-1",
+  "heading": "Specifying a Disruption Budget for your Application > Unhealthy Pod Eviction Policy",
+  "text": ": This policy ensures that running pods of an already disrupted application have\n  the best chance to become healthy. This has negative implications for draining\n  nodes, which can be blocked by misbehaving applications that are guarded by a PDB.\n  More specifically applications with pods in `CrashLoopBackOff` state\n  (due to a bug or misconfiguration), or pods that are just failing to report the\n  `Ready` condition.\n\n`AlwaysAllow`\n: Running pods (`.status.phase=\"Running\"`), but not yet healthy are considered\n  disrupted and can be evicted regardless of whether the criteria in a PDB is met.\n\n: This means prospective running pods of a disrupted application might not get a\n  chance to become healthy. By using this policy, cluster managers can easily evict\n  misbehaving applications that are guarded by a PDB. More specifically applications\n  with pods in `CrashLoopBackOff` state (due to a bug or misconfiguration), or pods\n  that are just failing to report the `Ready` condition.\n\nPods in `Pending`, `Succeeded` or `Failed` phase are always considered for eviction."
+ }
+]

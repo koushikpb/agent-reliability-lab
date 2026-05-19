@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect. The pods are running and healthy (0 actual requests, only readiness checks). Let me search the documentation to confirm the Helm label convention:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LyF5mpwrLtSpsuvCP27mE7",
+   "input": {
+    "query": "Helm chart recommended labels app.kubernetes.io"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2381,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 95,
+ "stop_reason": "tool_use"
+}

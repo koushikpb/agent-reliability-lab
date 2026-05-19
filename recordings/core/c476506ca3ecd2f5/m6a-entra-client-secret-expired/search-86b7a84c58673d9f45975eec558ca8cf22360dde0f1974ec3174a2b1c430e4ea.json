@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/access-application-cluster/access-cluster-services#discovering-builtin-services-7",
+  "heading": "Access Services Running on Clusters > Accessing services running on the cluster > Discovering builtin services",
+  "text": "- Web browsers cannot usually pass tokens, so you may need to use basic (password) auth.\n  Apiserver can be configured to accept basic auth,\n  but your cluster may not be configured to accept basic auth.\n- Some web apps may not work, particularly those with client side javascript that construct URLs in a\n  way that is unaware of the proxy path prefix."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/windows#troubleshooting-network-5",
+  "heading": "Windows debugging tips > Network troubleshooting",
+  "text": "   ```PowerShell\n   [Environment]::SetEnvironmentVariable(\"HTTP_PROXY\", \"http://proxy.example.com:80/\", [EnvironmentVariableTarget]::Machine)\n   [Environment]::SetEnvironmentVariable(\"HTTPS_PROXY\", \"http://proxy.example.com:443/\", [EnvironmentVariableTarget]::Machine)\n   ```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/access-cluster#requesting-redirects-0",
+  "heading": "Accessing Clusters > Requesting redirects",
+  "text": "The redirect capabilities have been deprecated and removed. Please use a proxy (see below) instead."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-kube-proxy-proxying-0",
+  "heading": "Debug Services > Is the kube-proxy working? > Is kube-proxy proxying?",
+  "text": "Assuming you do see one the above cases, try again to access your Service by\nIP from one of your Nodes:\n\n```shell\ncurl 10.0.1.175:80\n```\n```none\nhostnames-632524106-bbpiw\n```\n\nIf this still fails, look at the `kube-proxy` logs for specific lines like:\n\n```none\nSetting endpoints for default/hostnames:default to [10.244.0.5:9376 10.244.0.6:9376 10.244.0.7:9376]\n```\n\nIf you don't see those, try restarting `kube-proxy` with the `-v` flag set to 4, and\nthen look at the logs again."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/certificates#openssl-3",
+  "heading": "Generate Certificates Manually > easyrsa > openssl",
+  "text": "   ```ini\n   extendedKeyUsage=serverAuth,clientAuth\n   subjectAltName=@alt_names\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/proxies#proxies-0",
+  "heading": "Proxies in Kubernetes > Proxies",
+  "text": "There are several different proxies you may encounter when using Kubernetes:\n\n1.  The [kubectl proxy](/docs/tasks/access-application-cluster/access-cluster/#directly-accessing-the-rest-api):\n\n    - runs on a user's desktop or in a pod\n    - proxies from a localhost address to the Kubernetes apiserver\n    - client to proxy uses HTTP\n    - proxy to apiserver uses HTTPS\n    - locates apiserver\n    - adds authentication headers\n\n1.  The [apiserver proxy](/docs/tasks/access-application-cluster/access-cluster-services/#discovering-builtin-services):\n\n    - is a bastion built into the apiserver\n    - connects a user outside of the cluster to cluster IPs which otherwise might not be reachable\n    - runs in the apiserver processes\n    - client to proxy uses HTTPS (or http if apiserver so configured)\n    - proxy to target may use HTTP or HTTPS as chosen by proxy using available information\n    - can be used to reach a Node, Pod, or Service\n    - does load balancing when used to reach a Service"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-kube-proxy-running-0",
+  "heading": "Debug Services > Is the kube-proxy working? > Is kube-proxy running?",
+  "text": "Confirm that `kube-proxy` is running on your Nodes.  Running directly on a\nNode, you should get something like the below:\n\n```shell\nps auxw | grep kube-proxy\n```\n```none\nroot  4194  0.4  0.1 101864 17696 ?    Sl Jul04  25:43 /usr/local/bin/kube-proxy --master=https://kubernetes-master --kubeconfig=/var/lib/kube-proxy/kubeconfig --v=2\n```\n\nNext, confirm that it is not failing something obvious, like contacting the\nmaster.  To do this, you'll have to look at the logs.  Accessing the logs\ndepends on your Node OS.  On some OSes it is a file, such as\n/var/log/kube-proxy.log, while other OSes use `journalctl` to access logs.  You\nshould see something like:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/proxies#requesting-redirects-0",
+  "heading": "Proxies in Kubernetes > Requesting redirects",
+  "text": "Proxies have replaced redirect capabilities.  Redirects have been deprecated."
+ }
+]

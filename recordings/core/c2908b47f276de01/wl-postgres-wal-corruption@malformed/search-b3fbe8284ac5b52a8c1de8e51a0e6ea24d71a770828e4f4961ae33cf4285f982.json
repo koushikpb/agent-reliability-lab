@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#volume-claim-templates-0",
+  "heading": "StatefulSets > Components > Volume Claim Templates",
+  "text": "You can set the `.spec.volumeClaimTemplates` field to create a\n[PersistentVolumeClaim](/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims). \nThis will provide stable storage to the StatefulSet if either:\n\n* The StorageClass specified for the volume claim is set up to use [dynamic\n  provisioning](/docs/concepts/storage/dynamic-provisioning/).\n* The cluster already contains a PersistentVolume with the correct StorageClass\n  and sufficient available storage space."
+ },
+ {
+  "chunk_id": "tasks/run-application/delete-stateful-set#persistent-volumes-0",
+  "heading": "Delete a StatefulSet > Deleting a StatefulSet > Persistent Volumes",
+  "text": "Deleting the Pods in a StatefulSet will not delete the associated volumes.\nThis is to ensure that you have the chance to copy data off the volume before\ndeleting it. Deleting the PVC after the pods have terminated might trigger\ndeletion of the backing Persistent Volumes depending on the storage class\nand reclaim policy. You should never assume ability to access a volume\nafter claim deletion.\n\nUse caution when deleting a PVC, as it may lead to data loss."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#mount-options-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Mount Options",
+  "text": "A Kubernetes administrator can specify additional mount options for when a\nPersistent Volume is mounted on a node.\n\nNot all Persistent Volume types support mount options.\n\nThe following volume types support mount options:\n\n* `csi` (including CSI migrated volume types)\n* `iscsi`\n* `nfs`\n\nMount options are not validated. If a mount option is invalid, the mount fails.\n\nIn the past, the annotation `volume.beta.kubernetes.io/mount-options` was used instead\nof the `mountOptions` attribute. This annotation is still working; however,\nit will become fully deprecated in a future Kubernetes release."
+ },
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-1",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "* Volume subpath mounts: only the entire volume can be mounted in a Windows container\n* Subpath volume mounting for Secrets\n* Host mount projection\n* Read-only root filesystem (mapped volumes still support `readOnly`)\n* Block device mapping\n* Memory as the storage medium (for example, `emptyDir.medium` set to `Memory`)\n* File system features like uid/gid; per-user Linux filesystem permissions\n* Setting [secret permissions with DefaultMode](/docs/tasks/inject-data-application/distribute-credentials-secure/#set-posix-permissions-for-secret-keys) (due to UID/GID dependency)\n* NFS based storage/volume support\n* Expanding the mounted volume (resizefs)"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#introduction-1",
+  "heading": "Persistent Volumes > Introduction",
+  "text": "A _PersistentVolumeClaim_ (PVC) is a request for storage by a user. It is similar\nto a Pod. Pods consume node resources and PVCs consume PV resources. Pods can\nrequest specific levels of resources (CPU and Memory). Claims can request specific\nsize and access modes (e.g., they can be mounted ReadWriteOnce, ReadOnlyMany,\nReadWriteMany, or ReadWriteOncePod, see [AccessModes](#access-modes)).\n\nWhile PersistentVolumeClaims allow a user to consume abstract storage resources,\nit is common that users need PersistentVolumes with varying properties, such as\nperformance, for different problems. Cluster administrators need to be able to\noffer a variety of PersistentVolumes that differ in more ways than size and access\nmodes, without exposing users to the details of how those volumes are implemented.\nFor these needs, there is the _StorageClass_ resource.\n\nSee the [detailed walkthrough with working examples](/docs/tutorials/configuration/configure-persistent-volume-storage)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#access-modes-3",
+  "heading": "Persistent Volumes > Persistent Volumes > Access Modes",
+  "text": "Kubernetes uses volume access modes to match PersistentVolumeClaims and PersistentVolumes.\nIn some cases, the volume access modes also constrain where the PersistentVolume can be mounted.\nVolume access modes do **not** enforce write protection once the storage has been mounted.\nEven if the access modes are specified as ReadWriteOnce, ReadOnlyMany, or ReadWriteMany,\nthey don't set any constraints on the volume. For example, even if a PersistentVolume is\ncreated as ReadOnlyMany, it is no guarantee that it will be read-only. If the access modes\nare specified as ReadWriteOncePod, the volume is constrained and can be mounted on only a single Pod.\n\n> __Important!__ A volume can only be mounted using one access mode at a time,\n> even if it supports many."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistent-volumes-0",
+  "heading": "Persistent Volumes > Persistent Volumes",
+  "text": "Each PV contains a spec and status, which is the specification and status of the volume.\nThe name of a PersistentVolume object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).\n\n```yaml\napiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: pv0003\nspec:\n  capacity:\n    storage: 5Gi\n  volumeMode: Filesystem\n  accessModes:\n    - ReadWriteOnce\n  persistentVolumeReclaimPolicy: Recycle\n  storageClassName: slow\n  mountOptions:\n    - hard\n    - nfsvers=4.1\n  nfs:\n    path: /tmp\n    server: 172.17.0.2\n```\n\nHelper programs relating to the volume type may be required for consumption of\na PersistentVolume within a cluster.  In this example, the PersistentVolume is\nof type NFS and the helper program /sbin/mount.nfs is required to support the\nmounting of NFS filesystems."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#mount-options-0",
+  "heading": "Storage Classes > Mount options",
+  "text": "PersistentVolumes that are dynamically created by a StorageClass will have the\nmount options specified in the `mountOptions` field of the class.\n\nIf the volume plugin does not support mount options but mount options are\nspecified, provisioning will fail. Mount options are **not** validated on either\nthe class or PV. If a mount option is invalid, the PV mount fails."
+ }
+]

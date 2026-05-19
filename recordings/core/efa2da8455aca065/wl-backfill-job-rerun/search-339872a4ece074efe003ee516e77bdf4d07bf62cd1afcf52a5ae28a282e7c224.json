@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-5",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "When you use a `podFailurePolicy`, the job controller only matches Pods in the\n`Failed` phase. Pods with a deletion timestamp that are not in a terminal phase\n(`Failed` or `Succeeded`) are considered still terminating. This implies that\nterminating pods retain a [tracking finalizer](#job-tracking-with-finalizers)\nuntil they reach a terminal phase.\nSince Kubernetes 1.27, Kubelet transitions deleted pods to a terminal phase\n(see: [Pod Phase](/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase)). This\nensures that deleted pods have their finalizers removed by the Job controller.\n\nStarting with Kubernetes v1.28, when Pod failure policy is used, the Job controller recreates\nterminating Pods only once these Pods reach the terminal `Failed` phase. This behavior is similar\nto `podReplacementPolicy: Failed`. For more information, see [Pod replacement policy](#pod-replacement-policy)."
+ },
+ {
+  "chunk_id": "tasks/network/reconfigure-default-service-ip-ranges#illustrative-reconfiguration-steps-1",
+  "heading": "Kubernetes Default ServiceCIDR Reconfiguration > Kubernetes Default ServiceCIDR Reconfiguration > Illustrative Reconfiguration Steps",
+  "text": "1. Start the kube-apiserver with the initial `--service-cluster-ip-range`.\n1. Create initial Services that obtain IPs from this range.\n1. Introduce a new ServiceCIDR as a temporary target for reconfiguration.\n1. Mark the `kubernetes` default ServiceCIDR for deletion (it will remain\n   pending due to existing IPs and finalizers). This prevents new allocations\n   from the old range.\n1. Recreate existing Services. They should now be allocated IPs from the new,\n   temporary ServiceCIDR.\n1. Restart the kube-apiserver with the new ServiceCIDR(s) configured and shut\n   down the old instance.\n1. Delete the `kubernetes.default` Service. The new kube-apiserver will\n   recreate it within the new ServiceCIDR."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/ttlafterfinished#intro-0",
+  "heading": "Automatic Cleanup for Finished Jobs",
+  "text": "When your Job has finished, it's useful to keep that Job in the API (and not immediately delete the Job)\nso that you can tell whether the Job succeeded or failed.\n\nKubernetes' TTL-after-finished controller provides a\nTTL (time to live) mechanism to limit the lifetime of Job objects that\nhave finished execution."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#terminal-job-conditions-2",
+  "heading": "Jobs > Job termination and cleanup > Terminal Job conditions",
+  "text": "Jobs succeed for the following reasons:\n- The number of succeeded Pods reached the specified `.spec.completions`\n- The criteria specified in `.spec.successPolicy` are met. For details, see\n  [Success policy](#success-policy).\n\nIn Kubernetes v1.31 and later the Job controller delays the addition of the\nterminal conditions,`Failed` or `Complete`, until all of the Job Pods are terminated.\n\nIn Kubernetes v1.30 and earlier, the Job controller added the `Complete` or the\n`Failed` Job terminal conditions as soon as the Job termination process was\ntriggered and all Pod finalizers were removed. However, some Pods would still\nbe running or terminating at the moment that the terminal condition was added."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#backoff-limit-per-index-0",
+  "heading": "Jobs > Handling Pod and container failures > Backoff limit per index",
+  "text": "When you run an [indexed](#completion-mode) Job, you can choose to handle retries\nfor pod failures independently for each index. To do so, set the\n`.spec.backoffLimitPerIndex` to specify the maximal number of pod failures\nper index.\n\nWhen the per-index backoff limit is exceeded for an index, Kubernetes considers the index as failed and adds it to the\n`.status.failedIndexes` field. The succeeded indexes, those with a successfully\nexecuted pods, are recorded in the `.status.completedIndexes` field, regardless of whether you set\nthe `backoffLimitPerIndex` field.\n\nNote that a failing index does not interrupt execution of other indexes.\nOnce all indexes finish for a Job where you specified a backoff limit per index,\nif at least one of those indexes did fail, the Job controller marks the overall\nJob as failed, by setting the Failed condition in the status. The Job gets\nmarked as failed even if some, potentially nearly all, of the indexes were\nprocessed successfully."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#default-field-values-7",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > Default field values",
+  "text": "**Explanation:**\n\n1. The user creates a Deployment without defining `strategy.type`.\n2. The server defaults `strategy.type` to `RollingUpdate` and defaults the\n   `strategy.rollingUpdate` values.\n3. The user changes `strategy.type` to `Recreate`. The `strategy.rollingUpdate`\n   values remain at their defaulted values, though the server expects them to be cleared.\n   If the `strategy.rollingUpdate` values had been defined initially in the configuration file,\n   it would have been more clear that they needed to be deleted.\n4. Apply fails because `strategy.rollingUpdate` is not cleared. The `strategy.rollingupdate`\n   field cannot be defined with a `strategy.type` of `Recreate`.\n\nRecommendation: These fields should be explicitly defined in the object configuration file:\n\n- Selectors and PodTemplate labels on workloads, such as Deployment, StatefulSet, Job, DaemonSet,\n  ReplicaSet, and ReplicationController\n- Deployment rollout strategy"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-resources/allocate-devices-dra#clean-up-0",
+  "heading": "Allocate Devices to Workloads with DRA > Clean up",
+  "text": "To delete the Kubernetes objects that you created in this task, follow these\nsteps:\n\n1.  Delete the example Job:\n\n    ```shell\n    kubectl delete -f https://k8s.io/examples/dra/dra-example-job.yaml\n    ```\n\n1.  To delete your resource claims, run one of the following commands:\n\n    * Delete the ResourceClaimTemplate:\n\n      ```shell\n      kubectl delete -f https://k8s.io/examples/dra/resourceclaimtemplate.yaml\n      ```\n    * Delete the ResourceClaim:\n\n      ```shell\n      kubectl delete -f https://k8s.io/examples/dra/resourceclaim.yaml\n      ```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#specifying-your-own-pod-selector-1",
+  "heading": "Jobs > Advanced usage > Specifying your own Pod selector",
+  "text": "Say Job `old` is already running. You want existing Pods\nto keep running, but you want the rest of the Pods it creates\nto use a different pod template and for the Job to have a new name.\nYou cannot update the Job because these fields are not updatable.\nTherefore, you delete Job `old` but _leave its pods\nrunning_, using `kubectl delete jobs/old --cascade=orphan`.\nBefore deleting it, you make a note of what selector it uses:\n\n```shell\nkubectl get job old -o yaml\n```\n\nThe output is similar to this:\n\n```yaml\nkind: Job\nmetadata:\n  name: old\n  ...\nspec:\n  selector:\n    matchLabels:\n      batch.kubernetes.io/controller-uid: a8f3d00d-c6d2-11e5-9f87-42010af00002\n  ...\n```"
+ }
+]

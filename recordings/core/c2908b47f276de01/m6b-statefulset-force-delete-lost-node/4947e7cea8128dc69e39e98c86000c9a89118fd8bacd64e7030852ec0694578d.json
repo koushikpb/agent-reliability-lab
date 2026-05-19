@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I can see the issue. The pod `rabbitmq-1` is indeed stuck in the `Terminating` state due to a node loss. The underlying node `ip-10-0-52-17.ec2.internal` is unresponsive, and the PersistentVolumeClaim's volume is still attached to that node. Let me search the documentation for guidance on this situation.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_017Zioz9UmiYmPqvV3WScQSP",
+   "input": {
+    "query": "pod stuck terminating node unreachable force delete"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2147,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 150,
+ "stop_reason": "tool_use"
+}

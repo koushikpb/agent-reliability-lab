@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01JPZazW9xSkzCdW5Lg2wbVN",
+   "input": {
+    "namespace": "orders"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1797,
+ "model": "claude-opus-4-7",
+ "output_tokens": 67,
+ "stop_reason": "tool_use"
+}

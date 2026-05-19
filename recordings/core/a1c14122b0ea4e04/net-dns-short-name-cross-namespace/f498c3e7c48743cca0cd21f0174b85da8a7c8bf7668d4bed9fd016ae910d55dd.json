@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Summary: Checked the ticket, listed pods in `notify` and `shared-infra`, and pulled notification-worker logs. The worker is configured with the bare `SMTP_HOST=smtp-relay`, which stopped resolving after smtp-relay moved to the shared-infra namespace \u2014 DNS short names only resolve within the pod's own namespace. Resolved T-4004 with the fix: set SMTP_HOST to `smtp-relay.shared-infra` (or the full FQDN) and redeploy.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7365,
+ "model": "claude-opus-4-7",
+ "output_tokens": 173,
+ "stop_reason": "end_turn"
+}

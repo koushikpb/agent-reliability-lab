@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#metrics-1",
+  "heading": "API Priority and Fairness > Observability > Metrics",
+  "text": "  * `queue-full`, indicating that too many requests were already\n    queued.\n  * `concurrency-limit`, indicating that the\n    PriorityLevelConfiguration is configured to reject rather than\n    queue excess requests.\n  * `time-out`, indicating that the request was still in the queue\n    when its queuing time limit expired.\n  * `cancelled`, indicating that the request is not purge locked\n    and has been ejected from the queue.\n\n* `apiserver_flowcontrol_dispatched_requests_total` is a counter\n  vector (cumulative since server start) of requests that began\n  executing, broken down by `flow_schema` and `priority_level`.\n\n* `apiserver_flowcontrol_current_inqueue_requests` is a gauge vector\n  holding the instantaneous number of queued (not executing) requests,\n  broken down by `priority_level` and `flow_schema`."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#qos-1",
+  "heading": "Multi-tenancy > Additional Considerations > Quality-of-Service (QoS)",
+  "text": "Typically, all pods on a node share a network interface. Without network QoS, some pods may\nconsume an unfair share of the available bandwidth at the expense of other pods.\nThe Kubernetes [bandwidth plugin](https://www.cni.dev/plugins/current/meta/bandwidth/) creates an\n[extended resource](/docs/concepts/configuration/manage-resources-containers/#extended-resources)\nfor networking that allows you to use Kubernetes resources constructs, i.e. requests/limits, to\napply rate limits to pods by using Linux tc queues.\nBe aware that the plugin is considered experimental as per the\n[Network Plugins](/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/#support-traffic-shaping)\ndocumentation and should be thoroughly tested before use in production environments."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#prioritylevelconfiguration-0",
+  "heading": "API Priority and Fairness > Resources > PriorityLevelConfiguration",
+  "text": "A PriorityLevelConfiguration represents a single priority level. Each\nPriorityLevelConfiguration has an independent limit on the number of outstanding\nrequests, and limitations on the number of queued requests.\n\nThe nominal concurrency limit for a PriorityLevelConfiguration is not\nspecified in an absolute number of seats, but rather in \"nominal\nconcurrency shares.\" The total concurrency limit for the API Server is\ndistributed among the existing PriorityLevelConfigurations in\nproportion to these shares, to give each level its nominal limit in\nterms of seats. This allows a cluster administrator to scale up or\ndown the total amount of traffic to a server by restarting\n`kube-apiserver` with a different value for `--max-requests-inflight`\n(or `--max-mutating-requests-inflight`), and all\nPriorityLevelConfigurations will see their maximum allowed concurrency\ngo up (or down) by the same fraction."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#prioritylevelconfiguration-3",
+  "heading": "API Priority and Fairness > Resources > PriorityLevelConfiguration",
+  "text": "The queuing configuration allows tuning the fair queuing algorithm for a\npriority level. Details of the algorithm can be read in the\n[enhancement proposal](https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/1040-priority-and-fairness), but in short:\n\n* Increasing `queues` reduces the rate of collisions between different flows, at\n  the cost of increased memory usage. A value of 1 here effectively disables the\n  fair-queuing logic, but still allows requests to be queued.\n\n* Increasing `queueLengthLimit` allows larger bursts of traffic to be\n  sustained without dropping any requests, at the cost of increased\n  latency and memory usage.\n\n* Changing `handSize` allows you to adjust the probability of collisions between\n  different flows and the overall concurrency available to a single flow in an\n  overload situation."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#example-limit-scale-down-rate-0",
+  "heading": "Horizontal Pod Autoscaling > Configurable scaling behavior > Example: limit scale down rate",
+  "text": "To limit the rate at which pods are removed by the HPA to 10% per minute, the\nfollowing behavior would be added to the HPA:\n\n```yaml\nbehavior:\n  scaleDown:\n    policies:\n    - type: Percent\n      value: 10\n      periodSeconds: 60\n```\n\nTo ensure that no more than 5 Pods are removed per minute, you can add a second scale-down\npolicy with a fixed size of 5, and set `selectPolicy` to minimum. Setting `selectPolicy` to `Min` means\nthat the autoscaler chooses the policy that affects the smallest number of Pods:\n\n```yaml\nbehavior:\n  scaleDown:\n    policies:\n    - type: Percent\n      value: 10\n      periodSeconds: 60\n    - type: Pods\n      value: 5\n      periodSeconds: 60\n    selectPolicy: Min\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#intro-0",
+  "heading": "API Priority and Fairness",
+  "text": "Controlling the behavior of the Kubernetes API server in an overload situation\nis a key task for cluster administrators. The kube-apiserver has some controls available\n(i.e. the `--max-requests-inflight` and `--max-mutating-requests-inflight`\ncommand-line flags) to limit the amount of outstanding work that will be\naccepted, preventing a flood of inbound requests from overloading and\npotentially crashing the API server, but these flags are not enough to ensure\nthat the most important requests get through in a period of high traffic.\n\nThe API Priority and Fairness feature (APF) is an alternative that improves upon\naforementioned max-inflight limitations. APF classifies\nand isolates requests in a more fine-grained way. It also introduces\na limited amount of queuing, so that no requests are rejected in cases\nof very brief bursts. Requests are dispatched from queues using a\nfair queuing technique so that, for example, a poorly-behaved\ncontroller need not\nstarve others (even at the same priority level)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#batching-1",
+  "heading": "Auditing > Event batching",
+  "text": "- `--audit-webhook-batch-buffer-size` defines the number of events to buffer before batching.\n  If the rate of incoming events overflows the buffer, events are dropped. The default value is 10000.\n- `--audit-webhook-batch-max-size` defines the maximum number of events in one batch. The default value is 400.\n- `--audit-webhook-batch-max-wait` defines the maximum amount of time to wait before unconditionally\n  batching events in the queue. The default value is 30 seconds.\n- `--audit-webhook-batch-throttle-enable` defines whether batching throttling is enabled. Throttling is enabled by default.\n- `--audit-webhook-batch-throttle-qps` defines the maximum average number of batches generated\n  per second. The default value is 10.\n- `--audit-webhook-batch-throttle-burst` defines the maximum number of batches generated at the same\n  moment if the allowed QPS was underutilized previously. The default value is 15."
+ },
+ {
+  "chunk_id": "concepts/policy/pid-limiting#intro-2",
+  "heading": "Process ID Limits And Reservations",
+  "text": "You can also reserve an amount of PIDs for node overhead, separate from the\nallocation to Pods. This is similar to how you can reserve CPU, memory, or other\nresources for use by the operating system and other facilities outside of Pods\nand their containers.\n\nPID limiting is an important sibling to [compute\nresource](/docs/concepts/configuration/manage-resources-containers/) requests\nand limits. However, you specify it in a different way: rather than defining a\nPod's resource limit in the `.spec` for a Pod, you configure the limit as a\nsetting on the kubelet. Pod-defined PID limits are not currently supported.\n\nThis means that the limit that applies to a Pod may be different depending on\nwhere the Pod is scheduled. To make things simple, it's easiest if all Nodes use\nthe same PID resource limits and reservations."
+ }
+]

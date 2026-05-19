@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/controlling-access#authorization-2",
+  "heading": "Controlling Access to the Kubernetes API > Authorization",
+  "text": "Kubernetes supports multiple authorization modules, such as ABAC mode, RBAC Mode,\nand Webhook mode. When an administrator creates a cluster, they configure the\nauthorization modules that should be used in the API server. If more than one\nauthorization modules are configured, Kubernetes checks each module, and if\nany module authorizes the request, then the request can proceed. If all of\nthe modules deny the request, then the request is denied (HTTP status code 403).\n\nTo learn more about Kubernetes authorization, including details about creating\npolicies using the supported authorization modules, see [Authorization](/docs/reference/access-authn-authz/authorization/)."
+ },
+ {
+  "chunk_id": "concepts/security/controlling-access#authorization-1",
+  "heading": "Controlling Access to the Kubernetes API > Authorization",
+  "text": "```json\n{\n  \"apiVersion\": \"authorization.k8s.io/v1beta1\",\n  \"kind\": \"SubjectAccessReview\",\n  \"spec\": {\n    \"resourceAttributes\": {\n      \"namespace\": \"projectCaribou\",\n      \"verb\": \"get\",\n      \"group\": \"unicorn.example.org\",\n      \"resource\": \"pods\"\n    }\n  }\n}\n```\n\nIf Bob makes a request to write (`create` or `update`) to the objects in the\n`projectCaribou` namespace, his authorization is denied. If Bob makes a request\nto read (`get`) objects in a different namespace such as `projectFish`, then his authorization is denied.\n\nKubernetes authorization requires that you use common REST attributes to interact\nwith existing organization-wide or cloud-provider-wide access control systems.\nIt is important to use REST formatting because these control systems might\ninteract with other APIs besides the Kubernetes API."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/securing-a-cluster#api-authorization-0",
+  "heading": "Securing a Cluster > Controlling access to the Kubernetes API > API Authorization",
+  "text": "Once authenticated, every API call is also expected to pass an authorization check. Kubernetes ships\nan integrated [Role-Based Access Control (RBAC)](/docs/reference/access-authn-authz/rbac/) component that matches an incoming user or group to a\nset of permissions bundled into roles. These permissions combine verbs (get, create, delete) with\nresources (pods, services, nodes) and can be namespace-scoped or cluster-scoped. A set of out-of-the-box\nroles are provided that offer reasonable default separation of responsibility depending on what\nactions a client might want to perform. It is recommended that you use the\n[Node](/docs/reference/access-authn-authz/node/) and\n[RBAC](/docs/reference/access-authn-authz/rbac/) authorizers together, in combination with the"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/troubleshoot-kubectl#authentication-and-authorization-0",
+  "heading": "Troubleshooting kubectl > Authentication and authorization",
+  "text": "If you are using the token based authentication and the kubectl is returning an error\nregarding the authentication token or authentication server address, validate the\nKubernetes authentication token and the authentication server address are configured\nproperly.\n\nIf kubectl is returning an error regarding the authorization, make sure that you are\nusing the valid user credentials. And you have the permission to access the resource\nthat you have requested."
+ },
+ {
+  "chunk_id": "concepts/security/controlling-access#authentication-0",
+  "heading": "Controlling Access to the Kubernetes API > Authentication",
+  "text": "Once TLS is established, the HTTP request moves to the Authentication step.\nThis is shown as step **1** in the diagram.\nThe cluster creation script or cluster admin configures the API server to run\none or more Authenticator modules.\nAuthenticators are described in more detail in\n[Authentication](/docs/reference/access-authn-authz/authentication/).\n\nThe input to the authentication step is the entire HTTP request; however, it typically\nexamines the headers and/or client certificate.\n\nAuthentication modules include client certificates, password, and plain tokens,\nbootstrap tokens, and JSON Web Tokens (used for service accounts).\n\nMultiple authentication modules can be specified, in which case each one is tried in sequence,\nuntil one of them succeeds.\n\nIf the request cannot be authenticated, it is rejected with HTTP status code 401.\nOtherwise, the user is authenticated as a specific `username`, and the user name\nis available to subsequent steps to use in their decisions.  Some authenticators\nalso provide the group memberships of the user, while other authenticators\ndo not."
+ },
+ {
+  "chunk_id": "concepts/security/api-server-bypass-risks#the-etcd-api-0",
+  "heading": "Kubernetes API Server Bypass Risks > The etcd API",
+  "text": "Kubernetes clusters use etcd as a datastore. The `etcd` service listens on TCP port 2379.\nThe only clients that need access are the Kubernetes API server and any backup tooling\nthat you use. Direct access to this API allows for disclosure or modification of any\ndata held in the cluster.\n\nAccess to the etcd API is typically managed by client certificate authentication.\nAny certificate issued by a certificate authority that etcd trusts allows full access\nto the data stored inside etcd.\n\nDirect access to etcd is not subject to Kubernetes admission control and is not logged\nby Kubernetes audit logging. An attacker who has read access to the API server's\netcd client certificate private key (or can create a new trusted client certificate) can gain\ncluster admin rights by accessing cluster secrets or modifying access rules. Even without\nelevating their Kubernetes RBAC privileges, an attacker who can modify etcd can retrieve any API object\nor create new workloads inside the cluster."
+ },
+ {
+  "chunk_id": "concepts/security/controlling-access#authorization-0",
+  "heading": "Controlling Access to the Kubernetes API > Authorization",
+  "text": "After the request is authenticated as coming from a specific user, the request must\nbe authorized. This is shown as step\u00a0**2**\u00a0in the diagram.\n\nA request must include the username of the requester, the requested action, and\nthe object affected by the action. The request is authorized if an existing policy\ndeclares that the user has permissions to complete the requested action.\n\nFor example, if Bob has the policy below, then he can read pods only in the namespace `projectCaribou`:\n\n```json\n{\n    \"apiVersion\": \"abac.authorization.kubernetes.io/v1beta1\",\n    \"kind\": \"Policy\",\n    \"spec\": {\n        \"user\": \"bob\",\n        \"namespace\": \"projectCaribou\",\n        \"resource\": \"pods\",\n        \"readonly\": true\n    }\n}\n```\n\nIf Bob makes the following request, the request is authorized because he is\nallowed to read objects in the `projectCaribou` namespace:"
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/authentication-mechanisms#authenticating-proxy-0",
+  "heading": "Hardening Guide - Authentication Mechanisms > Authenticating proxy",
+  "text": "Another option for integrating external authentication systems into Kubernetes is to use an\n[authenticating proxy](/docs/reference/access-authn-authz/authentication/#authenticating-proxy).\nWith this mechanism, Kubernetes expects to receive requests from the proxy with specific header\nvalues set, indicating the username and group memberships to assign for authorization purposes.\nIt is important to note that there are specific considerations to take into account when using\nthis mechanism.\n\nFirstly, securely configured TLS must be used between the proxy and Kubernetes API server to\nmitigate the risk of traffic interception or sniffing attacks. This ensures that the communication\nbetween the proxy and Kubernetes API server is secure.\n\nSecondly, it is important to be aware that an attacker who is able to modify the headers of the\nrequest may be able to gain unauthorized access to Kubernetes resources. As such, it is important\nto ensure that the headers are properly secured and cannot be tampered with."
+ }
+]

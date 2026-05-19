@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/declare-network-policy#limit-access-to-the-nginx-service-0",
+  "heading": "Declare Network Policy > Limit access to the `nginx` service",
+  "text": "To limit the access to the `nginx` service so that only Pods with the label `access: true` can query it, create a NetworkPolicy object as follows:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: access-nginx\nspec:\n  podSelector:\n    matchLabels:\n      app: nginx\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels:\n          access: \"true\"\n```\n\nThe name of a NetworkPolicy object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).\n\nNetworkPolicy includes a `podSelector` which selects the grouping of Pods to which the policy applies. You can see this policy selects Pods with the label `app=nginx`. The label was automatically added to the Pod in the `nginx` Deployment. An empty `podSelector` selects all pods in the namespace."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-0",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "To update an existing Ingress to add a new Host, you can update it by editing the resource:\n\n```shell\nkubectl describe ingress test\n```\n\n```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     35s                loadbalancer-controller  default/test\n```\n\n```shell\nkubectl edit ingress test\n```\n\nThis pops up an editor with the existing configuration in YAML format.\nModify it to include the new Host:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-6",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  is an ingress controller driving [Kong Gateway](https://konghq.com/kong/).\n* [Kusk Gateway](https://kusk.kubeshop.io/) is an OpenAPI-driven ingress controller based on [Envoy](https://www.envoyproxy.io).\n* [N42 Gateway](https://n42-gateway.github.io/) is an Ingress and Gateway API controller for [HAProxy](https://www.haproxy.org/#desc).\n* The [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx-ingress-controller/)\n  works with the [NGINX](https://www.nginx.com/resources/glossary/nginx/) webserver (as a proxy)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-1",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "```yaml\nspec:\n  rules:\n  - host: foo.bar.com\n    http:\n      paths:\n      - backend:\n          service:\n            name: service1\n            port:\n              number: 80\n        path: /foo\n        pathType: Prefix\n  - host: bar.baz.com\n    http:\n      paths:\n      - backend:\n          service:\n            name: service2\n            port:\n              number: 80\n        path: /foo\n        pathType: Prefix\n..\n```\n\nAfter you save your changes, kubectl updates the resource in the API server, which tells the\nIngress controller to reconfigure the load balancer.\n\nVerify this:\n\n```shell\nkubectl describe ingress test\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-2",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\n  bar.baz.com\n               /foo   service2:80 (10.8.0.91:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     45s                loadbalancer-controller  default/test\n```\n\nYou can achieve the same outcome by invoking `kubectl replace -f` on a modified Ingress YAML file."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merging-changes-for-fields-of-type-list-4",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merging changes for fields of type list",
+  "text": "```yaml\n    - name: nginx-helper-b\n      image: helper:1.3\n      args: [\"run\"] # Field will be retained\n    - name: nginx-helper-d # key: nginx-helper-d; will be retained\n      image: helper:1.3\n# result after merge\n    containers:\n    - name: nginx\n      image: nginx:1.16\n      # Element nginx-helper-a was deleted\n    - name: nginx-helper-b\n      image: helper:1.3\n      args: [\"run\"] # Field was retained\n    - name: nginx-helper-c # Element was added\n      image: helper:1.3\n    - name: nginx-helper-d # Element was ignored\n      image: helper:1.3\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#ingress-rules-0",
+  "heading": "Ingress > The Ingress resource > Ingress rules",
+  "text": "Each HTTP rule contains the following information:\n\n* An optional host. In this example, no host is specified, so the rule applies to all inbound\n  HTTP traffic through the IP address specified. If a host is provided (for example,\n  foo.bar.com), the rules apply to that host.\n* A list of paths (for example, `/testpath`), each of which has an associated\n  backend defined with a `service.name` and a `service.port.name` or\n  `service.port.number`. Both the host and path must match the content of an\n  incoming request before the load balancer directs traffic to the referenced\n  Service.\n* A backend is a combination of Service and port names as described in the\n  [Service doc](/docs/concepts/services-networking/service/) or a [custom resource backend](#resource-backend)\n  by way of a CRD. HTTP (and HTTPS) requests to the\n  Ingress that match the host and path of the rule are sent to the listed backend."
+ }
+]

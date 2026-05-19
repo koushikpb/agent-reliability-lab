@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I can see the issue clearly. The new version 1.5.0 pods are failing to be created due to PodSecurity policy violations. Let me search the Kubernetes documentation to understand this better and provide a proper explanation:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01AwGMxze7vp623kPPY6JZ6a",
+   "input": {
+    "query": "PodSecurity policy restricted securityContext"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2455,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 113,
+ "stop_reason": "tool_use"
+}

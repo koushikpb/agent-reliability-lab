@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results are about Kubernetes resource throttling, not Kafka broker throttling. However, the pod logs are very clear about what's happening. Let me search for more specific information about Kafka producer issues.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01VzbrjLnTETFd3fVG8KZjq4",
+   "input": {
+    "query": "Kafka producer backpressure queue full"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5485,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 106,
+ "stop_reason": "tool_use"
+}

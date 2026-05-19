@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#detecting-a-stalled-rollout-0",
+  "heading": "Update a Deployment Without Downtime > Configuring rolling update strategy > Detecting a stalled rollout",
+  "text": "If a rollout does not make progress within the time specified by\n`.spec.progressDeadlineSeconds` (default: 600 seconds), Kubernetes marks the Deployment condition `Progressing` as `False`. You can check for this condition by describing the Deployment:\n\n```shell\nkubectl describe deployment nginx-deployment\n```\n\nLook for the `Progressing` condition in the `Conditions` section of the output. A stalled rollout usually indicates that new Pods are failing to start. The `Events` section of the output can help diagnose the issue."
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#monitoring-rollout-progress-0",
+  "heading": "Update a Deployment Without Downtime > Monitoring rollout progress",
+  "text": "Use `kubectl rollout status` to watch the progress of a rolling update:\n\n```shell\nkubectl rollout status deployment/nginx-deployment\n```\n\nThe output is similar to:\n\n```\nWaiting for deployment \"nginx-deployment\" rollout to finish: 1 out of 2 new replicas have been updated...\nWaiting for deployment \"nginx-deployment\" rollout to finish: 1 out of 2 new replicas have been updated...\nWaiting for deployment \"nginx-deployment\" rollout to finish: 1 old replicas are pending termination...\ndeployment \"nginx-deployment\" successfully rolled out\n```\n\nAfter the rollout completes, verify the Deployment:\n\n```shell\nkubectl get deployment nginx-deployment\n```\n\nThe output is similar to:\n\n```\nNAME               READY   UP-TO-DATE   AVAILABLE   AGE\nnginx-deployment   2/2     2            2           2m\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#objectives-0",
+  "heading": "Update a Deployment Without Downtime > Objectives",
+  "text": "- Trigger a rolling update on a Deployment.\n- Monitor rollout progress.\n- Pause and resume the rollout.\n- Configure rolling update strategy parameters.\n- (If required) Roll back to a previous revision."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rolling-back-a-deployment-1",
+  "heading": "Deployments > Rolling Back a Deployment",
+  "text": "  ```shell\n  kubectl set image deployment/nginx-deployment nginx=nginx:1.161\n  ```\n\n  The output is similar to this:\n  ```\n  deployment.apps/nginx-deployment image updated\n  ```\n\n* The rollout gets stuck. You can verify it by checking the rollout status:\n\n  ```shell\n  kubectl rollout status deployment/nginx-deployment\n  ```\n\n  The output is similar to this:\n  ```\n  Waiting for rollout to finish: 1 out of 3 new replicas have been updated...\n  ```\n\n* Press Ctrl-C to stop the above rollout status watch. For more information on stuck rollouts,\n[read more here](#deployment-status).\n\n* You see that the number of old replicas (adding the replica count from\n  `nginx-deployment-1564180365` and `nginx-deployment-2035384211`) is 3, and the number of\n  new replicas (from `nginx-deployment-3066724191`) is 1."
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#rolling-back-to-the-previous-revision-0",
+  "heading": "Update a Deployment Without Downtime > Rolling back to a previous revision > Rolling back to the previous revision",
+  "text": "```shell\nkubectl rollout undo deployment/nginx-deployment\n```\n\nThe output is similar to:\n\n```\ndeployment.apps/nginx-deployment rolled back\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#pausing-and-resuming-a-deployment-2",
+  "heading": "Deployments > Pausing and Resuming a rollout of a Deployment",
+  "text": "* You can make as many updates as you wish, for example, update the resources that will be used:\n  ```shell\n  kubectl set resources deployment/nginx-deployment -c=nginx --limits=cpu=200m,memory=512Mi\n  ```\n\n  The output is similar to this:\n  ```\n  deployment.apps/nginx-deployment resource requirements updated\n  ```\n\n  The initial state of the Deployment prior to pausing its rollout will continue its function, but new updates to\n  the Deployment will not have any effect as long as the Deployment rollout is paused.\n\n* Eventually, resume the Deployment rollout and observe a new ReplicaSet coming up with all the new updates:\n  ```shell\n  kubectl rollout resume deployment/nginx-deployment\n  ```\n\n  The output is similar to this:\n  ```\n  deployment.apps/nginx-deployment resumed\n  ```\n* Watch the status of the rollout until it's done.\n  ```shell\n  kubectl get rs --watch\n  ```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#updating-a-deployment-0",
+  "heading": "Deployments > Updating a Deployment",
+  "text": "A Deployment's rollout is triggered if and only if the Deployment's Pod template (that is, `.spec.template`)\nis changed, for example if the labels or container images of the template are updated. Other updates, such as scaling the Deployment, do not trigger a rollout.\n\nFollow the steps given below to update your Deployment:\n\n1. Let's update the nginx Pods to use the `nginx:1.16.1` image instead of the `nginx:1.14.2` image.\n\n   ```shell\n   kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.16.1\n   ```\n\n   or use the following command:\n\n   ```shell\n   kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1\n   ```\n   where `deployment/nginx-deployment` indicates the Deployment,\n   `nginx` indicates the Container the update will take place and\n   `nginx:1.16.1` indicates the new image and its tag.\n\n   The output is similar to:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rolling-back-a-deployment-0",
+  "heading": "Deployments > Rolling Back a Deployment",
+  "text": "Sometimes, you may want to rollback a Deployment; for example, when the Deployment is not stable, such as crash looping.\nBy default, all of the Deployment's rollout history is kept in the system so that you can rollback anytime you want\n(you can change that by modifying revision history limit).\n\nA Deployment's revision is created when a Deployment's rollout is triggered. This means that the\nnew revision is created if and only if the Deployment's Pod template (`.spec.template`) is changed,\nfor example if you update the labels or container images of the template. Other updates, such as scaling the Deployment,\ndo not create a Deployment revision, so that you can facilitate simultaneous manual- or auto-scaling.\nThis means that when you roll back to an earlier revision, only the Deployment's Pod template part is\nrolled back.\n\n* Suppose that you made a typo while updating the Deployment, by putting the image name as `nginx:1.161` instead of `nginx:1.16.1`:"
+ }
+]

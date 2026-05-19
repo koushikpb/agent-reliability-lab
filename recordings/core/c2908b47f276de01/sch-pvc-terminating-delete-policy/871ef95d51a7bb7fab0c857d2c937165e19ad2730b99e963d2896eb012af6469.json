@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me check the logs of the cleanup job to understand what it's waiting on:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01SK55BFUvc1gwWgs3UaG8dg",
+   "input": {
+    "pod": "pvc-cleanup-29622560-r5vzt"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2002,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 85,
+ "stop_reason": "tool_use"
+}

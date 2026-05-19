@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#a-aaaa-records-1-0",
+  "heading": "DNS for Services and Pods > Pods > A/AAAA records",
+  "text": "Kube-DNS versions, prior to the implementation of the\n[DNS specification](https://github.com/kubernetes/dns/blob/master/docs/specification.md),\nhad the following DNS resolution:\n\n```\n<pod-IPv4-address>.<namespace>.pod.<cluster-domain>\n```\n\nFor example, if a Pod in the `default` namespace has the IP address 172.17.0.3,\nand the domain name for your cluster is `cluster.local`, then the Pod has a DNS name:\n\n```\n172-17-0-3.default.pod.cluster.local\n```\n\nSome cluster DNS mechanisms, like [CoreDNS](https://coredns.io/), also provide `A` records for:\n\n```\n<pod-ipv4-address>.<service-name>.<my-namespace>.svc.<cluster-domain.example>\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-any-service-exist-in-dns-0",
+  "heading": "Debug Services > Does the Service work by DNS name? > Does any Service work by DNS name?",
+  "text": "If the above still fails, DNS lookups are not working for your Service.  You\ncan take a step back and see what else is not working.  The Kubernetes master\nService should always work.  From within a Pod:\n\n```shell\nnslookup kubernetes.default\n```\n```none\nServer:    10.0.0.10\nAddress 1: 10.0.0.10 kube-dns.kube-system.svc.cluster.local\n\nName:      kubernetes.default\nAddress 1: 10.0.0.1 kubernetes.default.svc.cluster.local\n```\n\nIf this fails, please see the [kube-proxy](#is-the-kube-proxy-working) section\nof this document, or even go back to the top of this document and start over,\nbut instead of debugging your own Service, debug the DNS Service."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#intro-0",
+  "heading": "DNS for Services and Pods",
+  "text": "Kubernetes creates DNS records for Services and Pods. You can contact\nServices with consistent DNS names instead of IP addresses.\n\nKubernetes publishes information about Pods and Services which is used\nto program DNS. kubelet configures Pods' DNS so that running containers\ncan look up Services by name rather than IP.\n\nServices defined in the cluster are assigned DNS names. By default, a\nclient Pod's DNS search list includes the Pod's own namespace and the\ncluster's default domain."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-horizontal-autoscaling#find-scaling-target-1",
+  "heading": "Autoscale the DNS Service in a Cluster > Get the name of your DNS Deployment",
+  "text": "CoreDNS is the default DNS service for Kubernetes. CoreDNS sets the label\n`k8s-app=kube-dns` so that it can work in clusters that originally used\nkube-dns."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/namespaces#create-pods-in-each-namespace-0",
+  "heading": "Share a Cluster with Namespaces > Subdividing your cluster using Kubernetes namespaces > Create pods in each namespace",
+  "text": "A Kubernetes namespace provides the scope for Pods, Services, and Deployments in the cluster.\nUsers interacting with one namespace do not see the content in another namespace.\nTo demonstrate this, create a Deployment and Pods in the `development` namespace.\n\n```shell\nkubectl create deployment snowflake \\\n  --image=registry.k8s.io/serve_hostname \\\n  -n=development --replicas=2\n```\n\nYou created a deployment whose replica size is 2 that is running the pod called `snowflake`\nwith a basic container that serves the hostname.\n\n```shell\nkubectl get deployment -n=development\n```\n```console\nNAME         READY   UP-TO-DATE   AVAILABLE   AGE\nsnowflake    2/2     2            2           2m\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-custom-nameservers#configuration-of-stub-domain-and-upstream-nameserver-using-coredns-1",
+  "heading": "Customizing DNS Service > CoreDNS > Configuration of Stub-domain and upstream nameserver using CoreDNS",
+  "text": "The final ConfigMap along with the default `Corefile` configuration looks like:\n\n```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: coredns\n  namespace: kube-system\ndata:\n  Corefile: |\n    .:53 {\n        errors\n        health\n        kubernetes cluster.local in-addr.arpa ip6.arpa {\n           pods insecure\n           fallthrough in-addr.arpa ip6.arpa\n        }\n        prometheus :9153\n        forward . 172.16.0.1\n        cache 30\n        loop\n        reload\n        loadbalance\n    }\n    consul.local:53 {\n        errors\n        cache 30\n        forward . 10.150.0.1\n    }\n```\n\nCoreDNS does not support FQDNs for stub-domains and nameservers (eg: \"ns.foo.com\").\nDuring translation, all FQDN nameservers will be omitted from the CoreDNS config."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/configure-dns-cluster#intro-0",
+  "heading": "Configure DNS for a Cluster",
+  "text": "Kubernetes offers a DNS cluster addon, which most of the supported environments enable by default. In Kubernetes version 1.11 and later, CoreDNS is recommended and is installed by default with kubeadm.\n\nFor more information on how to configure CoreDNS for a Kubernetes cluster, see the [Customizing DNS Service](/docs/tasks/administer-cluster/dns-custom-nameservers/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicationcontroller#writing-a-replicationcontroller-manifest-0",
+  "heading": "ReplicationController > Writing a ReplicationController Manifest",
+  "text": "As with all other Kubernetes config, a ReplicationController needs `apiVersion`, `kind`, and `metadata` fields.\n\nWhen the control plane creates new Pods for a ReplicationController, the `.metadata.name` of the\nReplicationController is part of the basis for naming those Pods.  The name of a ReplicationController must be a valid\n[DNS subdomain](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)\nvalue, but this can produce unexpected results for the Pod hostnames.  For best compatibility,\nthe name should follow the more restrictive rules for a\n[DNS label](/docs/concepts/overview/working-with-objects/names#dns-label-names).\n\nFor general information about working with configuration files, see [object management](/docs/concepts/overview/working-with-objects/object-management/)."
+ }
+]

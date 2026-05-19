@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me also search for information about OpenTelemetry configuration and graceful degradation in applications.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Njr1U3JZ4oNDVTv7sNGB6a",
+   "input": {
+    "query": "application errors connection refused backend service unavailable"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4492,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 82,
+ "stop_reason": "tool_use"
+}

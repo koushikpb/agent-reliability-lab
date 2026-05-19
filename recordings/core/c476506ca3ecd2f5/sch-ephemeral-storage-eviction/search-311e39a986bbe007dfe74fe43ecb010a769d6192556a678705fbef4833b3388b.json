@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-3",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "Note that both the Job spec and the [Pod template spec](/docs/concepts/workloads/pods/init-containers/#detailed-behavior)\nwithin the Job have an `activeDeadlineSeconds` field. Ensure that you set this field at the proper level.\n\nKeep in mind that the `restartPolicy` applies to the Pod, and not to the Job itself:\nthere is no automatic Job restart once the Job status is `type: Failed`.\nThat is, the Job termination mechanisms activated with `.spec.activeDeadlineSeconds`\nand `.spec.backoffLimit` result in a permanent Job failure that requires manual intervention to resolve."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#handling-pod-and-container-failures-0",
+  "heading": "Jobs > Handling Pod and container failures",
+  "text": "A container in a Pod may fail for a number of reasons, such as because the process in it exited with\na non-zero exit code, or the container was killed for exceeding a memory limit, etc. If this\nhappens, and the `.spec.template.spec.restartPolicy = \"OnFailure\"`, then the Pod stays\non the node, but the container is re-run. Therefore, your program needs to handle the case when it is\nrestarted locally, or else specify `.spec.template.spec.restartPolicy = \"Never\"`.\nSee [pod lifecycle](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) for more information on `restartPolicy`."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-backoff-failure-policy-1",
+  "heading": "Jobs > Handling Pod and container failures > Pod backoff failure policy",
+  "text": "- The number of Pods with `.status.phase = \"Failed\"`.\n- When using `restartPolicy = \"OnFailure\"`, the number of retries in all the\n  containers of Pods with `.status.phase` equal to `Pending` or `Running`.\n\nIf either of the calculations reaches the `.spec.backoffLimit`, the Job is\nconsidered failed.\n\nIf your Job has `restartPolicy = \"OnFailure\"`, keep in mind that your Pod running the job\nwill be terminated once the job backoff limit has been reached. This can make debugging\nthe Job's executable more difficult. We suggest setting\n`restartPolicy = \"Never\"` when debugging the Job or using a logging system to ensure output\nfrom failed Jobs is not lost inadvertently."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-2",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "When a pod is failing to start repeatedly, `CrashLoopBackOff` may appear in the `Status` field of some kubectl commands.\nSimilarly, when a pod is being deleted, `Terminating` may appear in the `Status` field of some kubectl commands.\n\nMake sure not to confuse _Status_, a kubectl display field for user intuition, with the pod's `phase`.\nPod phase is an explicit part of the Kubernetes data model and of the\n[Pod API](/docs/reference/kubernetes-api/workload-resources/pod-v1/). \n\n```\n  NAMESPACE               NAME               READY   STATUS             RESTARTS   AGE\n  alessandras-namespace   alessandras-pod    0/1     CrashLoopBackOff   200        2d9h\n```\n\nA Pod is granted a term to terminate gracefully, which defaults to 30 seconds.\nYou can use the flag `--force` to [terminate a Pod by force](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-5",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "**Example 2: Batch job with `restartPolicy: OnFailure`**\n```yaml\napiVersion: batch/v1\nkind: Job\nmetadata:\n  name: data-processor\nspec:\n  template:\n    spec:\n      restartPolicy: OnFailure  # Only restart on non-zero exit codes\n      containers:\n      - name: processor\n        image: busybox:1.28\n        command: ['sh', '-c', 'echo \"Processing data...\"; exit 0']\n        # Exit code 0: Job completes successfully, no restart\n        # Exit code 1+: Container restarts to retry the task\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-1",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "You can configure a Pod failure policy, in the `.spec.podFailurePolicy` field,\nto meet the above use cases. This policy can handle Pod failures based on the\ncontainer exit codes and the Pod conditions.\n\nHere is a manifest for a Job that defines a `podFailurePolicy`:\n\nIn the example above, the first rule of the Pod failure policy specifies that\nthe Job should be marked failed if the `main` container fails with the 42 exit\ncode. The following are the rules for the `main` container specifically:\n\n- an exit code of 0 means that the container succeeded\n- an exit code of 42 means that the **entire Job** failed\n- any other exit code represents that the container failed, and hence the entire\n  Pod. The Pod will be re-created if the total number of restarts is\n  below `backoffLimit`. If the `backoffLimit` is reached the **entire Job** failed.\n\nBecause the Pod template specifies a `restartPolicy: Never`,\nthe kubelet does not restart the `main` container in that particular Pod."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-6",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "When you use the `podFailurePolicy`, and the Job fails due to the pod\nmatching the rule with the `FailJob` action, then the Job controller triggers\nthe Job termination process by adding the `FailureTarget` condition.\nFor more details, see [Job termination and cleanup](#job-termination-and-cleanup)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-15",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "If your cluster has the feature gate `RestartAllContainersOnContainerExits` enabled, you can specify\n`RestartAllContainers` as an action in `restartPolicyRules` at container level. When a container's exit\nmatches a rule with this action, the entire Pod is terminated and restarted in-place.\n\nThis \"in-place\" restart offers a more efficient way to reset a Pod's state compared to full deletion\nand recreation. This is especially valuable for workloads where rescheduling is costly, such as\nbatch jobs or AI/ML training tasks.\n\n##### How in-place Pod restarts work\n\nWhen a `RestartAllContainers` action is triggered, the kubelet performs the following steps:\n\n1. **Fast Termination**: All running containers in the Pod are terminated.\n   The configured `terminationGracePeriodSeconds` is not respected, and any configured `preStop` hooks\n   are not executed. This ensures a swift shutdown.\n1. **Preservation of Pod Resources**: The Pod's essential resources are preserved:"
+ }
+]

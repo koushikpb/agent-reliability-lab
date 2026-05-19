@@ -1,0 +1,39 @@
+{
+ "content": [
+  {
+   "signature": "Et4CCqgBCBMYAipAq8rPTCQbpOasebkEYzTh9Y/Sd+h7DNZDx2bXQ0FAMU3O7C2z2EsQZtxAEL+NjuevhMSZjrDhk/VfTs1GclyoLTIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAfD68dYGEgxhEMAjLk0tm6kzKqYaDALav7QGCAuYBaU4vyIw7602ToIU5MA/ngUHnr00untl5iNCWLWrfis+xpC4njWQ+MhNnDQTbXC1la+V9V7cKmNX3IiUnte6rEKsIscB/g5rDd0uRu4T0fzjxy8aDA5AikmPqO5Gz0gR4BLyQcElT37LBnMQMtcGcarziM6B5z7jtmFClLnJtgzfBMq6Wpj8EAtf8AtyRiPIfXf2W7aBCQ8n66wYAQ==",
+   "thinking": "Let me look at the pods in the batch namespace and search the docs simultaneously.",
+   "type": "thinking"
+  },
+  {
+   "text": "Now let me check the pods in the `batch` namespace and search the docs in parallel!",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01SE7BDMqJVmT8CEsP3mFb26",
+   "input": {
+    "namespace": "batch"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Ez42u8fC4sY2tcjSthHoer",
+   "input": {
+    "query": "pod crashing after rollout startup crash"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1381,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 147,
+ "stop_reason": "tool_use"
+}

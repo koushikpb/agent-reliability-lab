@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-4008 by investigating the root cause of the broken legacy portal redirects. The problem was identified in the ingress-nginx controller logs showing that the `configuration-snippet` annotation was being explicitly skipped because the controller was deployed with `allow-snippet-annotations=false`. This security setting, introduced in the weekend upgrade, disabled the regex-based redirect configuration that the legacy-portal Ingress relies on. The solution requires the platform team to either re-enable snippet annotations or migrate to an alternative redirect mechanism that works with the current security constraints.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 12037,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 124,
+ "stop_reason": "end_turn"
+}

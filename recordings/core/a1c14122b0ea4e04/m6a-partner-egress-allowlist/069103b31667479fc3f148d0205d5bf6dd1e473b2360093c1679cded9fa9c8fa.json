@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Resolved T-5003. The payout-sender pod is healthy and unchanged since May 6; its logs show Northbridge Pay started returning `403 ip_not_allowlisted` for egress IP `34.201.17.88` on May 19, which is a vendor-side allowlist change rather than a Kubernetes issue. I left a note directing treasury ops to re-add `34.201.17.88` to the merchant MRC-20931 allowlist in the Northbridge portal; the sender's retry loop will then drain the queue on its own. I did not add doc citations because the finding came entirely from live cluster/log evidence, not from a documented behavior.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 4726,
+ "model": "claude-opus-4-7",
+ "output_tokens": 214,
+ "stop_reason": "end_turn"
+}

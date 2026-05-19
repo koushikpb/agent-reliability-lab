@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/system-logs#log-verbosity-level-0",
+  "heading": "System Logs > Klog > Log verbosity level",
+  "text": "The `-v` flag controls log verbosity. Increasing the value increases the number of logged events.\nDecreasing the value decreases the number of logged events.  Increasing verbosity settings logs\nincreasingly less severe events. A verbosity setting of 0 logs only critical events."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-logs#intro-0",
+  "heading": "System Logs",
+  "text": "System component logs record events happening in cluster, which can be very useful for debugging.\nYou can configure log verbosity to see more or less detail.\nLogs can be as coarse-grained as showing errors within a component, or as fine-grained as showing\nstep-by-step traces of events (like HTTP access logs, pod state changes, controller actions, or\nscheduler decisions).\n\nIn contrast to the command line flags described here, the *log\noutput* itself does *not* fall under the Kubernetes API stability guarantees:\nindividual log entries and their formatting may change from one release\nto the next!"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/securing-a-cluster#enable-audit-logging-0",
+  "heading": "Securing a Cluster > Protecting cluster components from compromise > Enable audit logging",
+  "text": "The [audit logger](/docs/tasks/debug/debug-cluster/audit/) is a beta feature that records actions taken by the\nAPI for later analysis in the event of a compromise. It is recommended to enable audit logging\nand archive the audit file on a secure server."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#logs-0",
+  "heading": "Observability > Logs",
+  "text": "Logs provide a chronological record of events inside applications, Kubernetes system components, and security-related activities such as audit logging.\n\nContainer runtimes capture a containerized application\u2019s output from standard output (`stdout`) and standard error (`stderr`) streams. While runtimes implement this differently, the integration with the kubelet is standardized through the _CRI logging format_, and the kubelet makes these logs available through `kubectl logs`.\n\n![Node-level logging](/images/docs/user-guide/logging/logging-node-level.png)\n\n*Figure 3a. Node-level logging architecture.*\n\nSystem component logs capture events from the cluster and are often useful for debugging and troubleshooting. These components are classified in two different ways: those that run in a container and those that do not. For example, the `kube-scheduler` and `kube-proxy` usually run in containers, whereas the `kubelet` and the container runtime run directly on the host."
+ },
+ {
+  "chunk_id": "tasks/debug/_index#intro-0",
+  "heading": "Monitoring, Logging, and Debugging",
+  "text": "Sometimes things go wrong. This guide helps you gather the relevant information and resolve issues. It has four sections:\n\n* [Debugging your application](/docs/tasks/debug/debug-application/) - Useful\n  for users who are deploying code into Kubernetes and wondering why it is not working.\n* [Debugging your cluster](/docs/tasks/debug/debug-cluster/) - Useful\n  for cluster administrators and operators troubleshooting issues with the Kubernetes cluster itself.\n* [Logging in Kubernetes](/docs/tasks/debug/logging/) - Useful\n  for cluster administrators who want to set up and manage logging in Kubernetes.\n* [Monitoring in Kubernetes](/docs/tasks/debug/monitoring/) - Useful\n  for cluster administrators who want to enable monitoring in a Kubernetes cluster.\n\nYou should also check the known issues for the [release](https://github.com/kubernetes/kubernetes/releases)\nyou're using."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/logging#intro-0",
+  "heading": "Logging Architecture",
+  "text": "Application logs can help you understand what is happening inside your application. The\nlogs are particularly useful for debugging problems and monitoring cluster activity. Most\nmodern applications have some kind of logging mechanism. Likewise, container engines\nare designed to support logging. The easiest and most adopted logging method for\ncontainerized applications is writing to standard output and standard error streams.\n\nHowever, the native functionality provided by a container engine or runtime is usually\nnot enough for a complete logging solution.\n\nFor example, you may want to access your application's logs if a container crashes,\na pod gets evicted, or a node dies.\n\nIn a cluster, logs should have a separate storage and lifecycle independent of nodes,\npods, or containers. This concept is called\n[cluster-level logging](#cluster-level-logging-architectures).\n\nCluster-level logging architectures require a separate backend to store, analyze, and\nquery logs. Kubernetes does not provide a native storage solution for log data. Instead,\nthere are many logging solutions that integrate with Kubernetes. The following sections\ndescribe how to handle and store logs on nodes."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/kubectl-node-debug#debugging-a-node-using-kubectl-debug-node-2",
+  "heading": "Debugging Kubernetes Nodes With Kubectl > Debugging a Node using `kubectl debug node`",
+  "text": "`/host/var/log/kube-proxy.log`\n: Logs from `kube-proxy`, which is responsible for directing traffic to Service endpoints.\n\n`/host/var/log/containerd.log`\n: Logs from the `containerd` process running on the node.\n\n`/host/var/log/syslog`\n: Shows general messages and information regarding the system.\n\n`/host/var/log/kern.log`\n: Shows kernel logs.\n\nWhen creating a debugging session on a Node, keep in mind that:"
+ },
+ {
+  "chunk_id": "concepts/security/_index#auditing-0",
+  "heading": "Security > Kubernetes security mechanisms > Auditing",
+  "text": "Kubernetes [audit logging](/docs/tasks/debug/debug-cluster/audit/) provides a\nsecurity-relevant, chronological set of records documenting the sequence of actions\nin a cluster. The cluster audits the activities generated by users, by applications\nthat use the Kubernetes API, and by the control plane itself."
+ }
+]

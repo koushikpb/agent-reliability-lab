@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for Vault secrets in Kubernetes:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Y1vGtfPK7aiUTSKe8EdxRC",
+   "input": {
+    "query": "Vault secrets Kubernetes pod annotation injection"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3013,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 72,
+ "stop_reason": "tool_use"
+}

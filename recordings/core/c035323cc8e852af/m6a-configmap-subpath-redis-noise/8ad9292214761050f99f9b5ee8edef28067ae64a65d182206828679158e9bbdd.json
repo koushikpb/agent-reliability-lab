@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the root cause. The documentation states: \"A container using a ConfigMap as a `subPath` volume mount will not receive updates when the ConfigMap changes.\"\n\nLooking at the pod specification from earlier, the gateway is using:\n```\nvolumeMounts: [{\"name\": \"limits\", \"mountPath\": \"/etc/gateway/limits.yaml\", \"subPath\": \"limits.yaml\", ...}]\n```\n\nThis is the exact problem - because it's using `subPath`, the ConfigMap changes are not automatically picked up.\n\nLet me update the ticket with this resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01R1YaHaBugoUbfe3h96DVfJ",
+   "input": {
+    "id": "T-5004",
+    "note": "**Root Cause:** The api-gateway pods are using a ConfigMap volume mount with `subPath`, which prevents automatic updates when the ConfigMap is modified. The logs show the file hash has remained `sha256=9c1e4b07` since startup at 06:02, and the limits remain at the old value (100 RPS) even though the ConfigMap was updated at 09:10. According to Kubernetes documentation [cite: concepts/storage/volumes#configmap-2]: \"A container using a ConfigMap as a subPath volume mount will not receive updates when the ConfigMap changes.\"\n\n**Evidence:** \n- Pod volume mount uses `subPath: limits.yaml` \n- Logs show the hash unchanged since startup and all limit checks at 09:12, 10:05, and 11:29 still show `limit_rps=100`\n- The limits watcher reports `/etc/gateway/limits.yaml unchanged` every 30 seconds\n\n**Fix:** The pod's volume mount must be changed from using `subPath` to mounting the entire ConfigMap as a directory. This will enable the automatic update behavior [cite: concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-1] which states \"Mounted ConfigMaps are updated automatically\". Modify the deployment to remove the `subPath` field from the limits volume mount, or restart the pods after the configuration change is made.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6820,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 533,
+ "stop_reason": "tool_use"
+}

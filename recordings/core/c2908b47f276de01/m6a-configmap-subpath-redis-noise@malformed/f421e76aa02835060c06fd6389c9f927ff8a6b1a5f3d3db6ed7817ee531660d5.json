@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "This is the key issue! Let me check if the gateway is using subPath in its volume mount. Looking back at the pod details, I can see:\n\n```\n\"volume_mounts\": [{\"name\": \"limits\", \"mountPath\": \"/etc/gateway/limits.yaml\", \"subPath\": \"limits.yaml\", ...}]\n```\n\nThe gateway pods are mounted with a **subPath**. According to the Kubernetes documentation, when a ConfigMap is consumed as a subPath volume mount, the pod **will not receive ConfigMap updates**. Let me search for more documentation to confirm this behavior.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Dn7i72yKMHRr9MkhidjmxC",
+   "input": {
+    "query": "subPath volume mount ConfigMap updates"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4270,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 190,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I can see the issue clearly. The new invoice-api 3.8.0 pods are failing to start with the error: \"Error: couldn't find key STRIPE_WEBHOOK_SECRET in Secret billing/invoice-api-secrets\". The old 3.7.2 pods are running fine.\n\nLet me search the Kubernetes documentation to understand container configuration errors and secrets management:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01YX86wJzibjZboRSgj9Wv59",
+   "input": {
+    "query": "environment variables secrets configuration container config error"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1895,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 145,
+ "stop_reason": "tool_use"
+}

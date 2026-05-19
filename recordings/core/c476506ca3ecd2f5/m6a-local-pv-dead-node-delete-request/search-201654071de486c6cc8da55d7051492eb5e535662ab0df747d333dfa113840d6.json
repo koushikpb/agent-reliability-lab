@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/storage-classes#volume-binding-mode-1",
+  "heading": "Storage Classes > Volume binding mode",
+  "text": "A cluster administrator can address this issue by specifying the `WaitForFirstConsumer` mode which\nwill delay the binding and provisioning of a PersistentVolume until a Pod using the PersistentVolumeClaim is created.\nPersistentVolumes will be selected or provisioned conforming to the topology that is\nspecified by the Pod's scheduling constraints. These include, but are not limited to, [resource\nrequirements](/docs/concepts/configuration/manage-resources-containers/),\n[node selectors](/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector),\n[pod affinity and\nanti-affinity](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity),\nand [taints and tolerations](/docs/concepts/scheduling-eviction/taint-and-toleration).\n\nThe following plugins support `WaitForFirstConsumer` with dynamic provisioning:\n\n- CSI volumes, provided that the specific CSI driver supports this"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#node-affinity-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Node Affinity",
+  "text": "For most volume types, you do not need to set this field.\nYou need to explicitly set this for [local](/docs/concepts/storage/volumes/#local) volumes.\n\nA PV can specify node affinity to define constraints that limit what nodes this\nvolume can be accessed from. Pods that use a PV will only be scheduled to nodes\nthat are selected by the node affinity. To specify node affinity, set\n`nodeAffinity` in the `.spec` of a PV. The\n[PersistentVolume](/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1/#PersistentVolumeSpec)\nAPI reference has more details on this field.\n\n#### Updates to node affinity"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#node-affinity-1",
+  "heading": "Persistent Volumes > Persistent Volumes > Node Affinity",
+  "text": "If the `MutablePVNodeAffinity` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) is enabled in your cluster,\nthe `.spec.nodeAffinity` field of a PersistentVolume is mutable.\nThis allows cluster administrators or external storage controller to update the node affinity of a PersistentVolume when the data is migrated,\nwithout interrupting the running pods.\n\nWhen updating the node affinity, you should ensure that the new node affinity still matches the nodes where the volume is currently in use.\nFor the pods violating the new affinity, if the pod is already running, it may continue to run. But Kubernetes does not support this configuration.\nYou should terminate the violating pods soon.\nDue to in memory caching, the pods created after the update may still be scheduled according to the old node affinity for a short period of time.\n\nTo use this feature, you should enable the `MutablePVNodeAffinity` feature gate on the following components:\n\n- `kube-apiserver`\n- `kubelet`"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reserving-a-persistentvolume-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reserving a PersistentVolume",
+  "text": "The control plane can [bind PersistentVolumeClaims to matching PersistentVolumes](#binding)\nin the cluster. However, if you want a PVC to bind to a specific PV, you need to pre-bind them.\n\nBy specifying a PersistentVolume in a PersistentVolumeClaim, you declare a binding\nbetween that specific PV and PVC. If the PersistentVolume exists and has not reserved\nPersistentVolumeClaims through its `claimRef` field, then the PersistentVolume and\nPersistentVolumeClaim will be bound.\n\nThe binding happens regardless of some volume matching criteria, including node affinity.\nThe control plane still checks that [storage class](/docs/concepts/storage/storage-classes/),\naccess modes, and requested storage size are valid.\n\n```yaml\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: foo-pvc\n  namespace: foo\nspec:\n  storageClassName: \"\" # Empty string must be explicitly set otherwise default StorageClass will be set\n  volumeName: foo-pv\n  ...\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-autoscaling#provisioning-pod-constraints-1",
+  "heading": "Node Autoscaling > Node provisioning > Pod scheduling constraints",
+  "text": "Other common Pod scheduling constraints include\n[Node affinity](/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity),\n[inter-Pod affinity](/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity),\nor a requirement for a particular [storage volume](/docs/concepts/storage/volumes/)."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#node-affinity-0",
+  "heading": "Assigning Pods to Nodes > Affinity and anti-affinity > Node affinity",
+  "text": "Node affinity is conceptually similar to `nodeSelector`, allowing you to constrain which nodes your\nPod can be scheduled on based on node labels. There are two types of node\naffinity:\n\n- `requiredDuringSchedulingIgnoredDuringExecution`: The scheduler can't\n  schedule the Pod unless the rule is met. This functions like `nodeSelector`,\n  but with a more expressive syntax.\n- `preferredDuringSchedulingIgnoredDuringExecution`: The scheduler tries to\n  find a node that meets the rule. If a matching node is not available, the\n  scheduler still schedules the Pod.\n\nIn the preceding types, `IgnoredDuringExecution` means that if the node labels\nchange after Kubernetes schedules the Pod, the Pod continues to run.\n\nYou can specify node affinities using the `.spec.affinity.nodeAffinity` field in\nyour Pod spec.\n\nFor example, consider the following Pod spec:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/assign-pod-node#node-affinity-7",
+  "heading": "Assigning Pods to Nodes > Affinity and anti-affinity > Node affinity",
+  "text": "When configuring multiple [scheduling profiles](/docs/reference/scheduling/config/#multiple-profiles), you can associate\na profile with a node affinity, which is useful if a profile only applies to a specific set of nodes.\nTo do so, add an `addedAffinity` to the `args` field of the [`NodeAffinity` plugin](/docs/reference/scheduling/config/#scheduling-plugins)\nin the [scheduler configuration](/docs/reference/scheduling/config/). For example:"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#volume-binding-mode-2",
+  "heading": "Storage Classes > Volume binding mode",
+  "text": "The following plugins support `WaitForFirstConsumer` with pre-created PersistentVolume binding:\n\n- CSI volumes, provided that the specific CSI driver supports this\n- [`local`](#local)\n\nIf you choose to use `WaitForFirstConsumer`, do not use `nodeName` in the Pod spec\nto specify node affinity.\nIf `nodeName` is used in this case, the scheduler will be bypassed and PVC will remain in `pending` state.\n\nInstead, you can use node selector for `kubernetes.io/hostname`:"
+ }
+]

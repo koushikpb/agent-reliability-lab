@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search the documentation for information about 502 errors and how ingress-nginx handles backend connectivity issues.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01C1MJtWVkYvgGzrQiPGN9FV",
+   "input": {
+    "query": "502 Bad Gateway ingress-nginx backend upstream"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1972,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 86,
+ "stop_reason": "tool_use"
+}

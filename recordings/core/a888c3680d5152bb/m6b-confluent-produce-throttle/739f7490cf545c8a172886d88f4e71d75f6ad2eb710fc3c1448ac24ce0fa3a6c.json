@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "These results are about Kubernetes scaling, not Kafka. The issue here is likely about Kafka consumer groups and rebalancing. Let me search for information about deployment and replica management that might be causing the problem:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01VBBqHAJZjymkZPHVH8SZhG",
+   "input": {
+    "query": "deployment replica update rolling strategy"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7430,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 102,
+ "stop_reason": "tool_use"
+}

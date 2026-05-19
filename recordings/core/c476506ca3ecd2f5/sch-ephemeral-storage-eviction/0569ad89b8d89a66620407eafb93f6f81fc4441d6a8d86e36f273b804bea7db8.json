@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Ticket T-3005 resolved.** Here's a summary of what I found and did:\n\n---\n\n### What I Did\n1. **Read the ticket** \u2014 nightly report jobs keep dying and restarting mid-run.\n2. **Listed pods** in the `reporting` namespace \u2014 found two pods in `Failed/Evicted` phase. The eviction messages were explicit: both nodes ran out of ephemeral storage because the container was consuming ~39\u201340 GiB with **zero ephemeral-storage declared as a resource request**.\n3. **Checked the logs** \u2014 confirmed the container streams ~80+ GiB of intermediate spool data to `/var/tmp/reportgen/spool` on local disk over the course of 96 partitions. By the time it hit ~48 partitions the node's free space fell below the 10% hard eviction threshold, triggering immediate pod eviction.\n4. **Searched the docs** \u2014 confirmed the kubelet's hard eviction threshold behavior and the correct way to declare `ephemeral-storage` requests and limits.\n\n### The Fix (told to ticket owner)\n- **Preferred:** Mount a PersistentVolumeClaim at the spool directory so the data doesn't consume node ephemeral storage.\n- **Supplementary:** Add `ephemeral-storage: \"100Gi\"` to the container's resource requests/limits so the scheduler places the pod only on nodes with sufficient disk.\n- **Bonus finding:** SMTP credentials for notifications appear to be broken \u2014 worth fixing separately.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9259,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 351,
+ "stop_reason": "end_turn"
+}

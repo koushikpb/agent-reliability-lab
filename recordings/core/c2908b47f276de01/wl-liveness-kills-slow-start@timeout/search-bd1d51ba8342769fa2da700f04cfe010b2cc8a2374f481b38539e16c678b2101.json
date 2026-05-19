@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-1",
+  "heading": "Pod Lifecycle > Termination of Pods",
+  "text": "Typically, with this graceful termination of the pod, kubelet makes requests to the container runtime\nto attempt to stop the containers in the pod by first sending a TERM (aka. SIGTERM) signal,\nwith a grace period timeout, to the main process in each container.\nThe requests to stop the containers are processed by the container runtime asynchronously.\nThere is no guarantee to the order of processing for these requests.\nMany container runtimes respect the `STOPSIGNAL` value defined in the container image and,\nif different, send the container image configured STOPSIGNAL instead of TERM.\nOnce the grace period has expired, the KILL signal is sent to any remaining\nprocesses, and the Pod is then deleted from the\nAPI Server. If the kubelet or the\ncontainer runtime's management service is restarted while waiting for processes to terminate, the\ncluster retries from the start including the full original grace period."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#configuring-graceful-node-shutdown-1",
+  "heading": "Node Shutdowns > Graceful node shutdown > Configuring graceful node shutdown",
+  "text": "When kubelet is setting that condition on its Node via the API,\nthe kubelet also begins terminating any Pods that are running locally.\n\nDuring a graceful shutdown, kubelet terminates pods in two phases:\n\n1. Terminate regular pods running on the node.\n1. Terminate [critical pods](/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/#marking-pod-as-critical)\n   running on the node.\n\nThe graceful node shutdown feature is configured with two\n[`KubeletConfiguration`](/docs/tasks/administer-cluster/kubelet-config-file/) options:\n\n- `shutdownGracePeriod`:\n\n  Specifies the total duration that the node should delay the shutdown by. This is the total\n  grace period for pod termination for both regular and\n  [critical pods](/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/#marking-pod-as-critical).\n\n- `shutdownGracePeriodCriticalPods`:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#configuring-graceful-node-shutdown-2",
+  "heading": "Node Shutdowns > Graceful node shutdown > Configuring graceful node shutdown",
+  "text": "  Specifies the duration used to terminate\n  [critical pods](/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/#marking-pod-as-critical)\n  during a node shutdown. This value should be less than `shutdownGracePeriod`.\n\nThere are cases when Node termination was cancelled by the system (or perhaps manually\nby an administrator). In either of those situations the Node will return to the `Ready` state.\nHowever, Pods which already started the process of termination will not be restored by kubelet\nand will need to be re-scheduled."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-flow-2",
+  "heading": "Pod Lifecycle > Termination of Pods > Pod Termination Flow",
+  "text": "1. At the same time as the kubelet is starting graceful shutdown of the Pod, the control plane\n   evaluates whether to remove that shutting-down Pod from EndpointSlice objects,\n   where those objects represent a Service\n   with a configured selector.\n   ReplicaSets and other workload resources\n   no longer treat the shutting-down Pod as a valid, in-service replica.\n\n   Pods that shut down slowly should not continue to serve regular traffic and should start\n   terminating and finish processing open connections.  Some applications need to go beyond\n   finishing open connections and need more graceful termination, for example, session draining\n   and completion.\n\n   Any endpoints that represent the terminating Pods are not immediately removed from\n   EndpointSlices, and a status indicating [terminating state](/docs/concepts/services-networking/endpoint-slices/#conditions)\n   is exposed from the EndpointSlice API.\n   Terminating endpoints always have their `ready` status as `false` (for backward compatibility\n   with versions before 1.26), so load balancers will not use it for regular traffic."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#graceful-node-shutdown-0",
+  "heading": "Node Shutdowns > Graceful node shutdown",
+  "text": "The kubelet attempts to detect node system shutdown and terminates pods running on the node.\n\nKubelet ensures that pods follow the normal\n[pod termination process](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination)\nduring the node shutdown. During node shutdown, the kubelet does not accept new\nPods (even if those Pods are already bound to the node)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-0",
+  "heading": "Pod Lifecycle > Termination of Pods",
+  "text": "Because Pods represent processes running on nodes in the cluster, it is important to\nallow those processes to gracefully terminate when they are no longer needed (rather\nthan being abruptly stopped with a `KILL` signal and having no chance to clean up).\n\nThe design aim is for you to be able to request deletion and know when processes\nterminate, but also be able to ensure that deletes eventually complete.\nWhen you request deletion of a Pod, the cluster records and tracks the intended grace period\nbefore the Pod is allowed to be forcefully killed. With that forceful shutdown tracking in\nplace, the kubelet attempts graceful\nshutdown."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-stop-signals-0",
+  "heading": "Pod Lifecycle > Termination of Pods > Stop Signals",
+  "text": "The stop signal used to kill the container can be defined in the container image with the `STOPSIGNAL` instruction.\nIf no stop signal is defined in the image, the default signal of the container runtime\n(SIGTERM for both containerd and CRI-O) would be used to kill the container."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#configuring-graceful-node-shutdown-3",
+  "heading": "Node Shutdowns > Graceful node shutdown > Configuring graceful node shutdown",
+  "text": "For example, if `shutdownGracePeriod=30s`, and\n`shutdownGracePeriodCriticalPods=10s`, kubelet will delay the node shutdown by\n30 seconds. During the shutdown, the first 20 (30-10) seconds would be reserved\nfor gracefully terminating normal pods, and the last 10 seconds would be\nreserved for terminating [critical pods](/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/#marking-pod-as-critical).\n\nWhen pods were evicted during the graceful node shutdown, they are marked as shutdown.\nRunning `kubectl get pods` shows the status of the evicted pods as `Terminated`.\nAnd `kubectl describe pod` indicates that the pod was evicted because of node shutdown:\n\n```\nReason:         Terminated\nMessage:        Pod was terminated in response to imminent node shutdown.\n```"
+ }
+]

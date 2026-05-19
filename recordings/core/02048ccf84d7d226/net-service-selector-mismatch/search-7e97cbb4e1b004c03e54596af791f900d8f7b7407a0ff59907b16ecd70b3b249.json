@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-4",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "#### Accessing a Service without a selector {#service-no-selector-access}\n\nAccessing a Service without a selector works the same as if it had a selector.\nIn the [example](#services-without-selectors) for a Service without a selector,\ntraffic is routed to one of the two endpoints defined in\nthe EndpointSlice manifest: a TCP connection to 10.1.2.3 or 10.4.5.6, on port 9376.\n\nThe Kubernetes API server does not allow proxying to endpoints that are not mapped to\npods. Actions such as `kubectl port-forward service/<service-name> forwardedPort:servicePort` where the service has no\nselector will fail due to this constraint. This prevents the Kubernetes API server\nfrom being used as a proxy to endpoints the caller may not be authorized to access.\n\nAn `ExternalName` Service is a special case of Service that does not have\nselectors and uses DNS names instead. For more information, see the\n[ExternalName](#externalname) section."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-services-1",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Services",
+  "text": "You can use:\n\n```shell\nkubectl get pods --selector=name=nginx,type=frontend\n```\n\nto list pods that match this selector. Verify that the list matches the Pods that you expect to provide your Service.\nVerify that the pod's `containerPort` matches the Service's `targetPort`\n\n#### Network traffic is not forwarded\n\nPlease see [debugging service](/docs/tasks/debug/debug-application/debug-service/) for more information."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-1",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Because this Service has no selector, the corresponding EndpointSlice\nobjects are not created automatically. You can map the Service\nto the network address and port where it's running, by adding an EndpointSlice\nobject manually. For example:\n\n```yaml\napiVersion: discovery.k8s.io/v1\nkind: EndpointSlice\nmetadata:\n  name: my-service-1 # by convention, use the name of the Service\n                     # as a prefix for the name of the EndpointSlice\n  labels:\n    # You should set the \"kubernetes.io/service-name\" label.\n    # Set its value to match the name of the Service\n    kubernetes.io/service-name: my-service\naddressType: IPv4\nports:\n  - name: http # should match with the name of the service port defined above\n    appProtocol: http\n    protocol: TCP\n    port: 9376\nendpoints:\n  - addresses:\n      - \"10.4.5.6\"\n  - addresses:\n      - \"10.1.2.3\"\n```\n\n#### Custom EndpointSlices"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#selector-0",
+  "heading": "Deployments > Writing a Deployment Spec > Selector",
+  "text": "`.spec.selector` is a required field that specifies a [label selector](/docs/concepts/overview/working-with-objects/labels/)\nfor the Pods targeted by this Deployment.\n\n`.spec.selector` must match `.spec.template.metadata.labels`, or it will be rejected by the API.\n\nIn API version `apps/v1`, `.spec.selector` and `.metadata.labels` do not default to `.spec.template.metadata.labels` if not set. So they must be set explicitly. Also note that `.spec.selector` is immutable after creation of the Deployment in `apps/v1`.\n\nA Deployment may terminate Pods whose labels match the selector if their template is different\nfrom `.spec.template` or if the total number of such Pods exceeds `.spec.replicas`. It brings up new\nPods with `.spec.template` if the number of Pods is less than the desired number."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-0",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Services most commonly abstract access to Kubernetes Pods thanks to the selector,\nbut when used with a corresponding set of\nEndpointSlices\nobjects and without a selector, the Service can abstract other kinds of backends,\nincluding ones that run outside the cluster.\n\nFor example:\n\n* You want to have an external database cluster in production, but in your\n  test environment you use your own databases.\n* You want to point your Service to a Service in a different\n  namespace or on another cluster.\n* You are migrating a workload to Kubernetes. While evaluating the approach,\n  you run only a portion of your backends in Kubernetes.\n\nIn any of these scenarios you can define a Service _without_ specifying a\nselector to match Pods. For example:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  ports:\n    - name: http\n      protocol: TCP\n      port: 80\n      targetPort: 9376\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/daemonset#pod-selector-1",
+  "heading": "DaemonSet > Writing a DaemonSet Spec > Pod Selector",
+  "text": "The `.spec.selector` must match the `.spec.template.metadata.labels`.\nConfig with these two not matching will be rejected by the API."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/topology-spread-constraints#known-limitations-1",
+  "heading": "Pod Topology Spread Constraints > Known limitations",
+  "text": "  You can work around this by using a Node autoscaler that is aware of\n  Pod topology spread constraints and is also aware of the overall set of topology\n  domains.\n- Pods that don't match their own labelSelector create \"ghost pods\". If a pod's\n  labels don't match the `labelSelector` in its topology spread constraint, the pod\n  won't count itself in spread calculations. This means:\n  - Multiple such pods can just accumulate on the same topology (until matching pods are newly created/deleted) because those pod's schedule don't change a spreading calculation result.\n  - The spreading constraint works in an unintended way, most likely not matching your expectations\n\n  Ensure your pod's labels match the `labelSelector` in your spread constraints.\n  Typically, a pod should match its own topology spread constraint selector."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#creating-the-hello-service-object-0",
+  "heading": "Connect a Frontend to a Backend Using Services > Creating the `hello` Service object",
+  "text": "The key to sending requests from a frontend to a backend is the backend\nService. A Service creates a persistent IP address and DNS name entry\nso that the backend microservice can always be reached. A Service uses\nselectors to find\nthe Pods that it routes traffic to.\n\nFirst, explore the Service configuration file:\n\n```yaml\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: hello\nspec:\n  selector:\n    app: hello\n    tier: backend\n  ports:\n  - protocol: TCP\n    port: 80\n    targetPort: http\n...\n```\n\nIn the configuration file, you can see that the Service, named `hello` routes \ntraffic to Pods that have the labels `app: hello` and `tier: backend`.\n\nCreate the backend Service:\n\n```shell\nkubectl apply -f https://k8s.io/examples/service/access/backend-service.yaml\n```"
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/_index#securing-a-cluster-0",
+  "heading": "Cluster Administration > Securing a cluster",
+  "text": "* [Generate Certificates](/docs/tasks/administer-cluster/certificates/) describes the steps to\n  generate certificates using different tool chains.\n\n* [Kubernetes Container Environment](/docs/concepts/containers/container-environment/) describes\n  the environment for Kubelet managed containers on a Kubernetes node.\n\n* [Controlling Access to the Kubernetes API](/docs/concepts/security/controlling-access) describes\n  how Kubernetes implements access control for its own API.\n\n* [Authenticating](/docs/reference/access-authn-authz/authentication/) explains authentication in\n  Kubernetes, including the various authentication options.\n\n* [Authorization](/docs/reference/access-authn-authz/authorization/) is separate from\n  authentication, and controls how HTTP calls are handled.\n\n* [Using Admission Controllers](/docs/reference/access-authn-authz/admission-controllers/)\n  explains plug-ins which intercepts requests to the Kubernetes API server after authentication\n  and authorization."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#pod-sidecar-containers-0",
+  "heading": "Sidecar Containers > Sidecar containers in Kubernetes",
+  "text": "Kubernetes implements sidecar containers as a special case of\n[init containers](/docs/concepts/workloads/pods/init-containers/); sidecar containers remain\nrunning after Pod startup. This document uses the term _regular init containers_ to clearly\nrefer to containers that only run during Pod startup.\n\nProvided that your cluster has the `SidecarContainers`\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) enabled\n(the feature is active by default since Kubernetes v1.29), you can specify a `restartPolicy`\nfor containers listed in a Pod's `initContainers` field.\nThese restartable _sidecar_ containers are independent from other init containers and from\nthe main application container(s) within the same pod.\nThese can be started, stopped, or restarted without affecting the main application container\nand other init containers."
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/authentication-mechanisms#intro-0",
+  "heading": "Hardening Guide - Authentication Mechanisms",
+  "text": "Selecting the appropriate authentication mechanism(s) is a crucial aspect of securing your cluster.\nKubernetes provides several built-in mechanisms, each with its own strengths and weaknesses that\nshould be carefully considered when choosing the best authentication mechanism for your cluster.\n\nIn general, it is recommended to enable as few authentication mechanisms as possible to simplify\nuser management and prevent cases where users retain access to a cluster that is no longer required.\n\nIt is important to note that Kubernetes does not have an in-built user database within the cluster.\nInstead, it takes user information from the configured authentication system and uses that to make\nauthorization decisions. Therefore, to audit user access, you need to review credentials from every\nconfigured authentication source.\n\nFor production clusters with multiple users directly accessing the Kubernetes API, it is\nrecommended to use external authentication sources such as OIDC. The internal authentication\nmechanisms, such as client certificates and service account tokens, described below, are not\nsuitable for this use case."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#intro-0",
+  "heading": "Init Containers",
+  "text": "This page provides an overview of init containers: specialized containers that run\nbefore app containers in a Pod.\nInit containers can contain utilities or setup scripts not present in an app image.\n\nYou can specify init containers in the Pod specification alongside the `containers`\narray (which describes app containers).\n\nIn Kubernetes, a [sidecar container](/docs/concepts/workloads/pods/sidecar-containers/) is a container that\nstarts before the main application container and _continues to run_. This document is about init containers:\ncontainers that run to completion during Pod initialization."
+ },
+ {
+  "chunk_id": "tasks/run-application/access-api-from-pod#directly-accessing-the-rest-api-1",
+  "heading": "Accessing the Kubernetes API from a Pod > Accessing the API from within a Pod > Directly accessing the REST API",
+  "text": "The recommended way to authenticate to the API server is with a\n[service account](/docs/tasks/configure-pod-container/configure-service-account/)\ncredential. By default, a Pod\nis associated with a service account, and a credential (token) for that\nservice account is placed into the filesystem tree of each container in that Pod,\nat `/var/run/secrets/kubernetes.io/serviceaccount/token`.\n\nIf available, a certificate bundle is placed into the filesystem tree of each\ncontainer at `/var/run/secrets/kubernetes.io/serviceaccount/ca.crt`, and should be\nused to verify the serving certificate of the API server.\n\nFinally, the default namespace to be used for namespaced API operations is placed in a file\nat `/var/run/secrets/kubernetes.io/serviceaccount/namespace` in each container."
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/authentication-mechanisms#x509-client-certificate-authentication-0",
+  "heading": "Hardening Guide - Authentication Mechanisms > X.509 client certificate authentication",
+  "text": "Kubernetes leverages [X.509 client certificate](/docs/reference/access-authn-authz/authentication/#x509-client-certificates)\nauthentication for system components, such as when the kubelet authenticates to the API Server.\nWhile this mechanism can also be used for user authentication, it might not be suitable for\nproduction use due to several restrictions:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#understanding-init-containers-0",
+  "heading": "Init Containers > Understanding init containers",
+  "text": "A Pod can have multiple containers\nrunning apps within it, but it can also have one or more init containers, which are run\nbefore the app containers are started.\n\nInit containers are exactly like regular containers, except:\n\n* Init containers always run to completion.\n* Each init container must complete successfully before the next one starts.\n\nIf a Pod's init container fails, the kubelet repeatedly restarts that init container until it succeeds.\nHowever, if the Pod has a `restartPolicy` of Never, and an init container fails during startup of that Pod, Kubernetes treats the overall Pod as failed."
+ },
+ {
+  "chunk_id": "concepts/containers/images#legacy-built-in-kubelet-credential-provider-0",
+  "heading": "Images > Legacy built-in kubelet credential provider",
+  "text": "In older versions of Kubernetes, the kubelet had a direct integration with cloud\nprovider credentials. This provided the ability to dynamically fetch credentials\nfor image registries.\n\nThere were three built-in implementations of the kubelet credential provider\nintegration: ACR (Azure Container Registry), ECR (Elastic Container Registry),\nand GCR (Google Container Registry).\n\nStarting with version 1.26 of Kubernetes, the legacy mechanism has been removed,\nso you would need to either:\n- configure a kubelet image credential provider on each node; or\n- specify image pull credentials using `imagePullSecrets` and at least one Secret."
+ }
+]

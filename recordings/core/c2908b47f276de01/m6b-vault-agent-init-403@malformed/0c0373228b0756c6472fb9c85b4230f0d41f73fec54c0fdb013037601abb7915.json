@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try with the full namespace specification:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Bt7jXae2EMibZZCdeJtXg5",
+   "input": {
+    "pod": "orders/orders-api-5b4d7c8f9-hn6wd"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2431,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 85,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01C9jNVi9ZFCpSEoa4UEqPVe",
+   "input": {
+    "query": "container OOMKilled exit code 137 memory limit"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2742,
+ "model": "claude-opus-4-7",
+ "output_tokens": 80,
+ "stop_reason": "tool_use"
+}

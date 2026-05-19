@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/configure-upgrade-etcd#multi-node-etcd-cluster-1",
+  "heading": "Operating etcd clusters for Kubernetes > Starting etcd clusters > Multi-node etcd cluster",
+  "text": "You configure an etcd cluster either by static member information or by dynamic\ndiscovery. For more information on clustering, see\n[etcd clustering documentation](https://etcd.io/docs/current/op-guide/clustering/).\n\nFor an example, consider a five-member etcd cluster running with the following\nclient URLs: `http://$IP1:2379`, `http://$IP2:2379`, `http://$IP3:2379`,\n`http://$IP4:2379`, and `http://$IP5:2379`. To start a Kubernetes API server:\n\n1. Run the following:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#intro-0",
+  "heading": "Configure a Pod to Use a ConfigMap",
+  "text": "Many applications rely on configuration which is used during either application initialization or runtime.\nMost times, there is a requirement to adjust values assigned to configuration parameters.\nConfigMaps are a Kubernetes mechanism that let you inject configuration data into application\npods.\n\nThe ConfigMap concept allow you to decouple configuration artifacts from image content to\nkeep containerized applications portable. For example, you can download and run the same\ncontainer image to spin up containers for \nthe purposes of local development, system test, or running a live end-user workload.\n\nThis page provides a series of usage examples demonstrating how to create ConfigMaps and\nconfigure Pods using data stored in ConfigMaps."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#api-kinds-0",
+  "heading": "Configuration > Kubernetes configuration-related APIs",
+  "text": "Kubernetes provides two main API kinds that you can use to store configuration,\nready for a Pod (or other component) to load and use:\n[ConfigMap](/docs/concepts/configuration/configmap/), and\n[Secret](/docs/concepts/configuration/secret/).\n\nThe special-use\n[CertificateSigningRequest](/docs/reference/access-authn-authz/certificate-signing-requests/#certificate-signing-requests)\nand\n[ClusterTrustBundle](/docs/reference/access-authn-authz/certificate-signing-requests/#cluster-trust-bundles)\nAPI kinds also hold configuration data that's relevant to some specific cases,\nsuch as TLS configuration.\n\nAll of these configuration mechanisms, even for certificates, are designed so that configuration\ncan be reused and shared across multiple Pods. You typically don't have to write the configuration\nout once per Pod, and you should design applications where possible so that they can work with\nshared configuration."
+ },
+ {
+  "chunk_id": "concepts/services-networking/gateway#design-principles-1",
+  "heading": "Gateway API > Design principles",
+  "text": "* __Role-oriented:__ Gateway API kinds are modeled after organizational roles that are\n  responsible for managing Kubernetes service networking:\n  * __Infrastructure Provider:__ Manages infrastructure that allows multiple isolated clusters\n    to serve multiple tenants, e.g. a cloud provider.\n  * __Cluster Operator:__ Manages clusters and is typically concerned with policies, network\n    access, application permissions, etc.\n  * __Application Developer:__ Manages an application running in a cluster and is typically\n    concerned with application-level configuration and [Service](/docs/concepts/services-networking/service/)\n    composition.\n* __Portable:__ Gateway API specifications are defined as [custom resources](/docs/concepts/extend-kubernetes/api-extension/custom-resources)\n  and are supported by many [implementations](https://gateway-api.sigs.k8s.io/implementations/).\n* __Expressive:__ Gateway API kinds support functionality for common traffic routing use cases\n  such as header-based matching, traffic weighting, and others that were only possible in"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/configure-access-multiple-clusters#intro-0",
+  "heading": "Configure Access to Multiple Clusters",
+  "text": "This page shows how to configure access to multiple clusters by using\nconfiguration files. After your clusters, users, and contexts are defined in\none or more configuration files, you can quickly switch between clusters by using the\n`kubectl config use-context` command.\n\nA file that is used to configure access to a cluster is sometimes called\na *kubeconfig file*. This is a generic way of referring to configuration files.\nIt does not mean that there is a file named `kubeconfig`.\n\nOnly use kubeconfig files from trusted sources. Using a specially-crafted kubeconfig\nfile could result in malicious code execution or file exposure.\nIf you must use an untrusted kubeconfig file, inspect it carefully first, much as you would a shell script."
+ },
+ {
+  "chunk_id": "concepts/containers/images#use-cases-1",
+  "heading": "Images > Using a private registry > Use cases",
+  "text": "1. Cluster running only non-proprietary (e.g. open-source) images.  No need to hide images.\n   - Use public images from a public registry\n     - No configuration required.\n     - Some cloud providers automatically cache or mirror public images, which improves\n       availability and reduces the time to pull images.\n1. Cluster running some proprietary images which should be hidden to those outside the company, but\n   visible to all cluster users.\n   - Use a hosted private registry\n     - Manual configuration may be required on the nodes that need to access to private registry.\n   - Or, run an internal private registry behind your firewall with open read access.\n     - No Kubernetes configuration is required.\n   - Use a hosted container image registry service that controls image access\n     - It will work better with Node autoscaling than manual node configuration.\n   - Or, on a cluster where changing the node configuration is inconvenient, use `imagePullSecrets`.\n1. Cluster with proprietary images, a few of which require stricter access control.\n   - Ensure [AlwaysPullImages admission controller](/docs/reference/access-authn-authz/admission-controllers/#alwayspullimages)"
+ },
+ {
+  "chunk_id": "concepts/containers/runtime-class#2-create-the-corresponding-runtimeclass-resources-1",
+  "heading": "Runtime Class > Setup > 2. Create the corresponding RuntimeClass resources",
+  "text": "It is recommended that RuntimeClass write operations (create/update/patch/delete) be\nrestricted to the cluster administrator. This is typically the default. See\n[Authorization Overview](/docs/reference/access-authn-authz/authorization/) for more details."
+ },
+ {
+  "chunk_id": "concepts/containers/runtime-class#1-configure-the-cri-implementation-on-nodes-0",
+  "heading": "Runtime Class > Setup > 1. Configure the CRI implementation on nodes",
+  "text": "The configurations available through RuntimeClass are Container Runtime Interface (CRI)\nimplementation dependent. See the corresponding documentation ([below](#cri-configuration)) for your\nCRI implementation for how to configure.\n\nRuntimeClass assumes a homogeneous node configuration across the cluster by default (which means\nthat all nodes are configured the same way with respect to container runtimes). To support\nheterogeneous node configurations, see [Scheduling](#scheduling) below.\n\nThe configurations have a corresponding `handler` name, referenced by the RuntimeClass. The\nhandler must be a valid [DNS label name](/docs/concepts/overview/working-with-objects/names/#dns-label-names)."
+ }
+]

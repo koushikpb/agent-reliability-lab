@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-0",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "Ideally, minimal RBAC rights should be assigned to users and service accounts. Only permissions\nexplicitly required for their operation should be used. While each cluster will be different,\nsome general rules that can be applied are :"
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#intro-0",
+  "heading": "Role Based Access Control Good Practices",
+  "text": "Kubernetes RBAC is a key security control\nto ensure that cluster users and workloads have only the access to resources required to\nexecute their roles. It is important to ensure that, when designing permissions for cluster\nusers, the cluster administrator understands the areas where privilege escalation could occur,\nto reduce the risk of excessive access leading to security incidents.\n\nThe good practices laid out here should be read in conjunction with the general\n[RBAC documentation](/docs/reference/access-authn-authz/rbac/#restrictions-on-role-creation-or-update)."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#privilege-escalation-risks-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks",
+  "text": "Within Kubernetes RBAC there are a number of privileges which, if granted, can allow a user or a service account\nto escalate their privileges in the cluster or affect systems outside the cluster.\n\nThis section is intended to provide visibility of the areas where cluster operators\nshould take care, to ensure that they do not inadvertently allow for more access to clusters than intended."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#escalate-verb-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Escalate verb",
+  "text": "Generally, the RBAC system prevents users from creating clusterroles with more rights than the user possesses.\nThe exception to this is the `escalate` verb. As noted in the [RBAC documentation](/docs/reference/access-authn-authz/rbac/#restrictions-on-role-creation-or-update),\nusers with this right can effectively escalate their privileges."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-1",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "- Assign permissions at the namespace level where possible. Use RoleBindings as opposed to\n  ClusterRoleBindings to give users rights only within a specific namespace.\n- Avoid providing wildcard permissions when possible, especially to all resources.\n  As Kubernetes is an extensible system, providing wildcard access gives rights\n  not just to all object types that currently exist in the cluster, but also to all object types\n  which are created in the future.\n- Administrators should not use `cluster-admin` accounts except where specifically needed.\n  Providing a low privileged account with\n  [impersonation rights](/docs/reference/access-authn-authz/authentication/#user-impersonation)\n  can avoid accidental modification of cluster resources.\n- Avoid adding users to the `system:masters` group. Any user who is a member of this group\n  bypasses all RBAC rights checks and will always have unrestricted superuser access, which cannot be\n  revoked by removing RoleBindings or ClusterRoleBindings. As an aside, if a cluster is"
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#token-request-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Token request",
+  "text": "Users with `create` rights on `serviceaccounts/token` can create TokenRequests to issue\ntokens for existing service accounts."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#access-controls-1",
+  "heading": "Multi-tenancy > Control plane isolation > Access controls",
+  "text": "Role-based access control (RBAC) is commonly used to enforce authorization in the Kubernetes\ncontrol plane, for both users and workloads (service accounts).\n[Roles](/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and\n[RoleBindings](/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) are\nKubernetes objects that are used at a namespace level to enforce access control in your\napplication; similar objects exist for authorizing access to cluster-level objects, though these\nare less useful for multi-tenant clusters.\n\nIn a multi-team environment, RBAC must be used to restrict tenants' access to the appropriate\nnamespaces, and ensure that cluster-wide resources can only be accessed or modified by privileged\nusers such as cluster administrators."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#impersonate-verb-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Impersonate verb",
+  "text": "This verb allows users to impersonate and gain the rights of other users in the cluster.\nCare should be taken when granting it, to ensure that excessive permissions cannot be gained\nvia one of the impersonated accounts."
+ }
+]

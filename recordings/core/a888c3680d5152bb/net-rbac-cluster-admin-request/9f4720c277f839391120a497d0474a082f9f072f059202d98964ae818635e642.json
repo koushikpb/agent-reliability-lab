@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try with the full namespace:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_018pcnR3AgRBsqMHkpKGjPnt",
+   "input": {
+    "pod_name": "deploy-payments-api-28592110-7tgkp"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1805,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 80,
+ "stop_reason": "tool_use"
+}

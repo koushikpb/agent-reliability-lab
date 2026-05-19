@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Summary: Inspected the vision namespace and found the doc-embedder pod Unschedulable with the scheduler message pointing to the untolerated `dedicated=gpu` taint on the GPU nodes. The pod's nodeSelector is correct but it's missing the matching toleration. Resolved the ticket with the cause, evidence, and the toleration snippet to add, citing the taints/tolerations docs.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7049,
+ "model": "claude-opus-4-7",
+ "output_tokens": 138,
+ "stop_reason": "end_turn"
+}

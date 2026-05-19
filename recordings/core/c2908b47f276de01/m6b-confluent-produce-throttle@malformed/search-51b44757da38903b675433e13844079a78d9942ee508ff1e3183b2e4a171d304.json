@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#memory-backed-emptydir-1",
+  "heading": "Resource Management for Pods and Containers > How Kubernetes applies resource requests and limits > Considerations for memory backed `emptyDir` volumes",
+  "text": "If you do not specify a `sizeLimit` for an `emptyDir` volume, that volume may\nconsume up to that pod's memory limit (`Pod.spec.containers[].resources.limits.memory`).\nIf you do not set a memory limit, the pod has no upper bound on memory consumption,\nand can consume all available memory on the node. Kubernetes schedules pods based\non resource requests (`Pod.spec.containers[].resources.requests`) and will not\nconsider memory usage above the request when deciding if another pod can fit on\na given node. This can result in a denial of service and cause the OS to do\nout-of-memory (OOM) handling. It is possible to create any number of `emptyDir`s\nthat could potentially consume all available memory on the node, making OOM\nmore likely."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#memory-backed-emptydir-4",
+  "heading": "Resource Management for Pods and Containers > How Kubernetes applies resource requests and limits > Considerations for memory backed `emptyDir` volumes",
+  "text": "If you are administering a cluster or namespace, you can also set\n[ResourceQuota](/docs/concepts/policy/resource-quotas/) that limits memory use;\nyou may also want to define a [LimitRange](/docs/concepts/policy/limit-range/)\nfor additional enforcement.\nIf you specify a `spec.containers[].resources.limits.memory` for each Pod,\nthen the maximum size of an `emptyDir` volume will be the pod's memory limit.\n\nAs an alternative, a cluster administrator can enforce size limits for\n`emptyDir` volumes in new Pods using a policy mechanism such as\n[ValidatingAdmissionPolicy](/docs/reference/access-authn-authz/validating-admission-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-qos#memory-throttling-0",
+  "heading": "Pod Quality of Service Classes > Memory QoS with cgroup v2 > Memory throttling",
+  "text": "Memory throttling is controlled by the `kubelet` configuration field\n`memoryThrottlingFactor`. Its default value is `nil`, which means that the\n`kubelet` does not set `memory.high`. To enable memory throttling, set\n`memoryThrottlingFactor` to a value greater than 0 and less than or equal to 1.\n\nFor Burstable Pods, the kubelet uses `memory.high` to throttle memory allocation\nbefore the workload hits its hard limit (`memory.max`). The throttling threshold\nfor a container is calculated as:\n\n```\nmemory.high = requests + memoryThrottlingFactor * (limits - requests)\n```\n\nFor example, with `memoryThrottlingFactor` set to `0.9`, a container with a\n`256 MiB` request and a `1 GiB` limit gets `memory.high` set to roughly `947 MiB`.\nIf a Burstable container has no memory limit, the kubelet uses node allocatable\nmemory in place of the limit."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/_index#resource-requests-and-limits-0",
+  "heading": "Pods > Resource requests and limits",
+  "text": "When you specify a Pod, you can optionally specify how much of each resource\na container needs. The most common resources to specify are CPU and memory (RAM).\n\nWhen you specify the resource _request_ for containers in a Pod, the\nkube-scheduler uses this information to decide which node to place the Pod on.\nWhen you specify a resource _limit_ for a container, the kubelet enforces\nthose limits so that the running container is not allowed to use more of that\nresource than the limit you set.\n\nCPU limits are enforced by CPU throttling. When a container approaches its\nCPU limit, the kernel restricts its access to CPU. Memory limits are enforced\nby the kernel with out-of-memory (OOM) kills when a container exceeds its limit.\n\nSetting CPU limits involves a trade-off. CPU limits help prevent noisy neighbor\nproblems where a single workload starves others on the same node. This is\nespecially important in multi-tenant environments. However, CPU limits can cause\nthrottling even when the node has spare CPU capacity, potentially degrading\nlatency-sensitive workload performance. Whether to set CPU limits depends on\nyour environment, workload characteristics, and isolation requirements."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#how-kubernetes-resourcequotas-work-3",
+  "heading": "Resource Quotas > How Kubernetes ResourceQuotas work",
+  "text": "- For `cpu` and `memory` resources, ResourceQuotas enforce that **every**\n  (new) pod in that namespace sets a limit for that resource.\n  If you enforce a resource quota in a namespace for either `cpu` or `memory`,\n  you and other clients, **must** specify either `requests` or `limits` for that resource,\n  for every new Pod you submit. If you don't, the control plane may reject admission\n  for that Pod.\n- For other resources: ResourceQuota works and will ignore pods in the namespace without\n  setting a limit or request for that resource. It means that you can create a new pod\n  without limit/request for ephemeral storage if the resource quota limits the ephemeral\n  storage of this namespace.\n\nYou can use a [LimitRange](/docs/concepts/policy/limit-range/) to automatically set\na default request for these resources."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#how-pods-with-resource-limits-are-run-0",
+  "heading": "Resource Management for Pods and Containers > How Kubernetes applies resource requests and limits",
+  "text": "When the kubelet starts a container as part of a Pod, the kubelet passes that container's\nrequests and limits for memory and CPU to the container runtime.\n\nOn Linux, the container runtime typically configures\nkernel cgroups that apply and enforce the\nlimits you defined."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#how-pods-with-resource-limits-are-run-1",
+  "heading": "Resource Management for Pods and Containers > How Kubernetes applies resource requests and limits",
+  "text": "- The CPU limit defines a hard ceiling on how much CPU time the container can use.\n  During each scheduling interval (time slice), the Linux kernel checks to see if this\n  limit is exceeded; if so, the kernel waits before allowing that cgroup to resume execution.\n- The CPU request typically defines a weighting. If several different containers (cgroups)\n  want to run on a contended system, workloads with larger CPU requests are allocated more\n  CPU time than workloads with small requests.\n- The memory request is mainly used during (Kubernetes) Pod scheduling. On a node that uses\n  cgroups v2, the container runtime might use the memory request as a hint to set\n  `memory.min` and `memory.low`.\n- The memory limit defines a memory limit for that cgroup. If the container tries to\n  allocate more memory than this limit, the Linux kernel out-of-memory subsystem activates\n  and, typically, intervenes by stopping one of the processes in the container that tried\n  to allocate memory. If that process is the container's PID 1, and the container is marked"
+ },
+ {
+  "chunk_id": "concepts/policy/limit-range#intro-0",
+  "heading": "Limit Ranges",
+  "text": "By default, containers run with unbounded\n[compute resources](/docs/concepts/configuration/manage-resources-containers/) on a Kubernetes cluster.\nUsing  Kubernetes [resource quotas](/docs/concepts/policy/resource-quotas/),\nadministrators (also termed _cluster operators_) can restrict consumption and creation\nof cluster resources (such as CPU time, memory, and persistent storage) within a specified\nnamespace.\nWithin a namespace, a Pod can consume as much CPU and memory as is allowed by the ResourceQuotas that apply to that namespace.\nAs a cluster operator, or as a namespace-level administrator, you might also be concerned\nabout making sure that a single object cannot monopolize all available resources within a namespace.\n\nA LimitRange is a policy to constrain the resource allocations (limits and requests) that you can specify for\neach applicable object kind (such as Pod or PersistentVolumeClaim) in a namespace.\n\nA _LimitRange_ provides constraints that can:"
+ }
+]

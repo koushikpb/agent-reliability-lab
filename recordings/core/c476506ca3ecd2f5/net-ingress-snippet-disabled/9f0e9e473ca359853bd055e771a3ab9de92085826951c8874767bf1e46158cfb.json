@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary of what I did:**\n\n1. **Read ticket T-4008** \u2014 reported that `/old/...` redirects on `portal.example.com` broke after an ingress-nginx upgrade, returning 404s.\n2. **Listed pods** in both the `legacy` and `ingress-nginx` namespaces \u2014 the `legacy-portal` app pods are fully healthy (2/2 Running, 0 restarts); the controller upgraded to **v1.12.1**.\n3. **Pulled controller logs** \u2014 found the smoking gun: the controller is actively **skipping** the `nginx.ingress.kubernetes.io/configuration-snippet` annotation on the `legacy-portal` Ingress with the message *\"Snippet directives are disabled by the Ingress administrator (allow-snippet-annotations=false)\"*.\n4. **Identified root cause** \u2014 ingress-nginx v1.12.1 ships with `allow-snippet-annotations=false` by default as a security hardening measure, silently dropping the configuration-snippet that implements the regex-based redirects.\n5. **Resolved the ticket** with three actionable remediation options: globally re-enabling snippet annotations, using per-IngressClass scoping, or migrating the redirect logic to the `rewrite-target`+`use-regex` annotations.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 10883,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 301,
+ "stop_reason": "end_turn"
+}

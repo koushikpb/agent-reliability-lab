@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me search the Kubernetes documentation about Vault Agent init containers and authentication issues to understand what could be causing the failure.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Mw85P1vSqhfaf8V2imfxHJ",
+   "input": {
+    "query": "vault agent init container authentication kubernetes role"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2564,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 86,
+ "stop_reason": "tool_use"
+}

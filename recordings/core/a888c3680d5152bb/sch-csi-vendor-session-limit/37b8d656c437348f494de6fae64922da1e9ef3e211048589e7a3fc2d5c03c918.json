@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I can see the issue clearly. The clickhouse-2 pod is stuck in ContainerCreating status with a specific error message indicating that the host group on the storage array has reached its maximum LUN mappings limit. Let me search the Kubernetes documentation to understand more about this issue and confirm the cause.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_013J9kCJPzbnmboYfNv2NERU",
+   "input": {
+    "query": "MountVolume.MountDevice failed ContainerCreating"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2128,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 132,
+ "stop_reason": "tool_use"
+}

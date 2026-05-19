@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Now let me search more specifically about the HPA CPU unknown status and metrics availability:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01XCLEXR8ZAHwgSAWX8UvdFN",
+   "input": {
+    "query": "HPA metrics server resource metrics unavailable unknown"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01XHXtdUsBdhNatjYvNqUKow",
+   "input": {
+    "query": "metrics.k8s.io API not available cpu utilization cannot measure"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6893,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 129,
+ "stop_reason": "tool_use"
+}

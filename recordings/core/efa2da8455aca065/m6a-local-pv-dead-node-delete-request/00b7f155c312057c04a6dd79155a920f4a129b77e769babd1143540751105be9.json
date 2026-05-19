@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "---\n\n## Summary\n\n**What I found:**\n\n| Evidence | Detail |\n|---|---|\n| Pod status | `ledger-queue-0` \u2014 **Pending**, no node assigned |\n| Scheduler message | *\"8 node(s) had volume node affinity conflict\"* |\n| Volume | `local-pv-ip-10-0-7-21-nvme1` \u2014 a local NVMe PV with `nodeAffinity: kubernetes.io/hostname In [ip-10-0-7-21.ec2.internal]` (the dead node) |\n| PVC reclaim policy | **Delete** |\n| Data at risk | Redis AOF log (`--appendonly yes`) containing unacknowledged settlement messages |\n\n**Root cause:** `ledger-queue-0` uses a `local`-type PersistentVolume, which carries a hard nodeAffinity constraint pinning it exclusively to the failed node `ip-10-0-7-21` [cite: concepts/storage/volumes#local-0, cite: concepts/storage/persistent-volumes#node-affinity-0]. The scheduler correctly refuses to place the pod on any of the 8 healthy nodes because none of them satisfy that affinity. The pod cannot move until either the failed node returns, or the volume is replaced.\n\n**Why I escalated:** Replacing the volume requires deleting PVC `data-ledger-queue-0`. Because the PV's reclaimPolicy is `Delete`, that action will also destroy the PV object and the AOF data on the disk \u2014 permanently losing buffered settlement messages \u2014 *before* the infra team has confirmed the node is gone for good. That is an irreversible financial data-loss decision that must be made by an authorised engineer, not automated away.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8366,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 406,
+ "stop_reason": "end_turn"
+}

@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "EqQJCqgBCBMYAipAtc5GJvdRSgQqTVlNRveWN4uLVqtbtWi48EUTqc4r9p0Aug7pcjI+5XfhGsSVusLLniih3dSpv1bHaNcL21f+OTIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAfT+8dYGEgwTUsqXbu6J21Cwf60aDPMw0gAh6InNFYaZTCIwJC6hhh0+9rK3ChNo7NdQl6CNg80HPxs73zrbm5S84Eb7994MHH1kjMYc2RvEB0vNKqgHaHEYjMVdd3KIQilU4ogDW3aElnS5/WvpL9qexm2WpY3RK3EJZBKFFMubaIZRHkxfhzxI2zSIqD4Af00iLw+Ly8Q7Bkttviobwe6bktn9GhX3DummFqlRlmonmQcQ3EOE2acVrUURVSV8paTsz4wZyUlAM9zNsorPp0CWO9NTsclEeboUmoSdv2wkC4nBxRWn5fUcHUdAedOboWpm+AV+ZrG/DIK6S3kcJYqn9X8czw7aVEg50MGNsuq1Zem1/21C2/HfFIQN7FO3+MdVdTPGMMcJtcHTK6MJmqJNi3se2rtAGRJ4Q9kHIfsgiF7iqwVWoX/XFJpwsCp31FBZi77kjbjuoh0OK9qbTVqXBY7Uu58E2cW+N7WtOg668QjKTtNACDU3bVr/qobI1mghCeQc+8+FJxED63t0nZaligGOtJB+rK51DRTl7NZ7aOwYaZXcEpOszcGo0eTXzKBHMcCULjk3+0XLLKx8bIiChM7uzM/RqL5dx51y+4NOvoUBtortkIKZ86wQ7zVtd+NDTJqRJL/1g+oEZzKPGDhXB65tBxgDUMU9asYyBD2QGvhSsnbgiyUKNsYVgg8zLCNMCr1rUIegGpg1FkmIFWzmwWQck73smqqBGLoNt3z5MQExp5pTPRA1bewq6Glzez6fDUfStgS0M2GNShwiA8rP/VxFRrJTAngzNle2OZGd1yub516rIn0poVGkw6GKc0K5CP6zB58aqVqzJXtmUtmEKK1YLpXY6n8Nk43hKqYUh+tyoyPZ5F7stFFC/kurpJNHE55MV0hhAf+lV5zG4TrcdPdPpJJIFjinuzlyT5yy1UVpP2r0pE7IA8oXHOn4IkzWFy5PCLZFrtNwyk6oesYrHFA6hPRMlfl0wzYhZ4Y/fMCk1noSFnH0b2yDhLknQzpPg9cmJCtD6J6vwU2SrVnlv7dv/c2TzVU+Yu++WU2ppTyLjYglplqqNlycQ5LrlhrYxkmXsUwxMMgJgP7n4kB7Tyq6pv8fTdq/Z4Y8N59nkOaqiWRAOFA4le69Sox7Cnb9k8MBVcAk8Noczrbc6Ru2gGUrM2b++CpX3cG2JigadZMs6B56NZSxKJHLA1h4oXbWRJ+yq9bKLKhZix8dzoKDtWKsppL8Fyc40ZEQQrk9djAI97Gm9D282t3JzV+pXwIfpff67f3/ep7fRmfwx+byc5XTJT8uJZu4YDPJwWVe0esxCiauPbR4++YJKnNNPAWE/PovdAiDkWtOtwKMGAE=",
+   "thinking": "The key finding is in the controller logs:\n\n```\nE0517 02:03:12.882410       7 store.go:950] annotation group ConfigurationSnippet contains risky annotation based on ingress configuration\nW0517 02:03:12.882455       7 store.go:951] skipping annotation nginx.ingress.kubernetes.io/configuration-snippet on ingress legacy/legacy-portal: Snippet directives are disabled by the Ingress administrator (allow-snippet-annotations=false)\n```\n\nThis is the root cause. The `legacy-portal` Ingress uses a `configuration-snippet` annotation (likely containing the regex-based redirect using `rewrite` or `return` directives), but after the upgrade, `allow-snippet-annotations` is set to `false` by default. \n\nThis matches a known security hardening change in ingress-nginx v1.2.1+, where snippet annotations got disabled by default due to past CVEs. I want to confirm this by checking the official docs on the allow-snippet-annotations setting.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "The controller logs reveal the root cause. Let me now search for documentation on the `allow-snippet-annotations` security change.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01SG9o5HcdoSAcyZ6CnYTi89",
+   "input": {
+    "query": "allow-snippet-annotations configuration-snippet security ingress-nginx disabled"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5863,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 337,
+ "stop_reason": "tool_use"
+}

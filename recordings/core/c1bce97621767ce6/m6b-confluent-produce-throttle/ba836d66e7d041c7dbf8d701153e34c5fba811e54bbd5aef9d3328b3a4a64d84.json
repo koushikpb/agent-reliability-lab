@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "This is very revealing! The logs show the issue clearly. Let me search the Kafka documentation to confirm my understanding of producer throttling.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01UP1BvhpJsFpyJN9anZNosj",
+   "input": {
+    "query": "Kafka broker throttling producer rate limiting"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3163,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 89,
+ "stop_reason": "tool_use"
+}

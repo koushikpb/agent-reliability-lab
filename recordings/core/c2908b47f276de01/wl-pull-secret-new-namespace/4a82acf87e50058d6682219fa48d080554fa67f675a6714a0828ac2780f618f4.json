@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect. Let me search the Kubernetes documentation to confirm the proper way to handle image pull secrets across namespaces.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_013yHL3H9SN7q1SRafa3muQX",
+   "input": {
+    "query": "image pull secrets namespace private registry"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2018,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 83,
+ "stop_reason": "tool_use"
+}

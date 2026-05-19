@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! Now I have all the information I need. The issue is clear: the documents namespace is enforcing the PodSecurity \"restricted\" policy, and the pdf-exporter 1.5.0 image doesn't have the required security context settings. Let me update the ticket with the resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KDRzgvdfrYmAVwAf83hbii",
+   "input": {
+    "id": "T-4002",
+    "note": "**Cause:** The deployment failed due to PodSecurity policy violations in the documents namespace. The namespace enforces the \"restricted:latest\" PodSecurity policy, which requires specific security context settings that the pdf-exporter 1.5.0 image does not provide by default.\n\n**Evidence:** The deploy job logs show the pod creation was rejected with the following violations:\n- `allowPrivilegeEscalation != false` - not set in the container's securityContext\n- `unrestricted capabilities` - capabilities.drop=[\\\"ALL\\\"] not set\n- `runAsNonRoot != true` - not set in the pod/container securityContext  \n- `seccompProfile` - not set to RuntimeDefault or Localhost\n\n**Fix:** Update the pdf-exporter deployment manifest to include the required security context settings. Add the following to the deployment spec for the exporter container [cite: concepts/workloads/pods/advanced-pod-config#container-level-security-context-0]:\n\n```yaml\nsecurityContext:\n  allowPrivilegeEscalation: false\n  runAsNonRoot: true\n  runAsUser: 1000  # Use an appropriate non-root UID\n  capabilities:\n    drop:\n    - ALL\n  seccompProfile:\n    type: RuntimeDefault\n```\n\nThese settings comply with the Restricted Pod Security Standard [cite: concepts/security/pod-security-standards#restricted-0] and will allow the pdf-exporter 1.5.0 pods to be created successfully during deployment.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6636,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 500,
+ "stop_reason": "tool_use"
+}

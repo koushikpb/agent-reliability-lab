@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/dual-stack#dual-stack-service-configuration-scenarios-4",
+  "heading": "IPv4/IPv6 dual-stack > Services > Dual-stack Service configuration scenarios",
+  "text": "   ```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\n  labels:\n    app.kubernetes.io/name: MyApp\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n```\n\n   You can validate this behavior by using kubectl to inspect an existing service.\n\n   ```shell\n   kubectl get svc my-service -o yaml\n   ```\n\n   ```yaml\n   apiVersion: v1\n   kind: Service\n   metadata:\n     labels:\n       app.kubernetes.io/name: MyApp\n     name: my-service\n   spec:\n     clusterIP: 10.0.197.123\n     clusterIPs:\n     - 10.0.197.123\n     ipFamilies:\n     - IPv4\n     ipFamilyPolicy: SingleStack\n     ports:\n     - port: 80\n       protocol: TCP\n       targetPort: 80\n     selector:\n       app.kubernetes.io/name: MyApp\n     type: ClusterIP\n   status:\n     loadBalancer: {}\n   ```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/imperative-config#defining-controller-selectors-and-podtemplate-labels-0",
+  "heading": "Imperative Management of Kubernetes Objects Using Configuration Files > Defining controller selectors and PodTemplate labels",
+  "text": "Updating selectors on controllers is strongly discouraged.\n\nThe recommended approach is to define a single, immutable PodTemplate label\nused only by the controller selector with no other semantic meaning.\n\nExample label:\n\n```yaml\nselector:\n  matchLabels:\n      controller-selector: \"apps/v1/deployment/nginx\"\ntemplate:\n  metadata:\n    labels:\n      controller-selector: \"apps/v1/deployment/nginx\"\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#defining-controller-selectors-and-podtemplate-labels-0",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > Defining controller selectors and PodTemplate labels",
+  "text": "Updating selectors on controllers is strongly discouraged.\n\nThe recommended approach is to define a single, immutable PodTemplate label\nused only by the controller selector with no other semantic meaning.\n\n**Example:**\n\n```yaml\nselector:\n  matchLabels:\n      controller-selector: \"apps/v1/deployment/nginx\"\ntemplate:\n  metadata:\n    labels:\n      controller-selector: \"apps/v1/deployment/nginx\"\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#defining-a-service-0",
+  "heading": "Service > Defining a Service",
+  "text": "A Service is an object\n(the same way that a Pod or a ConfigMap is an object). You can create,\nview or modify Service definitions using the Kubernetes API. Usually\nyou use a tool such as `kubectl` to make those API calls for you.\n\nFor example, suppose you have a set of Pods that each listen on TCP port 9376\nand are labelled as `app.kubernetes.io/name=MyApp`. You can define a Service to\npublish that TCP listener:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n      targetPort: 9376\n```\n\nApplying this manifest creates a new Service named \"my-service\" with the default\nClusterIP [service type](#publishing-services-service-types). The Service\ntargets TCP port 9376 on any Pod with the `app.kubernetes.io/name: MyApp` label."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/enforce-standards-namespace-labels#applying-to-all-namespaces-0",
+  "heading": "Enforce Pod Security Standards with Namespace Labels > Add labels to existing namespaces with `kubectl label` > Applying to all namespaces",
+  "text": "If you're just getting started with the Pod Security Standards, a suitable first step would be to\nconfigure all namespaces with audit annotations for a stricter level such as `baseline`:\n\n```shell\nkubectl label --overwrite ns --all \\\n  pod-security.kubernetes.io/audit=baseline \\\n  pod-security.kubernetes.io/warn=baseline\n```\n\nNote that this is not setting an enforce level, so that namespaces that haven't been explicitly\nevaluated can be distinguished. You can list namespaces without an explicitly set enforce level\nusing this command:\n\n```shell\nkubectl get namespaces --selector='!pod-security.kubernetes.io/enforce'\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/network-policies#targeting-a-namespace-by-its-name-0",
+  "heading": "Network Policies > Targeting a Namespace by its name",
+  "text": "The Kubernetes control plane sets an immutable label `kubernetes.io/metadata.name` on all\nnamespaces, the value of the label is the namespace name.\n\nWhile NetworkPolicy cannot target a namespace by its name with some object field, you can use the\nstandardized label to target a specific namespace."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dual-stack#dual-stack-service-configuration-scenarios-5",
+  "heading": "IPv4/IPv6 dual-stack > Services > Dual-stack Service configuration scenarios",
+  "text": "1. When dual-stack is enabled on a cluster, existing\n   [headless Services](/docs/concepts/services-networking/service/#headless-services) with selectors are\n   configured by the control plane to set `.spec.ipFamilyPolicy` to `SingleStack` and set\n   `.spec.ipFamilies` to the address family of the first service cluster IP range (configured via the\n   `--service-cluster-ip-range` flag to the kube-apiserver) even though `.spec.clusterIP` is set to\n   `None`.\n\n   ```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\n  labels:\n    app.kubernetes.io/name: MyApp\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n```\n\n   You can validate this behavior by using kubectl to inspect an existing headless service with selectors."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/kustomization#setting-cross-cutting-fields-1",
+  "heading": "Declarative Management of Kubernetes Objects Using Kustomize > Overview of Kustomize > Setting cross-cutting fields",
+  "text": "```shell\n# Create a deployment.yaml\ncat <<EOF >./deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx-deployment\n  labels:\n    app: nginx\nspec:\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx\nEOF\n\ncat <<EOF >./kustomization.yaml\nnamespace: my-namespace\nnamePrefix: dev-\nnameSuffix: \"-001\"\nlabels:\n  - pairs:\n      app: bingo\n    includeSelectors: true \ncommonAnnotations:\n  oncallPager: 800-555-1212\nresources:\n- deployment.yaml\nEOF\n```\n\nRun `kubectl kustomize ./` to view those fields are all set in the Deployment Resource:"
+ }
+]

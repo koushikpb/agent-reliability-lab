@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The PostgreSQL database is failing to start due to a corrupted checkpoint record. This is a critical issue that typically occurs after an unclean shutdown (like the node reboot mentioned). Let me search for PostgreSQL recovery documentation in Kubernetes to understand the recommended approach:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01X7RqJUjKRiwdrqKfR1tFTn",
+   "input": {
+    "query": "PostgreSQL crash recovery invalid checkpoint corrupt data"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2271,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 116,
+ "stop_reason": "tool_use"
+}

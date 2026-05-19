@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/inject-data-application/define-environment-variable-container#define-an-environment-variable-for-a-container-0",
+  "heading": "Define Environment Variables for a Container > Define an environment variable for a container",
+  "text": "When you create a Pod, you can set environment variables for the containers\nthat run in the Pod. To set environment variables, include the `env` or\n`envFrom` field in the configuration file.\n\nThe `env` and `envFrom` fields have different effects.\n\n`env`\n: allows you to set environment variables for a container, specifying a value directly for each variable that you name.\n\n`envFrom`\n: allows you to set environment variables for a container by referencing either a ConfigMap or a Secret.\n When you use `envFrom`, all the key-value pairs in the referenced ConfigMap or Secret\n are set as environment variables for the container.\n You can also specify a common prefix string."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-environment-variable-container#define-an-environment-variable-for-a-container-1",
+  "heading": "Define Environment Variables for a Container > Define an environment variable for a container",
+  "text": "You can read more about [ConfigMap](/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables)\nand [Secret](/docs/tasks/inject-data-application/distribute-credentials-secure/#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables).\n\nThis page explains how to use `env`.\n\nIn this exercise, you create a Pod that runs one container. The configuration\nfile for the Pod defines an environment variable with name `DEMO_GREETING` and\nvalue `\"Hello from the environment\"`. Here is the configuration manifest for the\nPod:"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Configure all key-value pairs in a Secret as container environment variables",
+  "text": "This functionality is available in Kubernetes v1.6 and later.\n\n- Create a Secret containing multiple key-value pairs\n\n  ```shell\n  kubectl create secret generic test-secret --from-literal=username='my-app' --from-literal=password='39528$vdg7Jb'\n  ```\n\n- Use envFrom to define all of the Secret's data as container environment variables.\n  The key from the Secret becomes the environment variable name in the Pod.\n\n  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: envfrom-secret\nspec:\n  containers:\n  - name: envars-test-container\n    image: nginx\n    envFrom:\n    - secretRef:\n        name: test-secret\n```\n\n- Create the Pod:\n\n  ```shell\n  kubectl create -f https://k8s.io/examples/pods/inject/pod-secret-envFrom.yaml\n  ```"
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-secrets-as-environment-variables-0",
+  "heading": "Secrets > Working with Secrets > Using Secrets as environment variables",
+  "text": "To use a Secret in an environment variable\nin a Pod:\n\n1. For each container in your Pod specification, add an environment variable\n   for each Secret key that you want to use to the\n   `env[].valueFrom.secretKeyRef` field.\n1. Modify your image and/or command line so that the program looks for values\n   in the specified environment variables.\n\nFor instructions, refer to\n[Define container environment variables using Secret data](/docs/tasks/inject-data-application/distribute-credentials-secure/#define-container-environment-variables-using-secret-data).\n\nIt's important to note that the range of characters allowed for environment variable\nnames in pods is [restricted](/docs/tasks/inject-data-application/define-environment-variable-container/#using-environment-variables-inside-of-your-config).\nIf any keys do not meet the rules, those keys are not made available to your container, though\nthe Pod is allowed to start."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-environment-variable-container#using-environment-variables-inside-of-your-config-0",
+  "heading": "Define Environment Variables for a Container > Using environment variables inside of your config",
+  "text": "Environment variables that you define in a Pod's configuration under \n`.spec.containers[*].env[*]` can be used elsewhere in the configuration, for \nexample in commands and arguments that you set for the Pod's containers.\nIn the example configuration below, the `GREETING`, `HONORIFIC`, and\n`NAME` environment variables are set to `Warm greetings to`, `The Most\nHonorable`, and `Kubernetes`, respectively. The environment variable \n`MESSAGE` combines the set of all these environment variables and then uses it \nas a CLI argument passed to the `env-print-demo` container.\n\nEnvironment variable names may consist of any [printable ASCII characters](https://www.ascii-code.com/characters/printable-characters) except '='."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables-1",
+  "heading": "Distribute Credentials Securely Using Secrets > Configure all key-value pairs in a Secret as container environment variables",
+  "text": "- In your shell, display `username` and `password` container environment variables.\n\n  ```shell\n  kubectl exec -i -t envfrom-secret -- /bin/sh -c 'echo \"username: $username\\npassword: $password\\n\"'\n  ```\n\n  The output is similar to:\n\n  ```\n  username: my-app\n  password: 39528$vdg7Jb\n  ```"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-command-argument-container#use-environment-variables-to-define-arguments-0",
+  "heading": "Define a Command and Arguments for a Container > Use environment variables to define arguments",
+  "text": "In the preceding example, you defined the arguments directly by\nproviding strings. As an alternative to providing strings directly,\nyou can define arguments by using environment variables:\n\n```yaml\nenv:\n- name: MESSAGE\n  value: \"hello world\"\ncommand: [\"/bin/echo\"]\nargs: [\"$(MESSAGE)\"]\n```\n\nThis means you can define an argument for a Pod using any of\nthe techniques available for defining environment variables, including\n[ConfigMaps](/docs/tasks/configure-pod-container/configure-pod-configmap/)\nand\n[Secrets](/docs/concepts/configuration/secret/).\n\nThe environment variable appears in parentheses, `\"$(VAR)\"`. This is\nrequired for the variable to be expanded in the `command` or `args` field."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#uses-for-secrets-0",
+  "heading": "Secrets > Uses for Secrets",
+  "text": "You can use Secrets for purposes such as the following:\n\n- [Set environment variables for a container](/docs/tasks/inject-data-application/distribute-credentials-secure/#define-container-environment-variables-using-secret-data).\n- [Provide credentials such as SSH keys or passwords to Pods](/docs/tasks/inject-data-application/distribute-credentials-secure/#provide-prod-test-creds).\n- [Allow the kubelet to pull container images from private registries](/docs/tasks/configure-pod-container/pull-image-private-registry/).\n\nThe Kubernetes control plane also uses Secrets; for example,\n[bootstrap token Secrets](#bootstrap-token-secrets) are a mechanism to\nhelp automate node registration."
+ }
+]

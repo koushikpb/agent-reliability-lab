@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me search the Kubernetes documentation to understand ephemeral storage requests and limits better:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Gi8NWpq8ZYU9sX2inVPXwG",
+   "input": {
+    "query": "ephemeral storage requests limits eviction"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2372,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 80,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/probes#when-should-you-use-a-liveness-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > When to use each probe > When should you use a liveness probe?",
+  "text": "If the process in your container is able to crash on its own whenever it\nencounters an issue or becomes unhealthy, you do not necessarily need a liveness\nprobe; the kubelet will automatically perform the correct action in accordance\nwith the Pod's `restartPolicy`.\n\nIf you'd like your container to be killed and restarted if a probe fails, then\nspecify a liveness probe, and specify a `restartPolicy` of `Always` or\n`OnFailure`.\n\nA common pattern for liveness probes is to use the same low-cost HTTP endpoint\nas for readiness probes, but with a higher `failureThreshold`. This ensures\nthat the pod is observed as not-ready for some period of time before it is hard\nkilled."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-results-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe results",
+  "text": "The kubelet evaluates the result of each probe execution and takes action\naccordingly. Each probe has one of three results:\n\n`Success`\n: The container passed the diagnostic.\n\n`Failure`\n: The container failed the diagnostic. For liveness and startup probes, the\n  kubelet kills the container, and the container is subjected to its\n  [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy).\n  For readiness probes, the kubelet marks the container as not ready, and the\n  Pod stops receiving traffic from matching Services.\n\n`Unknown`\n: The diagnostic failed (no action should be taken, and the kubelet will make\n  further checks).\n\nIf a container does not provide a particular probe, the kubelet always\nconsiders the result as `Success`. For readiness probes specifically,\nthe result is considered `Failure` before the initial delay."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#liveness-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Types of probe > Liveness probe",
+  "text": "Liveness probes determine when to restart a container.\nFor example, liveness probes could catch a deadlock, where an application is\nrunning, but unable to make progress. Restarting a container in such a state\ncan help to make the application more available despite bugs.\n\nIf a container fails its liveness probe more times than the configured tolerance,\nthe kubelet restarts that container.\nLiveness probes do not wait for readiness probes to succeed. If you want to\nwait before executing a liveness probe, you can either define\n`initialDelaySeconds` or use a [startup probe](#startup-probe).\n\nLiveness probes can be a powerful way to recover from application failures,\nbut they should be used with caution.\nLiveness probes must be configured carefully to ensure that they truly indicate\nunrecoverable application failure, for example a deadlock."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-tcp-liveness-probe-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a TCP liveness probe",
+  "text": "As you can see, configuration for a TCP check is quite similar to an HTTP check.\nThis example uses both readiness and liveness probes. The kubelet will run the\nfirst liveness probe 15 seconds after the container starts. This will attempt to\nconnect to the `goproxy` container on port 8080. If the liveness probe fails,\nthe container will be restarted. The kubelet will continue to run this check\nevery 10 seconds.\n\nIn addition to the liveness probe, this configuration includes a readiness\nprobe. The kubelet will run the first readiness probe 15 seconds after the\ncontainer starts. Similar to the liveness probe, this will attempt to connect to\nthe `goproxy` container on port 8080. If the probe succeeds, the Pod will be\nmarked as ready and will receive traffic from services. If the readiness probe\nfails, the pod will be marked unready and will not receive traffic from any\nservices.\n\nTo try the TCP liveness check, create a Pod:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-2",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "`successThreshold`\n: Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. Must be 1 for liveness and startup Probes. Minimum value is 1.\n\n`failureThreshold`\n: After a probe fails `failureThreshold` times in a row, Kubernetes considers that the overall check has failed: the container is _not_ ready/healthy/live. Defaults to 3. Minimum value is 1. For the case of a startup or liveness probe, if at least `failureThreshold` probes have failed, Kubernetes treats the container as unhealthy and triggers a restart for that specific container. The kubelet honors the setting of `terminationGracePeriodSeconds` for that container. For a failed readiness probe, the kubelet continues running the container that failed checks, and also continues to run more probes; because the check failed, the kubelet sets the `Ready` [condition](/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions) on the Pod to `false`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#liveness-probe-0",
+  "heading": "Pod Lifecycle > Container probes > Liveness probe",
+  "text": "Liveness probes determine when to restart a container.\nFor example, liveness probes could catch a deadlock, where an application is\nrunning, but unable to make progress. Restarting a container in such a state\ncan help to make the application more available despite bugs.\n\nIf a container fails its liveness probe more times than the configured tolerance,\nthe kubelet restarts that container.\nLiveness probes do not wait for readiness probes to succeed. If you want to\nwait before executing a liveness probe, you can either define\n`initialDelaySeconds` or use a startup probe."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#liveness-probe-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Types of probe > Liveness probe",
+  "text": "Incorrect implementation of liveness probes can lead to cascading failures.\nThis results in restarting of container under high load; failed client requests\nas your application became less scalable; and increased workload on remaining\npods due to some failed pods. Understand the difference between liveness and\nreadiness probes and when to apply them for your app."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-1",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "In practice, a `CrashLoopBackOff` is a condition or event that might be seen as output\nfrom the `kubectl` command, while describing or listing Pods, when a container in the Pod\nfails to start properly and then continually tries and fails in a loop.\n\nIn other words, when a container enters the crash loop, Kubernetes applies the\nexponential backoff delay mentioned in the [Container restart policy](#restart-policy).\nThis mechanism prevents a faulty container from overwhelming the system with continuous\nfailed start attempts.\n\nThe `CrashLoopBackOff` can be caused by issues like the following:\n\n* Application errors that cause the container to exit.\n* Configuration errors, such as incorrect environment variables or missing\n  configuration files.\n* Resource constraints, where the container might not have enough memory or CPU\n  to start properly.\n* Health checks failing if the application doesn't start serving within the\n  expected time.\n* Container liveness probes or startup probes returning a `Failure` result\n  as mentioned in the [probes section](#container-probes).\n\nTo investigate the root cause of a `CrashLoopBackOff` issue, a user can:"
+ }
+]

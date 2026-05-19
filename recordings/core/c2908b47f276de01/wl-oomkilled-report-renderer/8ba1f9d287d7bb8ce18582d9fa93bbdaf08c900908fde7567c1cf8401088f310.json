@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search the documentation to understand memory limits and OOMKilled behavior:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_013ZowvPiHZu5QUueiTMWrxZ",
+   "input": {
+    "query": "OOMKilled memory limit pod restart exit code 137"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2103,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 81,
+ "stop_reason": "tool_use"
+}

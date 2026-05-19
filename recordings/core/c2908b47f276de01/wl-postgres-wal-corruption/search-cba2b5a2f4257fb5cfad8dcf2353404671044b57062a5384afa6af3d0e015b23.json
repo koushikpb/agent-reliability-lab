@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/run-single-instance-stateful-application#accessing-the-mysql-instance-0",
+  "heading": "Run a Single-Instance Stateful Application > Accessing the MySQL instance",
+  "text": "The preceding YAML file creates a service that\nallows other Pods in the cluster to access the database. The Service option\n`clusterIP: None` lets the Service DNS name resolve directly to the\nPod's IP address. This is optimal when you have only one Pod\nbehind a Service and you don't intend to increase the number of Pods.\n\nRun a MySQL client to connect to the server:\n\n```shell\nkubectl run -it --rm --image=mysql:9 --restart=Never mysql-client -- mysql -h mysql -ppassword\n```\n\nThis command creates a new Pod in the cluster running a MySQL client\nand connects it to the server through the Service. If it connects, you\nknow your stateful MySQL database is up and running."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/cpu-management-policies#changing-the-cpu-manager-policy-1",
+  "heading": "Control CPU Management Policies on the Node > Changing the CPU Manager Policy",
+  "text": "```\ncould not restore state from checkpoint: configured policy \"static\" differs from state checkpoint policy \"none\", please drain this node and delete the CPU manager checkpoint file \"/var/lib/kubelet/cpu_manager_state\" before restarting Kubelet\n```\n\nif the set of online CPUs changes on the node, the node must be drained and CPU manager manually reset by deleting the\nstate file `cpu_manager_state` in the kubelet root directory.\n\n`none` policy configuration\nThis policy has no extra configuration items."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-0",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "In any situation where a pod deletion has not succeeded for 6 minutes, kubernetes will\nforce detach volumes being unmounted if the node is unhealthy at that instant. Any\nworkload still running on the node that uses a force-detached volume will cause a\nviolation of the\n[CSI specification](https://github.com/container-storage-interface/spec/blob/master/spec.md#controllerunpublishvolume),\nwhich states that `ControllerUnpublishVolume` \"**must** be called after all\n`NodeUnstageVolume` and `NodeUnpublishVolume` on the volume are called and succeed\".\nIn such circumstances, volumes on the node in question might encounter data corruption.\n\nThe forced storage detach behaviour is optional; users might opt to use the \"Non-graceful\nnode shutdown\" feature instead."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/configure-upgrade-etcd#understanding-etcdctl-and-etcdutl-0",
+  "heading": "Operating etcd clusters for Kubernetes > Understanding etcdctl and etcdutl",
+  "text": "`etcdctl` and `etcdutl` are command-line tools used to interact with etcd clusters, but they serve different purposes:\n\n- `etcdctl`: This is the primary command-line client for interacting with etcd over a\nnetwork. It is used for day-to-day operations such as managing keys and values,\nadministering the cluster, checking health, and more.\n\n- `etcdutl`: This is an administration utility designed to operate directly on etcd data\nfiles, including migrating data between etcd versions, defragmenting the database,\nrestoring snapshots, and validating data consistency. For network operations, `etcdctl`\nshould be used.\n\nFor more information on `etcdutl`, you can refer to the [etcd recovery documentation](https://etcd.io/docs/v3.5/op-guide/recovery/)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#example-debugging-a-down-unreachable-node-3",
+  "heading": "Troubleshooting Clusters > Listing your cluster > Example: debugging a down/unreachable node",
+  "text": "```none\n  Type                 Status    LastHeartbeatTime                 LastTransitionTime                Reason              Message\n  ----                 ------    -----------------                 ------------------                ------              -------\n  NetworkUnavailable   False     Thu, 17 Feb 2022 17:09:13 -0500   Thu, 17 Feb 2022 17:09:13 -0500   WeaveIsUp           Weave pod has set this\n  MemoryPressure       Unknown   Thu, 17 Feb 2022 17:12:40 -0500   Thu, 17 Feb 2022 17:13:52 -0500   NodeStatusUnknown   Kubelet stopped posting node status.\n  DiskPressure         Unknown   Thu, 17 Feb 2022 17:12:40 -0500   Thu, 17 Feb 2022 17:13:52 -0500   NodeStatusUnknown   Kubelet stopped posting node status.\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "Force storage detach on timeout can be disabled by setting the `disable-force-detach-on-timeout`\nconfig field in `kube-controller-manager`. Disabling the force detach on timeout feature means\nthat a volume that is hosted on a node that is unhealthy for more than 6 minutes will not have\nits associated\n[VolumeAttachment](/docs/reference/kubernetes-api/config-and-storage-resources/volume-attachment-v1/)\ndeleted.\n\nAfter this setting has been applied, unhealthy pods still attached to volumes must be recovered\nvia the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure mentioned above.\n\n- Caution must be taken while using the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure.\n- Deviation from the steps documented above can result in data corruption."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#example-debugging-a-down-unreachable-node-7",
+  "heading": "Troubleshooting Clusters > Listing your cluster > Example: debugging a down/unreachable node",
+  "text": "```none\n  memory             456Mi (24%)  256Mi (13%)\n  ephemeral-storage  0 (0%)       0 (0%)\n  hugepages-2Mi      0 (0%)       0 (0%)\nEvents:\n...\n```"
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/authentication-mechanisms#intro-0",
+  "heading": "Hardening Guide - Authentication Mechanisms",
+  "text": "Selecting the appropriate authentication mechanism(s) is a crucial aspect of securing your cluster.\nKubernetes provides several built-in mechanisms, each with its own strengths and weaknesses that\nshould be carefully considered when choosing the best authentication mechanism for your cluster.\n\nIn general, it is recommended to enable as few authentication mechanisms as possible to simplify\nuser management and prevent cases where users retain access to a cluster that is no longer required.\n\nIt is important to note that Kubernetes does not have an in-built user database within the cluster.\nInstead, it takes user information from the configured authentication system and uses that to make\nauthorization decisions. Therefore, to audit user access, you need to review credentials from every\nconfigured authentication source.\n\nFor production clusters with multiple users directly accessing the Kubernetes API, it is\nrecommended to use external authentication sources such as OIDC. The internal authentication\nmechanisms, such as client certificates and service account tokens, described below, are not\nsuitable for this use case."
+ }
+]

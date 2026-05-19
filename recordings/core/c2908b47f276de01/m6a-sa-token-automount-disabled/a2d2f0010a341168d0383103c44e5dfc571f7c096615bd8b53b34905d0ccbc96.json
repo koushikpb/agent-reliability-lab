@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the issue. The logs clearly show that the pod cannot load the in-cluster configuration because it's missing the ServiceAccount token. Looking at the pod details, I can see the critical difference:\n\n- **Old pod** (running, platform-base-1.8.0): Has `automountServiceAccountToken` not explicitly set to false AND has volume mounts for `kube-api-access`\n- **New pod** (crashing, platform-base-2.0.3): Has `automountServiceAccountToken` explicitly set to false and is MISSING the service account volume mount\n\nLet me search the documentation to confirm how this works:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01N2fbSKyyGKSFVBoWCB3QvP",
+   "input": {
+    "query": "automountServiceAccountToken in-cluster configuration"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2143,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 204,
+ "stop_reason": "tool_use"
+}

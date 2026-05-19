@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I have identified the issue and found the documentation to support it. The problem is clear:\n\n**Root Cause:** The catalog-search pods are taking ~55 seconds to load all their shards (from logs: ~9:14:02 to 9:14:55 in the first pod), but the liveness probe has an `initialDelaySeconds` of only 30 seconds with a period of 10 seconds and a failure threshold of 3. This means the liveness probe starts checking at 30 seconds, and after 3 failures (30 seconds), it kills the container before the application even finishes starting.\n\n**Evidence:**\n1. Pod logs show the startup process takes approximately 50+ seconds to load 48 shards into memory\n2. The liveness probe configuration shows: `delay=30s period=10s #failure=3` which gives only 30 seconds before the first check and 30 more seconds before termination\n3. Both pods receive SIGTERM around ~50+ seconds into startup, before the HTTP listener even opens\n\n**Fix:** The application needs a startup probe to allow the long initialization period. The startup probe will prevent the liveness probe from running until the application is ready [cite: concepts/workloads/pods/probes#startup-probe-0]. The startup probe should check the same `/healthz` endpoint but with a much higher `failureThreshold` to allow sufficient time for shard loading [cite: tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0].\n\nLet me now update the ticket with this resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016ExMwUJ8QXRd9p7ezpWCdF",
+   "input": {
+    "id": "T-2003",
+    "note": "CAUSE: The catalog-search pods are stuck in a restart loop because the liveness probe is configured with initialDelaySeconds=30s, periodSeconds=10s, and failureThreshold=3, which gives only ~60 seconds total before the container is killed. However, the application takes 50+ seconds just to load the index shards into memory before starting the HTTP listener.\n\nEVIDENCE: Pod logs show the startup process loading 48 shards (12.4 GiB) taking from 09:14:02 to 09:14:55 (~53 seconds). Both pods receive SIGTERM during shard loading, well before the HTTP listener opens. The liveness probe cannot reach the healthz endpoint because the container hasn't started listening yet.\n\nFIX: Add a startup probe to the deployment that allows sufficient time for initialization. Configure it with the same /healthz endpoint as the liveness probe, but with failureThreshold * periodSeconds long enough to cover the startup time (e.g., failureThreshold=36, periodSeconds=10 = 360 seconds max). Once the startup probe succeeds, the liveness probe will take over for fast deadlock detection. This is the recommended Kubernetes pattern for slow-starting applications [cite: concepts/workloads/pods/probes#startup-probe-0] [cite: tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6902,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 777,
+ "stop_reason": "tool_use"
+}

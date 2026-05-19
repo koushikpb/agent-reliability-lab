@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/system-traces#kubelet-traces-0",
+  "heading": "Traces For Kubernetes System Components > Component traces > kubelet traces",
+  "text": "The kubelet CRI interface and authenticated http servers are instrumented to generate\ntrace spans. As with the apiserver, the endpoint and sampling rate are configurable.\nTrace context propagation is also configured. A parent span's sampling decision is always respected.\nA provided tracing configuration sampling rate will apply to spans without a parent.\nEnabled without a configured endpoint, the default OpenTelemetry Collector receiver address of \"localhost:4317\" is set.\n\n#### Enabling tracing in the kubelet\n\nTo enable tracing, apply the [tracing configuration](https://github.com/kubernetes/component-base/blob/release-1.27/tracing/api/v1/types.go).\nThis is an example snippet of a kubelet config that records spans for 1 in 10000 requests, and uses the default OpenTelemetry endpoint:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-level-terminationgraceperiodseconds-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields > Probe-level `terminationGracePeriodSeconds`",
+  "text": "```yaml\nspec:\n  terminationGracePeriodSeconds: 3600  # pod-level\n  containers:\n  - name: test\n    image: ...\n\n    ports:\n    - name: liveness-port\n      containerPort: 8080\n\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: liveness-port\n      failureThreshold: 1\n      periodSeconds: 60\n      # Override pod-level terminationGracePeriodSeconds\n      terminationGracePeriodSeconds: 60\n```\n\nProbe-level `terminationGracePeriodSeconds` **cannot** be set for readiness probes.\nIt will be rejected by the API server."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#api-kinds-0",
+  "heading": "Configuration > Kubernetes configuration-related APIs",
+  "text": "Kubernetes provides two main API kinds that you can use to store configuration,\nready for a Pod (or other component) to load and use:\n[ConfigMap](/docs/concepts/configuration/configmap/), and\n[Secret](/docs/concepts/configuration/secret/).\n\nThe special-use\n[CertificateSigningRequest](/docs/reference/access-authn-authz/certificate-signing-requests/#certificate-signing-requests)\nand\n[ClusterTrustBundle](/docs/reference/access-authn-authz/certificate-signing-requests/#cluster-trust-bundles)\nAPI kinds also hold configuration data that's relevant to some specific cases,\nsuch as TLS configuration.\n\nAll of these configuration mechanisms, even for certificates, are designed so that configuration\ncan be reused and shared across multiple Pods. You typically don't have to write the configuration\nout once per Pod, and you should design applications where possible so that they can work with\nshared configuration."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#configurable-container-restart-delay-0",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Configurable container restart delay",
+  "text": "With the feature gate `KubeletCrashLoopBackOffMax` enabled, you can\nreconfigure the maximum delay between container start retries from the default\nof 300s (5 minutes). This configuration is set per node using kubelet\nconfiguration. In your [kubelet configuration](/docs/tasks/administer-cluster/kubelet-config-file/),\nunder `crashLoopBackOff` set the `maxContainerRestartPeriod` field between `\"1s\"` and\n`\"300s\"`. As described above in [Container restart policy](#restart-policy),\ndelays on that node will still start at 10s and increase exponentially by 2x\neach restart, but will now be capped at your configured maximum. If the\n`maxContainerRestartPeriod` you configure is less than the default initial value\nof 10s, the initial delay will instead be set to the configured maximum.\n\nSee the following kubelet configuration examples:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/controller-manager-leader-migration#initial-leader-migration-configuration-0",
+  "heading": "Migrate Replicated Control Plane To Use Cloud Controller Manager > Before you begin > Initial Leader Migration configuration",
+  "text": "Leader Migration optionally takes a configuration file representing the state of\ncontroller-to-manager assignment. At this moment, with in-tree cloud provider,\n`kube-controller-manager` runs `route`, `service`, and `cloud-node-lifecycle`. The\nfollowing example configuration shows the assignment.\n\nLeader Migration can be enabled without a configuration. Please see\n[Default Configuration](#default-configuration) for details.\n\n```yaml\nkind: LeaderMigrationConfiguration\napiVersion: controllermanager.config.k8s.io/v1\nleaderName: cloud-provider-extraction-migration\nresourceLock: leases\ncontrollerLeaders:\n  - name: route\n    component: kube-controller-manager\n  - name: service\n    component: kube-controller-manager\n  - name: cloud-node-lifecycle\n    component: kube-controller-manager\n```\n\nAlternatively, because the controllers can run under either controller managers,\nsetting `component` to `*` for both sides makes the configuration file consistent\nbetween both parties of the migration."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#config-helper-init-container-0",
+  "heading": "Configuration > Configuration via sidecar containers or init containers > Init container helper",
+  "text": "Pods can have _init_ containers that start before the main application. Unlike sidecars,\ninit containers complete before the Pod's main (application) containers start up, so the\nconfiguration only gets set once.\n\nYou have two main options for configuration using init containers:\n\n#### Configuration via the filesystem {#init-container-shared-volume}\n\nWith this option, the init container fetches configuration and writes the configuration to\na file, or several files, typically to a Pod-local\nvolume.\n\n#### Configuration via environment variables {#init-container-env-files}\n\nThis is done using a local volume, but only the init container mounts that volume. The kubelet then reads from that volume before starting the app container.\n\nRead [Define Environment Variable Values Using An Init Container](/docs/tasks/inject-data-application/define-environment-variable-via-file/)\nto learn more."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/troubleshooting-cni-plugin-related-errors#an-example-containerd-configuration-file-0",
+  "heading": "Troubleshooting CNI plugin-related errors > An example containerd configuration file",
+  "text": "The following example shows a configuration for `containerd` runtime v1.6.x,\nwhich supports a recent version of the CNI specification (v1.0.0).\n\nPlease see the documentation from your plugin and networking provider for\nfurther instructions on configuring your system."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#config-helper-sidecar-0",
+  "heading": "Configuration > Configuration via sidecar containers or init containers > Sidecar container helper",
+  "text": "A _sidecar_ configuration helper runs in the same Pod as the application container, so\neach Pod has its own sidecar. A typical configuration sidecar fetches configuration data over the\nPod network, and then writes it into a volume\nthat is mounted into both containers.\n\nThere are many variations on this basic pattern, that still have a helper\ncontainer writing configuration for the app container to consume."
+ }
+]

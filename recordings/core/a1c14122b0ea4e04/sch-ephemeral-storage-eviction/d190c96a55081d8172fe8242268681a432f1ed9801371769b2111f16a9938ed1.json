@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WvjPR1i3KbLH6RW9xEW9E9",
+   "input": {
+    "query": "ephemeral-storage eviction request limit pod"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2634,
+ "model": "claude-opus-4-7",
+ "output_tokens": 79,
+ "stop_reason": "tool_use"
+}

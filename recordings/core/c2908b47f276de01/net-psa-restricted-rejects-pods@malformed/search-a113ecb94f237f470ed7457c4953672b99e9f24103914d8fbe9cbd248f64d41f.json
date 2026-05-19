@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-0",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "Your Deployment may get stuck trying to deploy its newest ReplicaSet without ever completing. This can occur\ndue to some of the following factors:\n\n* Insufficient quota\n* Readiness probe failures\n* Image pull errors\n* Insufficient permissions\n* Limit ranges\n* Application runtime misconfiguration\n\nOne way you can detect this condition is to specify a deadline parameter in your Deployment spec:\n([`.spec.progressDeadlineSeconds`](#progress-deadline-seconds)). `.spec.progressDeadlineSeconds` denotes the\nnumber of seconds the Deployment controller waits before indicating (in the Deployment status) that the\nDeployment progress has stalled.\n\nThe following `kubectl` command sets the spec with `progressDeadlineSeconds` to make the controller report\nlack of progress of a rollout for a Deployment after 10 minutes:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-2",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "Kubernetes takes no action on a stalled Deployment other than to report a status condition with\n`reason: ProgressDeadlineExceeded`. Higher level orchestrators can take advantage of it and act accordingly, for\nexample, rollback the Deployment to its previous version.\n\nIf you pause a Deployment rollout, Kubernetes does not check progress against your specified deadline.\nYou can safely pause a Deployment rollout in the middle of a rollout and resume without triggering\nthe condition for exceeding the deadline.\n\nYou may experience transient errors with your Deployments, either due to a low timeout that you have set or\ndue to any other kind of error that can be treated as transient. For example, let's suppose you have\ninsufficient quota. If you describe the Deployment you will notice the following section:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-8",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "```shell\nkubectl rollout status deployment/nginx-deployment\n```\nThe output is similar to this:\n```\nWaiting for rollout to finish: 2 out of 3 new replicas have been updated...\nerror: deployment \"nginx\" exceeded its progress deadline\n```\nand the exit status from `kubectl rollout` is 1 (indicating an error):\n```shell\necho $?\n```\n```\n1\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rolling-back-a-deployment-1",
+  "heading": "Deployments > Rolling Back a Deployment",
+  "text": "  ```shell\n  kubectl set image deployment/nginx-deployment nginx=nginx:1.161\n  ```\n\n  The output is similar to this:\n  ```\n  deployment.apps/nginx-deployment image updated\n  ```\n\n* The rollout gets stuck. You can verify it by checking the rollout status:\n\n  ```shell\n  kubectl rollout status deployment/nginx-deployment\n  ```\n\n  The output is similar to this:\n  ```\n  Waiting for rollout to finish: 1 out of 3 new replicas have been updated...\n  ```\n\n* Press Ctrl-C to stop the above rollout status watch. For more information on stuck rollouts,\n[read more here](#deployment-status).\n\n* You see that the number of old replicas (adding the replica count from\n  `nginx-deployment-1564180365` and `nginx-deployment-2035384211`) is 3, and the number of\n  new replicas (from `nginx-deployment-3066724191`) is 1."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-7",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "`type: Available` with `status: \"True\"` means that your Deployment has minimum availability. Minimum availability is dictated\nby the parameters specified in the deployment strategy. `type: Progressing` with `status: \"True\"` means that your Deployment\nis either in the middle of a rollout and it is progressing or that it has successfully completed its progress and the minimum\nrequired new replicas are available (see the Reason of the condition for the particulars - in our case\n`reason: NewReplicaSetAvailable` means that the Deployment is complete).\n\nYou can check if a Deployment has failed to progress by using `kubectl rollout status`. `kubectl rollout status`\nreturns a non-zero exit code if the Deployment has exceeded the progression deadline."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#pausing-and-resuming-a-deployment-1",
+  "heading": "Deployments > Pausing and Resuming a rollout of a Deployment",
+  "text": "* Then update the image of the Deployment:\n  ```shell\n  kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1\n  ```\n\n  The output is similar to this:\n  ```\n  deployment.apps/nginx-deployment image updated\n  ```\n\n* Notice that no new rollout started:\n  ```shell\n  kubectl rollout history deployment/nginx-deployment\n  ```\n\n  The output is similar to this:\n  ```\n  deployments \"nginx\"\n  REVISION  CHANGE-CAUSE\n  1   <none>\n  ```\n* Get the rollout status to verify that the existing ReplicaSet has not changed:\n  ```shell\n  kubectl get rs\n  ```\n\n  The output is similar to this:\n  ```\n  NAME               DESIRED   CURRENT   READY     AGE\n  nginx-2142116321   3         3         3         2m\n  ```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-6",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "Eventually, once the Deployment progress deadline is exceeded, Kubernetes updates the status and the\nreason for the Progressing condition:\n\n```\nConditions:\n  Type            Status  Reason\n  ----            ------  ------\n  Available       True    MinimumReplicasAvailable\n  Progressing     False   ProgressDeadlineExceeded\n  ReplicaFailure  True    FailedCreate\n```\n\nYou can address an issue of insufficient quota by scaling down your Deployment, by scaling down other\ncontrollers you may be running, or by increasing quota in your namespace. If you satisfy the quota\nconditions and the Deployment controller then completes the Deployment rollout, you'll see the\nDeployment's status update with a successful condition (`status: \"True\"` and `reason: NewReplicaSetAvailable`).\n\n```\nConditions:\n  Type          Status  Reason\n  ----          ------  ------\n  Available     True    MinimumReplicasAvailable\n  Progressing   True    NewReplicaSetAvailable\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#detecting-a-stalled-rollout-0",
+  "heading": "Update a Deployment Without Downtime > Configuring rolling update strategy > Detecting a stalled rollout",
+  "text": "If a rollout does not make progress within the time specified by\n`.spec.progressDeadlineSeconds` (default: 600 seconds), Kubernetes marks the Deployment condition `Progressing` as `False`. You can check for this condition by describing the Deployment:\n\n```shell\nkubectl describe deployment nginx-deployment\n```\n\nLook for the `Progressing` condition in the `Conditions` section of the output. A stalled rollout usually indicates that new Pods are failing to start. The `Events` section of the output can help diagnose the issue."
+ }
+]

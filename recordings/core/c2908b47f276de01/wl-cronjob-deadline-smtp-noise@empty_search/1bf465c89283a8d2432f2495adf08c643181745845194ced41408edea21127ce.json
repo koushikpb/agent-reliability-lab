@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try a broader search about CronJobs.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016e8jiNGmDYeBh5kUNSdhcw",
+   "input": {
+    "query": "CronJob Job timeout duration"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2954,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 71,
+ "stop_reason": "tool_use"
+}

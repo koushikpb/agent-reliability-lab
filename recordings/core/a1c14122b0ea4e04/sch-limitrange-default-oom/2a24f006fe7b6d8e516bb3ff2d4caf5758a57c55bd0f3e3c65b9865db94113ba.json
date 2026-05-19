@@ -1,0 +1,26 @@
+{
+ "content": [
+  {
+   "signature": "EpwECqQBCBMYAipAMAxMHM3jDn6GB6Bmpls9ashP1E8XgL0/7SmceCrs/ZxiA+p54TdyxKf/0GQ1zreYJCzU4ttTrlE3BLT49LojbTIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB3dDw1gYSDFQNJOwoOhudkD9eARoMM196Qz8QSLDUiePUIjCQmZkqox/Y7zbGsb/jsica6jwkxfd200+AP+Ce27XHR3/JHr+aC89x9YhkX6XxuOQqpALJ8O3DYzo4veWMqdHKMUiO9K+1QU2hrdX2d9VngTb87PwFEnnWVjozssZwxUktnqZkznJVdtxTG8ukJML9cIMHGaffi8EMm/PJnsHvo089Aj+ChjbxxxTPJEVc8IqCC8HFw9ppQjqD1I7DlJ6gjOgCTg4Jf5nUcMICyYiMM8hrlVsrQq/clhfBkWeH5pcPaIuloOHC95XPvRLdx32jDM5ydvgr57hrXrpuk/xbM53F4BoCiA8Qbl81ACYzqPg1/gC7EbDB4cXPcfju7Wa3RZXV3VTRk0XDKTNiOL8+9KfAFnmEHE4LvuWAZw9hElhTeuCXKex2RAzF0VbUVIH57orDOyLX9UqFXZD0vWFsDl7fICTu69lhqmMm+FWuGj3H/rjioyimGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01UsocHyfAv5g1ukZ6TWSXfB",
+   "input": {
+    "id": "T-3003",
+    "note": "Cause: ingest-worker is being OOMKilled (exit code 137) under morning batch load. Both pods show last_state \"Terminated (OOMKilled), exit code 137\" with a memory limit of only 512Mi. The pods carry the annotation `kubernetes.io/limit-ranger: \"LimitRanger plugin set: memory request for container ingest-worker; memory limit for container ingest-worker\"`, which means neither the request nor the limit are set in your manifest \u2014 they were injected by a LimitRange in the data-platform namespace. The old namespace evidently had no such LimitRange (or a higher default), so the same manifest ran unconstrained there. When a container has no memory limit of its own and runs in a namespace with a default memory limit, the control plane automatically assigns that default [cite: tasks/configure-pod-container/assign-memory-resource#if-you-do-not-specify-a-memory-limit-0][cite: tasks/administer-cluster/manage-resources/memory-default-namespace#create-a-limitrange-and-a-pod-0]. Memory limits are enforced by the kernel via OOM kills when the container exceeds them [cite: concepts/configuration/manage-resources-containers#requests-and-limits-1], producing exactly the OOMKilled / exit code 137 / restart pattern seen here [cite: concepts/configuration/manage-resources-containers#my-container-is-terminated-1].\n\nFix (owner can apply): explicitly set resources.requests.memory and resources.limits.memory in the ingest-worker Deployment to values that fit the batch workload (the old namespace behavior suggests well above 512Mi \u2014 start by sizing to observed peak RSS plus headroom). Explicit values in the pod spec override the LimitRange defaults [cite: tasks/administer-cluster/manage-resources/memory-default-namespace#what-if-you-specify-a-container-s-request-but-not-its-limit-1]. If the namespace LimitRange also enforces a `max` memory that is below what ingest-worker needs, you'll get a 403 at admission [cite: concepts/policy/limit-range#constraints-on-resource-limits-and-requests-0] and will need the data-platform admins to raise that max. Also consider whether the workload has a genuine memory leak before simply raising the limit [cite: concepts/configuration/manage-resources-containers#my-container-is-terminated-3].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 9536,
+ "model": "claude-opus-4-7",
+ "output_tokens": 1031,
+ "stop_reason": "tool_use"
+}

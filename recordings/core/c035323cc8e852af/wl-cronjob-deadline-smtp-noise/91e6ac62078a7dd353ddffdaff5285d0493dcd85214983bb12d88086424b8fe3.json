@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I now understand the issue. According to the Kubernetes documentation, when a Job's runtime exceeds the `.spec.activeDeadlineSeconds`, the Job terminates and fails permanently. The cronjob currently has a 1-hour (3600 second) deadline, but the export job is taking longer than that to complete (it's progressing through 95 batches and needs more time).\n\nThe solution is to increase the `activeDeadlineSeconds` in the CronJob specification to give the job enough time to complete. Based on the logs, the job was at batch 69/95 when it hit the 1-hour deadline, and it appears to take roughly 8-9 minutes per 10 batches, so a 2-hour deadline would be more appropriate.\n\nLet me update the ticket with this resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01PyYUNN9x3dK7rGPA3A1S69",
+   "input": {
+    "id": "T-2005",
+    "note": "CAUSE: The ledger-export cronjob is failing because the job runtime exceeds the activeDeadlineSeconds timeout. The job has a 1-hour (3600 second) deadline, but it requires more time to process 95 batches of 100,000 ledger rows.\n\nEVIDENCE: Pod logs show the job was terminated with SIGTERM at exactly the 1-hour mark (01:00:04Z to 02:00:04Z) while processing batch 69/95. Both recent job runs failed with status \"Failed: DeadlineExceeded\" as documented in the Kubernetes Job controller behavior [cite: concepts/workloads/controllers/job#terminal-job-conditions-1].\n\nFIX: Increase the activeDeadlineSeconds in the ledger-export CronJob spec from 3600 to a higher value (e.g., 7200 seconds for 2 hours). The job spec defines this field at the proper level [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-3]. Update the CronJob YAML and reapply it to give the job sufficient time to complete all 95 batches before the deadline is exceeded.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4829,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 543,
+ "stop_reason": "tool_use"
+}

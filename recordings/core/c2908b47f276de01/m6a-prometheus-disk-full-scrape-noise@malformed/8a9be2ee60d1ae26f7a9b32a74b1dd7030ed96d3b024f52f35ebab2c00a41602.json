@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try with the full pod name including namespace:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01QsEpfyauyq43PDfk27Krs2",
+   "input": {
+    "pod": "monitoring/prometheus-k8s-0"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2025,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 75,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/system-traces#trace-collection-1",
+  "heading": "Traces For Kubernetes System Components > Trace Collection",
+  "text": "```yaml\nreceivers:\n  otlp:\n    protocols:\n      grpc:\nexporters:\n  # Replace this exporter with the exporter for your backend\n  exporters:\n    debug:\n      verbosity: detailed\nservice:\n  pipelines:\n    traces:\n      receivers: [otlp]\n      exporters: [debug]\n```\n\nTo directly emit traces to a backend without utilizing a collector, \nspecify the endpoint field in the Kubernetes tracing configuration file with the desired trace backend address. \nThis method negates the need for a collector and simplifies the overall structure.\n\nFor trace backend header configuration, including authentication details, environment variables can be used with `OTEL_EXPORTER_OTLP_HEADERS`, \nsee [OTLP Exporter Configuration](https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/)."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-traces#trace-collection-0",
+  "heading": "Traces For Kubernetes System Components > Trace Collection",
+  "text": "Kubernetes components have built-in gRPC exporters for OTLP to export traces, either with an OpenTelemetry Collector, \nor without an OpenTelemetry Collector.\n\nFor a complete guide to collecting traces and using the collector, see\n[Getting Started with the OpenTelemetry Collector](https://opentelemetry.io/docs/collector/getting-started/).\nHowever, there are a few things to note that are specific to Kubernetes components.\n\nBy default, Kubernetes components export traces using the grpc exporter for OTLP on the\n[IANA OpenTelemetry port](https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?search=opentelemetry), 4317.\nAs an example, if the collector is running as a sidecar to a Kubernetes component,\nthe following receiver configuration will collect spans and log them to standard output:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-traces#trace-collection-2",
+  "heading": "Traces For Kubernetes System Components > Trace Collection",
+  "text": "Additionally, for trace resource attribute configuration such as Kubernetes cluster name, namespace, Pod name, etc., \nenvironment variables can also be used with `OTEL_RESOURCE_ATTRIBUTES`, see [OTLP Kubernetes Resource](https://opentelemetry.io/docs/specs/semconv/resource/k8s/)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/monitor-node-health#exporter-0",
+  "heading": "Monitor Node Health > Exporter",
+  "text": "An exporter reports the node problems and/or metrics to certain backends.\nThe following exporters are supported:\n\n- **Kubernetes exporter**: this exporter reports node problems to the Kubernetes API server.\n  Temporary problems are reported as Events and permanent problems are reported as Node Conditions.\n\n- **Prometheus exporter**: this exporter reports node problems and metrics locally as Prometheus\n  (or OpenMetrics) metrics. You can specify the IP address and port for the exporter using command\n  line arguments.\n\n- **Stackdriver exporter**: this exporter reports node problems and metrics to the Stackdriver\n  Monitoring API. The exporting behavior can be customized using a\n  [configuration file](https://github.com/kubernetes/node-problem-detector/blob/v0.8.12/config/exporter/stackdriver-exporter.json)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/endpoint-slices#management-0",
+  "heading": "EndpointSlices > EndpointSlice API > Management",
+  "text": "Most often, the control plane (specifically, the endpoint slice\ncontroller) creates and\nmanages EndpointSlice objects. There are a variety of other use cases for\nEndpointSlices, such as service mesh implementations, that could result in other\nentities or controllers managing additional sets of EndpointSlices.\n\nTo ensure that multiple entities can manage EndpointSlices without interfering\nwith each other, Kubernetes defines the\nlabel\n`endpointslice.kubernetes.io/managed-by`, which indicates the entity managing\nan EndpointSlice.\nThe endpoint slice controller sets `endpointslice-controller.k8s.io` as the value\nfor this label on all EndpointSlices it manages. Other entities managing\nEndpointSlices should also set a unique value for this label."
+ },
+ {
+  "chunk_id": "concepts/services-networking/endpoint-slices#conditions-0",
+  "heading": "EndpointSlices > EndpointSlice API > Conditions",
+  "text": "The EndpointSlice API stores conditions about endpoints that may be useful for consumers.\nThe three conditions are `serving`, `terminating`, and `ready`.\n\n#### Serving\n\nThe `serving` condition indicates that the endpoint is currently serving responses, and\nso it should be used as a target for Service traffic. For endpoints backed by a Pod, this\nmaps to the Pod's `Ready` condition.\n\n#### Terminating\n\nThe `terminating` condition indicates that the endpoint is\nterminating. For endpoints backed by a Pod, this condition is set when\nthe Pod is first deleted (that is, when it receives a deletion\ntimestamp, but most likely before the Pod's containers exit).\n\nService proxies will normally ignore endpoints that are `terminating`,\nbut they may route traffic to endpoints that are both `serving` and\n`terminating` if all available endpoints are `terminating`. (This\nhelps to ensure that no Service traffic is lost during rolling updates\nof the underlying Pods.)\n\n#### Ready"
+ },
+ {
+  "chunk_id": "concepts/services-networking/endpoint-slices#endpointslice-mirroring-0",
+  "heading": "EndpointSlices > EndpointSlice API > EndpointSlice mirroring",
+  "text": "The EndpointSlice API is a replacement for the older Endpoints API. To\npreserve compatibility with older controllers and user workloads that\nexpect kube-proxy\nto route traffic based on Endpoints resources, the cluster's control\nplane mirrors most user-created Endpoints resources to corresponding\nEndpointSlices.\n\n(However, this feature, like the rest of the Endpoints API, is\ndeprecated. Users who manually specify endpoints for selectorless\nServices should do so by creating EndpointSlice resources directly,\nrather than by creating Endpoints resources and allowing them to be\nmirrored.)\n\nThe control plane mirrors Endpoints resources unless:\n\n* the Endpoints resource has a `endpointslice.kubernetes.io/skip-mirror` label\n  set to `true`.\n* the Endpoints resource has a `control-plane.alpha.kubernetes.io/leader`\n  annotation.\n* the corresponding Service resource does not exist.\n* the corresponding Service resource has a non-nil selector."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/crictl#general-usage-0",
+  "heading": "Debugging Kubernetes nodes with crictl > General usage",
+  "text": "The `crictl` command has several subcommands and runtime flags. Use\n`crictl help` or `crictl <subcommand> help` for more details.\n\nYou can set the endpoint for `crictl` by doing one of the following:\n\n* Set the `--runtime-endpoint` and `--image-endpoint` flags.\n* Set the `CONTAINER_RUNTIME_ENDPOINT` and `IMAGE_SERVICE_ENDPOINT` environment\n  variables.\n* Set the endpoint in the configuration file `/etc/crictl.yaml`. To specify a\n  different file, use the `--config=PATH_TO_FILE` flag when you run `crictl`.\n\nIf you don't set an endpoint, `crictl` attempts to connect to a list of known\nendpoints, which might result in an impact to performance."
+ }
+]

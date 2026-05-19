@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-2",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "Note that a Job's `.spec.activeDeadlineSeconds` takes precedence over its `.spec.backoffLimit`.\nTherefore, a Job that is retrying one or more failed Pods will not deploy additional Pods once\nit reaches the time limit specified by `activeDeadlineSeconds`, even if the `backoffLimit` is not yet reached.\n\nExample:\n\n```yaml\napiVersion: batch/v1\nkind: Job\nmetadata:\n  name: pi-with-timeout\nspec:\n  backoffLimit: 5\n  activeDeadlineSeconds: 100\n  template:\n    spec:\n      containers:\n      - name: pi\n        image: perl:5.34.0\n        command: [\"perl\", \"-Mbignum=bpi\", \"-wle\", \"print bpi(2000)\"]\n      restartPolicy: Never\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-1",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "By default, a Job will run uninterrupted unless a Pod fails (`restartPolicy=Never`)\nor a Container exits in error (`restartPolicy=OnFailure`), at which point the Job defers to the\n`.spec.backoffLimit` described above. Once `.spec.backoffLimit` has been reached the Job will\nbe marked as failed and any running Pods will be terminated.\n\nAnother way to terminate a Job is by setting an active deadline.\nDo this by setting the `.spec.activeDeadlineSeconds` field of the Job to a number of seconds.\nThe `activeDeadlineSeconds` applies to the duration of the job, no matter how many Pods are created.\nOnce a Job reaches `activeDeadlineSeconds`, all of its running Pods are terminated and the Job status\nwill become `type: Failed` with `reason: DeadlineExceeded`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#detailed-behavior-2",
+  "heading": "Init Containers > Detailed behavior",
+  "text": "Use `activeDeadlineSeconds` on the Pod to prevent init containers from failing forever.\nThe active deadline includes init containers.\nHowever it is recommended to use `activeDeadlineSeconds` only if teams deploy their application\nas a Job, because `activeDeadlineSeconds` has an effect even after initContainer finished.\nThe Pod which is already running correctly would be killed by `activeDeadlineSeconds` if you set.\n\nThe name of each app and init container in a Pod must be unique; a\nvalidation error is thrown for any container sharing a name with another."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#starting-deadline-0",
+  "heading": "CronJob > Writing a CronJob spec > Deadline for delayed Job start",
+  "text": "The `.spec.startingDeadlineSeconds` field is optional.\nThis field defines a deadline (in whole seconds) for starting the Job, if that Job misses its scheduled time\nfor any reason.\n\nAfter missing the deadline, the CronJob skips that instance of the Job (future occurrences are still scheduled).\nFor example, if you have a backup Job that runs twice a day, you might allow it to start up to 8 hours late,\nbut no later, because a backup taken any later wouldn't be useful: you would instead prefer to wait for\nthe next scheduled run.\n\nFor Jobs that miss their configured deadline, Kubernetes treats them as failed Jobs.\nIf you don't specify `startingDeadlineSeconds` for a CronJob, the Job occurrences have no deadline.\n\nIf the `.spec.startingDeadlineSeconds` field is set (not null), the CronJob\ncontroller measures the time between when a Job is expected to be created and\nnow. If the difference is higher than that limit, it will skip this execution."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#suspending-a-job-1",
+  "heading": "Jobs > Advanced usage > Suspending a Job",
+  "text": "When a Job is resumed from suspension, its `.status.startTime` field will be\nreset to the current time. This means that the `.spec.activeDeadlineSeconds`\ntimer will be stopped and reset when a Job is suspended and resumed.\n\nWhen you suspend a Job, any running Pods that don't have a status of `Completed`\nwill be [terminated](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination)\nwith a SIGTERM signal. The Pod's graceful termination period will be honored and\nyour Pod must handle this signal in this period. This may involve saving\nprogress for later or undoing changes. Pods terminated this way will not count\ntowards the Job's `completions` count.\n\nAn example Job definition in the suspended state can be like so:\n\n```shell\nkubectl get job myjob -o yaml\n```\n\n```yaml\napiVersion: batch/v1\nkind: Job\nmetadata:\n  name: myjob\nspec:\n  suspend: true\n  parallelism: 1\n  completions: 5\n  template:\n    spec:\n      ...\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-0",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "Your Deployment may get stuck trying to deploy its newest ReplicaSet without ever completing. This can occur\ndue to some of the following factors:\n\n* Insufficient quota\n* Readiness probe failures\n* Image pull errors\n* Insufficient permissions\n* Limit ranges\n* Application runtime misconfiguration\n\nOne way you can detect this condition is to specify a deadline parameter in your Deployment spec:\n([`.spec.progressDeadlineSeconds`](#progress-deadline-seconds)). `.spec.progressDeadlineSeconds` denotes the\nnumber of seconds the Deployment controller waits before indicating (in the Deployment status) that the\nDeployment progress has stalled.\n\nThe following `kubectl` command sets the spec with `progressDeadlineSeconds` to make the controller report\nlack of progress of a rollout for a Deployment after 10 minutes:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#progress-deadline-seconds-0",
+  "heading": "Deployments > Writing a Deployment Spec > Progress Deadline Seconds",
+  "text": "`.spec.progressDeadlineSeconds` is an optional field that specifies the number of seconds you want\nto wait for your Deployment to progress before the system reports back that the Deployment has\n[failed progressing](#failed-deployment) - surfaced as a condition with `type: Progressing`, `status: \"False\"`.\nand `reason: ProgressDeadlineExceeded` in the status of the resource. The Deployment controller will keep\nretrying the Deployment. This defaults to 600.\n\nIf specified, this field needs to be greater than `.spec.minReadySeconds`."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-3",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "To illustrate this concept further, suppose a CronJob is set to schedule a new Job every one minute beginning at `08:30:00`, and its\n`startingDeadlineSeconds` is set to 200 seconds. If the CronJob controller happens to\nbe down for the same period as the previous example (`08:29:00` to `10:21:00`,) the Job will still start at 10:22:00. This happens as the controller now checks how many missed schedules happened in the last 200 seconds (i.e., 3 missed schedules), rather than from the last scheduled time until now.\n\nThe CronJob is only responsible for creating Jobs that match its schedule, and\nthe Job in turn is responsible for the management of the Pods it represents."
+ }
+]

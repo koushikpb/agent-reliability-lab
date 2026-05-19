@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I'll help you resolve ticket T-2005. Let me start by reading the ticket.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_018rwtQPUjYK7Krwb1Vzytij",
+   "input": {
+    "id": "T-2005"
+   },
+   "name": "get_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1164,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 76,
+ "stop_reason": "tool_use"
+}

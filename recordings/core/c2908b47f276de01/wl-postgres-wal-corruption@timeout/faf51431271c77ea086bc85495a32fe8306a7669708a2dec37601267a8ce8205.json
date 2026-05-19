@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "text": "Let me try the escalation again:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01YVxeZEsYUZ7TmiF9jD6FPR",
+   "input": {
+    "id": "T-2007",
+    "reason": "PostgreSQL database corruption from ungraceful shutdown requires database recovery expertise that cannot be safely automated."
+   },
+   "name": "escalate",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6916,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 98,
+ "stop_reason": "tool_use"
+}

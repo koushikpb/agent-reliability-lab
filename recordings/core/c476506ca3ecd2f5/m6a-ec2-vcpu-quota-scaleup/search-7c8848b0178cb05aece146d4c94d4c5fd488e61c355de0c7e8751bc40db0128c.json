@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/node-autoscaling#intro-0",
+  "heading": "Node Autoscaling",
+  "text": "In order to run workloads in your cluster, you need\nNodes. Nodes in your cluster can be _autoscaled_ -\ndynamically [_provisioned_](#provisioning), or [_consolidated_](#consolidation) to provide needed\ncapacity while optimizing cost. Autoscaling is performed by Node [_autoscalers_](#autoscalers)."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-limits#csi-volume-attach-limits-and-cluster-autoscaler-0",
+  "heading": "Node-specific Volume Limits > Dynamic volume limits > CSI volume attach limits and cluster autoscaler",
+  "text": "[Cluster autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) can account for CSI \nvolume limits when\n`--enable-csi-node-aware-scheduling=true`. This option is independent of the\n`VolumeLimitScaling` feature gate.\n\nIf you use cluster autoscaler, only set `spec.preventPodSchedulingIfMissing` to\n`true` when cluster autoscaler is configured with\n`--enable-csi-node-aware-scheduling=true`. Otherwise, its scheduling simulations\ndo not include the required `CSINode` information for new nodes, and cluster\nautoscaler might fail to scale up for pending Pods that use CSI volumes."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling#scaling-cluster-infrastructure-0",
+  "heading": "Autoscaling Workloads > Scaling cluster infrastructure",
+  "text": "If scaling workloads isn't enough to meet your needs, you can also scale your cluster infrastructure itself.\n\nScaling the cluster infrastructure normally means adding or removing nodes.\nRead [Node autoscaling](/docs/concepts/cluster-administration/node-autoscaling/)\nfor more information."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/node-overprovisioning#calculate-the-total-reserved-resources-1",
+  "heading": "Overprovision Node Capacity For A Cluster > Set the desired replica count > Calculate the total reserved resources",
+  "text": "Some autoscalers, notably [Karpenter](/docs/concepts/cluster-administration/cluster-autoscaling/#autoscaler-karpenter),\ntreat preferred affinity rules as hard rules when considering node scaling.\nIf you use Karpenter or another node autoscaler that uses the same heuristic,\nthe replica count you set here  also sets a minimum node count for your cluster."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-autoscaling#autoscaler-implementations-4",
+  "heading": "Node Autoscaling > Autoscalers > Autoscaler implementations",
+  "text": "#### Implementation comparison\n\nMain differences between Cluster Autoscaler and Karpenter:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-autoscaling#autoscaler-implementations-2",
+  "heading": "Node Autoscaling > Autoscalers > Autoscaler implementations",
+  "text": "* [Documentation overview](https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/README.md)\n* [Cloud provider integrations](https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/README.md#faqdocumentation)\n* [Cluster Autoscaler FAQ](https://github.com/kubernetes-sigs/cluster-autoscaler/blob/main/pkg/FAQ.md)\n* [Contact](https://github.com/kubernetes/community/tree/main/sig-autoscaling#contact)\n\n#### Karpenter"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling#autoscaling-based-on-cluster-size-1",
+  "heading": "Autoscaling Workloads > Scaling workloads automatically > Autoscaling based on cluster size",
+  "text": "While the Cluster Proportional Autoscaler scales the number of replicas of a workload,\nthe Cluster Proportional Vertical Autoscaler adjusts the resource requests for a workload\n(for example a Deployment or DaemonSet) based on the number of nodes and/or cores in the cluster."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-horizontal-autoscaling#enablng-dns-horizontal-autoscaling-1",
+  "heading": "Autoscale the DNS Service in a Cluster > Enable DNS horizontal autoscaling",
+  "text": "```yaml\nkind: ServiceAccount\napiVersion: v1\nmetadata:\n  name: kube-dns-autoscaler\n  namespace: kube-system\n---\nkind: ClusterRole\napiVersion: rbac.authorization.k8s.io/v1\nmetadata:\n  name: system:kube-dns-autoscaler\nrules:\n  - apiGroups: [\"\"]\n    resources: [\"nodes\"]\n    verbs: [\"list\", \"watch\"]\n  - apiGroups: [\"\"]\n    resources: [\"replicationcontrollers/scale\"]\n    verbs: [\"get\", \"update\"]\n  - apiGroups: [\"apps\"]\n    resources: [\"deployments/scale\", \"replicasets/scale\"]\n    verbs: [\"get\", \"update\"]\n# Remove the configmaps rule once below issue is fixed:\n# kubernetes-incubator/cluster-proportional-autoscaler#16\n  - apiGroups: [\"\"]\n    resources: [\"configmaps\"]\n```"
+ }
+]

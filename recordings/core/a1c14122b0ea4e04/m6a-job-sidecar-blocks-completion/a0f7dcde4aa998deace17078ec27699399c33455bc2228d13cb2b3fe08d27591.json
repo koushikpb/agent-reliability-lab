@@ -1,0 +1,35 @@
+{
+ "content": [
+  {
+   "signature": "EqwGCqQBCBMYAipASMDjRefs+1C1L/KXHxIUL6Nqv6llqZZrLrsrTYQLoFFu+a4ryJ1m7P4/HbHyGAnESkWVM36TKZi2XOCilc2/0zIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB7+7w1gYSDBjTbL4Dv//SRU2FxRoMQl89I8TVAEsUF735IjALkIy96A4kT9VIw7LYUB1jZ//yFJn781NtQDIoA7zuZxuR4emie9I0zr7/SvV2WYIqtAQRp59v9LHjVrdWmGG/URz//Dq9CwArhFWVefUjEKxIAHv53Unv8Zm1CVS/KaMJgpG1sgnApx5Vq1lFWK1VIt0D3XVVJ9dSo764Zg4BgLS397U/IY/VgbFag4waVvUbQvxaNAzGW0qZWxox2xtZTuglnzBIUGGArew7uXIUC1Yt/O+gmE4NZWWb5wq0EL0RQnJ9pFlt8HiNJpe0kb7GSsBZnz8dNeI6tHO34yF9XQ3yt1ri5V19/UOxP3MHIfTr5F6AMqlY9dZ5w7hq1jQE4Yne1qMpAdVkeiaGUKxq7VnWcro6SskPyJ4VUvTlGVpsQRprFaTnOMGAcWE6jebIxoejgzFDiCSspIzgg0+3IH5RB8erJvqOQgnbvzv7A8hSyac9sJKgS/K/aFUf8vXRyIwtpDUzcuF2WnIooTy5q6k7wa8qMpUeHrEr3IQoCA25fdNdsjTxMny+P5mVdsy7z1NEwdXXjij2K3WHPUVRabtGU74vrBjOE1yWJQnvFklFRR/PSKeBolshN37EtCBBk2fo2hQUTxsMmG/SrbObdmWBLdLgearTxlZ9fiUmmnWP257Ol7JiZse6/p/VW9v/XDxAEBUT7C9v1BxNpdT5wy3E7Nf6Z0LBHp9VnlcTZC+6kRM3ACz7HxIf4VkOCSZG3hr5Vjzq+HdQUspY5vhymHI3CoaZ6e8iBUIHf6p9KRu9unX/Z9MUvPhmrMMc1uBto93AorDsmQEGsBYtVwgPl2AJw4OhouUYAQ==",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DPBembCXiTTHWYQNHshJN6",
+   "input": {
+    "query": "sidecar container job never completes cloud-sql-proxy"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Eyg4e4JjoQXnodBnQzVpiL",
+   "input": {
+    "query": "CronJob concurrencyPolicy Forbid skip"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2758,
+ "model": "claude-opus-4-7",
+ "output_tokens": 368,
+ "stop_reason": "tool_use"
+}

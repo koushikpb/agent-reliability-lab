@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/scale-deployment#when-to-use-manual-versus-automatic-scaling-0",
+  "heading": "Horizontal Manual Scaling for a Deployment > When to use manual versus automatic scaling",
+  "text": "| Aspect | Manual scaling | Automatic scaling (HPA) |\n|--------|---------------|------------------------|\n| Best for | Predictable, scheduled, or one-off load changes | Variable or unpredictable demand |\n| How it works | You set `.spec.replicas` directly | HPA adjusts replicas based on observed metrics |\n| Response time | Immediate when you run the command | Reacts to metrics with a short delay |\n| Metrics awareness | None \u2014 you decide the replica count | Monitors CPU, memory, or custom metrics |\n| Maintenance | Requires manual intervention to adjust | Runs autonomously after configuration |\n\nIf a HorizontalPodAutoscaler manages a Deployment, do not set replicas manually.\nThe HPA continuously reconciles the replica count and overrides any manual\nchanges."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#before-you-begin-0",
+  "heading": "Assign CPU Resources to Containers and Pods > Before you begin",
+  "text": "Your cluster must have at least 1 CPU available for use to run the task examples.\n\nA few of the steps on this page require you to run the\n[metrics-server](https://github.com/kubernetes-sigs/metrics-server)\nservice in your cluster. If you have the metrics-server\nrunning, you can skip those steps.\n\nIf you are running minikube, run the\nfollowing command to enable metrics-server:\n\n```shell\nminikube addons enable metrics-server\n```\n\nTo see whether metrics-server (or another provider of the resource metrics\nAPI, `metrics.k8s.io`) is running, type the following command:\n\n```shell\nkubectl get apiservices\n```\n\nIf the resource metrics API is available, the output will include a\nreference to `metrics.k8s.io`.\n\n```\nNAME\nv1beta1.metrics.k8s.io\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#appendix-horizontal-pod-autoscaler-status-conditions-2",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Appendix: Horizontal Pod Autoscaler Status Conditions",
+  "text": "For this HorizontalPodAutoscaler, you can see several conditions in a healthy state.  The first,\n`AbleToScale`, indicates whether or not the HPA is able to fetch and update scales, as well as\nwhether or not any backoff-related conditions would prevent scaling.  The second, `ScalingActive`,\nindicates whether or not the HPA is enabled (i.e. the replica count of the target is not zero) and\nis able to calculate desired scales. When it is `False`, it generally indicates problems with\nfetching metrics.  Finally, the last condition, `ScalingLimited`, indicates that the desired scale\nwas capped by the maximum or minimum of the HorizontalPodAutoscaler.  This is an indication that\nyou may wish to raise or lower the minimum or maximum replica count constraints on your\nHorizontalPodAutoscaler."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-metrics-apis-2",
+  "heading": "Horizontal Pod Autoscaling > Support for metrics APIs",
+  "text": "For more information on these different metrics paths and how they differ please see the relevant design proposals for\n[the HPA V2](https://git.k8s.io/design-proposals-archive/autoscaling/hpa-v2.md),\n[custom.metrics.k8s.io](https://git.k8s.io/design-proposals-archive/instrumentation/custom-metrics-api.md)\nand [external.metrics.k8s.io](https://git.k8s.io/design-proposals-archive/instrumentation/external-metrics-api.md)."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-metrics#metric-lifecycle-1",
+  "heading": "Metrics For Kubernetes System Components > Metric lifecycle",
+  "text": "Hidden metrics are no longer published for scraping, but are still available for use.\nA deprecated metric becomes a hidden metric after a period of time, based on its stability level:\n* **STABLE** metrics become hidden after a minimum of 3 releases or 9 months, whichever is longer.\n* **BETA** metrics become hidden after a minimum of 1 release or 4 months, whichever is longer.\n* **ALPHA** metrics can be hidden or removed in the same release in which they are deprecated.\n\nTo use a hidden metric, you must enable it. For more details, refer to the [Show hidden metrics](#show-hidden-metrics) section. \n\nDeleted metrics are no longer published and cannot be used."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics > Container resource metrics",
+  "text": "The HorizontalPodAutoscaler API also supports a container metric source where the HPA can track the\nresource usage of individual containers across a set of Pods, in order to scale the target resource.\nThis lets you configure scaling thresholds for the containers that matter most in a particular Pod.\nFor example, if you have a web application and a sidecar container that provides logging, you can scale based on the resource\nuse of the web application, ignoring the sidecar container and its resource use.\n\nIf you revise the target resource to have a new Pod specification with a different set of containers,\nyou should revise the HPA spec if that newly added container should also be used for\nscaling. If the specified container in the metric source is not present or only present in a subset\nof the pods then those pods are ignored and the recommendation is recalculated. See [Algorithm](#algorithm-details)\nfor more details about the calculation. To use container resources for autoscaling define a metric\nsource as follows:"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#pod-readiness-and-autoscaling-metrics-1",
+  "heading": "Horizontal Pod Autoscaling > Pod readiness and autoscaling metrics",
+  "text": "  It is designed to:\n    - Avoid including Pods that rapidly fluctuate between `Ready` and `Unready` during startup.\n    - Ensure stability in the initial readiness signal before HPA considers their metrics valid.\n\nYou can only set these command line options cluster-wide."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#algorithm-details-4",
+  "heading": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work? > Algorithm details",
+  "text": "Note that the _original_ value for the average utilization is reported\nback via the HorizontalPodAutoscaler status, without factoring in the\nnot-yet-ready pods or missing metrics, even when the new usage ratio is\nused.\n\nIf multiple metrics are specified in a HorizontalPodAutoscaler, this\ncalculation is done for each metric, and then the largest of the desired\nreplica counts is chosen. If any of these metrics cannot be converted\ninto a desired replica count (e.g. due to an error fetching the metrics\nfrom the metrics APIs) and a scale down is suggested by the metrics which\ncan be fetched, scaling is skipped. This means that the HPA is still capable\nof scaling up if one or more metrics give a `desiredReplicas` greater than\nthe current value."
+ }
+]

@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the root cause. Let me analyze the evidence:\n\n**Key findings:**\n\n1. **The logs show the ConfigMap file hash hasn't changed**: Both gateway pods show `sha256=9c1e4b07` from the startup logs (06:02) through the most recent logs (11:29). This indicates the ConfigMap file on disk hasn't been updated.\n\n2. **The pod is using subPath mounting**: The pod volume mount shows:\n   ```\n   \"subPath\": \"limits.yaml\"\n   ```\n\n3. **Kubernetes documentation states clearly**: According to the Kubernetes docs, \"A container using a ConfigMap as a `subPath` volume mount will not receive ConfigMap updates\" [cite: concepts/storage/volumes#configmap-2].\n\nThis is the issue. The gateway pods are configured with a `subPath` mount, which means ConfigMap updates are not propagated to the pod filesystem. Even though the pod's limits watcher is polling every 30 seconds (as seen in the logs: \"limits watcher: polling /etc/gateway/limits.yaml every 30s\"), the file on disk never changes because subPath mounts don't receive updates.\n\nThe only way to pick up the new limit of 500 RPS is to restart the pods, which will force them to reload the ConfigMap.\n\nLet me update the ticket with this resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CiYo4FjHhmLPbNHLNbAjx1",
+   "input": {
+    "id": "T-5004",
+    "note": "Root cause: The gateway pods are configured with a subPath volume mount for the limits ConfigMap (`volumeMounts[name=limits].subPath: limits.yaml`). According to Kubernetes documentation, \"A container using a ConfigMap as a subPath volume mount will not receive ConfigMap updates\" [cite: concepts/storage/volumes#configmap-2]. \n\nEvidence: The pod logs show the ConfigMap file hash has remained `sha256=9c1e4b07` since startup (2026-05-21T06:02), and the limits watcher continues to report `limit_rps=100` despite the ConfigMap being updated at 09:10. The logs also show the watcher polling every 30 seconds but finding no changes.\n\nFix: Restart the api-gateway pods in the edge namespace to force them to reload the ConfigMap with the new 500 RPS limit. You can do this by:\n1. kubectl rollout restart deployment api-gateway -n edge\n\nOr by deleting the pods and letting the deployment recreate them:\n2. kubectl delete pods -n edge -l app=api-gateway\n\nTo prevent this issue in the future, remove the subPath from the ConfigMap mount so that automatic updates are propagated to the pods [cite: tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 8642,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 699,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the exact issue. The critical documentation states: \"Please note that if some of the Pod's containers do not have the relevant resource request set, CPU utilization for the Pod will not be defined and the autoscaler will not take any action for that metric.\" [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-3]\n\nLooking at the pod specs from earlier, I can see:\n- The `api` container has CPU requests (1 core)\n- The `log-forwarder` (sidecar) container has NO resource requests\n\nThe issue is that in version 4.8.0, the log-forwarder sidecar was added without CPU resource requests. This causes the HPA to report CPU utilization as `<unknown>` and prevents any scaling.\n\nThe fix is to add CPU resource requests to the log-forwarder container.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_017BFRHq5p7xj5SSc718Tdgg",
+   "input": {
+    "id": "T-6001",
+    "note": "CAUSE: The log-forwarder sidecar container in the search-api 4.8.0 deployment was added without CPU resource requests. According to Kubernetes HPA documentation, \"if some of the Pod's containers do not have the relevant resource request set, CPU utilization for the Pod will not be defined and the autoscaler will not take any action for that metric\" [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-3]. This causes the HPA to show `cpu <unknown>/60%` and prevents scaling decisions.\n\nEVIDENCE: Pod inspection shows the api container has cpu: 1 request, but the log-forwarder container has no resource requests defined. The logs show worker pools at capacity (busy=16/16 with queued requests), indicating load is present but HPA cannot make scaling decisions.\n\nFIX: Add CPU and memory resource requests to the log-forwarder container in the search-api Deployment. Example for the log-forwarder container:\n```\nresources:\n  requests:\n    cpu: 100m\n    memory: 64Mi\n```\n\nApply this change to the deployment manifest in the catalog namespace and the HPA will resume normal operation, allowing the pods to scale up to 8-9 replicas during peak load as before.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 22753,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 607,
+ "stop_reason": "tool_use"
+}

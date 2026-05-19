@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for more specific information about PostgreSQL pod crashes and persistent volume issues:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01599YgeuTLfaUChmQSvjAdf",
+   "input": {
+    "query": "persistent volume mount permission denied statefulset postgres"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4445,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 79,
+ "stop_reason": "tool_use"
+}

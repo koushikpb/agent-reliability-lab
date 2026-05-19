@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#requests-and-limits-0",
+  "heading": "Resource Management for Pods and Containers > Requests and limits",
+  "text": "If the node where a Pod is running has enough of a resource available, it's possible (and\nallowed) for a container to use more resource than its `request` for that resource specifies.\n\nFor example, if you set a `memory` request of 256 MiB for a container, and that container is in\na Pod scheduled to a Node with 8GiB of memory and no other Pods, then the container can try to use\nmore RAM.\n\nLimits are a different story. Both `cpu` and `memory` limits are applied by the kubelet (and\ncontainer runtime),\nand are ultimately enforced by the kernel. On Linux nodes, the Linux kernel\nenforces limits with\ncgroups.\nThe behavior of `cpu` and `memory` limit enforcement is slightly different.\n\n`cpu` limits are enforced by CPU throttling. When a container approaches\nits `cpu` limit, the kernel will restrict access to the CPU corresponding to the\ncontainer's limit. Thus, a `cpu` limit is a hard limit the kernel enforces.\nContainers may not use more CPU than is specified in their `cpu` limit."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/_index#resource-requests-and-limits-0",
+  "heading": "Pods > Resource requests and limits",
+  "text": "When you specify a Pod, you can optionally specify how much of each resource\na container needs. The most common resources to specify are CPU and memory (RAM).\n\nWhen you specify the resource _request_ for containers in a Pod, the\nkube-scheduler uses this information to decide which node to place the Pod on.\nWhen you specify a resource _limit_ for a container, the kubelet enforces\nthose limits so that the running container is not allowed to use more of that\nresource than the limit you set.\n\nCPU limits are enforced by CPU throttling. When a container approaches its\nCPU limit, the kernel restricts its access to CPU. Memory limits are enforced\nby the kernel with out-of-memory (OOM) kills when a container exceeds its limit.\n\nSetting CPU limits involves a trade-off. CPU limits help prevent noisy neighbor\nproblems where a single workload starves others on the same node. This is\nespecially important in multi-tenant environments. However, CPU limits can cause\nthrottling even when the node has spare CPU capacity, potentially degrading\nlatency-sensitive workload performance. Whether to set CPU limits depends on\nyour environment, workload characteristics, and isolation requirements."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#resource-sharing-within-containers-0",
+  "heading": "Init Containers > Detailed behavior > Resource sharing within containers",
+  "text": "Given the order of execution for init, sidecar and app containers, the following rules\nfor resource usage apply:\n\n* The highest of any particular resource request or limit defined on all init\n  containers is the *effective init request/limit*. If any resource has no\n  resource limit specified this is considered as the highest limit.\n* The Pod's *effective request/limit* for a resource is the higher of:\n  * the sum of all app containers request/limit for a resource\n  * the effective init request/limit for a resource\n* Scheduling is done based on effective requests/limits, which means\n  init containers can reserve resources for initialization that are not used\n  during the life of the Pod.\n* The QoS (quality of service) tier of the Pod's *effective QoS tier* is the\n  QoS tier for init containers and app containers alike.\n\nQuota and limits are applied based on the effective Pod request and\nlimit."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-qos#class-independent-behavior-0",
+  "heading": "Pod Quality of Service Classes > Some behavior is independent of QoS class",
+  "text": "Certain behavior is independent of the QoS class assigned by Kubernetes. For example:\n\n* Any Container exceeding a resource limit will be killed and restarted by the kubelet without\n  affecting other Containers in that Pod.\n\n* If a Container exceeds its resource request and the node it runs on faces\n  resource pressure, the Pod it is in becomes a candidate for [eviction](/docs/concepts/scheduling-eviction/node-pressure-eviction/).\n  If this occurs, all Containers in the Pod will be terminated. Kubernetes may create a\n  replacement Pod, usually on a different node.\n\n* The resource request of a Pod is equal to the sum of the resource requests of\n  its component Containers, and the resource limit of a Pod is equal to the sum of\n  the resource limits of its component Containers.\n\n* The kube-scheduler does not consider QoS class when selecting which Pods to\n  [preempt](/docs/concepts/scheduling-eviction/pod-priority-preemption/#preemption).\n  Preemption can occur when a cluster does not have enough resources to run all the Pods\n  you defined."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-2",
+  "heading": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work?",
+  "text": "Kubernetes implements horizontal pod autoscaling as a control loop that runs intermittently\n(it is not a continuous process). The interval is set by the\n`--horizontal-pod-autoscaler-sync-period` parameter to the\n[`kube-controller-manager`](/docs/reference/command-line-tools-reference/kube-controller-manager/)\n(and the default interval is 15 seconds).\n\nOnce during each period, the controller manager queries the resource utilization against the\nmetrics specified in each HorizontalPodAutoscaler definition. The controller manager\nfinds the target resource defined by the `scaleTargetRef`,\nthen selects the pods based on the target resource's `.spec.selector` labels,\nand obtains the metrics from either the resource metrics API (for per-pod resource metrics),\nor the custom metrics API (for all other metrics)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#differences-from-regular-containers-0",
+  "heading": "Init Containers > Understanding init containers > Differences from regular containers",
+  "text": "Init containers support all the fields and features of app containers,\nincluding resource limits, [volumes](/docs/concepts/storage/volumes/), and security settings. However, the\nresource requests and limits for an init container are handled differently,\nas documented in [Resource sharing within containers](#resource-sharing-within-containers).\n\nRegular init containers (in other words: excluding sidecar containers) do not support the\n`lifecycle`, `livenessProbe`, `readinessProbe`, or `startupProbe` fields. Init containers\nmust run to completion before the Pod can be ready; sidecar containers continue running\nduring a Pod's lifetime, and _do_ support some probes. See [sidecar container](/docs/concepts/workloads/pods/sidecar-containers/)\nfor further details about sidecar containers."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/vertical-pod-autoscale#how-does-a-verticalpodautoscaler-work-3",
+  "heading": "Vertical Pod Autoscaling > How does a VerticalPodAutoscaler work?",
+  "text": "The VerticalPodAutoscaler requires a metrics source, such as Kubernetes' Metrics Server add-on,\nto be installed in the cluster.\nThe VPA components fetch metrics from the `metrics.k8s.io` API. The Metrics Server needs to be launched separately as it is not deployed by default in most clusters. For more information about resource metrics, see [Metrics Server](/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/#metrics-server)."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-4",
+  "heading": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work?",
+  "text": "- For per-pod custom metrics, the controller functions similarly to per-pod resource metrics,\n  except that it works with raw values, not utilization values.\n\n- For object metrics and external metrics, a single metric is fetched, which describes\n  the object in question. This metric is compared to the target\n  value, to produce a ratio as above. In the `autoscaling/v2` API\n  version, this value can optionally be divided by the number of Pods before the\n  comparison is made."
+ }
+]

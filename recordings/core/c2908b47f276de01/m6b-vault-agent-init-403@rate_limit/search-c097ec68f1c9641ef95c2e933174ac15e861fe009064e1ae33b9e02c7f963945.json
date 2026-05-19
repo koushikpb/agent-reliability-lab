@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#launch-a-pod-using-service-account-token-projection-1",
+  "heading": "Configure Service Accounts for Pods > ServiceAccount token volume projection > Launch a Pod using service account token projection",
+  "text": "The kubelet will: request and store the token on behalf of the Pod; make\nthe token available to the Pod at a configurable file path; and refresh\nthe token as it approaches expiration. The kubelet proactively requests rotation\nfor the token if it is older than 80% of its total time-to-live (TTL),\nor if the token is older than 24 hours.\n\nThe application is responsible for reloading the token when it rotates. It's\noften good enough for the application to load the token on a schedule\n(for example: once every 5 minutes), without tracking the actual expiry time."
+ },
+ {
+  "chunk_id": "concepts/storage/projected-volumes#serviceaccounttoken-1",
+  "heading": "Projected Volumes > serviceAccountToken projected volumes",
+  "text": "The example Pod has a projected volume containing the injected service account\ntoken. Containers in this Pod can use that token to access the Kubernetes API\nserver, authenticating with the identity of [the pod's ServiceAccount](/docs/tasks/configure-pod-container/configure-service-account/).\nThe `audience` field contains the intended audience of the\ntoken. A recipient of the token must identify itself with an identifier specified\nin the audience of the token, and otherwise should reject the token. This field\nis optional and it defaults to the identifier of the API server.\n\nThe `expirationSeconds` is the expected duration of validity of the service account\ntoken. It defaults to 1 hour and must be at least 10 minutes (600 seconds). An administrator\ncan also limit its maximum value by specifying the `--service-account-max-token-expiration`\noption for the API server. The `path` field specifies a relative path to the mount point\nof the projected volume."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#assign-to-pod-2",
+  "heading": "Service Accounts > How to use service accounts > Assign a ServiceAccount to a Pod",
+  "text": "* [TokenRequest API](/docs/reference/kubernetes-api/authentication-resources/token-request-v1/)\n  (recommended): Request a short-lived service account token from within\n  your own *application code*. The token expires automatically and can rotate\n  upon expiration.\n  If you have a legacy application that is not aware of Kubernetes, you\n  could use a sidecar container within the same pod to fetch these tokens\n  and make them available to the application workload.\n* [Token Volume Projection](/docs/tasks/configure-pod-container/configure-service-account/#serviceaccount-token-volume-projection)\n  (also recommended): In Kubernetes v1.20 and later, use the Pod specification to\n  tell the kubelet to add the service account token to the Pod as a\n  *projected volume*. Projected tokens expire automatically, and the kubelet\n  rotates the token before it expires."
+ },
+ {
+  "chunk_id": "concepts/storage/projected-volumes#serviceaccounttoken-0",
+  "heading": "Projected Volumes > serviceAccountToken projected volumes",
+  "text": "You can inject the token for the current [service account](/docs/reference/access-authn-authz/authentication/#service-account-tokens)\ninto a Pod at a specified path. For example:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: sa-token-test\nspec:\n  containers:\n  - name: container-test\n    image: busybox:1.28\n    command: [\"sleep\", \"3600\"]\n    volumeMounts:\n    - name: token-vol\n      mountPath: \"/service-account\"\n      readOnly: true\n  serviceAccountName: default\n  volumes:\n  - name: token-vol\n    projected:\n      sources:\n      - serviceAccountToken:\n          audience: api\n          expirationSeconds: 3600\n          path: token\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#launch-a-pod-using-service-account-token-projection-0",
+  "heading": "Configure Service Accounts for Pods > ServiceAccount token volume projection > Launch a Pod using service account token projection",
+  "text": "To provide a Pod with a token with an audience of `vault` and a validity duration\nof two hours, you could define a Pod manifest that is similar to:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx\nspec:\n  containers:\n  - image: nginx\n    name: nginx\n    volumeMounts:\n    - mountPath: /var/run/secrets/tokens\n      name: vault-token\n  serviceAccountName: build-robot\n  volumes:\n  - name: vault-token\n    projected:\n      sources:\n      - serviceAccountToken:\n          path: vault-token\n          expirationSeconds: 7200\n          audience: vault\n```\n\nCreate the Pod:\n\n```shell\nkubectl create -f https://k8s.io/examples/pods/pod-projected-svc-token.yaml\n```"
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#assign-to-pod-0",
+  "heading": "Service Accounts > How to use service accounts > Assign a ServiceAccount to a Pod",
+  "text": "To assign a ServiceAccount to a Pod, you set the `spec.serviceAccountName`\nfield in the Pod specification. Kubernetes then automatically provides the\ncredentials for that ServiceAccount to the Pod. In v1.22 and later, Kubernetes\ngets a short-lived, **automatically rotating** token using the `TokenRequest`\nAPI and mounts the token as a\n[projected volume](/docs/concepts/storage/projected-volumes/#serviceaccounttoken).\n\nBy default, Kubernetes provides the Pod\nwith the credentials for an assigned ServiceAccount, whether that is the\n`default` ServiceAccount or a custom ServiceAccount that you specify.\n\nTo prevent Kubernetes from automatically injecting\ncredentials for a specified ServiceAccount or the `default` ServiceAccount, set the\n`automountServiceAccountToken` field in your Pod specification to `false`.\n\nIn versions earlier than 1.22, Kubernetes provides a long-lived, static token\nto the Pod as a Secret."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#serviceaccount-token-volume-projection-3",
+  "heading": "Configure Service Accounts for Pods > ServiceAccount token volume projection",
+  "text": "You can configure this behavior for the `spec` of a Pod using a\n[projected volume](/docs/concepts/storage/volumes/#projected) type called\n`ServiceAccountToken`.\n\nThe token from this projected volume is a JSON Web Token  (JWT).\nThe JSON payload of this token follows a well defined schema - an example payload for a pod bound token:"
+ },
+ {
+  "chunk_id": "concepts/storage/projected-volumes#serviceaccounttoken-2",
+  "heading": "Projected Volumes > serviceAccountToken projected volumes",
+  "text": "A container using a projected volume source as a [`subPath`](/docs/concepts/storage/volumes/#using-subpath)\nvolume mount will not receive updates for those volume sources."
+ }
+]

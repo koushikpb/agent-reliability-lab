@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#requests-limits-1",
+  "heading": "Local ephemeral storage > Setting requests and limits for local ephemeral storage",
+  "text": "Pay attention to the case of the suffixes. If you request `400m` of ephemeral-storage, this is a request\nfor 0.4 bytes. Someone who types that probably meant to ask for 400 mebibytes (`400Mi`)\nor 400 megabytes (`400M`).\n\nIn the following example, the Pod has two containers. Each container has a request of\n2GiB of local ephemeral storage. Each container has a limit of 4GiB of local ephemeral\nstorage. Therefore, the Pod has a request of 4GiB of local ephemeral storage, and\na limit of 8GiB of local ephemeral storage. 500Mi of that limit could be\nconsumed by the `emptyDir` volume."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-0",
+  "heading": "Local ephemeral storage > Ephemeral storage consumption management",
+  "text": "If the kubelet is managing local ephemeral storage as a resource, then the\nkubelet measures storage use in:\n\n- `emptyDir` volumes, except _tmpfs_ `emptyDir` volumes\n- directories holding node-level logs\n- writeable container layers\n\nIf a Pod is using more ephemeral storage than you allow it to, the kubelet\nsets an eviction signal that triggers Pod eviction.\n\nFor container-level isolation, if a container's writable layer and log\nusage exceeds its storage limit, the kubelet marks the Pod for eviction.\n\nFor pod-level isolation the kubelet works out an overall Pod storage limit by\nsumming the limits for the containers in that Pod. In this case, if the sum of\nthe local ephemeral storage usage from all containers and also the Pod's `emptyDir`\nvolumes exceeds the overall Pod storage limit, then the kubelet also marks the Pod\nfor eviction.\n\nIf the kubelet is not measuring local ephemeral storage, then a Pod\nthat exceeds its local storage limit will not be evicted for breaching\nlocal storage resource limits."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#requests-limits-0",
+  "heading": "Local ephemeral storage > Setting requests and limits for local ephemeral storage",
+  "text": "You can specify `ephemeral-storage` for managing local ephemeral storage. Each\ncontainer of a Pod can specify either or both of the following:\n\n* `spec.containers[].resources.limits.ephemeral-storage`\n* `spec.containers[].resources.requests.ephemeral-storage`\n\nLimits and requests for `ephemeral-storage` are measured in byte quantities.\nYou can express storage as a plain integer or as a fixed-point number using one of these suffixes:\nE, P, T, G, M, k. You can also use the power-of-two equivalents: Ei, Pi, Ti, Gi,\nMi, Ki. For example, the following quantities all represent roughly the same value:\n\n- `128974848`\n- `129e6`\n- `129M`\n- `123Mi`"
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#requests-limits-2",
+  "heading": "Local ephemeral storage > Setting requests and limits for local ephemeral storage",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: frontend\nspec:\n  containers:\n  - name: app\n    image: images.my-company.example/app:v4\n    resources:\n      requests:\n        ephemeral-storage: \"2Gi\"\n      limits:\n        ephemeral-storage: \"4Gi\"\n    volumeMounts:\n    - name: ephemeral\n      mountPath: \"/tmp\"\n  - name: log-aggregator\n    image: images.my-company.example/log-aggregator:v6\n    resources:\n      requests:\n        ephemeral-storage: \"2Gi\"\n      limits:\n        ephemeral-storage: \"4Gi\"\n    volumeMounts:\n    - name: ephemeral\n      mountPath: \"/tmp\"\n  volumes:\n    - name: ephemeral\n      emptyDir:\n        sizeLimit: 500Mi\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#resource-requests-and-limits-of-pod-and-container-0",
+  "heading": "Resource Management for Pods and Containers > Resource requests and limits of Pod and container",
+  "text": "For each container, you can specify resource limits and requests,\nincluding the following:\n\n* `spec.containers[].resources.limits.cpu`\n* `spec.containers[].resources.limits.memory`\n* `spec.containers[].resources.limits.ephemeral-storage`\n* `spec.containers[].resources.limits.hugepages-<size>`\n* `spec.containers[].resources.requests.cpu`\n* `spec.containers[].resources.requests.memory`\n* `spec.containers[].resources.requests.ephemeral-storage`\n* `spec.containers[].resources.requests.hugepages-<size>`\n\nAlthough you can only specify requests and limits for individual containers,\nit is also useful to think about the overall resource requests and limits for\na Pod.\nFor a particular resource, a *Pod resource request/limit* is the sum of the\nresource requests/limits of that type for each container in the Pod."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#intro-1",
+  "heading": "Local ephemeral storage",
+  "text": "* An admin sets the resource quota for ephemeral-storage in a namespace.\n* A user needs to specify limits for the ephemeral-storage resource in the Pod spec.\n\nIf the user doesn't specify the ephemeral-storage resource limit in the Pod spec,\nthe resource quota is not enforced on ephemeral-storage.\n\nKubernetes lets you track, reserve and limit the amount\nof ephemeral local storage a Pod can consume."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/quality-service-pod#create-a-pod-that-gets-assigned-a-qos-class-of-guaranteed-0",
+  "heading": "Configure Quality of Service for Pods > Create a Pod that gets assigned a QoS class of Guaranteed",
+  "text": "For a Pod to be given a QoS class of `Guaranteed`:\n\n* Every Container in the Pod must have a memory limit and a memory request.\n* For every Container in the Pod, the memory limit must equal the memory request.\n* Every Container in the Pod must have a CPU limit and a CPU request.\n* For every Container in the Pod, the CPU limit must equal the CPU request.\n\nThese restrictions apply to init containers and app containers equally.\n[Ephemeral containers](/docs/concepts/workloads/pods/ephemeral-containers/)\ncannot define resources so these restrictions do not apply.\n\nHere is a manifest for a Pod that has one Container. The Container has a memory limit and a\nmemory request, both equal to 200 MiB. The Container has a CPU limit and a CPU request, both equal to 700 milliCPU:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-qos#burstable-0",
+  "heading": "Pod Quality of Service Classes > Quality of Service classes > Burstable",
+  "text": "Pods that are `Burstable` have some lower-bound resource guarantees based on the request, but\ndo not require a specific limit. If a limit is not specified, it defaults to a\nlimit equivalent to the capacity of the Node, which allows the Pods to flexibly increase\ntheir resources if resources are available. In the event of Pod eviction due to Node\nresource pressure, these Pods are evicted only after all `BestEffort` Pods are evicted.\nBecause a `Burstable` Pod can include a Container that has no resource limits or requests, a Pod\nthat is `Burstable` can try to use any amount of node resources.\n\n#### Criteria\n\nA Pod is given a QoS class of `Burstable` if:\n\n* The Pod does not meet the criteria for QoS class `Guaranteed`.\n* At least one Container in the Pod has a memory or CPU request or limit,\n  or the Pod has a Pod-level memory or CPU request or limit."
+ }
+]

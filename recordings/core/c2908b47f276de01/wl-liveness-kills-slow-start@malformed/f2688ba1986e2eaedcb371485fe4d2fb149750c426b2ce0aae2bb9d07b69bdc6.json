@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-2003 by identifying and documenting the root cause of the catalog-search pod restart loop. The issue was a probe configuration problem: the application requires 30+ seconds to load its index shards on startup, but the liveness probe begins checking too early, causing premature failures. The solution is to add a startup probe with a longer failure threshold to allow full initialization before liveness checks begin, or increase the liveness probe's initial delay. The ticket owner now has clear guidance and Kubernetes documentation references to fix the deployment configuration.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 6200,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 121,
+ "stop_reason": "end_turn"
+}

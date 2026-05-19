@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#batching-1",
+  "heading": "Auditing > Event batching",
+  "text": "- `--audit-webhook-batch-buffer-size` defines the number of events to buffer before batching.\n  If the rate of incoming events overflows the buffer, events are dropped. The default value is 10000.\n- `--audit-webhook-batch-max-size` defines the maximum number of events in one batch. The default value is 400.\n- `--audit-webhook-batch-max-wait` defines the maximum amount of time to wait before unconditionally\n  batching events in the queue. The default value is 30 seconds.\n- `--audit-webhook-batch-throttle-enable` defines whether batching throttling is enabled. Throttling is enabled by default.\n- `--audit-webhook-batch-throttle-qps` defines the maximum average number of batches generated\n  per second. The default value is 10.\n- `--audit-webhook-batch-throttle-burst` defines the maximum number of batches generated at the same\n  moment if the allowed QPS was underutilized previously. The default value is 15."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#batching-0",
+  "heading": "Auditing > Event batching",
+  "text": "Both `log` and `webhook` backends support batching. Below is a list of\navailable flags specific to each backend. \nBy default, batching and throttling are **enabled** for the `webhook` backend and **disabled** for the `log` backend.\n\n- `--audit-webhook-mode` defines the buffering strategy. One of the following:\n  - `batch` - buffer events and asynchronously process them in batches. This is the default mode for the `webhook` backend.\n  - `blocking` - block API server responses on processing each individual event.\n  - `blocking-strict` - Same as blocking, but when there is a failure during audit logging at the\n    RequestReceived stage, the whole request to the kube-apiserver fails.\n\nThe following flags are used only in the `batch` mode:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-qos#memory-throttling-0",
+  "heading": "Pod Quality of Service Classes > Memory QoS with cgroup v2 > Memory throttling",
+  "text": "Memory throttling is controlled by the `kubelet` configuration field\n`memoryThrottlingFactor`. Its default value is `nil`, which means that the\n`kubelet` does not set `memory.high`. To enable memory throttling, set\n`memoryThrottlingFactor` to a value greater than 0 and less than or equal to 1.\n\nFor Burstable Pods, the kubelet uses `memory.high` to throttle memory allocation\nbefore the workload hits its hard limit (`memory.max`). The throttling threshold\nfor a container is calculated as:\n\n```\nmemory.high = requests + memoryThrottlingFactor * (limits - requests)\n```\n\nFor example, with `memoryThrottlingFactor` set to `0.9`, a container with a\n`256 MiB` request and a `1 GiB` limit gets `memory.high` set to roughly `947 MiB`.\nIf a Burstable container has no memory limit, the kubelet uses node allocatable\nmemory in place of the limit."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#parameter-tuning-0",
+  "heading": "Auditing > Parameter tuning",
+  "text": "Parameters should be set to accommodate the load on the API server.\n\nFor example, if kube-apiserver receives 100 requests each second, and each request is audited only\non `ResponseStarted` and `ResponseComplete` stages, you should account for \u2245200 audit\nevents being generated each second. Assuming that there are up to 100 events in a batch,\nyou should set throttling level at least 2 queries per second. Assuming that the backend can take up to\n5 seconds to write events, you should set the buffer size to hold up to 5 seconds of events;\nthat is: 10 batches, or 1000 events.\n\nIn most cases however, the default parameters should be sufficient and you don't have to worry about\nsetting them manually. You can look at the following Prometheus metrics exposed by kube-apiserver\nand in the logs to monitor the state of the auditing subsystem.\n\n- `apiserver_audit_event_total` metric contains the total number of audit events exported.\n- `apiserver_audit_error_total` metric contains the total number of events dropped due to an error\n  during exporting."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#batching-3",
+  "heading": "Auditing > Event batching",
+  "text": "- `--audit-log-batch-buffer-size` defines the number of events to buffer before batching.\n  If the rate of incoming events overflows the buffer, events are dropped.\n- `--audit-log-batch-max-size` defines the maximum number of events in one batch.\n- `--audit-log-batch-max-wait` defines the maximum amount of time to wait before unconditionally\n  batching events in the queue.\n- `--audit-log-batch-throttle-enable` defines whether batching throttling is enabled.\n- `--audit-log-batch-throttle-qps` defines the maximum average number of batches generated\n  per second.\n- `--audit-log-batch-throttle-burst` defines the maximum number of batches generated at the same\n  moment if the allowed QPS was underutilized previously."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduling-framework#queueinghint-0",
+  "heading": "Scheduling Framework > Interfaces > QueueingHint",
+  "text": "QueueingHint is a callback function for deciding whether a Pod can be requeued to the active queue or backoff queue.\nIt's executed every time a certain kind of event or change happens in the cluster.\nWhen the QueueingHint finds that the event might make the Pod schedulable,\nthe Pod is put into the active queue or the backoff queue\nso that the scheduler will retry the scheduling of the Pod."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-qos#memory-qos-with-cgroup-v2-0",
+  "heading": "Pod Quality of Service Classes > Memory QoS with cgroup v2",
+  "text": "[Memory QoS](/docs/reference/command-line-tools-reference/feature-gates/#memoryqos) uses the memory controller of cgroup v2 to manage memory throttling\nand protection in Kubernetes. It uses the Pod's QoS class to decide which cgroup\nsettings to apply, but it does not change how Pods are classified.\n\nThe default `kubelet` configuration does not enable memory\nthrottling or memory protection. To enable either behavior, [configure](/docs/reference/config-api/kubelet-config.v1beta1/)\n`memoryThrottlingFactor` or `memoryReservationPolicy`, respectively."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#metrics-0",
+  "heading": "API Priority and Fairness > Observability > Metrics",
+  "text": "In versions of Kubernetes before v1.20, the labels `flow_schema` and\n`priority_level` were inconsistently named `flowSchema` and `priorityLevel`,\nrespectively. If you're running Kubernetes versions v1.19 and earlier, you\nshould refer to the documentation for your version.\n\nWhen you enable the API Priority and Fairness feature, the kube-apiserver\nexports additional metrics. Monitoring these can help you determine whether your\nconfiguration is inappropriately throttling important traffic, or find\npoorly-behaved workloads that may be harming system health.\n\n#### Maturity level BETA\n\n* `apiserver_flowcontrol_rejected_requests_total` is a counter vector\n  (cumulative since server start) of requests that were rejected,\n  broken down by the labels `flow_schema` (indicating the one that\n  matched the request), `priority_level` (indicating the one to which\n  the request was assigned), and `reason`. The `reason` label will be\n  one of the following values:"
+ }
+]

@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I now have all the information I need to resolve this ticket. The issue is that the pdf-exporter 1.5.0 container image doesn't specify the required security context fields to pass the namespace's \"restricted:latest\" PodSecurity policy. The error message clearly shows what's missing. Let me update the ticket with a resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Rt7pA8xW1PY1SgK3kfeN5z",
+   "input": {
+    "id": "T-4002",
+    "note": "**Cause:** The pdf-exporter 1.5.0 image fails to meet the namespace's PodSecurity \"restricted:latest\" policy requirements. The deployment is being rejected with policy violations on security context settings.\n\n**Evidence:** Pod creation failed with the following violations:\n- `allowPrivilegeEscalation != false` - container must set `securityContext.allowPrivilegeEscalation=false`\n- Unrestricted capabilities - container must set `securityContext.capabilities.drop=[\"ALL\"]`  \n- `runAsNonRoot != true` - pod or container must set `securityContext.runAsNonRoot=true`\n- Missing seccompProfile - pod or container must set `securityContext.seccompProfile.type` to \"RuntimeDefault\" or \"Localhost\"\n\nThese requirements are enforced by the Restricted PodSecurity Standard [cite: concepts/security/pod-security-standards#restricted-0] which requires all four of these security context fields for pod hardening best practices.\n\n**Fix:** Update your deployment manifest to add the required security context to the pdf-exporter container. Add this to your container specification [cite: concepts/workloads/pods/advanced-pod-config#container-level-security-context-0]:\n\n```yaml\nsecurityContext:\n  allowPrivilegeEscalation: false\n  runAsNonRoot: true\n  runAsUser: 1000  # Use an appropriate non-root UID\n  capabilities:\n    drop:\n    - ALL\n  seccompProfile:\n    type: RuntimeDefault\n```\n\nThe 1.5.0 image either changed base images or has new capabilities that require explicit security context configuration. Update your manifest with these settings and redeploy.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6708,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 559,
+ "stop_reason": "tool_use"
+}

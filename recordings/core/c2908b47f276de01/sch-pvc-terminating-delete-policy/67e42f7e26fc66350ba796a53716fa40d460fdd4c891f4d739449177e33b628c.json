@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! Now let me search for more specific information about when the finalizer is removed:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Mm7niHYFZFQJcmLFjpaqua",
+   "input": {
+    "query": "PVC finalizer removed when pod no longer using"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6096,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 81,
+ "stop_reason": "tool_use"
+}

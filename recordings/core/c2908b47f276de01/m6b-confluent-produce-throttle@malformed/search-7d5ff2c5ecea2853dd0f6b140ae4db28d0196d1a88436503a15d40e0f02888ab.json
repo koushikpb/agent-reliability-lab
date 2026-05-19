@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/swap-memory-management#protect-system-critical-daemons-for-i-o-latency-0",
+  "heading": "Swap memory management > Good practice for using swap in a Kubernetes cluster > Protect system-critical daemons for I/O latency",
+  "text": "Swap can increase the I/O load on a node.\nWhen memory pressure causes the kernel to rapidly swap pages in and out,\nsystem-critical daemons and services that rely on I/O operations may\nexperience performance degradation.\n\nTo mitigate this, it is recommended for systemd users to prioritize the system slice in terms of I/O latency.\nFor non-systemd users,\nsetting up a dedicated cgroup for system daemons and processes and prioritizing I/O latency in the same way is advised.\nThis can be achieved by setting `io.latency` for the system slice,\nthereby granting it higher I/O priority.\nSee [cgroup's documentation](https://www.kernel.org/doc/Documentation/admin-guide/cgroup-v2.rst) for more info."
+ },
+ {
+  "chunk_id": "concepts/services-networking/windows-networking#dsr-0",
+  "heading": "Networking on Windows > Direct Server Return (DSR)",
+  "text": "Load balancing mode where the IP address fixups and the LBNAT occurs at the container vSwitch port directly;\nservice traffic arrives with the source IP set as the originating pod IP.\nThis provides performance optimizations by allowing the return traffic routed through load balancers\nto bypass the load balancer and respond directly to the client;\nreducing load on the load balancer and also reducing overall latency.\nFor more information, read\n[Direct Server Return (DSR) in a nutshell](https://techcommunity.microsoft.com/blog/networkingblog/direct-server-return-dsr-in-a-nutshell/693710)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/windows-networking#network-modes-6",
+  "heading": "Networking on Windows > Network modes",
+  "text": "| Transparent (special use case for [ovn-kubernetes](https://github.com/openvswitch/ovn-kubernetes)) | Requires an external vSwitch. Containers are attached to an external vSwitch which enables intra-pod communication via logical networks (logical switches and routers). | Packet is encapsulated either via [GENEVE](https://datatracker.ietf.org/doc/draft-gross-geneve/) or [STT](https://datatracker.ietf.org/doc/draft-davie-stt/) tunneling to reach pods which are not on the same host. <br/> Packets are forwarded or dropped via the tunnel metadata information supplied by the ovn network controller. <br/> NAT is done for north-south communication. | [ovn-kubernetes](https://github.com/openvswitch/ovn-kubernetes) | [Deploy via"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/addons#networking-and-network-policy-5",
+  "heading": "Installing Addons > Networking and Network Policy",
+  "text": "  (e.g. Calico, Cilium, Contiv, Flannel), in addition to SRIOV, DPDK, OVS-DPDK and\n  VPP based workloads in Kubernetes.\n* [OVN-Kubernetes](https://github.com/ovn-org/ovn-kubernetes/) is a networking\n  provider for Kubernetes based on [OVN (Open Virtual Network)](https://github.com/ovn-org/ovn/),\n  a virtual networking implementation that came out of the Open vSwitch (OVS) project.\n  OVN-Kubernetes provides an overlay based networking implementation for Kubernetes,\n  including an OVS based implementation of load balancing and network policy.\n* [Nodus](https://github.com/akraino-edge-stack/icn-nodus) is an OVN based CNI\n  controller plugin to provide cloud native based Service function chaining(SFC)."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/addons#networking-and-network-policy-4",
+  "heading": "Installing Addons > Networking and Network Policy",
+  "text": "  provides an expressive, extensible, and role-oriented API for modeling service networking.\n* [Knitter](https://github.com/ZTE/Knitter/) is a plugin to support multiple network\n  interfaces in a Kubernetes pod.\n* [kube-router](https://github.com/cloudnativelabs/kube-router) is an open\n  source turnkey solution for Kubernetes networking with the aim to provide\n  operational simplicity and high performance. It leverages the Kubernetes API,\n  BGP, and Golang for the control path and Linux networking primitives (IPVS,\n  nftables, etc.) for the data path. It provides a low overhead alternative and\n  is used in both k0s and k3s.\n* [Multus](https://github.com/k8snetworkplumbingwg/multus-cni) is a Multi plugin for\n  multiple network support in Kubernetes to support all CNI plugins"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/topology-manager#intro-0",
+  "heading": "Control Topology Management Policies on a node",
+  "text": "An increasing number of systems leverage a combination of CPUs and hardware accelerators to\nsupport latency-critical execution and high-throughput parallel computation. These include\nworkloads in fields such as telecommunications, scientific computing, machine learning, financial\nservices and data analytics. Such hybrid systems comprise a high performance environment.\n\nIn order to extract the best performance, optimizations related to CPU isolation, memory and\ndevice locality are required. However, in Kubernetes, these optimizations are handled by a\ndisjoint set of components.\n\n_Topology Manager_ is a kubelet component that aims to coordinate the set of components that are\nresponsible for these optimizations."
+ },
+ {
+  "chunk_id": "concepts/services-networking/network-policies#network-traffic-filtering-0",
+  "heading": "Network Policies > Network traffic filtering",
+  "text": "NetworkPolicy is defined for [layer 4](https://en.wikipedia.org/wiki/OSI_model#Layer_4:_Transport_layer)\nconnections (TCP, UDP, and optionally SCTP). For all the other protocols, the behaviour may vary\nacross network plugins.\n\nYou must be using a CNI plugin that supports SCTP\nprotocol NetworkPolicies.\n\nWhen a `deny all` network policy is defined, it is only guaranteed to deny TCP, UDP and SCTP\nconnections. For other protocols, such as ARP or ICMP, the behaviour is undefined.\nThe same applies to allow rules: when a specific pod is allowed as ingress source or egress destination,\nit is undefined what happens with (for example) ICMP packets. Protocols such as ICMP may be allowed by some\nnetwork plugins and denied by others."
+ },
+ {
+  "chunk_id": "concepts/security/security-checklist#network-security-1",
+  "heading": "Security Checklist > Network security",
+  "text": "A number of [Container Network Interface (CNI) plugins](/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/)\nplugins provide the functionality to\nrestrict network resources that pods may communicate with. This is most commonly done\nthrough [Network Policies](/docs/concepts/services-networking/network-policies/)\nwhich provide a namespaced resource to define rules. Default network policies\nthat block all egress and ingress, in each namespace, selecting all pods, can be\nuseful to adopt an allow list approach to ensure that no workloads are missed.\n\nNot all CNI plugins provide encryption in transit. If the chosen plugin lacks this\nfeature, an alternative solution could be to use a service mesh to provide that\nfunctionality.\n\nThe etcd datastore of the control plane should have controls to limit access and\nnot be publicly exposed on the Internet. Furthermore, mutual TLS (mTLS) should\nbe used to communicate securely with it. The certificate authority for this\nshould be unique to etcd."
+ }
+]

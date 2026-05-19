@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/addons#service-discovery-0",
+  "heading": "Installing Addons > Service Discovery",
+  "text": "* [CoreDNS](https://coredns.io) is a flexible, extensible DNS server which can\n  be [installed](https://github.com/coredns/helm)\n  as the in-cluster DNS for pods."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/coredns#about-coredns-0",
+  "heading": "Using CoreDNS for Service Discovery > About CoreDNS",
+  "text": "[CoreDNS](https://coredns.io) is a flexible, extensible DNS server\nthat is the default implementation of Kubernetes cluster DNS.\nLike Kubernetes, the CoreDNS project is hosted by the\nCNCF."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#a-aaaa-records-1-0",
+  "heading": "DNS for Services and Pods > Pods > A/AAAA records",
+  "text": "Kube-DNS versions, prior to the implementation of the\n[DNS specification](https://github.com/kubernetes/dns/blob/master/docs/specification.md),\nhad the following DNS resolution:\n\n```\n<pod-IPv4-address>.<namespace>.pod.<cluster-domain>\n```\n\nFor example, if a Pod in the `default` namespace has the IP address 172.17.0.3,\nand the domain name for your cluster is `cluster.local`, then the Pod has a DNS name:\n\n```\n172-17-0-3.default.pod.cluster.local\n```\n\nSome cluster DNS mechanisms, like [CoreDNS](https://coredns.io/), also provide `A` records for:\n\n```\n<pod-ipv4-address>.<service-name>.<my-namespace>.svc.<cluster-domain.example>\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#check-if-the-dns-pod-is-running-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Check if the DNS pod is running",
+  "text": "Use the `kubectl get pods` command to verify that the DNS pod is running.\n\n```shell\nkubectl get pods --namespace=kube-system -l k8s-app=kube-dns\n```\n```\nNAME                       READY     STATUS    RESTARTS   AGE\n...\ncoredns-7b96bf9f76-5hsxb   1/1       Running   0           1h\ncoredns-7b96bf9f76-mvmmt   1/1       Running   0           1h\n...\n```\n\nThe value for label `k8s-app` for CoreDNS is `kube-dns`, for backward\ncompatibility with the original kube-dns.\n\nIf you see that no CoreDNS Pod is running or that the Pod has failed/completed,\nthe DNS add-on may not be deployed by default in your current environment and you\nwill have to deploy it manually."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-custom-nameservers#intro-0",
+  "heading": "Customizing DNS Service",
+  "text": "This page explains how to configure your DNS\nPod(s) and customize the\nDNS resolution process in your cluster.\n\nBefore you begin\nYour cluster must be running the CoreDNS add-on."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#dns-0",
+  "heading": "Service > Discovering services > DNS",
+  "text": "You can (and almost always should) set up a DNS service for your Kubernetes\ncluster using an [add-on](/docs/concepts/cluster-administration/addons/).\n\nA cluster-aware DNS server, such as CoreDNS, watches the Kubernetes API for new\nServices and creates a set of DNS records for each one.  If DNS has been enabled\nthroughout your cluster then all Pods should automatically be able to resolve\nServices by their DNS name.\n\nFor example, if you have a Service called `my-service` in a Kubernetes\nnamespace `my-ns`, the control plane and the DNS Service acting together\ncreate a DNS record for `my-service.my-ns`. Pods in the `my-ns` namespace\nshould be able to find the service by doing a name lookup for `my-service`\n(`my-service.my-ns` would also work).\n\nPods in other namespaces must qualify the name as `my-service.my-ns`. These names\nwill resolve to the cluster IP assigned for the Service."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#are-dns-queries-being-received-processed-1",
+  "heading": "Debugging DNS Resolution > Before you begin > Are DNS queries being received/processed?",
+  "text": "After saving the changes, it may take up to minute or two for Kubernetes to propagate these changes to the CoreDNS pods.\n\nNext, make some queries and view the logs per the sections above in this document. If CoreDNS pods are receiving the queries, you should see them in the logs.\n\nHere is an example of a query in the log:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#are-dns-queries-being-received-processed-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Are DNS queries being received/processed?",
+  "text": "You can verify if queries are being received by CoreDNS by adding the `log` plugin to the CoreDNS configuration (aka Corefile).\nThe CoreDNS Corefile is held in a ConfigMap named `coredns`. To edit it, use the command:\n\n```\nkubectl -n kube-system edit configmap coredns\n```\n\nThen add `log` in the Corefile section per the example below:\n\n```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: coredns\n  namespace: kube-system\ndata:\n  Corefile: |\n    .:53 {\n        log\n        errors\n        health\n        kubernetes cluster.local in-addr.arpa ip6.arpa {\n          pods insecure\n          upstream\n          fallthrough in-addr.arpa ip6.arpa\n        }\n        prometheus :9153\n        forward . /etc/resolv.conf\n        cache 30\n        loop\n        reload\n        loadbalance\n    }\n```"
+ }
+]

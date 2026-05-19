@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "The pod logs show it's operating with busy workers and a queue building up. Now let me search the documentation for information about HPA issues with Kubernetes, particularly focusing on the metrics server and CPU metrics reporting.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011T3QV5CW7JmPU8tQBtgr8A",
+   "input": {
+    "query": "HPA metrics cpu unknown not scaling"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019AF63MkaXxBW7fY2KoHRuX",
+   "input": {
+    "query": "horizontal pod autoscaler cpu metrics requirements"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2496,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 146,
+ "stop_reason": "tool_use"
+}

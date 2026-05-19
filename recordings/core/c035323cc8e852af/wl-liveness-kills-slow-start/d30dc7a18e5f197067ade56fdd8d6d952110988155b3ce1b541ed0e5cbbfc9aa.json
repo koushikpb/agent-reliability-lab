@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-2003. The catalog-search pods were stuck in a restart loop because the liveness probe was configured to start checking after 30 seconds, but the application needs over 65 seconds to load a 12.4 GiB search index. This caused the kubelet to kill the container before initialization completed, triggering a restart cycle.\n\nThe fix is to add a Kubernetes startup probe to the deployment, which will prevent liveness and readiness probes from running until the application finishes its initialization. This is the recommended pattern for applications with long startup times.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7812,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 131,
+ "stop_reason": "end_turn"
+}

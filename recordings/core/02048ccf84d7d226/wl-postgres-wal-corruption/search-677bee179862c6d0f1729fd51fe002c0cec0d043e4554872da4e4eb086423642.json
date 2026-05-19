@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#specific-scenarios-0",
+  "heading": "Troubleshooting Clusters > Cluster failure modes > Specific scenarios",
+  "text": "- API server VM shutdown or apiserver crashing\n  - Results\n    - unable to stop, update, or start new pods, services, replication controller\n    - existing pods and services should continue to work normally unless they depend on the Kubernetes API\n- API server backing storage lost\n  - Results\n    - the kube-apiserver component fails to start successfully and become healthy\n    - kubelets will not be able to reach it but will continue to run the same pods and provide the same service proxying\n    - manual recovery or recreation of apiserver state necessary before apiserver is restarted\n- Supporting services (node controller, replication controller manager, scheduler, etc) VM shutdown or crashes\n  - currently those are colocated with the apiserver, and their unavailability has similar consequences as apiserver\n  - in future, these will be replicated as well and may not be co-located\n  - they do not have their own persistent state\n- Individual node (VM or physical machine) shuts down\n  - Results\n    - pods on that Node stop running\n- Network partition\n  - Results\n    - partition A thinks the nodes in partition B are down; partition B thinks the apiserver is down."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-0",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "For a Pod that defines an `emptyDir` volume, the volume is created when the Pod is assigned to a node.\nAs the name says, the `emptyDir` volume is initially empty. All containers in the Pod can read and write the same\nfiles in the `emptyDir` volume, though that volume can be mounted at the same\nor different paths in each container. When a Pod is removed from a node for\nany reason, the data in the `emptyDir` is deleted permanently.\n\nA container crashing does *not* remove a Pod from a node. The data in an `emptyDir` volume\nis safe across container crashes.\n\nSome uses for an `emptyDir` are:\n\n* scratch space, such as for a disk-based merge sort\n* checkpointing a long computation for recovery from crashes\n* holding files that a content-manager container fetches while a webserver\n  container serves the data"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-0",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "Kubernetes manages container failures within Pods using a [`restartPolicy`](#restart-policy) defined\nin the Pod `spec`. This policy determines how Kubernetes reacts to containers exiting due to errors\nor other reasons, which falls in the following sequence:\n\n1. **Initial crash**: Kubernetes attempts an immediate restart based on the Pod `restartPolicy`.\n1. **Repeated crashes**: After the initial crash Kubernetes applies an exponential\n   backoff delay for subsequent restarts, described in [`restartPolicy`](#restart-policy).\n   This prevents rapid, repeated restart attempts from overloading the system.\n1. **CrashLoopBackOff state**: This indicates that the backoff delay mechanism is currently\n   in effect for a given container that is in a crash loop, failing and restarting repeatedly.\n1. **Backoff reset**: If a container runs successfully for a certain duration\n   (e.g., 10 minutes), Kubernetes resets the backoff delay, treating any new crash\n   as the first one."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-4",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "This means that if the controller crashes and restarts, no Pod will be deleted before its\nowner reference has been updated appropriate to the policy. If a condemned Pod is\nforce-deleted while the controller is down, the owner reference may or may not have been\nset up, depending on when the controller crashed. It may take several reconcile loops to\nupdate the owner references, so some condemned Pods may have set up owner references and\nothers may not. For this reason we recommend waiting for the controller to come back up,\nwhich will verify owner references before terminating Pods. If that is not possible, the\noperator should verify the owner references on PVCs to ensure the expected objects are\ndeleted when Pods are force-deleted."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#mitigations-0",
+  "heading": "Troubleshooting Clusters > Cluster failure modes > Mitigations",
+  "text": "- Action: Use the IaaS provider's automatic VM restarting feature for IaaS VMs\n  - Mitigates: Apiserver VM shutdown or apiserver crashing\n  - Mitigates: Supporting services VM shutdown or crashes\n\n- Action: Use IaaS providers reliable storage (e.g. GCE PD or AWS EBS volume) for VMs with apiserver+etcd\n  - Mitigates: Apiserver backing storage lost\n\n- Action: Use [high-availability](/docs/setup/production-environment/tools/kubeadm/high-availability/) configuration\n  - Mitigates: Control plane node shutdown or control plane components (scheduler, API server, controller-manager) crashing\n    - Will tolerate one or more simultaneous node or component failures\n  - Mitigates: API server backing storage (i.e., etcd's data directory) lost\n    - Assumes HA (highly-available) etcd configuration"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#why-volumes-are-important-0",
+  "heading": "Volumes > Why volumes are important",
+  "text": "- **Data persistence:** On-disk files in a container are ephemeral, which presents some problems for\n  non-trivial applications when running in containers. One problem occurs when\n  a container crashes or is stopped; the container state is not saved, so all of the\n  files that were created or modified during the lifetime of the container are lost.\n  After a crash, kubelet restarts the container with a clean state.\n\n- **Shared storage:** Another problem occurs when multiple containers are running in a `Pod` and\n  need to share files. It can be challenging to set up\n  and access a shared filesystem across all of the containers.\n\nThe Kubernetes volume abstraction\ncan help you to solve both of these problems.\n\nBefore you learn about volumes, PersistentVolumes, and PersistentVolumeClaims, you should read up\nabout Pods and make sure that you understand how\nKubernetes uses Pods to run containers."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-1",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "In practice, a `CrashLoopBackOff` is a condition or event that might be seen as output\nfrom the `kubectl` command, while describing or listing Pods, when a container in the Pod\nfails to start properly and then continually tries and fails in a loop.\n\nIn other words, when a container enters the crash loop, Kubernetes applies the\nexponential backoff delay mentioned in the [Container restart policy](#restart-policy).\nThis mechanism prevents a faulty container from overwhelming the system with continuous\nfailed start attempts.\n\nThe `CrashLoopBackOff` can be caused by issues like the following:\n\n* Application errors that cause the container to exit.\n* Configuration errors, such as incorrect environment variables or missing\n  configuration files.\n* Resource constraints, where the container might not have enough memory or CPU\n  to start properly.\n* Health checks failing if the application doesn't start serving within the\n  expected time.\n* Container liveness probes or startup probes returning a `Failure` result\n  as mentioned in the [probes section](#container-probes).\n\nTo investigate the root cause of a `CrashLoopBackOff` issue, a user can:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#specific-scenarios-1",
+  "heading": "Troubleshooting Clusters > Cluster failure modes > Specific scenarios",
+  "text": "      (Assuming the master VM ends up in partition A.)\n- Kubelet software fault\n  - Results\n    - crashing kubelet cannot start new pods on the node\n    - kubelet might delete the pods or not\n    - node marked unhealthy\n    - replication controllers start new pods elsewhere\n- Cluster operator error\n  - Results\n    - loss of pods, services, etc\n    - lost of apiserver backing store\n    - users unable to read API\n    - etc."
+ }
+]

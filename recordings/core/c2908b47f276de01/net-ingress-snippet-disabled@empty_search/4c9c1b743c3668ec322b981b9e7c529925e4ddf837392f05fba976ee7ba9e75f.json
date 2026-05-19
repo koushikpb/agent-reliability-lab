@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the issue. The logs show that the ingress controller is skipping the `configuration-snippet` annotation because `allow-snippet-annotations=false`. Let me search the documentation to understand this better:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KpAB5D6oynJvroCai31c3c",
+   "input": {
+    "query": "allow-snippet-annotations configuration snippet disabled"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2412,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 106,
+ "stop_reason": "tool_use"
+}

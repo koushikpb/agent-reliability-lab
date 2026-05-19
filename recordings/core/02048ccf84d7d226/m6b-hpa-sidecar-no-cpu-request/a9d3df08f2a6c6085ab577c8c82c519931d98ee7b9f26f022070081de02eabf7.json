@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "signature": "EuMICqgBCBMYAipAXY+lLM37VrV1PKKPQUGa/0fZDqIIXfzksOP835kkVuGCOevD4IGEnEiok4IziCe/unEwuYRi+ORGY8LAYR02hzIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAZ/s8dYGEgygorrfLZIfyIAlilUaDOT2X94X/+fqQ02jrCIw7i7BuWZ1H10bdfZkGtb4JTS1FmHFhJoawP1UixTcNIGQGD9hJYcLNk4pkw6BeOIOKucGu4l7u7UnyT5JmW8gPLoGDrI3r8VSsyXL/shWDsDPNCh+xjcGM5PbUF6qWNef1qIGnaC4ft8f4IXplFaob7XlKAhLPDSdiJ2y0WU0ZY8HGjrTjhqjRWDETncED5RXt0usIR+MlCnzDwfY9mySVgyYnvT6kY0bFTKeb7oP260T66WVKmml+x9SWy8zxbsGjLMgooO0/5e+SDJOoec6pAzDWlTt8JGKRTAvberS1pvPpu1FaaOXSdExrUQdl3zUMZtdz//uN643vmCkOJDwtPWeg6M6gIr49ToJ0FgveqhjTPld4EVPLhniYGCFVcmZYVDdSgmiRJlIlXnuDbaB6Gra2YaCkFY54SmNm2XJqPJEk7Mr6AKQ2UIfMxBGhXjjTHHrKmrs51gC1skMsrVMuMerlnxJYKEZ+WLh4VdqnzicrB+rIle+G6m6oDeQLgwvI4R4Rf7cpwTlYXkNlGauXQHlsNKkinlvuD0+nmynC9vXUU5Mc+QoXQUgC/jp/i/VNXpF3CQjUXetJv0RwZceS9As/MWefl4V+Y+icCdinnfH+FUZhc0IUqnXh0h9RHYnZOK+XarcvzgpWguh6FiWVipVUldMQt5Df6f/DYDfs37UY4b86qlFB/dH8CJABoWLoi8CUbgNxaGlXMTn7KI9YdS2zZe3R5xRFwjSv0EpFD7P+nMZdhLn78lPe19X+P39uroJX7c1QjbNQ0omeXR3fOyig05IzAxN+l2yNlnEhxpwzK1vPz4K6/6xYK6lTOVkKFmyxHaVLkkYkkI3tl8/NyZARTAmA9nNoDXhP0bMgfcGWB5OuPovDrzPPkgWVz+t8bekh/jHcyLQCyWy5n2E8AVukUHGJ6ykiFwRF/jpLux92M+ZR+scdiTr7qBydEUQVB1Ws7wid5LBmdYIn3u3j9LxhW+M+UopkDJTwzN0W/7SOZp1qSQjbm9IBTEvGmwcBo06ShWTNgeYoVzlDhj0GFR39dRaLEWzK8IMCP74HMnyUQdmYfxI9iCZVYm/qzqJMIUlu5QTZ8RxdR9LuxDFhQ0t4qewy5AEgLgFV6ImBShtkdU+acJGAD8o+EkgRn6CBmGpDeJ3eoSzefOuVT9JKiItMd91gcYeSh4WyjRRmmU9uinxZMvg4M8XKOqnLJRZl/5CYBRon3dg8RgB",
+   "thinking": "Now I have all the evidence I need to resolve this ticket. \n\nThe root cause is:\n1. The 4.8.0 release added a `log-forwarder` sidecar container (fluent-bit:3.1.4) to the `search-api` pods.\n2. This sidecar has no `resources` defined - specifically no CPU request.\n3. The HPA computes CPU utilization as the ratio of current usage to requested resources across ALL containers in the pod [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0].\n4. Since this sidecar lacks a CPU request, the HPA can't produce a valid ratio for the pod, so it reports unknown utilization.\n\nThe fix is to add CPU resource requests (and ideally limits) to the log-forwarder container in the deployment spec, which should let the HPA resume computing utilization and scaling normally.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "I have all the evidence needed. Let me now update the ticket with the root cause and fix.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Eobsm2EG8i2Ju3PQjLW6Bw",
+   "input": {
+    "id": "T-6001",
+    "note": "**Root cause:** The 4.8.0 release added a `log-forwarder` sidecar (fluent-bit:3.1.4) to the `search-api` Deployment. That container has no `resources` block at all \u2014 no CPU request and no CPU limit. The HPA computes CPU utilization as the ratio of current usage to *requested* CPU summed across **all containers** in the pod [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0]. Because the `log-forwarder` container declares no CPU request, the HPA cannot calculate a valid utilization ratio, so it reports `<unknown>` and refuses to scale.\n\n**Evidence:** `kubectl list_pods` on the `catalog` namespace shows all three `search-api-75d9c8b6f4-*` pods have two containers:\n- `api` \u2192 `resources.requests.cpu: \"1\"` \u2705\n- `log-forwarder` \u2192 `resources: {}` \u274c (no requests at all)\n\nThis matches the 4.8.0 rollout described in the ticket and perfectly explains why HPA worked before that release but not after.\n\n**Fix:** Add a `resources.requests.cpu` (and a matching `resources.limits.cpu`) to the `log-forwarder` container in the `search-api` Deployment spec. A reasonable starting value for a Fluent Bit sidecar is `50m` request / `100m` limit, but profile your environment to confirm. For example:\n\n```yaml\ncontainers:\n  - name: log-forwarder\n    image: fluent/fluent-bit:3.1.4\n    resources:\n      requests:\n        cpu: \"50m\"\n        memory: \"64Mi\"\n      limits:\n        cpu: \"100m\"\n        memory: \"128Mi\"\n```\n\nOnce the Deployment is rolled out, all new pods will have a CPU request on every container, the HPA will be able to compute utilization again, and autoscaling will resume [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0]. Note that `resources.requests.cpu` must be set on **every container** in the pod for pod-level CPU utilization to be calculable [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7401,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 944,
+ "stop_reason": "tool_use"
+}

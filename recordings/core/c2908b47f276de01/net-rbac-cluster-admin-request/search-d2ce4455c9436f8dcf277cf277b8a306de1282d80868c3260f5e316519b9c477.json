@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-0",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "Ideally, minimal RBAC rights should be assigned to users and service accounts. Only permissions\nexplicitly required for their operation should be used. While each cluster will be different,\nsome general rules that can be applied are :"
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-1",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "- Assign permissions at the namespace level where possible. Use RoleBindings as opposed to\n  ClusterRoleBindings to give users rights only within a specific namespace.\n- Avoid providing wildcard permissions when possible, especially to all resources.\n  As Kubernetes is an extensible system, providing wildcard access gives rights\n  not just to all object types that currently exist in the cluster, but also to all object types\n  which are created in the future.\n- Administrators should not use `cluster-admin` accounts except where specifically needed.\n  Providing a low privileged account with\n  [impersonation rights](/docs/reference/access-authn-authz/authentication/#user-impersonation)\n  can avoid accidental modification of cluster resources.\n- Avoid adding users to the `system:masters` group. Any user who is a member of this group\n  bypasses all RBAC rights checks and will always have unrestricted superuser access, which cannot be\n  revoked by removing RoleBindings or ClusterRoleBindings. As an aside, if a cluster is"
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#privilege-escalation-risks-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks",
+  "text": "Within Kubernetes RBAC there are a number of privileges which, if granted, can allow a user or a service account\nto escalate their privileges in the cluster or affect systems outside the cluster.\n\nThis section is intended to provide visibility of the areas where cluster operators\nshould take care, to ensure that they do not inadvertently allow for more access to clusters than intended."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#service-account-issuer-discovery-2",
+  "heading": "Configure Service Accounts for Pods > ServiceAccount token volume projection > Service account issuer discovery",
+  "text": "Clusters that use RBAC include a\ndefault ClusterRole called `system:service-account-issuer-discovery`.\nA default ClusterRoleBinding assigns this role to the `system:serviceaccounts` group,\nwhich all ServiceAccounts implicitly belong to.\nThis allows pods running on the cluster to access the service account discovery document\nvia their mounted service account token. Administrators may, additionally, choose to\nbind the role to `system:authenticated` or `system:unauthenticated` depending on their\nsecurity requirements and which external systems they intend to federate with.\n\nThe JWKS response contains public keys that a relying party can use to validate\nthe Kubernetes service account tokens. Relying parties first query for the\nOpenID Provider Configuration, and use the `jwks_uri` field in the response to\nfind the JWKS."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-0",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use the built-in Kubernetes\n[role-based access control (RBAC)](/docs/reference/access-authn-authz/rbac/)\nmechanism to grant the minimum permissions required by each service account.\nYou create a *role*, which grants access, and then *bind* the role to your\nServiceAccount. RBAC lets you define a minimum set of permissions so that the\nservice account permissions follow the principle of least privilege. Pods that\nuse that service account don't get more permissions than are required to\nfunction correctly.\n\nFor instructions, refer to\n[ServiceAccount permissions](/docs/reference/access-authn-authz/rbac/#service-account-permissions).\n\n#### Cross-namespace access using a ServiceAccount {#cross-namespace}"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/hardening-dra#grant-scheduler-and-allocation-controller-permissions-0",
+  "heading": "Harden Dynamic Resource Allocation in Your Cluster > Grant least-privilege permissions for synthetic subresources > Grant scheduler and allocation-controller permissions",
+  "text": "Apply a role that allows binding-related updates:\n\n```yaml\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: dra-binding-updater\nrules:\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/status\"]\n    verbs: [\"get\", \"patch\", \"update\"]\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/binding\"]\n    verbs: [\"patch\", \"update\"]\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/hardening-dra#grant-node-local-driver-permissions-0",
+  "heading": "Harden Dynamic Resource Allocation in Your Cluster > Grant least-privilege permissions for synthetic subresources > Grant node-local driver permissions",
+  "text": "Use node-aware verbs for node-local drivers:\n\n```yaml\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: dra-node-driver-status-updater\nrules:\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/status\"]\n    verbs: [\"get\", \"patch\", \"update\"]\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/driver\"]\n    verbs: [\"associated-node:patch\", \"associated-node:update\"]\n    resourceNames: [\"dra.example.com\"]\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/hardening-dra#grant-multi-node-controller-permissions-only-when-needed-0",
+  "heading": "Harden Dynamic Resource Allocation in Your Cluster > Grant least-privilege permissions for synthetic subresources > Grant multi-node controller permissions only when needed",
+  "text": "Use `arbitrary-node:*` only for components that must update from any node:\n\n```yaml\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: dra-multinode-status-updater\nrules:\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/status\"]\n    verbs: [\"get\", \"patch\", \"update\"]\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/driver\"]\n    verbs: [\"arbitrary-node:patch\", \"arbitrary-node:update\"]\n    resourceNames: [\"dra.example.com\"]\n```"
+ }
+]

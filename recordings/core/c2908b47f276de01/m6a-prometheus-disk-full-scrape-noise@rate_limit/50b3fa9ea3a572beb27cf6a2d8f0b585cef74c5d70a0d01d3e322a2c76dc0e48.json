@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Good, all pods are running. Let me check the logs of the Prometheus pod to see if there are any issues:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Y6t7bj4CeCshbq7mh2zUzy",
+   "input": {
+    "pod": "prometheus-k8s-0"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1990,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 87,
+ "stop_reason": "tool_use"
+}

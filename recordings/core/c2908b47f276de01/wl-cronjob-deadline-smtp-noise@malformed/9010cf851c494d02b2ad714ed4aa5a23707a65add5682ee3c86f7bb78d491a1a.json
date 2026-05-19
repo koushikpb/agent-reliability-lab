@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! Now I have the complete picture. The job is hitting the `activeDeadlineSeconds: 3600` (1 hour) limit. According to the documentation, when a Job reaches this deadline, all running Pods are terminated and the Job status becomes `Failed` with `reason: DeadlineExceeded` [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-1].\n\nThe logs show the job takes approximately 1+ hour to complete the export (it's processing 9.3 million rows in 93 batches). The successful run from a week ago completed within the 1-hour deadline, but the recent runs are taking longer, probably due to increased data volume.\n\nThe fix is to increase the `activeDeadlineSeconds` value in the cronjob spec to allow more time for the export to complete.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CnWFsnDRw7m5wNM2zRiJv6",
+   "input": {
+    "id": "T-2005",
+    "note": "The ledger-export cronjob is failing because the jobs are hitting the activeDeadlineSeconds timeout. The pod logs show the export is processing 9.3 million ledger rows and taking over 1 hour to complete, but the Job spec has activeDeadlineSeconds set to 3600 seconds (1 hour). When a Job reaches this deadline, all running Pods are terminated and the Job fails with DeadlineExceeded status [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-1].\n\nThe successful run last week likely completed within the deadline before data volume increased.\n\nFix: Increase the activeDeadlineSeconds field in the ledger-export CronJob spec to allow more time for the export to complete. Recommend setting it to at least 5400-7200 seconds (1.5-2 hours) to account for the ~70 minute run time observed in the logs. Apply this change to the CronJob resource in the finance namespace.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4620,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 500,
+ "stop_reason": "tool_use"
+}

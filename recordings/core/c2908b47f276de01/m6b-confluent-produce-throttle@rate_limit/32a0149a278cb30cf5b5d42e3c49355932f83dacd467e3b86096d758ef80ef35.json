@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me retry that:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01NgLniUjjz3wQoY5DfXdE5S",
+   "input": {
+    "namespace": "ingest"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1506,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 60,
+ "stop_reason": "tool_use"
+}

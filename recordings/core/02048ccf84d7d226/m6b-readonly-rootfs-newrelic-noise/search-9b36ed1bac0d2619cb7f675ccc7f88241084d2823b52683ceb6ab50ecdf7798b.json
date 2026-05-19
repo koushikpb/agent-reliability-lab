@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#intro-2",
+  "heading": "Configure a Security Context for a Pod or Container",
+  "text": "  - is run as privileged, or\n  - has the capability `CAP_SYS_ADMIN`\n\n* `readOnlyRootFilesystem`: Mounts the container's root filesystem as read-only.\n\nThe above bullets are not a complete set of security context settings -- please see\n[SecurityContext](/docs/reference/generated/kubernetes-api//#securitycontext-v1-core)\nfor a comprehensive list."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#read-only-mounts-0",
+  "heading": "Volumes > Read-only mounts",
+  "text": "A mount can be made read-only by setting the `.spec.containers[*].volumeMounts[*].readOnly`\nfield to `true`.\nThis does not make the volume itself read-only, but that specific container will\nnot be able to write to it.\nOther containers in the Pod may mount the same volume as read-write.\n\nOn Linux, read-only mounts are not recursively read-only by default.\nFor example, consider a Pod that mounts the hosts `/mnt` as a `hostPath` volume. If\nthere is another filesystem mounted read-write on `/mnt/<SUBMOUNT>` (such as tmpfs,\nNFS, or USB storage), the volume mounted into the container(s) will also have a writeable\n`/mnt/<SUBMOUNT>`, even if the mount itself was specified as read-only."
+ },
+ {
+  "chunk_id": "concepts/storage/projected-volumes#linux-1",
+  "heading": "Projected Volumes > SecurityContext interactions > Linux",
+  "text": "If a Pod's `serviceAccountToken` volume permissions were set to `0600` because\nall other containers in the Pod have the same `runAsUser`, ephemeral\ncontainers must use the same `runAsUser` to be able to read the token."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#proc-access-1",
+  "heading": "Configure a Security Context for a Pod or Container > Managing access to the `/proc` filesystem",
+  "text": "- Read-Only Paths:\n  - `/proc/bus`\n  - `/proc/fs`\n  - `/proc/irq`\n  - `/proc/sys`\n  - `/proc/sysrq-trigger`\n\nFor some Pods, you might want to bypass that default masking of paths.\nThe most common context for wanting this is if you are trying to run containers within\na Kubernetes container (within a pod).\n\nThe `securityContext` field `procMount` allows a user to request a container's `/proc`\nbe `Unmasked`, or be mounted as read-write by the container process. This also\napplies to `/sys/firmware` which is not in `/proc`.\n\n```yaml\n...\nsecurityContext:\n  procMount: Unmasked\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#configure-volume-permission-and-ownership-change-policy-for-pods-1",
+  "heading": "Configure a Security Context for a Pod or Container > Configure volume permission and ownership change policy for Pods",
+  "text": "* _OnRootMismatch_: Only change permissions and ownership if the permission and the ownership of\n  root directory does not match with expected permissions of the volume.\n  This could help shorten the time it takes to change ownership and permission of a volume.\n* _Always_: Always change permission and ownership of the volume when volume is mounted.\n\nFor example:\n\n```yaml\nsecurityContext:\n  runAsUser: 1000\n  runAsGroup: 3000\n  fsGroup: 2000\n  fsGroupChangePolicy: \"OnRootMismatch\"\n```\n\nThis field has no effect on ephemeral volume types such as\n[`secret`](/docs/concepts/storage/volumes/#secret),\n[`configMap`](/docs/concepts/storage/volumes/#configmap),\nand [`emptyDir`](/docs/concepts/storage/volumes/#emptydir)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#configure-volume-permission-and-ownership-change-policy-for-pods-0",
+  "heading": "Configure a Security Context for a Pod or Container > Configure volume permission and ownership change policy for Pods",
+  "text": "By default, Kubernetes recursively changes ownership and permissions for the contents of each\nvolume to match the `fsGroup` specified in a Pod's `securityContext` when that volume is\nmounted.\nFor large volumes, checking and changing ownership and permissions can take a lot of time,\nslowing Pod startup. You can use the `fsGroupChangePolicy` field inside a `securityContext`\nto control the way that Kubernetes checks and manages ownership and permissions\nfor a volume.\n\n**fsGroupChangePolicy** - `fsGroupChangePolicy` defines behavior for changing ownership\n  and permission of the volume before being exposed inside a Pod.\n  This field only applies to volume types that support `fsGroup` controlled ownership and permissions.\n  This field has two possible values:"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#hostpath-0",
+  "heading": "Volumes > Types of volumes > hostPath",
+  "text": "A `hostPath` volume mounts a file or directory from the host node's filesystem\ninto your Pod. This is not something that most Pods will need, but it offers a\npowerful escape hatch for some applications.\n\nUsing the `hostPath` volume type presents many security risks.\nIf you can avoid using a `hostPath` volume, you should. For example,\ndefine a [`local` PersistentVolume](#local), and use that instead.\n\nIf you are restricting access to specific directories on the node using\nadmission-time validation, that restriction is only effective when you\nadditionally require that any mounts of that `hostPath` volume are\n**read only**. If you allow a read-write mount of any host path by an\nuntrusted Pod, the containers in that Pod may be able to subvert the\nread-write host mount.\n\n---\n\nTake care when using `hostPath` volumes, whether these are mounted as read-only\nor as read-write, because:"
+ },
+ {
+  "chunk_id": "concepts/security/application-security-checklist#security-context-pod-0",
+  "heading": "Application Security Checklist > Base security hardening > Pod-level `securityContext` recommendations",
+  "text": "- [ ] Set `runAsNonRoot: true`.\n- [ ] Configure the container to execute as a less privileged user\n  (for example, using `runAsUser` and `runAsGroup`), and configure appropriate\n  permissions on files or directories inside the container image.\n- [ ] Optionally add a supplementary group with `fsGroup` to access persistent volumes.\n- [ ] The application deploys into a namespace that enforces an appropriate\n  [Pod security standard](/docs/concepts/security/pod-security-standards/).\n  If you cannot control this enforcement for the cluster(s) where the application is\n  deployed, take this into account either through documentation or additional defense in depth."
+ }
+]

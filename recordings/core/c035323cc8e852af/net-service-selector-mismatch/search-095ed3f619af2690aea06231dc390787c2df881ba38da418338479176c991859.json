@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#selector-1",
+  "heading": "Deployments > Writing a Deployment Spec > Selector",
+  "text": "You should not create other Pods whose labels match this selector, either directly, by creating\nanother Deployment, or by creating another controller such as a ReplicaSet or a ReplicationController. If you\ndo so, the first Deployment thinks that it created these other Pods. Kubernetes does not stop you from doing this.\n\nIf you have multiple controllers that have overlapping selectors, the controllers will fight with each\nother and won't behave correctly."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#defining-a-service-1",
+  "heading": "Service > Defining a Service",
+  "text": "Kubernetes assigns this Service an IP address (the _cluster IP_),\nthat is used by the virtual IP address mechanism. For more details on that mechanism,\nread [Virtual IPs and Service Proxies](/docs/reference/networking/virtual-ips/).\n\nThe controller for that Service continuously scans for Pods that\nmatch its selector, and then makes any necessary updates to the set of\nEndpointSlices for the Service.\n\nThe name of a Service object must be a valid\n[RFC 1123 label name](/docs/concepts/overview/working-with-objects/names#rfc-1123-label-names).\n\nA Service can map _any_ incoming `port` to a `targetPort`. By default and\nfor convenience, the `targetPort` is set to the same value as the `port`\nfield."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#label-selector-updates-1",
+  "heading": "Deployments > Updating a Deployment > Label selector updates",
+  "text": "* **Additions:** When you create a new Deployment with a narrower selector, the new Deployment **must** also have a suitable Pod template.\n  If you have an existing manifest and you edit the manifest to narrow the selector, you need to edit the metadata of the Pod template inside that Deployment, adding the\n  new labels\n  to match, as otherwise the API server returns a validation error. This is a _non-overlapping_ change:\n  the new Deployment will not \"see\" the old Pods (which lack the new label), causing the old\n  ReplicaSet to be **orphaned** and a brand-new ReplicaSet to be created.\n* **Value Updates:** Changing the existing value in a selector key (e.g., from `v1` to `v2`)\n  results in the same behavior as additions (orphaning and recreation).\n* **Removals:** Removing an existing key from the Deployment selector does not require any changes\n  in the Pod template labels. This is an _overlapping_ change: the new, broader selector would\n  match the old Pods. Existing ReplicaSets are not orphaned, and a new ReplicaSet is not created,"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicaset#pod-selector-0",
+  "heading": "ReplicaSet > Writing a ReplicaSet manifest > Pod Selector",
+  "text": "The `.spec.selector` field is a [label selector](/docs/concepts/overview/working-with-objects/labels/). As discussed\n[earlier](#how-a-replicaset-works) these are the labels used to identify potential Pods to acquire. In our\n`frontend.yaml` example, the selector was:\n\n```yaml\nmatchLabels:\n  tier: frontend\n```\n\nIn the ReplicaSet, `.spec.template.metadata.labels` must match `spec.selector`, or it will\nbe rejected by the API.\n\nFor 2 ReplicaSets specifying the same `.spec.selector` but different\n`.spec.template.metadata.labels` and `.spec.template.spec` fields, each ReplicaSet ignores the\nPods created by the other ReplicaSet."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicaset#non-template-pod-acquisitions-0",
+  "heading": "ReplicaSet > Non-Template Pod acquisitions",
+  "text": "While you can create bare Pods with no problems, it is strongly recommended to make sure that the bare Pods do not have\nlabels which match the selector of one of your ReplicaSets. The reason for this is because a ReplicaSet is not limited\nto owning Pods specified by its template-- it can acquire other Pods in the manner specified in the previous sections.\n\nTake the previous frontend ReplicaSet example, and the Pods specified in the following manifest:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: pod1\n  labels:\n    tier: frontend\nspec:\n  containers:\n  - name: hello1\n    image: gcr.io/google-samples/hello-app:2.0\n\n---\n\napiVersion: v1\nkind: Pod\nmetadata:\n  name: pod2\n  labels:\n    tier: frontend\nspec:\n  containers:\n  - name: hello2\n    image: gcr.io/google-samples/hello-app:1.0\n```\n\nAs those Pods do not have a Controller (or any object) as their owner reference and match the selector of the frontend\nReplicaSet, they will immediately be acquired by it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-1",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Because this Service has no selector, the corresponding EndpointSlice\nobjects are not created automatically. You can map the Service\nto the network address and port where it's running, by adding an EndpointSlice\nobject manually. For example:\n\n```yaml\napiVersion: discovery.k8s.io/v1\nkind: EndpointSlice\nmetadata:\n  name: my-service-1 # by convention, use the name of the Service\n                     # as a prefix for the name of the EndpointSlice\n  labels:\n    # You should set the \"kubernetes.io/service-name\" label.\n    # Set its value to match the name of the Service\n    kubernetes.io/service-name: my-service\naddressType: IPv4\nports:\n  - name: http # should match with the name of the service port defined above\n    appProtocol: http\n    protocol: TCP\n    port: 9376\nendpoints:\n  - addresses:\n      - \"10.4.5.6\"\n  - addresses:\n      - \"10.1.2.3\"\n```\n\n#### Custom EndpointSlices"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-0",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Services most commonly abstract access to Kubernetes Pods thanks to the selector,\nbut when used with a corresponding set of\nEndpointSlices\nobjects and without a selector, the Service can abstract other kinds of backends,\nincluding ones that run outside the cluster.\n\nFor example:\n\n* You want to have an external database cluster in production, but in your\n  test environment you use your own databases.\n* You want to point your Service to a Service in a different\n  namespace or on another cluster.\n* You are migrating a workload to Kubernetes. While evaluating the approach,\n  you run only a portion of your backends in Kubernetes.\n\nIn any of these scenarios you can define a Service _without_ specifying a\nselector to match Pods. For example:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  ports:\n    - name: http\n      protocol: TCP\n      port: 80\n      targetPort: 9376\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/imperative-config#defining-controller-selectors-and-podtemplate-labels-0",
+  "heading": "Imperative Management of Kubernetes Objects Using Configuration Files > Defining controller selectors and PodTemplate labels",
+  "text": "Updating selectors on controllers is strongly discouraged.\n\nThe recommended approach is to define a single, immutable PodTemplate label\nused only by the controller selector with no other semantic meaning.\n\nExample label:\n\n```yaml\nselector:\n  matchLabels:\n      controller-selector: \"apps/v1/deployment/nginx\"\ntemplate:\n  metadata:\n    labels:\n      controller-selector: \"apps/v1/deployment/nginx\"\n```"
+ }
+]

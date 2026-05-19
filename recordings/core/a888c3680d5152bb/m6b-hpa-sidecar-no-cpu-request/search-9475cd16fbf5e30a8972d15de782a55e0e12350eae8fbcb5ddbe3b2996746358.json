@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#autoscaling-on-multiple-metrics-and-custom-metrics-2",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Autoscaling on multiple metrics and custom metrics",
+  "text": "Notice that the `targetCPUUtilizationPercentage` field has been replaced with an array called `metrics`.\nThe CPU utilization metric is a *resource metric*, since it is represented as a percentage of a resource\nspecified on pod containers.  Notice that you can specify other resource metrics besides CPU.  By default,\nthe only other supported resource metric is `memory`.  These resources do not change names from cluster\nto cluster, and should always be available, as long as the `metrics.k8s.io` API is available.\n\nYou can also specify resource metrics in terms of direct values, instead of as percentages of the\nrequested value, by using a `target.type` of `AverageValue` instead of `Utilization`, and\nsetting the corresponding `target.averageValue` field instead of the `target.averageUtilization`.\n\n```\n  metrics:\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: AverageValue\n        averageValue: 500Mi\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-api-0",
+  "heading": "Observability > Metrics > Metrics API",
+  "text": "The Kubernetes Metrics API provides CPU and memory resource usage for nodes and Pods. The\n`kubectl top` command and components such as the\n[HorizontalPodAutoscaler](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)\nand [VerticalPodAutoscaler](/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/)\nuse this API.\n\n`kubectl top` supports both `metrics.k8s.io/v1` and `metrics.k8s.io/v1beta1`. It prefers `v1`\nwhen that version is available and falls back to `v1beta1`. In Kubernetes v1.37, the\nHorizontalPodAutoscaler controller supports only `metrics.k8s.io/v1beta1`; support for\n`metrics.k8s.io/v1` is planned but is not available yet."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#metrics-api-0",
+  "heading": "Resource metrics pipeline > Metrics API",
+  "text": "The metrics-server implements the Metrics API. This API allows you to access CPU and memory usage\nfor the nodes and pods in your cluster. Its primary role is to feed resource usage metrics to K8s\nautoscaler components.\n\nHere is an example of the Metrics API request for a `minikube` node piped through `jq` for easier\nreading:\n\n```shell\nkubectl get --raw \"/apis/metrics.k8s.io/v1/nodes/minikube\" | jq '.'\n```\n\nHere is the same API call using `curl`:\n\n```shell\ncurl http://localhost:8080/apis/metrics.k8s.io/v1/nodes/minikube\n```\n\nSample response:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#before-you-begin-0",
+  "heading": "Assign CPU Resources to Containers and Pods > Before you begin",
+  "text": "Your cluster must have at least 1 CPU available for use to run the task examples.\n\nA few of the steps on this page require you to run the\n[metrics-server](https://github.com/kubernetes-sigs/metrics-server)\nservice in your cluster. If you have the metrics-server\nrunning, you can skip those steps.\n\nIf you are running minikube, run the\nfollowing command to enable metrics-server:\n\n```shell\nminikube addons enable metrics-server\n```\n\nTo see whether metrics-server (or another provider of the resource metrics\nAPI, `metrics.k8s.io`) is running, type the following command:\n\n```shell\nkubectl get apiservices\n```\n\nIf the resource metrics API is available, the output will include a\nreference to `metrics.k8s.io`.\n\n```\nNAME\nv1beta1.metrics.k8s.io\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-metrics-apis-1",
+  "heading": "Horizontal Pod Autoscaling > Support for metrics APIs",
+  "text": "  - For custom metrics, this is the `custom.metrics.k8s.io` [API](/docs/reference/external-api/custom-metrics.v1beta2/).\n    It's provided by \"adapter\" API servers provided by metrics solution vendors.\n    Check with your metrics pipeline to see if there is a Kubernetes metrics adapter available.\n\n  - For external metrics, this is the `external.metrics.k8s.io` [API](/docs/reference/external-api/external-metrics.v1beta1/).\n    It may be provided by the custom metrics adapters provided above."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-metrics-apis-0",
+  "heading": "Horizontal Pod Autoscaling > Support for metrics APIs",
+  "text": "By default, the HorizontalPodAutoscaler controller retrieves metrics from a series of APIs.\nIn order for it to access these APIs, cluster administrators must ensure that:\n\n- The [API aggregation layer](/docs/tasks/extend-kubernetes/configure-aggregation-layer/) is enabled.\n\n- The corresponding APIs are registered:\n\n  - For resource metrics, this is the `metrics.k8s.io` [API](/docs/reference/external-api/metrics.v1beta1/),\n    generally provided by [metrics-server](https://github.com/kubernetes-sigs/metrics-server).\n    It can be launched as a cluster add-on.\n\n    The HorizontalPodAutoscaler currently supports the `metrics.k8s.io/v1beta1`\n    API for resource metrics. It does not support `metrics.k8s.io/v1` yet."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#metrics-api-4",
+  "heading": "Resource metrics pipeline > Metrics API",
+  "text": "The Metrics API is defined in the [k8s.io/metrics](https://github.com/kubernetes/metrics)\nrepository. You must enable the [API aggregation layer](/docs/tasks/extend-kubernetes/configure-aggregation-layer/)\nand register an [APIService](/docs/reference/kubernetes-api/cluster-resources/api-service-v1/)\nfor the `metrics.k8s.io` API.\n\nTo learn more about the Metrics API, see [resource metrics API design](https://git.k8s.io/design-proposals-archive/instrumentation/resource-metrics-api.md),\nthe [metrics-server repository](https://github.com/kubernetes-sigs/metrics-server) and the\n[resource metrics API](https://github.com/kubernetes/metrics#resource-metrics-api)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#metrics-api-1",
+  "heading": "Resource metrics pipeline > Metrics API",
+  "text": "```json\n{\n  \"kind\": \"NodeMetrics\",\n  \"apiVersion\": \"metrics.k8s.io/v1\",\n  \"metadata\": {\n    \"name\": \"minikube\",\n    \"selfLink\": \"/apis/metrics.k8s.io/v1/nodes/minikube\",\n    \"creationTimestamp\": \"2022-01-27T18:48:43Z\"\n  },\n  \"timestamp\": \"2022-01-27T18:48:33Z\",\n  \"window\": \"30s\",\n  \"usage\": {\n    \"cpu\": \"487558164n\",\n    \"memory\": \"732212Ki\"\n  }\n}\n```\n\nHere is an example of the Metrics API request for a `kube-scheduler-minikube` pod contained in the\n`kube-system` namespace and piped through `jq` for easier reading:"
+ }
+]

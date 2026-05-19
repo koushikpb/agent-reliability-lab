@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "This is a critical security issue. Let me search the documentation for best practices on logging sensitive information.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LZrAnLa7PnZ5F37Tz9vgei",
+   "input": {
+    "query": "sensitive data logging security credentials environment variables"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2185,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 80,
+ "stop_reason": "tool_use"
+}

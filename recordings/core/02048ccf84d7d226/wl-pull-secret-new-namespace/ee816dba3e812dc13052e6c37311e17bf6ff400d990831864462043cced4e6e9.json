@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:** Ticket T-2002 is resolved. The `usage-exporter` pod in `analytics` was stuck in `ImagePullBackOff` because the `harbor-pull` image pull Secret was never created in the `analytics` namespace \u2014 Secrets are namespace-scoped and don't follow manifests across namespaces. The fix is to copy the existing `harbor-pull` Secret from `reporting` into `analytics` using `kubectl get secret \u2026 | sed \u2026 | kubectl apply`.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5550,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 111,
+ "stop_reason": "end_turn"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Good, all 8 pods are running and ready. Let me check the logs of one pod to see what's happening:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01QJbaH7W5wq4Bb8JF1geK2N",
+   "input": {
+    "pod": "clickstream-ingest-6f9d8c7b4-2kqvx"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2502,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 102,
+ "stop_reason": "tool_use"
+}

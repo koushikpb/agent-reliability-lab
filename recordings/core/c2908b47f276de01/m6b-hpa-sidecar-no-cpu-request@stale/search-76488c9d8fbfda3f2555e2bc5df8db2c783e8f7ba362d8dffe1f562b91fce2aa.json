@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-5",
+  "heading": "Resource metrics pipeline",
+  "text": "* [cAdvisor](https://github.com/google/cadvisor): Daemon for collecting, aggregating and exposing\n  container metrics included in Kubelet.\n* [kubelet](/docs/concepts/architecture/#kubelet): Node agent for managing container\n  resources. Resource metrics are accessible using the `/metrics/resource` and `/stats` kubelet\n  API endpoints.\n* [node level resource metrics](/docs/reference/instrumentation/node-metrics): API provided by the kubelet for discovering and retrieving\n  per-node summarized stats available through the `/metrics/resource` endpoint.\n* [metrics-server](#metrics-server): Cluster addon component that collects and aggregates resource\n  metrics pulled from each kubelet. The API server serves Metrics API for use by HPA, VPA, and by\n  the `kubectl top` command. Metrics Server is a reference implementation of the Metrics API."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#metrics-server-0",
+  "heading": "Resource metrics pipeline > Metrics Server",
+  "text": "The metrics-server fetches resource metrics from the kubelets and exposes them in the Kubernetes\nAPI server through the Metrics API for use by the HPA and VPA. You can also view these metrics\nusing the `kubectl top` command.\n\nThe metrics-server uses the Kubernetes API to track nodes and pods in your cluster. The\nmetrics-server queries each node over HTTP to fetch metrics. The metrics-server also builds an\ninternal view of pod metadata, and keeps a cache of pod health. That cached pod health information\nis available via the extension API that the metrics-server makes available.\n\nFor example with an HPA query, the metrics-server needs to identify which pods fulfill the label\nselectors in the deployment.\n\nThe metrics-server calls the [kubelet](/docs/reference/command-line-tools-reference/kubelet/) API\nto collect metrics from each node. Depending on the metrics-server version it uses:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#metrics-api-0",
+  "heading": "Resource metrics pipeline > Metrics API",
+  "text": "The metrics-server implements the Metrics API. This API allows you to access CPU and memory usage\nfor the nodes and pods in your cluster. Its primary role is to feed resource usage metrics to K8s\nautoscaler components.\n\nHere is an example of the Metrics API request for a `minikube` node piped through `jq` for easier\nreading:\n\n```shell\nkubectl get --raw \"/apis/metrics.k8s.io/v1/nodes/minikube\" | jq '.'\n```\n\nHere is the same API call using `curl`:\n\n```shell\ncurl http://localhost:8080/apis/metrics.k8s.io/v1/nodes/minikube\n```\n\nSample response:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#before-you-begin-0",
+  "heading": "Assign Memory Resources to Containers and Pods > Before you begin",
+  "text": "Each node in your cluster must have at least 300 MiB of memory.\n\nA few of the steps on this page require you to run the\n[metrics-server](https://github.com/kubernetes-sigs/metrics-server)\nservice in your cluster. If you have the metrics-server\nrunning, you can skip those steps.\n\nIf you are running Minikube, run the following command to enable the\nmetrics-server:\n\n```shell\nminikube addons enable metrics-server\n```\n\nTo see whether the metrics-server is running, or another provider of the resource metrics\nAPI (`metrics.k8s.io`), run the following command:\n\n```shell\nkubectl get apiservices\n```\n\nIf the resource metrics API is available, the output includes a\nreference to `metrics.k8s.io`.\n\n```shell\nNAME\nv1beta1.metrics.k8s.io\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/check-if-dockershim-removal-affects-you#some-filesystem-metrics-are-missing-and-the-metrics-format-is-different-1",
+  "heading": "Check whether dockershim removal affects you > Known issues > Some filesystem metrics are missing and the metrics format is different",
+  "text": "- The metrics format on the Docker node is `k8s_<container-name>_<pod-name>_<namespace>_<pod-uid>_<restart-count>`\n  but the format on other runtime is different. For example, on containerd node it is `<container-id>`.\n- Some filesystem metrics are missing, as follows:\n  ```\n  container_fs_inodes_free\n  container_fs_inodes_total\n  container_fs_io_current\n  container_fs_io_time_seconds_total\n  container_fs_io_time_weighted_seconds_total\n  container_fs_limit_bytes\n  container_fs_read_seconds_total\n  container_fs_reads_merged_total\n  container_fs_sector_reads_total\n  container_fs_sector_writes_total\n  container_fs_usage_bytes\n  container_fs_write_seconds_total\n  container_fs_writes_merged_total\n  ```\n\n#### Workaround"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#metrics-api-4",
+  "heading": "Resource metrics pipeline > Metrics API",
+  "text": "The Metrics API is defined in the [k8s.io/metrics](https://github.com/kubernetes/metrics)\nrepository. You must enable the [API aggregation layer](/docs/tasks/extend-kubernetes/configure-aggregation-layer/)\nand register an [APIService](/docs/reference/kubernetes-api/cluster-resources/api-service-v1/)\nfor the `metrics.k8s.io` API.\n\nTo learn more about the Metrics API, see [resource metrics API design](https://git.k8s.io/design-proposals-archive/instrumentation/resource-metrics-api.md),\nthe [metrics-server repository](https://github.com/kubernetes-sigs/metrics-server) and the\n[resource metrics API](https://github.com/kubernetes/metrics#resource-metrics-api)."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-api-1",
+  "heading": "Observability > Metrics > Metrics API",
+  "text": "Unlike the component metrics endpoints described earlier, the Metrics API is served through the\nKubernetes [API aggregation layer](/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/).\nYour cluster must run [Metrics Server](https://github.com/kubernetes-sigs/metrics-server) or another\nimplementation that provides the API. The Metrics API intentionally provides only the resource\nmetrics needed for autoscaling and basic inspection; it is not a replacement for a full monitoring\npipeline.\n\nTo learn about the API, its implementations, and the data flow from kubelets to its clients, see the\n[resource metrics pipeline](/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/).\n\n#### See also"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#before-you-begin-0",
+  "heading": "Assign CPU Resources to Containers and Pods > Before you begin",
+  "text": "Your cluster must have at least 1 CPU available for use to run the task examples.\n\nA few of the steps on this page require you to run the\n[metrics-server](https://github.com/kubernetes-sigs/metrics-server)\nservice in your cluster. If you have the metrics-server\nrunning, you can skip those steps.\n\nIf you are running minikube, run the\nfollowing command to enable metrics-server:\n\n```shell\nminikube addons enable metrics-server\n```\n\nTo see whether metrics-server (or another provider of the resource metrics\nAPI, `metrics.k8s.io`) is running, type the following command:\n\n```shell\nkubectl get apiservices\n```\n\nIf the resource metrics API is available, the output will include a\nreference to `metrics.k8s.io`.\n\n```\nNAME\nv1beta1.metrics.k8s.io\n```"
+ }
+]

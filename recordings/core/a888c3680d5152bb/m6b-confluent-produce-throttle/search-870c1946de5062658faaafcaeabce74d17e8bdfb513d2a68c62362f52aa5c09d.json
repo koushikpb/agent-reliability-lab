@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/dra#kube-controller-manager-metrics-0",
+  "heading": "Good practices for Dynamic Resource Allocation as a Cluster Admin > Monitor and tune components for higher load, especially in high scale environments > `kube-controller-manager` metrics",
+  "text": "The following metrics look closely at the internal ResourceClaim controller\nmanaged by the `kube-controller-manager` component.\n\n* Workqueue Add Rate: Monitor  sum(rate(workqueue_adds_total{name=\"resource_claim\"}[5m]))  to gauge how quickly items are added to the ResourceClaim controller.\n* Workqueue Depth: Track\n  sum(workqueue_depth{endpoint=\"kube-controller-manager\",\n  name=\"resource_claim\"}) to identify any backlogs in the ResourceClaim\n  controller.\n* Workqueue Work Duration: Observe histogram_quantile(0.99,\n  sum(rate(workqueue_work_duration_seconds_bucket{name=\"resource_claim\"}[5m]))\n  by (le)) to understand the speed at which the ResourceClaim controller\n  processes work."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/dra#kube-scheduler-metrics-0",
+  "heading": "Good practices for Dynamic Resource Allocation as a Cluster Admin > Monitor and tune components for higher load, especially in high scale environments > `kube-scheduler` metrics",
+  "text": "The following scheduler metrics are high level metrics aggregating performance\nacross all Pods scheduled, not just those using DRA. It is important to note\nthat the end-to-end metrics are ultimately influenced by the\n`kube-controller-manager`'s performance in creating ResourceClaims from\nResourceClaimTemplates in deployments that heavily use ResourceClaimTemplates.\n\n* Scheduler End-to-End Duration: Monitor histogram_quantile(0.99,\n  sum(increase(scheduler_pod_scheduling_sli_duration_seconds_bucket[5m])) by\n  (le)).\n* Scheduler Algorithm Latency: Track histogram_quantile(0.99,\n  sum(increase(scheduler_scheduling_algorithm_duration_seconds_bucket[5m])) by\n  (le))."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/topology-manager#intro-0",
+  "heading": "Control Topology Management Policies on a node",
+  "text": "An increasing number of systems leverage a combination of CPUs and hardware accelerators to\nsupport latency-critical execution and high-throughput parallel computation. These include\nworkloads in fields such as telecommunications, scientific computing, machine learning, financial\nservices and data analytics. Such hybrid systems comprise a high performance environment.\n\nIn order to extract the best performance, optimizations related to CPU isolation, memory and\ndevice locality are required. However, in Kubernetes, these optimizations are handled by a\ndisjoint set of components.\n\n_Topology Manager_ is a kubelet component that aims to coordinate the set of components that are\nresponsible for these optimizations."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduler-perf-tuning#intro-0",
+  "heading": "Scheduler Performance Tuning",
+  "text": "[kube-scheduler](/docs/concepts/scheduling-eviction/kube-scheduler/#kube-scheduler)\nis the Kubernetes default scheduler. It is responsible for placement of Pods\non Nodes in a cluster.\n\nNodes in a cluster that meet the scheduling requirements of a Pod are\ncalled _feasible_ Nodes for the Pod. The scheduler finds feasible Nodes\nfor a Pod and then runs a set of functions to score the feasible Nodes,\npicking a Node with the highest score among the feasible ones to run\nthe Pod. The scheduler then notifies the API server about this decision\nin a process called _Binding_.\n\nThis page explains performance tuning optimizations that are relevant for\nlarge Kubernetes clusters.\n\nIn large clusters, you can tune the scheduler's behaviour balancing\nscheduling outcomes between latency (new Pods are placed quickly) and\naccuracy (the scheduler rarely makes poor placement decisions).\n\nYou configure this tuning setting via kube-scheduler setting\n`percentageOfNodesToScore`. This KubeSchedulerConfiguration setting determines\na threshold for scheduling nodes in your cluster."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#parameter-tuning-0",
+  "heading": "Auditing > Parameter tuning",
+  "text": "Parameters should be set to accommodate the load on the API server.\n\nFor example, if kube-apiserver receives 100 requests each second, and each request is audited only\non `ResponseStarted` and `ResponseComplete` stages, you should account for \u2245200 audit\nevents being generated each second. Assuming that there are up to 100 events in a batch,\nyou should set throttling level at least 2 queries per second. Assuming that the backend can take up to\n5 seconds to write events, you should set the buffer size to hold up to 5 seconds of events;\nthat is: 10 batches, or 1000 events.\n\nIn most cases however, the default parameters should be sufficient and you don't have to worry about\nsetting them manually. You can look at the following Prometheus metrics exposed by kube-apiserver\nand in the logs to monitor the state of the auditing subsystem.\n\n- `apiserver_audit_event_total` metric contains the total number of audit events exported.\n- `apiserver_audit_error_total` metric contains the total number of events dropped due to an error\n  during exporting."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/swap-memory-management#risks-and-caveats-0",
+  "heading": "Swap memory management > Risks and caveats",
+  "text": "It is deeply encouraged to encrypt the swap space.\nSee Memory-backed volumes [memory-backed volumes](#memory-backed-volumes) for more info.\n\nHaving swap available on a system reduces predictability.\nWhile swap can enhance performance by making more RAM available, swapping data\nback to memory is a heavy operation, sometimes slower by many orders of magnitude,\nwhich can cause unexpected performance regressions.\nFurthermore, swap changes a system's behaviour under memory pressure.\nEnabling swap increases the risk of noisy neighbors,\nwhere Pods that frequently use their RAM may cause other Pods to swap.\nIn addition, since swap allows for greater memory usage for workloads in Kubernetes that cannot be predictably accounted for,\nand due to unexpected packing configurations,\nthe scheduler currently does not account for swap memory usage.\nThis heightens the risk of noisy neighbors."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/dra#dra-kubeletplugin-operations-1",
+  "heading": "Good practices for Dynamic Resource Allocation as a Cluster Admin > Monitor and tune components for higher load, especially in high scale environments > DRA kubeletplugin operations",
+  "text": "* DRA kubeletplugin gRPC NodePrepareResources operation: Observe histogram_quantile(0.99,\n  sum(rate(dra_grpc_operations_duration_seconds_bucket{method_name=~\".*NodePrepareResources\"}[5m]))\n  by (le)).\n* DRA kubeletplugin gRPC NodeUnprepareResources operation: Observe  histogram_quantile(0.99,\n  sum(rate(dra_grpc_operations_duration_seconds_bucket{method_name=~\".*NodeUnprepareResources\"}[5m]))\n  by (le))."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-metrics#kubelet-pressure-stall-information-psi-metrics-1",
+  "heading": "Metrics For Kubernetes System Components > Component metrics > kubelet Pressure Stall Information (PSI) metrics",
+  "text": "```\ncontainer_pressure_cpu_stalled_seconds_total\ncontainer_pressure_cpu_waiting_seconds_total\ncontainer_pressure_memory_stalled_seconds_total\ncontainer_pressure_memory_waiting_seconds_total\ncontainer_pressure_io_stalled_seconds_total\ncontainer_pressure_io_waiting_seconds_total\n```\n*Summary API*: Exposed at the `/stats/summary` endpoint, providing both the cumulative `totals` and the moving averages (`avg10`, `avg60`, `avg300`) in a JSON format. These averages represent the percentage of time that tasks were stalled on a resource over the respective 10-second, 60-second, and 5-minute intervals. \n\nThese metrics are also natively exported through the node's respective file in `/proc/pressure/` -- cpu, memory, and io in the following format: "
+ }
+]

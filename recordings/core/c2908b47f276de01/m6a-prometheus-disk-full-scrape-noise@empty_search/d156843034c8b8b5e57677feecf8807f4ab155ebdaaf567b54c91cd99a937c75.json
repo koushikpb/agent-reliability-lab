@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the status of the monitoring namespace to see what's happening with Prometheus:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Uaz9iuadiFZx57V3TmmgrJ",
+   "input": {
+    "namespace": "monitoring"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1350,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 73,
+ "stop_reason": "tool_use"
+}

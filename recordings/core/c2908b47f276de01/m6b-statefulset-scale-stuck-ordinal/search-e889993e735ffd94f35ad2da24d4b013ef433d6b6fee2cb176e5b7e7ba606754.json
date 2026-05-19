@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/access-application-cluster/configure-access-multiple-clusters#windows-powershell-0",
+  "heading": "Configure Access to Multiple Clusters > Set the KUBECONFIG environment variable > Windows PowerShell",
+  "text": "```powershell\n$Env:KUBECONFIG_SAVED=$ENV:KUBECONFIG\n```\n\n The `KUBECONFIG` environment variable is a list of paths to configuration files. The list is\ncolon-delimited for Linux and Mac, and semicolon-delimited for Windows. If you have\na `KUBECONFIG` environment variable, familiarize yourself with the configuration files\nin the list.\n\nTemporarily append two paths to your `KUBECONFIG` environment variable. For example:"
+ },
+ {
+  "chunk_id": "concepts/configuration/organize-cluster-access-kubeconfig#the-kubeconfig-environment-variable-0",
+  "heading": "Organizing Cluster Access Using kubeconfig Files > The KUBECONFIG environment variable",
+  "text": "The `KUBECONFIG` environment variable holds a list of kubeconfig files.\nFor Linux and Mac, the list is colon-delimited. For Windows, the list\nis semicolon-delimited. The `KUBECONFIG` environment variable is not\nrequired. If the `KUBECONFIG` environment variable doesn't exist,\n`kubectl` uses the default kubeconfig file, `$HOME/.kube/config`.\n\nIf the `KUBECONFIG` environment variable does exist, `kubectl` uses\nan effective configuration that is the result of merging the files\nlisted in the `KUBECONFIG` environment variable."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#statefulset-considerations-1",
+  "heading": "Force Delete StatefulSet Pods > StatefulSet considerations",
+  "text": "Manual force deletion should be undertaken with caution, as it has the potential to violate the\nat most one semantics inherent to StatefulSet. StatefulSets may be used to run distributed and\nclustered applications which have a need for a stable network identity and stable storage.\nThese applications often have configuration which relies on an ensemble of a fixed number of\nmembers with fixed identities. Having multiple members with the same identity can be disastrous\nand may lead to data loss (e.g. split brain scenario in quorum-based systems)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#volume-claim-templates-0",
+  "heading": "StatefulSets > Components > Volume Claim Templates",
+  "text": "You can set the `.spec.volumeClaimTemplates` field to create a\n[PersistentVolumeClaim](/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims). \nThis will provide stable storage to the StatefulSet if either:\n\n* The StorageClass specified for the volume claim is set up to use [dynamic\n  provisioning](/docs/concepts/storage/dynamic-provisioning/).\n* The cluster already contains a PersistentVolume with the correct StorageClass\n  and sufficient available storage space."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#statefulset-considerations-0",
+  "heading": "Force Delete StatefulSet Pods > StatefulSet considerations",
+  "text": "In normal operation of a StatefulSet, there is **never** a need to force delete a StatefulSet Pod.\nThe [StatefulSet controller](/docs/concepts/workloads/controllers/statefulset/) is responsible for\ncreating, scaling and deleting members of the StatefulSet. It tries to ensure that the specified\nnumber of Pods from ordinal 0 through N-1 are alive and ready. StatefulSet ensures that, at any time,\nthere is at most one Pod with a given identity running in a cluster. This is referred to as\n*at most one* semantics provided by a StatefulSet."
+ },
+ {
+  "chunk_id": "tasks/run-application/scale-stateful-set#before-you-begin-0",
+  "heading": "Scale a StatefulSet > Before you begin",
+  "text": "- StatefulSets are only available in Kubernetes version 1.5 or later.\n  To check your version of Kubernetes, run `kubectl version`.\n\n- Not all stateful applications scale nicely. If you are unsure about whether\n  to scale your StatefulSets, see [StatefulSet concepts](/docs/concepts/workloads/controllers/statefulset/)\n  or [StatefulSet tutorial](/docs/tutorials/stateful-application/basic-stateful-set/) for further information.\n\n- You should perform scaling only when you are confident that your stateful application\n  cluster is completely healthy."
+ },
+ {
+  "chunk_id": "tasks/run-application/scale-stateful-set#make-in-place-updates-on-your-statefulsets-0",
+  "heading": "Scale a StatefulSet > Scaling StatefulSets > Make in-place updates on your StatefulSets",
+  "text": "Alternatively, you can do\n[in-place updates](/docs/concepts/cluster-administration/manage-deployment/#in-place-updates-of-resources)\non your StatefulSets.\n\nIf your StatefulSet was initially created with `kubectl apply`,\nupdate `.spec.replicas` of the StatefulSet manifests, and then do a `kubectl apply`:\n\n```shell\nkubectl apply -f <stateful-set-file-updated>\n```\n\nOtherwise, edit that field with `kubectl edit`:\n\n```shell\nkubectl edit statefulsets <stateful-set-name>\n```\n\nOr use `kubectl patch`:\n\n```shell\nkubectl patch statefulsets <stateful-set-name> -p '{\"spec\":{\"replicas\":<new-replicas>}}'\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#replicas-0",
+  "heading": "StatefulSets > PersistentVolumeClaim retention > Replicas",
+  "text": "`.spec.replicas` is an optional field that specifies the number of desired Pods. It defaults to 1.\n\nShould you manually scale a StatefulSet, via `kubectl scale\nstatefulset statefulset --replicas=X`, and then you update that StatefulSet\nbased on a manifest (for example: by running `kubectl apply -f\nstatefulset.yaml`), then applying that manifest overwrites the manual scaling\nthat you previously did.\n\nIf a [HorizontalPodAutoscaler](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)\n(or any similar API for horizontal scaling) is managing scaling for a\nStatefulset, don't set `.spec.replicas`. Instead, allow the Kubernetes\ncontrol plane to manage\nthe `.spec.replicas` field automatically."
+ }
+]

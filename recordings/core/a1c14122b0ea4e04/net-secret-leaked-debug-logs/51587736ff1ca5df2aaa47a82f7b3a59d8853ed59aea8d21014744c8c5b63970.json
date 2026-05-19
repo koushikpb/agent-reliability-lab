@@ -1,0 +1,35 @@
+{
+ "content": [
+  {
+   "signature": "EpwDCqQBCBMYAipAlg/yaI8chBNTW1au6Qs8NHFbDlrKQKB1Ik4WA7NA2ETnXMW/5ZHJmwAcZDWeoWrekfHrdYxt6Jka9F/AY8LdhTIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBgs/w1gYSDM7WxvPhvXfMcDrEVBoMkwez9atuvaEfWhfzIjAoAGpefG1kh9wGHX2rh8XwLEzo1ID5jK+5mf26Y2OsZPW27MyXvQDManiH4cfcQAcqpAHhHUYGM4bgLCvWjcx5NBIdizN7wf6+ydHtC64guJ4nGBsJ7ce49HT56+Vta7F1Ayo+NAFbWGFXG72krbUCtqAcP4VHPw4uEFcCTFYLPg5N9zFdDsU/gr7FRqJAL3TdLIWO4uB2n2GTOBjgrfYYpE6UWcVrkxgi6gYAS85eln5hnQO52X+ydaQEZt4BLq3fFiEyPflYbEW0xS2ZxsaFsMKcTgTq2RgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0183evp1BAvyjbNbLZCCaf77",
+   "input": {
+    "namespace": "orders"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01EYoxhKqqVkHSjWPqJroHeZ",
+   "input": {
+    "query": "debug log level production verbosity recommendation"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1901,
+ "model": "claude-opus-4-7",
+ "output_tokens": 190,
+ "stop_reason": "tool_use"
+}

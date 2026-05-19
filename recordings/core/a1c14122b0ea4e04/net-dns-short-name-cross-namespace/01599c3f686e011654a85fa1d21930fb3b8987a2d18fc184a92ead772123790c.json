@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EvYDCqQBCBMYAipAyyL8klGrX/yGyXsUQjEteznxPrgxo1bcUpxlpoCgX+ed+YpyVwT8zDYXMt+WfNa0vgNVkZkVGe180hsmFGlGfzIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB9s3w1gYSDAxQzqwyOyQZe7TXixoMVvyYevDZRIISt+thIjDZL9DGRvxr9z0Y1GWXzMrV5NjVHg62lfMDlV3ogGUBbfsy+KeTX/wNfYlyAvDCb8wq/gHiG9oYGlQ8pYHtdYhD5bOFlFTKg97EiAL0iAzWBGcWCOFhnpv19CQrHdBVijKNQ0Q206N5eWmKkp1Aa0tS5bffHEQhrOGc309xQOCgRFDVgj1PUUqZRu4bHpB2ENpBsWh74+Jz+cYdsIPljPBr5RjqD+zdXHR5dDrp1ee6C+K7b9I4+76LjgDVLmVVWlZUdHIR5kJRUBy4CTEtiNx4fIsQbvfEv9/+6fP3LKzItnL12KKHRgZTFwHaofP9t0YxclZtYH8SXjRqg+RBPlwZtwcLru5MHx9Z6uGUlkj0LJUAfLZJReOGq5CpgHbxHtpbWRsl+B4mx9V/223ZPk3C7BgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01HVS53vhKWzBHS5Ari9AisZ",
+   "input": {
+    "query": "DNS service cross-namespace resolution short name"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3003,
+ "model": "claude-opus-4-7",
+ "output_tokens": 197,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary of what I did:**\n\n1. **Read ticket T-5002** \u2014 users get a 500 after Microsoft sign-in succeeds, pointing to the OAuth callback leg, not the sign-in page itself.\n2. **Listed pods** in `internal-tools` \u2014 all three pods (oauth2-proxy + two ops-portal replicas) were Running, Ready, and had zero restarts, ruling out pod-level failures.\n3. **Read oauth2-proxy logs** \u2014 found the smoking gun: Azure is returning `AADSTS7000222` (\"client secret keys are expired\") every time oauth2-proxy tries to redeem the authorisation code during the callback, producing a 500. The timestamps match the reported 08:00 outage start exactly.\n4. **Resolved the ticket** with a clear two-step fix: the IT identity team must generate a new client secret in the Azure portal, and the Kubernetes team must update the mounted Kubernetes Secret and restart the oauth2-proxy deployment.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9685,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 226,
+ "stop_reason": "end_turn"
+}

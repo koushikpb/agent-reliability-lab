@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-6",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  is an ingress controller driving [Kong Gateway](https://konghq.com/kong/).\n* [Kusk Gateway](https://kusk.kubeshop.io/) is an OpenAPI-driven ingress controller based on [Envoy](https://www.envoyproxy.io).\n* [N42 Gateway](https://n42-gateway.github.io/) is an Ingress and Gateway API controller for [HAProxy](https://www.haproxy.org/#desc).\n* The [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx-ingress-controller/)\n  works with the [NGINX](https://www.nginx.com/resources/glossary/nginx/) webserver (as a proxy)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#creating-the-frontend-0",
+  "heading": "Connect a Frontend to a Backend Using Services > Creating the frontend",
+  "text": "Now that you have your backend running, you can create a frontend that is accessible \noutside the cluster, and connects to the backend by proxying requests to it.\n\nThe frontend sends requests to the backend worker Pods by using the DNS name\ngiven to the backend Service. The DNS name is `hello`, which is the value\nof the `name` field in the `examples/service/access/backend-service.yaml` \nconfiguration file.\n\nThe Pods in the frontend Deployment run a nginx image that is configured\nto proxy requests to the `hello` backend Service. Here is the nginx configuration file:\n\n```conf\n# The identifier Backend is internal to nginx, and used to name this specific upstream\nupstream Backend {\n    # hello is the internal DNS name used by the backend Service inside Kubernetes\n    server hello;\n}\n\nserver {\n    listen 80;\n\n    location / {\n        # The following statement will proxy traffic to the upstream named Backend\n        proxy_pass http://Backend;\n    }\n}\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-2",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\n  bar.baz.com\n               /foo   service2:80 (10.8.0.91:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     45s                loadbalancer-controller  default/test\n```\n\nYou can achieve the same outcome by invoking `kubectl replace -f` on a modified Ingress YAML file."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-1",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* [Alibaba Cloud API Gateway Ingress](https://www.alibabacloud.com/help/en/api-gateway/cloud-native-api-gateway/user-guide/ingress-managementapig-ngress-management) is an ingress controller that configures the [Alibaba Cloud Native API Gateway](https://www.alibabacloud.com/help/en/api-gateway/cloud-native-api-gateway/product-overview/what-is-cloud-native-api-gateway), which is also the commercial version of [Higress](https://github.com/alibaba/higress).\n* [Apache APISIX ingress controller](https://github.com/apache/apisix-ingress-controller) is an [Apache APISIX](https://github.com/apache/apisix)-based ingress controller."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#simple-fanout-1",
+  "heading": "Ingress > Types of Ingress > Simple fanout",
+  "text": "```\nName:             simple-fanout-example\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:4200 (10.8.0.90:4200)\n               /bar   service2:8080 (10.8.0.91:8080)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     22s                loadbalancer-controller  default/test\n```\n\nThe Ingress controller provisions an implementation-specific load balancer\nthat satisfies the Ingress, as long as the Services (`service1`, `service2`) exist.\nWhen it has done so, you can see the address of the load balancer at the\nAddress field."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#default-backend-0",
+  "heading": "Ingress > The Ingress resource > DefaultBackend",
+  "text": "An Ingress with no rules sends all traffic to a single default backend and `.spec.defaultBackend`\nis the backend that should handle requests in that case.\nThe `defaultBackend` is conventionally a configuration option of the\n[Ingress controller](/docs/concepts/services-networking/ingress-controllers) and\nis not specified in your Ingress resources.\nIf no `.spec.rules` are specified, `.spec.defaultBackend` must be specified.\nIf `defaultBackend` is not set, the handling of requests that do not match any of the rules will be up to the\ningress controller (consult the documentation for your ingress controller to find out how it handles this case).\n\nIf none of the hosts or paths match the HTTP request in the Ingress objects, the traffic is\nrouted to your default backend."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#resource-backend-0",
+  "heading": "Ingress > The Ingress resource > Resource backends",
+  "text": "A `Resource` backend is an ObjectRef to another Kubernetes resource within the\nsame namespace as the Ingress object. A `Resource` is a mutually exclusive\nsetting with Service, and will fail validation if both are specified. A common\nusage for a `Resource` backend is to ingress data to an object storage backend\nwith static assets.\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: ingress-resource-backend\nspec:\n  defaultBackend:\n    resource:\n      apiGroup: k8s.example.com\n      kind: StorageBucket\n      name: static-assets\n  rules:\n    - http:\n        paths:\n          - path: /icons\n            pathType: ImplementationSpecific\n            backend:\n              resource:\n                apiGroup: k8s.example.com\n                kind: StorageBucket\n                name: icon-assets\n```\n\nAfter creating the Ingress above, you can view it with the following command:\n\n```bash\nkubectl describe ingress ingress-resource-backend\n```"
+ }
+]

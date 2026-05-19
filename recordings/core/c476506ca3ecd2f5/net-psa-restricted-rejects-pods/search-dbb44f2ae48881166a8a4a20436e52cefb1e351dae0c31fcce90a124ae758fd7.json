@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-0",
+  "heading": "Pod Security Standards > Profile Details > Restricted",
+  "text": "**The _Restricted_ policy is aimed at enforcing current Pod hardening best practices, at the\nexpense of some compatibility.** It is targeted at operators and developers of security-critical\napplications, as well as lower-trust users. The following listed controls should be\nenforced/disallowed:\n\nIn this table, wildcards (`*`) indicate all elements in a list. For example,\n`spec.containers[*].securityContext` refers to the Security Context object for _all defined\ncontainers_. If any of the listed containers fails to meet the requirements, the entire pod will\nfail validation."
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-admission#pod-security-levels-0",
+  "heading": "Pod Security Admission > Pod Security levels",
+  "text": "Pod Security admission places requirements on a Pod's [Security\nContext](/docs/tasks/configure-pod-container/security-context/) and other related fields according\nto the three levels defined by the [Pod Security\nStandards](/docs/concepts/security/pod-security-standards): `privileged`, `baseline`, and\n`restricted`. Refer to the [Pod Security Standards](/docs/concepts/security/pod-security-standards)\npage for an in-depth look at those requirements."
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#baseline-0",
+  "heading": "Pod Security Standards > Profile Details > Baseline",
+  "text": "**The _Baseline_ policy is aimed at ease of adoption for common containerized workloads while\npreventing known privilege escalations.** This policy is targeted at application operators and\ndevelopers of non-critical applications. The following listed controls should be\nenforced/disallowed:\n\nIn this table, wildcards (`*`) indicate all elements in a list. For example,\n`spec.containers[*].securityContext` refers to the Security Context object for _all defined\ncontainers_. If any of the listed containers fails to meet the requirements, the entire pod will\nfail validation."
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-8",
+  "heading": "Pod Security Standards > Profile Details > Restricted",
+  "text": "\t\t\t\t\t<li><code>spec.ephemeralContainers[*].securityContext.seccompProfile.type</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<p><strong>Allowed Values</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>RuntimeDefault</code></li>\n\t\t\t\t\t<li><code>Localhost</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<small>\n\t\t\t\t\tThe container fields may be undefined/<code>nil</code> if the pod-level\n\t\t\t\t\t<code>spec.securityContext.seccompProfile.type</code> field is set appropriately.\n\t\t\t\t\tConversely, the pod-level field may be undefined/<code>nil</code> if _all_ container-\n\t\t\t\t\tlevel fields are set.\n\t\t\t\t</small>\n  \t\t\t</td>\n  \t\t</tr>\n\t\t  <tr>\n\t\t\t<td style=\"white-space: nowrap\">Capabilities (v1.22+)</td>\n\t\t\t<td>\n\t\t\t\t<p>"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/advanced-pod-config#security-context-0",
+  "heading": "Advanced Pod Configuration > Pod and container level security context configuration",
+  "text": "The `Security context` field in the Pod specification provides granular control over security settings for Pods and containers."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#set-the-security-context-for-a-pod-0",
+  "heading": "Configure a Security Context for a Pod or Container > Set the security context for a Pod",
+  "text": "To specify security settings for a Pod, include the `securityContext` field\nin the Pod specification. The `securityContext` field is a\n[PodSecurityContext](/docs/reference/generated/kubernetes-api//#podsecuritycontext-v1-core) object.\nThe security settings that you specify for a Pod apply to all Containers in the Pod.\nHere is a configuration file for a Pod that has a `securityContext` and an `emptyDir` volume:"
+ },
+ {
+  "chunk_id": "concepts/security/security-checklist#pod-security-2",
+  "heading": "Security Checklist > Pod security",
+  "text": "Pod Security admission `restricted` policy, the most restrictive policy of the\n[Pod Security Standards](/docs/concepts/security/pod-security-standards/) set,\n[can operate in several modes](/docs/concepts/security/pod-security-admission/#pod-security-admission-labels-for-namespaces),\n`warn`, `audit` or `enforce` to gradually apply the most appropriate\n[security context](/docs/tasks/configure-pod-container/security-context/)\naccording to security best practices. Nevertheless, pods'\n[security context](/docs/tasks/configure-pod-container/security-context/)\nshould be separately investigated to limit the privileges and access pods may\nhave on top of the predefined security standards, for specific use cases."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/advanced-pod-config#container-level-security-context-0",
+  "heading": "Advanced Pod Configuration > Pod and container level security context configuration > Container-level security context",
+  "text": "You can specify the security context just for a specific container.\nHere's an example:\n\n#### Example Pod {#container-level-security-context-example}\n\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo-2\nspec:\n  containers:\n  - name: sec-ctx-demo-2\n    image: gcr.io/google-samples/node-hello:1.0\n    securityContext:\n      allowPrivilegeEscalation: false\n      runAsNonRoot: true\n      runAsUser: 1000\n      capabilities:\n        drop:\n        - ALL\n      seccompProfile:\n        type: RuntimeDefault"
+ }
+]

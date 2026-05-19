@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Perfect! \n\n## Summary\n\nI successfully resolved ticket T-2005. The issue was that the ledger-export cronjob had an `activeDeadlineSeconds` timeout of 3600 seconds (1 hour), but the job requires more time to process 9.4 million ledger rows in 95 batches. The pod logs showed the job being terminated with SIGTERM after exactly 1 hour, reaching only batch 69/95 before the deadline was exceeded. The fix is to increase the `activeDeadlineSeconds` value in the cronjob spec to at least 5400 seconds (1.5 hours) or higher to allow the export to complete successfully.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 6290,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 154,
+ "stop_reason": "end_turn"
+}

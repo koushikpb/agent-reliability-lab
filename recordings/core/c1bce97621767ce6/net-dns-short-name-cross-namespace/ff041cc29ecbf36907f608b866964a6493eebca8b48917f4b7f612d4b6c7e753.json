@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the key information. Let me search for more details on the fully qualified DNS names for services:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01EzuaKt6n63up26uZLXyZVU",
+   "input": {
+    "query": "Service DNS FQDN fully qualified domain name svc.cluster.local"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4176,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 92,
+ "stop_reason": "tool_use"
+}

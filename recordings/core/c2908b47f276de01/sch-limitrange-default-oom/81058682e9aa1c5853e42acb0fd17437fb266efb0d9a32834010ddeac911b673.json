@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I'll help you resolve ticket T-3003. Let me start by reading the ticket.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Tvtu7tbCSTj49RwbWtRLQ4",
+   "input": {
+    "id": "T-3003"
+   },
+   "name": "get_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1160,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 76,
+ "stop_reason": "tool_use"
+}

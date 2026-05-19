@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-6",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  is an ingress controller driving [Kong Gateway](https://konghq.com/kong/).\n* [Kusk Gateway](https://kusk.kubeshop.io/) is an OpenAPI-driven ingress controller based on [Envoy](https://www.envoyproxy.io).\n* [N42 Gateway](https://n42-gateway.github.io/) is an Ingress and Gateway API controller for [HAProxy](https://www.haproxy.org/#desc).\n* The [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx-ingress-controller/)\n  works with the [NGINX](https://www.nginx.com/resources/glossary/nginx/) webserver (as a proxy)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-5",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  which offers API gateway functionality.\n* [Higress](https://github.com/alibaba/higress) is an [Envoy](https://www.envoyproxy.io) based API gateway that can run as an ingress controller.\n* The [HAProxy Ingress Controller for Kubernetes](https://github.com/haproxytech/kubernetes-ingress#readme)\n  is an ingress controller for [HAProxy](https://www.haproxy.org/#desc).\n* [Istio Ingress](https://istio.io/latest/docs/tasks/traffic-management/ingress/kubernetes-ingress/)\n  is an [Istio](https://istio.io/) based ingress controller.\n* The [Kong Ingress Controller for Kubernetes](https://github.com/Kong/kubernetes-ingress-controller#readme)"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#intro-0",
+  "heading": "Ingress",
+  "text": "The Kubernetes project recommends using [Gateway](https://gateway-api.sigs.k8s.io/) instead of\n[Ingress](/docs/concepts/services-networking/ingress/).\nThe Ingress API has been frozen.\n\nThis means that:\n* The Ingress API is generally available, and is subject to the [stability guarantees](/docs/reference/using-api/deprecation-policy/#deprecating-parts-of-the-api) for generally available APIs.\n  The Kubernetes project has no plans to remove Ingress from Kubernetes.\n* The Ingress API is no longer being developed, and will have no further changes\n  or updates made to it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-1",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* [Alibaba Cloud API Gateway Ingress](https://www.alibabacloud.com/help/en/api-gateway/cloud-native-api-gateway/user-guide/ingress-managementapig-ngress-management) is an ingress controller that configures the [Alibaba Cloud Native API Gateway](https://www.alibabacloud.com/help/en/api-gateway/cloud-native-api-gateway/product-overview/what-is-cloud-native-api-gateway), which is also the commercial version of [Higress](https://github.com/alibaba/higress).\n* [Apache APISIX ingress controller](https://github.com/apache/apisix-ingress-controller) is an [Apache APISIX](https://github.com/apache/apisix)-based ingress controller."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-4",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* [EnRoute](https://getenroute.io/) is an [Envoy](https://www.envoyproxy.io) based API gateway that can run as an ingress controller.\n* F5 BIG-IP [Container Ingress Services for Kubernetes](https://clouddocs.f5.com/containers/latest/userguide/kubernetes/)\n  lets you use an Ingress to configure F5 BIG-IP virtual servers.\n* [FortiADC Ingress Controller](https://docs.fortinet.com/document/fortiadc/7.0.0/fortiadc-ingress-controller/742835/fortiadc-ingress-controller-overview) support the Kubernetes Ingress resources and allows you to manage FortiADC objects from Kubernetes\n* [Gloo](https://gloo.solo.io) is an open-source ingress controller based on [Envoy](https://www.envoyproxy.io),"
+ },
+ {
+  "chunk_id": "concepts/services-networking/gateway#migrating-from-ingress-0",
+  "heading": "Gateway API > Migrating from Ingress",
+  "text": "Gateway API is the successor to the [Ingress](/docs/concepts/services-networking/ingress/) API.\nHowever, it does not include the Ingress kind. As a result, a one-time conversion from your existing\nIngress resources to Gateway API resources is necessary.\n\nRefer to the [ingress migration](https://gateway-api.sigs.k8s.io/guides/getting-started/migrating-from-ingress)\nguide for details on migrating Ingress resources to Gateway API resources."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#intro-0",
+  "heading": "Ingress Controllers",
+  "text": "The Kubernetes project recommends using [Gateway](https://gateway-api.sigs.k8s.io/) instead of\n[Ingress](/docs/concepts/services-networking/ingress/).\nThe Ingress API has been frozen.\n\nThis means that:\n* The Ingress API is generally available, and is subject to the [stability guarantees](/docs/reference/using-api/deprecation-policy/#deprecating-parts-of-the-api) for generally available APIs.\n  The Kubernetes project has no plans to remove Ingress from Kubernetes.\n* The Ingress API is no longer being developed, and will have no further changes\n  or updates made to it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-7",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* The [ngrok-operator](https://github.com/ngrok/ngrok-operator) is a controller for [ngrok](https://ngrok.com/) that supports both Ingress and Gateway API for adding secure public access to your K8s Services.\n* The [OCI Native Ingress Controller](https://github.com/oracle/oci-native-ingress-controller#readme) is an Ingress controller for Oracle Cloud Infrastructure which allows you to manage the [OCI Load Balancer](https://docs.oracle.com/en-us/iaas/Content/Balance/home.htm).\n* [OpenNJet Ingress Controller](https://gitee.com/njet-rd/open-njet-kic) is a [OpenNJet](https://njet.org.cn/)-based ingress controller."
+ }
+]

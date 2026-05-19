@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-tcp-liveness-probe-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a TCP liveness probe",
+  "text": "As you can see, configuration for a TCP check is quite similar to an HTTP check.\nThis example uses both readiness and liveness probes. The kubelet will run the\nfirst liveness probe 15 seconds after the container starts. This will attempt to\nconnect to the `goproxy` container on port 8080. If the liveness probe fails,\nthe container will be restarted. The kubelet will continue to run this check\nevery 10 seconds.\n\nIn addition to the liveness probe, this configuration includes a readiness\nprobe. The kubelet will run the first readiness probe 15 seconds after the\ncontainer starts. Similar to the liveness probe, this will attempt to connect to\nthe `goproxy` container on port 8080. If the probe succeeds, the Pod will be\nmarked as ready and will receive traffic from services. If the readiness probe\nfails, the pod will be marked unready and will not receive traffic from any\nservices.\n\nTo try the TCP liveness check, create a Pod:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "[Probes](/docs/reference/generated/kubernetes-api//#probe-v1-core)\nhave a number of fields that you can use to more precisely control the behavior of startup,\nliveness and readiness checks. For example:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: probe-example\nspec:\n  containers:\n  - name: app\n    image: registry.k8s.io/e2e-test-images/agnhost:2.40\n    ports:\n    - containerPort: 8080\n    startupProbe:\n      httpGet:\n        path: /healthz\n        port: 8080\n      failureThreshold: 30\n      periodSeconds: 10\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: 8080\n      initialDelaySeconds: 10\n      periodSeconds: 5\n      timeoutSeconds: 3\n      failureThreshold: 3\n    readinessProbe:\n      httpGet:\n        path: /ready\n        port: 8080\n      periodSeconds: 5\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-http-request-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a liveness HTTP request",
+  "text": "Another kind of liveness probe uses an HTTP GET request. Here is the configuration\nfile for a Pod that runs a container based on the `registry.k8s.io/e2e-test-images/agnhost` image.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  labels:\n    test: liveness\n  name: liveness-http\nspec:\n  containers:\n  - name: liveness\n    image: registry.k8s.io/e2e-test-images/agnhost:2.40\n    args:\n    - liveness\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: 8080\n        httpHeaders:\n        - name: Custom-Header\n          value: Awesome\n      initialDelaySeconds: 3\n      periodSeconds: 3\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-level-terminationgraceperiodseconds-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields > Probe-level `terminationGracePeriodSeconds`",
+  "text": "```yaml\nspec:\n  terminationGracePeriodSeconds: 3600  # pod-level\n  containers:\n  - name: test\n    image: ...\n\n    ports:\n    - name: liveness-port\n      containerPort: 8080\n\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: liveness-port\n      failureThreshold: 1\n      periodSeconds: 60\n      # Override pod-level terminationGracePeriodSeconds\n      terminationGracePeriodSeconds: 60\n```\n\nProbe-level `terminationGracePeriodSeconds` **cannot** be set for readiness probes.\nIt will be rejected by the API server."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-http-request-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a liveness HTTP request",
+  "text": "In the configuration file, you can see that the Pod has a single container.\nThe `periodSeconds` field specifies that the kubelet should perform a liveness\nprobe every 3 seconds. The `initialDelaySeconds` field tells the kubelet that it\nshould wait 3 seconds before performing the first probe. To perform a probe, the\nkubelet sends an HTTP GET request to the server that is running in the container\nand listening on port 8080. If the handler for the server's `/healthz` path\nreturns a success code, the kubelet considers the container to be alive and\nhealthy. If the handler returns a failure code, the kubelet kills the container\nand restarts it.\n\nAny code greater than or equal to 200 and less than 400 indicates success. Any\nother code indicates failure.\n\nYou can see the source code for the server in\n[server.go](https://github.com/kubernetes/kubernetes/blob/master/test/images/agnhost/liveness/server.go)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#grpc-probes-2",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe mechanism details > gRPC probes",
+  "text": "To use a gRPC probe, `port` must be configured. If you want to\ndistinguish probes of different types and probes for different features you can\nuse the `service` field. You can set `service` to the value `liveness` and make\nyour gRPC Health Checking endpoint respond to this request differently than when\nyou set `service` set to `readiness`. This lets you use the same endpoint for\ndifferent kinds of container health check rather than listening on two different\nports. If you want to specify your own custom service name and also specify a\nprobe type, the Kubernetes project recommends that you use a name that\nconcatenates those. For example: `myservice-liveness` (using `-` as a separator).\n\nUnlike HTTP or TCP probes, you cannot specify the health check port by name,\nand you cannot configure a custom hostname.\n\nConfiguration problems (for example: incorrect port or service, unimplemented\nhealth checking protocol) are considered a probe failure, similar to HTTP and\nTCP probes."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Protect slow starting containers with startup probes",
+  "text": "Sometimes, you have to deal with applications that require additional startup\ntime on their first initialization. In such cases, it can be tricky to set up\nliveness probe parameters without compromising the fast response to deadlocks\nthat motivated such a probe. The solution is to set up a startup probe with the\nsame command, HTTP or TCP check, with a `failureThreshold * periodSeconds` long\nenough to cover the worst case startup time.\n\nSo, the previous example would become:\n\n```yaml\nports:\n- name: liveness-port\n  containerPort: 8080\n\nlivenessProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n  failureThreshold: 1\n  periodSeconds: 10\n\nstartupProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n  failureThreshold: 30\n  periodSeconds: 10\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#use-h2c-with-http-probes-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a liveness HTTP request > Use HTTP/2 cleartext (h2c) with HTTP probes",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: h2c-app\nspec:\n  containers:\n  - name: app\n    image: registry.k8s.io/e2e-test-images/agnhost:2.64.0\n    command: [\"/agnhost\", \"h2c-server\", \"--port=8080\"]\n    ports:\n    - containerPort: 8080\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: 8080\n        protocol: HTTP2\n      initialDelaySeconds: 5\n      periodSeconds: 10\n```\n\nWhen `protocol` is set to `HTTP2`, the `kubelet` connects using HTTP/2 cleartext\n(h2c) \u2014 HTTP/2 over plain TCP without TLS. The following configurations aren't\nsupported:\n\n*   `protocol: HTTP2` and `scheme: HTTPS`\n*   `protocol: HTTP2` and a value in the `host` field"
+ }
+]

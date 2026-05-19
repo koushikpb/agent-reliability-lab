@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-1",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "* Volume subpath mounts: only the entire volume can be mounted in a Windows container\n* Subpath volume mounting for Secrets\n* Host mount projection\n* Read-only root filesystem (mapped volumes still support `readOnly`)\n* Block device mapping\n* Memory as the storage medium (for example, `emptyDir.medium` set to `Memory`)\n* File system features like uid/gid; per-user Linux filesystem permissions\n* Setting [secret permissions with DefaultMode](/docs/tasks/inject-data-application/distribute-credentials-secure/#set-posix-permissions-for-secret-keys) (due to UID/GID dependency)\n* NFS based storage/volume support\n* Expanding the mounted volume (resizefs)"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-5",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "When the `InPlacePodVerticalScalingMemoryBackedVolumes` feature gate is enabled, you can dynamically adjust the `sizeLimit` of memory-backed (`medium: Memory`) `emptyDir` volumes, without restarting the Pod or its containers.\n\nFor more details, see [Resize CPU and Memory Resources assigned to Containers](/docs/tasks/configure-pod-container/resize-container-resources/#resizing-memory-backed-emptydir-volumes).\n\n#### emptyDir permissions configuration example\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pd\nspec:\n  containers:\n  - image: registry.k8s.io/test-webserver\n    name: test-container\n    volumeMounts:\n    - mountPath: /cache\n      name: cache-volume\n  volumes:\n  - name: cache-volume\n    emptyDir:\n      mode: 01777\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#mount-propagation-0",
+  "heading": "Volumes > Mount propagation",
+  "text": "Mount propagation is a low-level feature that does not work consistently on all\nvolume types. The Kubernetes project recommends only using mount propagation with `hostPath`\nor memory-backed `emptyDir` volumes. See\n[Kubernetes issue #95049](https://github.com/kubernetes/kubernetes/issues/95049)\nfor more context.\n\nMount propagation allows for sharing volumes mounted by a container to\nother containers in the same Pod, or even to other Pods on the same node.\n\nMount propagation of a volume is controlled by the `mountPropagation` field\nin `containers[*].volumeMounts`. Its values are:\n\n* `None` - This volume mount will not receive any subsequent mounts\n  that are mounted to this volume or any of its subdirectories by the host.\n  In a similar fashion, no mounts created by the container will be visible on\n  the host. This is the default mode."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-0",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "For a Pod that defines an `emptyDir` volume, the volume is created when the Pod is assigned to a node.\nAs the name says, the `emptyDir` volume is initially empty. All containers in the Pod can read and write the same\nfiles in the `emptyDir` volume, though that volume can be mounted at the same\nor different paths in each container. When a Pod is removed from a node for\nany reason, the data in the `emptyDir` is deleted permanently.\n\nA container crashing does *not* remove a Pod from a node. The data in an `emptyDir` volume\nis safe across container crashes.\n\nSome uses for an `emptyDir` are:\n\n* scratch space, such as for a disk-based merge sort\n* checkpointing a long computation for recovery from crashes\n* holding files that a content-manager container fetches while a webserver\n  container serves the data"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-emptydir-volume-mode#create-pod-0",
+  "heading": "Set Permissions on an emptyDir Volume > Create a Pod that uses an emptyDir volume with custom permissions",
+  "text": "The `emptyDir.mode` field lets you set Unix permission bits (from `0000` to `01777` in octal)\non the volume directory. If not specified, the directory is created with the default `0777`\npermissions.\n\nFor example, to create a shared `/tmp` directory with the sticky bit set so that only file\nowners can delete their own files:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: emptydir-mode-demo\nspec:\n  containers:\n  - image: registry.k8s.io/busybox\n    name: test-container\n    command: [\"sleep\", \"3600\"]\n    volumeMounts:\n    - mountPath: /tmp\n      name: tmp-volume\n  volumes:\n  - name: tmp-volume\n    emptyDir:\n      mode: 01777\n```\n\n1. Create the pod on your cluster:\n\n   ```shell\n   kubectl apply -f https://k8s.io/examples/pods/emptydir-volume-mode.yaml\n   ```"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-4",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pd\nspec:\n  containers:\n  - image: registry.k8s.io/test-webserver\n    name: test-container\n    volumeMounts:\n    - mountPath: /cache\n      name: cache-volume\n  volumes:\n  - name: cache-volume\n    emptyDir:\n      sizeLimit: 500Mi\n```\n\n#### emptyDir memory configuration example\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pd\nspec:\n  containers:\n  - image: registry.k8s.io/test-webserver\n    name: test-container\n    volumeMounts:\n    - mountPath: /cache\n      name: cache-volume\n  volumes:\n  - name: cache-volume\n    emptyDir:\n      sizeLimit: 500Mi\n      medium: Memory\n```\n\n#### emptyDir and in-place Pod resizing"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#gitrepo-0",
+  "heading": "Volumes > Types of volumes > gitRepo (disabled)",
+  "text": "Kubernetes  does *not* include the `gitRepo` volume\ndriver. The last version that provided a way to use this driver was Kubernetes\nv1.35, and it has been deprecated since the [v1.11](/releases/1.11) minor\nrelease.\n\nTo provision a Pod that has a Git repository mounted, you can mount an\n[`emptyDir`](#emptydir) volume into an [init container](/docs/concepts/workloads/pods/init-containers/)\nthat clones the repo using Git, then mount the [EmptyDir](#emptydir) into the Pod's container.\n\n---"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-bind-mount-options#create-pod-0",
+  "heading": "Set Bind Mount Options on Volume Mounts > Create a Pod with bind mount options",
+  "text": "The `.spec.containers[*].volumeMounts[*].bindMountOptions` field accepts a list of bind mount flags.\nThe allowed values are `noexec`, `nodev`, and `nosuid`.\n\nFor example, to mount an emptyDir volume at `/tmp` with `noexec` and `nosuid`\nso that binaries cannot be executed and set-user-ID bits are ignored:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: bind-mount-options-demo\nspec:\n  containers:\n  - image: registry.k8s.io/busybox\n    name: test-container\n    command: [\"sleep\", \"3600\"]\n    volumeMounts:\n    - mountPath: /tmp\n      name: tmp-volume\n      bindMountOptions:\n      - noexec\n      - nosuid\n  volumes:\n  - name: tmp-volume\n    emptyDir: {}\n```\n\n1. Create the pod on your cluster:"
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-cluster/troubleshoot-kubectl#check-vpn-connectivity-0",
+  "heading": "Troubleshooting kubectl > Check VPN connectivity",
+  "text": "If you are using a Virtual Private Network (VPN) to access your Kubernetes cluster,\nmake sure that your VPN connection is active and stable. Sometimes, VPN disconnections\ncan lead to connection issues with the cluster. Reconnect to the VPN and try accessing\nthe cluster again."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/topology#sources-of-troubleshooting-information-0",
+  "heading": "Troubleshooting Topology Management > Sources of troubleshooting information",
+  "text": "You can use the following means to troubleshoot the reason why a pod could not be deployed or\nbecame rejected at a node, in the context of topology management:\n\n- _Pod status_ - indicates topology affinity errors\n- _system logs_ - include valuable information for debugging; for example, about generated hints\n- _kubelet state file_ - the dump of internal state of the Memory Manager\n  (including the _node map_ and _memory maps_)\n- You can use the [device plugin resource API](#device-plugin-resource-api)\n  to retrieve information about the memory reserved for containers"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/windows#troubleshooting-network-0",
+  "heading": "Windows debugging tips > Network troubleshooting",
+  "text": "1. My Windows Pods do not have network connectivity\n\n   If you are using virtual machines, ensure that MAC spoofing is **enabled** on all\n   the VM network adapter(s).\n\n1. My Windows Pods cannot ping external resources\n\n   Windows Pods do not have outbound rules programmed for the ICMP protocol. However,\n   TCP/UDP is supported. When trying to demonstrate connectivity to resources\n   outside of the cluster, substitute `ping <IP>` with corresponding\n   `curl <IP>` commands.\n\n   If you are still facing problems, most likely your network configuration in\n   [cni.conf](https://github.com/Microsoft/SDN/blob/master/Kubernetes/flannel/l2bridge/cni/config/cni.conf)\n   deserves some extra attention. You can always edit this static file. The\n   configuration update will apply to any new Kubernetes resources."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-gmsa#troubleshooting-2",
+  "heading": "Configure GMSA for Windows Pods and containers > Troubleshooting",
+  "text": "```output\nFlags: 30 HAS_IP  HAS_TIMESERV\nTrusted DC Name \\\\dc10.domain.example\nTrusted DC Connection Status Status = 0 0x0 NERR_Success\nThe command completed successfully\n```\n\nIf the above corrects the error, you can automate the step by adding the following\nlifecycle hook to your Pod spec.  If it did not correct the error, you will need to\nexamine your credspec again and confirm that it is correct and complete.\n\n```yaml\n        image: registry.domain.example/iis-auth:1809v1\n        lifecycle:\n          postStart:\n            exec:\n              command: [\"powershell.exe\",\"-command\",\"do { Restart-Service -Name netlogon } while ( $($Result = (nltest.exe /query); if ($Result -like '*0x0 NERR_Success*') {return $true} else {return $false}) -eq $false)\"]\n        imagePullPolicy: IfNotPresent\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/troubleshoot-kubectl#verify-kubectl-setup-3",
+  "heading": "Troubleshooting kubectl > Verify kubectl setup",
+  "text": "If you see `Unable to connect to the server: dial tcp <server-ip>:8443: i/o timeout`,\ninstead of `Server Version`, you need to troubleshoot kubectl connectivity with your cluster.\n\nMake sure you have installed the kubectl by following the\n[official documentation for installing kubectl](/docs/tasks/tools/#kubectl), and you have\nproperly configured the `$PATH` environment variable."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#intro-0",
+  "heading": "Troubleshooting Clusters",
+  "text": "This doc is about cluster troubleshooting; we assume you have already ruled out your application as the root cause of the\nproblem you are experiencing. See\nthe [application troubleshooting guide](/docs/tasks/debug/debug-application/) for tips on application debugging.\nYou may also visit the [troubleshooting overview document](/docs/tasks/debug/) for more information.\n\nFor troubleshooting kubectl, refer to\n[Troubleshooting kubectl](/docs/tasks/debug/debug-cluster/troubleshoot-kubectl/)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-gmsa#troubleshooting-1",
+  "heading": "Configure GMSA for Windows Pods and containers > Troubleshooting",
+  "text": "1. The Pod can reach the DC\n1. The DC can reach the Pod\n1. DNS is working correctly.\n\nIf the DNS and communication test passes, next you will need to check if the Pod has\nestablished secure channel communication with the domain. To do this, again,\n`exec` into your Pod and run the `nltest.exe /query` command.\n\n```PowerShell\nnltest.exe /query\n```\n\nResults in the following output:\n\n```output\nI_NetLogonControl failed: Status = 1722 0x6ba RPC_S_SERVER_UNAVAILABLE\n```\n\nThis tells us that for some reason, the Pod was unable to logon to the domain using\nthe account specified in the credspec. You can try to repair the secure channel by running the following:\n\n```PowerShell\nnltest /sc_reset:domain.example\n```\n\nIf the command is successful you will see and output similar to this:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/troubleshooting-cni-plugin-related-errors#an-example-containerd-configuration-file-3",
+  "heading": "Troubleshooting CNI plugin-related errors > An example containerd configuration file",
+  "text": "```bash\n     \"capabilities\": {\"portMappings\": true},\n     \"externalSetMarkChain\": \"KUBE-MARK-MASQ\"\n   }\n ]\n}\nEOF\n```"
+ }
+]

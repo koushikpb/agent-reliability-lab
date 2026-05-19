@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-6",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  is an ingress controller driving [Kong Gateway](https://konghq.com/kong/).\n* [Kusk Gateway](https://kusk.kubeshop.io/) is an OpenAPI-driven ingress controller based on [Envoy](https://www.envoyproxy.io).\n* [N42 Gateway](https://n42-gateway.github.io/) is an Ingress and Gateway API controller for [HAProxy](https://www.haproxy.org/#desc).\n* The [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx-ingress-controller/)\n  works with the [NGINX](https://www.nginx.com/resources/glossary/nginx/) webserver (as a proxy)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-7",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* The [ngrok-operator](https://github.com/ngrok/ngrok-operator) is a controller for [ngrok](https://ngrok.com/) that supports both Ingress and Gateway API for adding secure public access to your K8s Services.\n* The [OCI Native Ingress Controller](https://github.com/oracle/oci-native-ingress-controller#readme) is an Ingress controller for Oracle Cloud Infrastructure which allows you to manage the [OCI Load Balancer](https://docs.oracle.com/en-us/iaas/Content/Balance/home.htm).\n* [OpenNJet Ingress Controller](https://gitee.com/njet-rd/open-njet-kic) is a [OpenNJet](https://njet.org.cn/)-based ingress controller."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-2",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* [Avi Kubernetes Operator](https://github.com/vmware/load-balancer-and-ingress-services-for-kubernetes) provides L4-L7 load-balancing using [VMware NSX Advanced Load Balancer](https://avinetworks.com/).\n* [BFE Ingress Controller](https://github.com/bfenetworks/ingress-bfe) is a [BFE](https://www.bfe-networks.net)-based ingress controller.\n* [BunkerWeb Ingress Controller](https://docs.bunkerweb.io/latest/integrations/#kubernetes) is an ingress controller for [BunkerWeb](https://www.bunkerweb.io/), WAF (Web Application Firewall) based on nginx."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#using-multiple-ingress-controllers-0",
+  "heading": "Ingress Controllers > Using multiple Ingress controllers",
+  "text": "You may deploy any number of ingress controllers using [ingress class](/docs/concepts/services-networking/ingress/#ingress-class)\nwithin a cluster. Note the `.metadata.name` of your ingress class resource. When you create an ingress you would need that name to specify the `ingressClassName` field on your Ingress object (refer to [IngressSpec v1 reference](/docs/reference/kubernetes-api/service-resources/ingress-v1/#IngressSpec)). `ingressClassName` is a replacement of the older [annotation method](/docs/concepts/services-networking/ingress/#deprecated-annotation)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#ingress-class-0",
+  "heading": "Ingress > Ingress class",
+  "text": "Ingresses can be implemented by different controllers, often with different\nconfiguration. Each Ingress should specify a class, a reference to an\nIngressClass resource that contains additional configuration including the name\nof the controller that should implement the class.\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: IngressClass\nmetadata:\n  name: external-lb\nspec:\n  controller: example.com/ingress-controller\n  parameters:\n    apiGroup: k8s.example.com\n    kind: IngressParameters\n    name: external-lb\n```\n\nThe `.spec.parameters` field of an IngressClass lets you reference another\nresource that provides configuration related to that IngressClass.\n\nThe specific type of parameters to use depends on the ingress controller\nthat you specify in the `.spec.controller` field of the IngressClass."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#what-is-ingress-0",
+  "heading": "Ingress > What is Ingress?",
+  "text": "[Ingress](/docs/reference/generated/kubernetes-api//#ingress-v1-networking-k8s-io)\nexposes HTTP and HTTPS routes from outside the cluster to\n within the cluster.\nTraffic routing is controlled by rules defined on the Ingress resource.\n\nHere is a simple example where an Ingress sends all its traffic to one Service:\n\nAn Ingress may be configured to give Services externally-reachable URLs,\nload balance traffic, terminate SSL / TLS, and offer name-based virtual hosting.\nAn [Ingress controller](/docs/concepts/services-networking/ingress-controllers)\nis responsible for fulfilling the Ingress, usually with a load balancer, though\nit may also configure your edge router or additional frontends to help handle the traffic."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-2",
+  "heading": "Ingress > The Ingress resource",
+  "text": "The [Ingress spec](/docs/reference/kubernetes-api/service-resources/ingress-v1/#IngressSpec)\nhas all the information needed to configure a load balancer or proxy server. Most importantly, it\ncontains a list of rules matched against all incoming requests. Ingress resource only supports rules\nfor directing HTTP(S) traffic.\n\nIf the `ingressClassName` is omitted, a [default Ingress class](#default-ingress-class)\nshould be defined.\n\nSome ingress controllers work even without the definition of a\ndefault IngressClass. Even if you use an ingress controller that is able\nto operate without any IngressClass, the Kubernetes project still recommends\nthat you define a default IngressClass."
+ }
+]

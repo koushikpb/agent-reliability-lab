@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\n**What I did:**\n\n1. **Read the ticket** \u2014 3.9.0 pods stuck at `Init:0/1` for 40+ minutes; only the image changed from 3.8.0.\n2. **Listed pods in `orders`** \u2014 Found the single 3.9.0 pod (`orders-api-5b4d7c8f9-hn6wd`) in `Init:0/1` with `vault-agent-init` still running, while both 3.8.0 pods had their init containers completed (exit code 0) with identical service account and Vault annotations.\n3. **Pulled pod logs** \u2014 `vault-agent-init` is looping on HTTP **403 \"permission denied\"** from `https://vault.sec.internal:8200/v1/auth/kubernetes-prod/login` since 13:00 UTC.\n4. **Identified the root cause** \u2014 This is a **Vault-side authorization failure**, not a Kubernetes misconfiguration. The 3.8.0 pods are unaffected because they authenticated to Vault 6 days ago before the denial started; every new pod must authenticate fresh through the init container, so 3.9.0 is blocked immediately.\n5. **Resolved the ticket** with a detailed note explaining the cause, evidence, and a concrete checklist for the team to bring to the security/Vault team (verify role bindings, policy, auth-backend config, and audit logs for the `orders-api` role on `auth/kubernetes-prod`).",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 13271,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 361,
+ "stop_reason": "end_turn"
+}

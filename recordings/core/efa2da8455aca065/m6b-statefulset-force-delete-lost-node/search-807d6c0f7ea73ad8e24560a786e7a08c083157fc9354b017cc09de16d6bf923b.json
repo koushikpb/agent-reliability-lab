@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-1",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "`Delete`\n: The PVCs created from the StatefulSet `volumeClaimTemplate` are deleted for each Pod\n  affected by the policy. With the `whenDeleted` policy all PVCs from the\n  `volumeClaimTemplate` are deleted after their Pods have been deleted. With the\n  `whenScaled` policy, only PVCs corresponding to Pod replicas being scaled down are\n  deleted, after their Pods have been deleted.\n\n`Retain` (default)\n: PVCs from the `volumeClaimTemplate` are not affected when their Pod is\n  deleted. This is the behavior before this new feature.\n\nBear in mind that these policies **only** apply when Pods are being removed due to the\nStatefulSet being deleted or scaled down. For example, if a Pod associated with a StatefulSet\nfails due to node failure, and the control plane creates a replacement Pod, the StatefulSet\nretains the existing PVC.  The existing volume is unaffected, and the cluster will attach it to\nthe node where the new Pod is about to launch.\n\nThe default for policies is `Retain`, matching the StatefulSet behavior before this new feature.\n\nHere is an example policy:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#non-graceful-node-shutdown-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling",
+  "text": "When a node is shutdown but not detected by kubelet's Node Shutdown Manager, the pods\nthat are part of a StatefulSet\nwill be stuck in terminating status on the shutdown node and cannot move to a new running node.\nThis is because kubelet on the shutdown node is not available to delete the pods so\nthe StatefulSet cannot create a new pod with the same name. If there are volumes used by the pods,\nthe VolumeAttachments will not be deleted from the original shutdown node so the volumes\nused by these pods cannot be attached to a new running node. As a result, the\napplication running on the StatefulSet cannot function properly. If the original\nshutdown node comes up, the pods will be deleted by kubelet and new pods will be\ncreated on a different running node. If the original shutdown node does not come up,\nthese pods will be stuck in terminating status on the shutdown node forever."
+ },
+ {
+  "chunk_id": "tasks/run-application/delete-stateful-set#persistent-volumes-0",
+  "heading": "Delete a StatefulSet > Deleting a StatefulSet > Persistent Volumes",
+  "text": "Deleting the Pods in a StatefulSet will not delete the associated volumes.\nThis is to ensure that you have the chance to copy data off the volume before\ndeleting it. Deleting the PVC after the pods have terminated might trigger\ndeletion of the backing Persistent Volumes depending on the storage class\nand reclaim policy. You should never assume ability to access a volume\nafter claim deletion.\n\nUse caution when deleting a PVC, as it may lead to data loss."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-2",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "```yaml\napiVersion: apps/v1\nkind: StatefulSet\n...\nspec:\n  persistentVolumeClaimRetentionPolicy:\n    whenDeleted: Retain\n    whenScaled: Delete\n...\n```\n\nThe StatefulSet controller adds\n[owner references](/docs/concepts/overview/working-with-objects/owners-dependents/#owner-references-in-object-specifications)\nto its PVCs, which are then deleted by the garbage collector after the Pod is terminated. This enables the Pod to\ncleanly unmount all volumes before the PVCs are deleted (and before the backing PV and\nvolume are deleted, depending on the retain policy).  When you set the `whenDeleted`\npolicy to `Delete`, an owner reference to the StatefulSet instance is placed on all PVCs\nassociated with that StatefulSet."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-limits#mutable-csi-node-allocatable-count-1",
+  "heading": "Node-specific Volume Limits > Dynamic volume limits > Mutable CSI Node Allocatable Count",
+  "text": "Kubelet will periodically call the corresponding CSI driver\u2019s `NodeGetInfo` endpoint to refresh the maximum number of attachable volumes, using the interval specified in `nodeAllocatableUpdatePeriodSeconds`. The minimum allowed value for this field is 10 seconds.\n\nIf a volume attachment operation fails with a `ResourceExhausted` error (gRPC code 8), Kubernetes triggers an immediate update to the allocatable volume count for that Node. Additionally, kubelet marks affected pods as Failed, allowing their controllers to handle recreation. This prevents pods from getting stuck indefinitely in the `ContainerCreating` state."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#access-modes-1",
+  "heading": "Persistent Volumes > Persistent Volumes > Access Modes",
+  "text": " `ReadWriteOncePod`\n: \n  the volume can be mounted as read-write by a single Pod. Use ReadWriteOncePod\n  access mode if you want to ensure that only one pod across the whole cluster can\n  read that PVC or write to it.\n\nThe `ReadWriteOncePod` access mode is only supported for\nCSI volumes and Kubernetes version\n1.22+. To use this feature you will need to update the following\n[CSI sidecars](https://kubernetes-csi.github.io/docs/sidecar-containers.html)\nto these versions or greater:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-3",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "The `whenScaled` policy must delete PVCs only when a Pod is scaled down, and not when a\nPod is deleted for another reason. When reconciling, the StatefulSet controller compares\nits desired replica count to the actual Pods present on the cluster. Any StatefulSet Pod\nwhose id greater than the replica count is condemned and marked for deletion. If the\n`whenScaled` policy is `Delete`, the condemned Pods are first set as owners to the\nassociated StatefulSet template PVCs, before the Pod is deleted. This causes the PVCs\nto be garbage collected after only the condemned Pods have terminated."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#volume-binding-mode-2",
+  "heading": "Storage Classes > Volume binding mode",
+  "text": "The following plugins support `WaitForFirstConsumer` with pre-created PersistentVolume binding:\n\n- CSI volumes, provided that the specific CSI driver supports this\n- [`local`](#local)\n\nIf you choose to use `WaitForFirstConsumer`, do not use `nodeName` in the Pod spec\nto specify node affinity.\nIf `nodeName` is used in this case, the scheduler will be bypassed and PVC will remain in `pending` state.\n\nInstead, you can use node selector for `kubernetes.io/hostname`:"
+ }
+]

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try getting logs with the correct format:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01616qYag9A55YspybN7MdmW",
+   "input": {
+    "pod_name": "catalog-search-7d6f9b8c5-4kxpw"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2102,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 86,
+ "stop_reason": "tool_use"
+}

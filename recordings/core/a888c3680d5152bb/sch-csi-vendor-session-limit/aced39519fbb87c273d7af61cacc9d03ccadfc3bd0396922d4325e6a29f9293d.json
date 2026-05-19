@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results are about general volume mounting, but the specific error message is from the storage provider's CSI driver. The error is clear from the pod's message: the host group on the storage array has reached its maximum LUN mappings (512) and needs cleanup. This is a storage backend issue, not a Kubernetes configuration issue.\n\nLet me get the pod logs to see if there are any additional details.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01FozeXz4LHr3xMpckPLgCnz",
+   "input": {
+    "pod_name": "clickhouse-2"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4198,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 147,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-tools-0",
+  "heading": "Observability > Common observability tools > Metrics tools",
+  "text": "- [Cortex](https://cortexmetrics.io/) offers horizontally scalable, long-term Prometheus storage.\n- [Grafana Mimir](https://grafana.com/oss/mimir/) is a Grafana Labs project that provides multi-tenant, horizontally scalable Prometheus-compatible storage.\n- [Prometheus](https://prometheus.io/) is the monitoring system that scrapes and stores metrics from Kubernetes components.\n- [Thanos](https://thanos.io/) extends Prometheus with global querying, downsampling, and object storage support."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-1",
+  "heading": "Observability > Metrics",
+  "text": "flowchart LR\n    C[Cluster components] --> P[Prometheus scraper]\n    P --> TS[(Time series storage)]\n    TS --> D[Dashboards and alerts]\n    TS --> A[Automated actions]\n\n*Figure 2. Components of a typical Kubernetes metrics pipeline.*\n\nFor multi-cluster or multi-cloud visibility, distributed time series databases (for example Thanos or Cortex) can complement Prometheus.\n\nSee [Common observability tools - metrics tools](#metrics-tools) for metrics scrapers and time series databases."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-metrics#kubelet-pressure-stall-information-psi-metrics-6",
+  "heading": "Metrics For Kubernetes System Components > Component metrics > kubelet Pressure Stall Information (PSI) metrics",
+  "text": "Additionally, notice how in this example `cpu.some` shows pressure, while `cpu.full` remains at 0.00. This tells us that while some processes were delayed waiting for CPU time, the container as a whole was still making progress. A non-zero full value would indicate that all non-idle tasks were stalled simultaneously, a much bigger problem.\nAlthough not as human-readable, the `total` value of 35232438 represents the cumulative stall time in microseconds, that allow latency spike detection that otherwise may not show in the averages. They are also useful for monitoring systems, like Prometheus, to calculate precise rates of increase over specific time windows.\nAs a final note, when observing high I/O Pressure alongside low Memory Pressure, it can indicate that the application is waiting on disk throughput rather than failing due to a lack of available RAM. The node is not over-committed on memory, and a different diagnosis for disk consumption can be investigated. "
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-0",
+  "heading": "Observability > Metrics",
+  "text": "Kubernetes components emit metrics in [Prometheus format](https://prometheus.io/docs/instrumenting/exposition_formats/) from their `/metrics` endpoints, including:\n\n- kube-controller-manager\n- kube-proxy\n- kube-apiserver\n- kube-scheduler\n- kubelet\n\nThe kubelet also exposes metrics at `/metrics/cadvisor`, `/metrics/resource`, and `/metrics/probes`, and add-ons such as [kube-state-metrics](/docs/concepts/cluster-administration/kube-state-metrics/) enrich those control plane signals with Kubernetes object status.\n\nA typical Kubernetes metrics pipeline periodically scrapes these endpoints and stores the samples in a time series database (for example with Prometheus).\n\nSee the [system metrics guide](/docs/concepts/cluster-administration/system-metrics/) for details and configuration options.\n\nFigure 2 outlines a common Kubernetes metrics pipeline."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/check-if-dockershim-removal-affects-you#some-filesystem-metrics-are-missing-and-the-metrics-format-is-different-0",
+  "heading": "Check whether dockershim removal affects you > Known issues > Some filesystem metrics are missing and the metrics format is different",
+  "text": "The Kubelet `/metrics/cadvisor` endpoint provides Prometheus metrics,\nas documented in [Metrics for Kubernetes system components](/docs/concepts/cluster-administration/system-metrics/).\nIf you install a metrics collector that depends on that endpoint, you might see the following issues:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/check-if-dockershim-removal-affects-you#some-filesystem-metrics-are-missing-and-the-metrics-format-is-different-2",
+  "heading": "Check whether dockershim removal affects you > Known issues > Some filesystem metrics are missing and the metrics format is different",
+  "text": "You can mitigate this issue by using [cAdvisor](https://github.com/google/cadvisor) as a standalone daemonset.\n\n1. Find the latest [cAdvisor release](https://github.com/google/cadvisor/releases)\n   with the name pattern `vX.Y.Z-containerd-cri` (for example, `v0.42.0-containerd-cri`).\n2. Follow the steps in [cAdvisor Kubernetes Daemonset](https://github.com/google/cadvisor/tree/master/deploy/kubernetes) to create the daemonset.\n3. Point the installed metrics collector to use the cAdvisor `/metrics` endpoint\n   which provides the full set of\n   [Prometheus container metrics](https://github.com/google/cadvisor/blob/master/docs/storage/prometheus.md).\n\nAlternatives:"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#resources-0",
+  "heading": "Volumes > Resources",
+  "text": "The storage medium (such as Disk or SSD) of an `emptyDir` volume is determined by the\nmedium of the filesystem holding the kubelet root dir (typically\n`/var/lib/kubelet`). There is no limit on how much space an `emptyDir` or\n`hostPath` volume can consume, and no isolation between containers or\nPods.\n\nTo learn about requesting space using a resource specification, see\n[how to manage resources](/docs/concepts/configuration/manage-resources-containers/)."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-2",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "A size limit can be specified for the default medium, which limits the capacity\nof the `emptyDir` volume. The storage is allocated from\n[node ephemeral storage](/docs/concepts/storage/ephemeral-storage/#setting-requests-and-limits-for-local-ephemeral-storage).\nIf that is filled up from another source (for example, log files or image overlays),\nthe `emptyDir` may run out of capacity before this limit.\nIf no size is specified, memory-backed volumes are sized to node allocatable memory.\n\nPlease check [here](/docs/concepts/configuration/manage-resources-containers/#memory-backed-emptydir)\nfor points to note in terms of resource management when using memory-backed `emptyDir`."
+ }
+]

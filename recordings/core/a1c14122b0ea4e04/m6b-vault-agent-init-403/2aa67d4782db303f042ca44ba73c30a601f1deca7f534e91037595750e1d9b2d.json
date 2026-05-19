@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "Et4FCqQBCBMYAipAxYI7Qs5xwdUdoQ+Dqxhg2BdRaXf2bKKDzBtI9WZQDFl+lkUTmUuSzRSnGZOPbKRRltEZQ2fVay3jOSthYxP6yzIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBqPHw1gYSDLxFvsQ0C+cXOzly7hoMBrTpLpo6GRGntmqpIjBh8K27Zxh613YoYPF4yFboWTlwc2N4ScyBwH79WegUlgDE/BgISyTnoNtuRkdCxHEq5gPcqepU9+3bR5yUwe//fz2XdT8//EZC78ISjATvIDWdsm06DfSbKc4lGP4hsndvovSp5rydKNBbVgneSc8Q1imfDzI1ix6PluBOGGgfMn8ggaRSWL8LsJL+p0LNGmt+ELJaWO6Q5iMT7FsbvuDR4y/pm3TAz+2xpd0Qr7+ATWBq+xd2VXO0Sdx1JAh4QgAjX7DzxXOTOaufbF/TTDUCKKLcLP4kiOs29MqoPunpCfKcdN0q3z1Up2Iu4QIvLBI5LeJ5mCdYjw3fyY1iVLN93ZrMU37iT9j3uqfm2npgNwi5ZzN46phniaz0Q3ww58BEYAuX6BUeJpytj1h8O3lhRX2gtFBk5rBQ052Xh5CGDSY8hsyvIyYfg7Jv32MvurAiGkntyObwL0jcMEV4P4xh/k3QDkcUMJfM4iXHsWpm/XF8ZA/4lg7/eDVfOYE+ZQKNi0K1ABk0b1hbS84XX4NoE4gxGW9z2j+1fFhJcumPI4jDA564QbHc9AjKOX/HintPeOlLPNBqF4aTS6NyAI5yWZ+lt4w4MVWyQhnwuRkOc3Psukhf++G1gQFubRKk5sbppaPorICvGsXM0C3Na/Vldf3ILeuPbSPRdaCkGcxg2V2yp2CV/5p/z3Dh+DH8r9L5FikP5JnH170YAQ==",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019BgM7noVPxKfTFhL3XfDVW",
+   "input": {
+    "query": "Vault Kubernetes auth 403 permission denied service account token audience"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3602,
+ "model": "claude-opus-4-7",
+ "output_tokens": 265,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "Es4CCqQBCBMYAipAjxkpKOvWkRVsomwfZm6MVB8zLHR7UTTRLcoXrEPsRwKSnk/gMQiYkCaHjx+sRhraCTJyghoGqVqfYMQKrc333jIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBkL7w1gYSDCE5PCTEeut3ErlDVxoM02jWhqCBmXaHs5vXIjB6RWpXv81GBWZ3mOFKHJzmuwUT7VcVpvcoLcYXkBMQYbgj8wPG0K2nZ6AO3so2uO4qV4Au+Sd7zaNkqdCgQ/jyQZJId9oaNgEeIkXmrxYRZ7mAHeQMMJomkABEMQpHJacfzqT0EQ3/hKAEWnBj5SCJyN0VF0nEX6axTuZWL2SdX2lh6QOxhILKLhgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011iqcis9CqUFDri344Casve",
+   "input": {
+    "query": "ImagePullBackOff manifest unknown wrong image name"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1960,
+ "model": "claude-opus-4-7",
+ "output_tokens": 131,
+ "stop_reason": "tool_use"
+}

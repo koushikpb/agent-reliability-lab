@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-1",
+  "heading": "Observability > Metrics",
+  "text": "flowchart LR\n    C[Cluster components] --> P[Prometheus scraper]\n    P --> TS[(Time series storage)]\n    TS --> D[Dashboards and alerts]\n    TS --> A[Automated actions]\n\n*Figure 2. Components of a typical Kubernetes metrics pipeline.*\n\nFor multi-cluster or multi-cloud visibility, distributed time series databases (for example Thanos or Cortex) can complement Prometheus.\n\nSee [Common observability tools - metrics tools](#metrics-tools) for metrics scrapers and time series databases."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-tools-0",
+  "heading": "Observability > Common observability tools > Metrics tools",
+  "text": "- [Cortex](https://cortexmetrics.io/) offers horizontally scalable, long-term Prometheus storage.\n- [Grafana Mimir](https://grafana.com/oss/mimir/) is a Grafana Labs project that provides multi-tenant, horizontally scalable Prometheus-compatible storage.\n- [Prometheus](https://prometheus.io/) is the monitoring system that scrapes and stores metrics from Kubernetes components.\n- [Thanos](https://thanos.io/) extends Prometheus with global querying, downsampling, and object storage support."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-1",
+  "heading": "Local ephemeral storage > Ephemeral storage consumption management",
+  "text": "However, if the filesystem space for writeable container layers, node-level logs,\nor `emptyDir` volumes falls low, the node\ntaints itself as short on local storage\nand this taint triggers eviction for any Pods that don't specifically tolerate the taint.\n\nSee the supported [configurations](#configurations) for ephemeral local storage.\n\nThe kubelet supports different ways to measure Pod storage use:\n\nThe kubelet performs regular, scheduled checks that scan each `emptyDir` volume,\ncontainer log directory, and writeable container layer.\n\nThe scan measures how much space is used.\n\nIn this mode, the kubelet does not track open file descriptors\nfor deleted files.\n\nIf you (or a container) create a file inside an `emptyDir` volume,\nsomething then opens that file, and you delete the file while it is still open,\nthen the inode for the deleted file stays until you close that file\nbut the kubelet does not categorize the space as in use."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-0",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "The optional `.spec.persistentVolumeClaimRetentionPolicy` field controls if\nand how PVCs are deleted during the lifecycle of a StatefulSet. You must enable the\n`StatefulSetAutoDeletePVC` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)\non the API server and the controller manager to use this field.\nOnce enabled, there are two policies you can configure for each StatefulSet:\n\n`whenDeleted`\n: Configures the volume retention behavior that applies when the StatefulSet is deleted.\n\n`whenScaled`\n: Configures the volume retention behavior that applies when the replica count of\n  the StatefulSet   is reduced; for example, when scaling down the set.\n\nFor each policy that you can configure, you can set the value to either `Delete` or `Retain`."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#api-kinds-0",
+  "heading": "Configuration > Kubernetes configuration-related APIs",
+  "text": "Kubernetes provides two main API kinds that you can use to store configuration,\nready for a Pod (or other component) to load and use:\n[ConfigMap](/docs/concepts/configuration/configmap/), and\n[Secret](/docs/concepts/configuration/secret/).\n\nThe special-use\n[CertificateSigningRequest](/docs/reference/access-authn-authz/certificate-signing-requests/#certificate-signing-requests)\nand\n[ClusterTrustBundle](/docs/reference/access-authn-authz/certificate-signing-requests/#cluster-trust-bundles)\nAPI kinds also hold configuration data that's relevant to some specific cases,\nsuch as TLS configuration.\n\nAll of these configuration mechanisms, even for certificates, are designed so that configuration\ncan be reused and shared across multiple Pods. You typically don't have to write the configuration\nout once per Pod, and you should design applications where possible so that they can work with\nshared configuration."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-volumes#intro-0",
+  "heading": "Ephemeral Volumes",
+  "text": "This document describes _ephemeral volumes_ in Kubernetes. Familiarity\nwith [volumes](/docs/concepts/storage/volumes/) is suggested, in\nparticular PersistentVolumeClaim and PersistentVolume.\n\nSome applications need additional storage but don't care whether that\ndata is stored persistently across restarts. For example, caching\nservices are often limited by memory size and can move infrequently\nused data into storage that is slower than memory with little impact\non overall performance.\n\nOther applications expect some read-only input data to be present in\nfiles, like configuration data or secret keys.\n\n_Ephemeral volumes_ are designed for these use cases. Because volumes\nfollow the Pod's lifetime and get created and deleted along with the\nPod, Pods can be stopped and restarted without being limited to where\nsome persistent volume is available.\n\nEphemeral volumes are specified _inline_ in the Pod spec, which\nsimplifies application deployment and management."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#portworx-volume-1",
+  "heading": "Storage Classes > Parameters > Portworx volume (deprecated)",
+  "text": "- `fs`: filesystem to be laid out: `none/xfs/ext4` (default: `ext4`).\n- `block_size`: block size in Kbytes (default: `32`).\n- `repl`: number of synchronous replicas to be provided in the form of\n  replication factor `1..3` (default: `1`) A string is expected here i.e.\n  `\"1\"` and not `1`.\n- `priority_io`: determines whether the volume will be created from higher\n  performance or a lower priority storage `high/medium/low` (default: `low`).\n- `snap_interval`: clock/time interval in minutes for when to trigger snapshots.\n  Snapshots are incremental based on difference with the prior snapshot, 0\n  disables snaps (default: `0`). A string is expected here i.e.\n  `\"70\"` and not `70`.\n- `aggregation_level`: specifies the number of chunks the volume would be"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/change-pv-reclaim-policy#changing-the-reclaim-policy-of-a-persistentvolume-2",
+  "heading": "Change the Reclaim Policy of a PersistentVolume > Changing the reclaim policy of a PersistentVolume",
+  "text": "   ```none\n   NAME                                       CAPACITY   ACCESSMODES   RECLAIMPOLICY   STATUS    CLAIM             STORAGECLASS     REASON    AGE\n   pvc-b6efd8da-b7b5-11e6-9d58-0ed433a7dd94   4Gi        RWO           Delete          Bound     default/claim1    manual                     40s\n   pvc-b95650f8-b7b5-11e6-9d58-0ed433a7dd94   4Gi        RWO           Delete          Bound     default/claim2    manual                     36s\n   pvc-bb3ca71d-b7b5-11e6-9d58-0ed433a7dd94   4Gi        RWO           Retain          Bound     default/claim3    manual                     33s\n   ```\n\n   In the preceding output, you can see that the volume bound to claim\n   `default/claim3` has reclaim policy `Retain`. It will not be automatically\n   deleted when a user deletes claim `default/claim3`."
+ }
+]

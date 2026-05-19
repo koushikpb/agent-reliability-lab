@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more specifically for the error about CPU utilization being undefined when a container lacks resource requests:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01JUbhctbfMHFmrKBCxT7W1i",
+   "input": {
+    "query": "HPA autoscaler Pod containers do not have relevant resource request set CPU utilization not defined"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 20186,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 93,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "EvEGCqgBCBMYAipAyGZ115cISsksjQx/Uo7UZ3XnW2NxzGZlLE+XzbrUPRNvhNtil59NkahfCVTkumHGzi3ZlObBn5kMiLhx5Ew5VzIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAfbu8dYGEgw8l1kMqCeMfDPc5MUaDL7h+WANv4Gi0mJuxyIwv8BMJl0hLc8oyuW6HQpBeiwd9udHR4FfMdfRTGhqUzcH9xLm8z+p+3AeQCkZoZzeKvUEJ22iVYWj7YMNrYOcX1riGKBlWiNPl6/HZe8vgHbVEdawsLWW5sEPh5hiuVbKyE9fVBOUchg7h0pnmbfjxHTje81KP6N1WqS2AYPVgz4twt340dawLbjvPrgBTWQo5SnTyDAuJiitlRI/gboTCeLNu8W8ldBPv8jPxQNKLo7h1xJ2pn+8o1IElgzsh75pwrAqQqYMPAcifvFrFkCI0NmPkqhgelEqNEqxtN99ZyHfVKG/OwOaXpfdFoibVZ+QOal7pyXUkJUU2imA6JpDnmdlY8fcfaidMzxHvfXGFiMNyQbM7m2glDWGXLTj2KYAMlztjVg4pbvexpBmNg16PwT+rKyiD4Gq+TBwW7hKwxic4ccuVmGUZ3mkacHvQqvWbMR6AeQ1yHtbmYVsbKb9+MGw6vx4UxJTqZBDTNE25TGR8KTqVeW1nPVDaRJJoqe6v005uyAJ/fV8esgKBXJ4Fp3ROTzx/L+j4Zjzr6xG+OayA4YrBLXdr7V+9p8ifvPWJhD99PBLbLAga44Pvj2KRZFjdqFurcz6/9jhNRnpD9AEaNP/Rx7QKbSevNf+LrL5bdwYoBvmy0AjrjoxoHdLuYQrzAr1+XI3F4OBFbj0jq5WcqO+7EoUB9ID/tVmWYGqxDUIVJ9xeYNaFsaFcOVShNRb1cNw+znOCBcUwA144/tFkFtheqSGvcnzqALNmonIDpvSz/70oPe376YSFr7/H4pBmlt+YDuDUwzBwoPosWps6keoDhjWUmUNGGv2z5ee7Cj7pUdtr/z4jIyU+X7FF0eSa3WmZ6bGdoT8AHjEahuPCdwcgthOydIg7FJKcWTGw0xN5WU8cxAYAQ==",
+   "thinking": "The problem is clear. The new 1.5.0 deployment is being blocked by PodSecurity admission because the `documents` namespace enforces `restricted:latest` policy, and the 1.5.0 manifest is missing required security context settings:\n\n1. `securityContext.allowPrivilegeEscalation=false`\n2. `securityContext.capabilities.drop=[\"ALL\"]`\n3. `securityContext.runAsNonRoot=true`\n4. `securityContext.seccompProfile.type` must be `RuntimeDefault` or `Localhost`\n\nThe 1.4.2 pods presumably had these set but the new manifest (1.5.0) is missing them.\nLet me look into the documentation around the restricted PodSecurity policy to confirm these requirements.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "The cause is clear from the events. Let me now search the Kubernetes docs to support the fix with a citation.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01SogUZKiUmMq4DgAVhsxMc9",
+   "input": {
+    "query": "PodSecurity admission restricted policy securityContext allowPrivilegeEscalation runAsNonRoot seccompProfile capabilities"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2818,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 297,
+ "stop_reason": "tool_use"
+}

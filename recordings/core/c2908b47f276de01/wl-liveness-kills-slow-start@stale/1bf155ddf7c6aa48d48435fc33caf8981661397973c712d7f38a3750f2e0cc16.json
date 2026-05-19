@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary**: I resolved ticket T-2003 by identifying that the catalog-search pods were being killed by the liveness probe during application startup. The pods need 9+ minutes to load their large index snapshot into memory, but the liveness probe was starting after only 30 seconds and killing the containers before they became ready. The fix is to add a startup probe to the deployment that allows adequate time for initialization before the liveness probe takes over, following Kubernetes best practices for slow-starting applications.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9847,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 108,
+ "stop_reason": "end_turn"
+}

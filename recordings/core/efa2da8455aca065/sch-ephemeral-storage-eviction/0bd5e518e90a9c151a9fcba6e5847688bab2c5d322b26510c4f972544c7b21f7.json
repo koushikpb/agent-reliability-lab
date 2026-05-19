@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Ticket T-3005 resolved.** Here's a summary of what I did:\n\n---\n\n### What happened\nTwo `report-generator` pods in the `reporting` namespace were **evicted mid-run** because they consumed ~38\u201340 GiB of ephemeral storage (local spool files written to `/var/tmp/reportgen/spool`), pushing their nodes below the 10% free-disk eviction threshold. The pod spec had **no `ephemeral-storage` request or limit**, so the scheduler had no basis to pick a disk-capable node, and the kubelet had no per-pod limit to enforce before whole-node pressure triggered eviction [cite: concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-0].\n\n### Recommended fixes for the owner\n1. **Add `ephemeral-storage: 80Gi` requests and limits** to the container spec so the scheduler lands the pod on a suitable node and the kubelet can enforce a per-pod boundary [cite: concepts/storage/ephemeral-storage#requests-limits-0, concepts/storage/ephemeral-storage#how-pods-with-ephemeral-storage-requests-are-scheduled-0].\n2. **(Better long-term)** Mount a **PersistentVolumeClaim** for the spool directory, removing the large write workload from ephemeral storage entirely.\n3. **Fix SMTP credentials** \u2014 logs also show authentication failures for notification emails; those credentials need to be rotated.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9453,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 350,
+ "stop_reason": "end_turn"
+}

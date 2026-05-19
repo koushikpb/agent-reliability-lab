@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search the Kubernetes documentation to understand what causes liveness probe failures and exit code 143.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Knaeh4Yy97UfYWtsKmBFCF",
+   "input": {
+    "query": "liveness probe failed connection refused restart CrashLoopBackOff"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2218,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 89,
+ "stop_reason": "tool_use"
+}

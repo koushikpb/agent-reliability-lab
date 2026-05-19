@@ -1,0 +1,26 @@
+{
+ "content": [
+  {
+   "signature": "EuMDCqQBCBMYAipAi2HnAUc7DgLlkN8WIsobux9/evdhmycWajOQvz6b48oXIfcSBXnQvYAvny+J4qJtpI1/APoCb48ZaLFzoPYhfDIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBp+7w1gYSDHq9EDiKxJh8Q6SDMBoMJbbRrQ2LL8SkIepnIjA/gKn5mwThoYRq98rUTMiFXE7O7sQZw5a1f1FuxCBBq6CxrX8/Efr/ivh9PalA7EUq6wEbcNeP2LbfdHYOXd0Yan3+yM47x7418si6ex1vWBa2s4oVfoQMzlLKnfmTfGuLsJhpcN5lkzb1r0hRowXzhkM78fakZgmFNfFUwz+zPjpmmKQsecg9+hc8Bb+LatWbCpvQfB/Wltn8E6P9UsvShhZ96GLFypqGHdtyUpByasEB/nC63a1QMluArj7o1did3wNJKblekQIs4F2acYe2EIbZJdrX4GrhfoJ4RVMkHwTeDXGhrrEW/tw6MeT3ytz1SsxMzZVp26+mv8lbpentZkt0KqYS7skMpZ0XjrLE2UiAjEQRW3LbB5VeDaqdGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Hw6ECsGjcSqwEB3n6sJqrG",
+   "input": {
+    "id": "T-5004",
+    "note": "Cause: The api-gateway pods in the edge namespace mount the gateway-limits ConfigMap using a subPath (mountPath /etc/gateway/limits.yaml, subPath limits.yaml). Containers that consume a ConfigMap via a subPath volume mount do not receive updates when the ConfigMap changes [cite: concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4][cite: tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0]. Both pods (api-gateway-7c9f8d6b54-x2kqp and -r7tmw) started 2026-05-21 06:02, well before the 09:10 ConfigMap edit, so they are still enforcing the old 100 rps limit \u2014 hence acme-logistics is still getting 429s.\n\nFix (owner action): Roll the api-gateway deployment in the edge namespace so new pods pick up the updated ConfigMap, e.g. `kubectl -n edge rollout restart deploy/api-gateway` and then `kubectl -n edge rollout status deploy/api-gateway`. To avoid needing a restart on future limit changes, drop the subPath and mount the ConfigMap as a directory (e.g. mountPath /etc/gateway with the file projected as limits.yaml); non-subPath ConfigMap volume mounts are updated automatically, subject to the kubelet sync period + cache TTL delay [cite: concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-2][cite: tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5340,
+ "model": "claude-opus-4-7",
+ "output_tokens": 794,
+ "stop_reason": "tool_use"
+}

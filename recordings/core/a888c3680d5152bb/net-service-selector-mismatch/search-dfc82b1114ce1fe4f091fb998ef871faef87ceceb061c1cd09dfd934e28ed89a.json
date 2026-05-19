@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/endpoint-slices#endpointslice-resource-0",
+  "heading": "EndpointSlices > EndpointSlice API",
+  "text": "In Kubernetes, an EndpointSlice contains references to a set of network\nendpoints. The control plane automatically creates EndpointSlices\nfor any Kubernetes Service that has a selector specified. These EndpointSlices include\nreferences to all the Pods that match the Service selector. EndpointSlices group\nnetwork endpoints together by unique combinations of IP family, protocol,\nport number, and Service name.\nThe name of a EndpointSlice object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).\n\nAs an example, here's a sample EndpointSlice object, that's owned by the `example`\nKubernetes Service."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-1",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Because this Service has no selector, the corresponding EndpointSlice\nobjects are not created automatically. You can map the Service\nto the network address and port where it's running, by adding an EndpointSlice\nobject manually. For example:\n\n```yaml\napiVersion: discovery.k8s.io/v1\nkind: EndpointSlice\nmetadata:\n  name: my-service-1 # by convention, use the name of the Service\n                     # as a prefix for the name of the EndpointSlice\n  labels:\n    # You should set the \"kubernetes.io/service-name\" label.\n    # Set its value to match the name of the Service\n    kubernetes.io/service-name: my-service\naddressType: IPv4\nports:\n  - name: http # should match with the name of the service port defined above\n    appProtocol: http\n    protocol: TCP\n    port: 9376\nendpoints:\n  - addresses:\n      - \"10.4.5.6\"\n  - addresses:\n      - \"10.1.2.3\"\n```\n\n#### Custom EndpointSlices"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service-traffic-policy#using-service-internal-traffic-policy-0",
+  "heading": "Service Internal Traffic Policy > Using Service Internal Traffic Policy",
+  "text": "You can enable the internal-only traffic policy for a\nService, by setting its\n`.spec.internalTrafficPolicy` to `Local`. This tells kube-proxy to only use node local\nendpoints for cluster internal traffic.\n\nFor pods on nodes with no endpoints for a given Service, the Service\nbehaves as if it has zero endpoints (for Pods on this node) even if the service\ndoes have endpoints on other nodes.\n\nThe following example shows what a Service looks like when you set\n`.spec.internalTrafficPolicy` to `Local`:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n      targetPort: 9376\n  internalTrafficPolicy: Local\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-0",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Services most commonly abstract access to Kubernetes Pods thanks to the selector,\nbut when used with a corresponding set of\nEndpointSlices\nobjects and without a selector, the Service can abstract other kinds of backends,\nincluding ones that run outside the cluster.\n\nFor example:\n\n* You want to have an external database cluster in production, but in your\n  test environment you use your own databases.\n* You want to point your Service to a Service in a different\n  namespace or on another cluster.\n* You are migrating a workload to Kubernetes. While evaluating the approach,\n  you run only a portion of your backends in Kubernetes.\n\nIn any of these scenarios you can define a Service _without_ specifying a\nselector to match Pods. For example:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  ports:\n    - name: http\n      protocol: TCP\n      port: 80\n      targetPort: 9376\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-2",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "When you create an [EndpointSlice](#endpointslices) object for a Service, you can\nuse any name for the EndpointSlice. Each EndpointSlice in a namespace must have a\nunique name. You link an EndpointSlice to a Service by setting the\n`kubernetes.io/service-name` label\non that EndpointSlice.\n\nThe endpoint IPs _must not_ be: loopback (127.0.0.0/8 for IPv4, ::1/128 for IPv6), or\nlink-local (169.254.0.0/16 and 224.0.0.0/24 for IPv4, fe80::/64 for IPv6).\n\nThe endpoint IP addresses cannot be the cluster IPs of other Kubernetes Services,\nbecause kube-proxy doesn't support virtual IPs\nas a destination."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#without-selectors-0",
+  "heading": "Service > Headless Services > Without selectors",
+  "text": "For headless Services that do not define selectors, the control plane does\nnot create EndpointSlice objects. However, the DNS system looks for and configures\neither:\n\n* DNS CNAME records for [`type: ExternalName`](#externalname) Services.\n* DNS A / AAAA records for all IP addresses of the Service's ready endpoints,\n  for all Service types other than `ExternalName`.\n  * For IPv4 endpoints, the DNS system creates A records.\n  * For IPv6 endpoints, the DNS system creates AAAA records.\n\nWhen you define a headless Service without a selector, the `port` must\nmatch the `targetPort`."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#with-selectors-0",
+  "heading": "Service > Headless Services > With selectors",
+  "text": "For headless Services that define selectors, the endpoints controller creates\nEndpointSlices in the Kubernetes API, and modifies the DNS configuration to return\nA or AAAA records (IPv4 or IPv6 addresses) that point directly to the Pods backing the Service."
+ },
+ {
+  "chunk_id": "concepts/services-networking/endpoint-slices#conditions-1",
+  "heading": "EndpointSlices > EndpointSlice API > Conditions",
+  "text": "The `ready` condition is essentially a shortcut for checking\n\"`serving` and not `terminating`\" (though it will also always be\n`true` for Services with `spec.publishNotReadyAddresses` set to\n`true`)."
+ }
+]

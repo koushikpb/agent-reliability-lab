@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/service#defining-a-service-1",
+  "heading": "Service > Defining a Service",
+  "text": "Kubernetes assigns this Service an IP address (the _cluster IP_),\nthat is used by the virtual IP address mechanism. For more details on that mechanism,\nread [Virtual IPs and Service Proxies](/docs/reference/networking/virtual-ips/).\n\nThe controller for that Service continuously scans for Pods that\nmatch its selector, and then makes any necessary updates to the set of\nEndpointSlices for the Service.\n\nThe name of a Service object must be a valid\n[RFC 1123 label name](/docs/concepts/overview/working-with-objects/names#rfc-1123-label-names).\n\nA Service can map _any_ incoming `port` to a `targetPort`. By default and\nfor convenience, the `targetPort` is set to the same value as the `port`\nfield."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-2",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "This confirms that the EndpointSlice controller has found the correct Pods for\nyour Service.  If the `ENDPOINTS` column is `<none>`, you should check that\nthe `spec.selector` field of your Service actually selects for\n`metadata.labels` values on your Pods.  A common mistake is to have a typo or\nother error, such as the Service selecting for `app=hostnames`, but the\nDeployment specifying `run=hostnames`, as in versions previous to 1.18, where\nthe `kubectl run` command could have been also used to create a Deployment."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-the-service-defined-correctly-0",
+  "heading": "Debug Services > Is the Service defined correctly?",
+  "text": "It might sound silly, but you should really double and triple check that your\nService is correct and matches your Pod's port.  Read back your Service\nand verify it:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service-traffic-policy#using-service-internal-traffic-policy-0",
+  "heading": "Service Internal Traffic Policy > Using Service Internal Traffic Policy",
+  "text": "You can enable the internal-only traffic policy for a\nService, by setting its\n`.spec.internalTrafficPolicy` to `Local`. This tells kube-proxy to only use node local\nendpoints for cluster internal traffic.\n\nFor pods on nodes with no endpoints for a given Service, the Service\nbehaves as if it has zero endpoints (for Pods on this node) even if the service\ndoes have endpoints on other nodes.\n\nThe following example shows what a Service looks like when you set\n`.spec.internalTrafficPolicy` to `Local`:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n      targetPort: 9376\n  internalTrafficPolicy: Local\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-4",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "#### Accessing a Service without a selector {#service-no-selector-access}\n\nAccessing a Service without a selector works the same as if it had a selector.\nIn the [example](#services-without-selectors) for a Service without a selector,\ntraffic is routed to one of the two endpoints defined in\nthe EndpointSlice manifest: a TCP connection to 10.1.2.3 or 10.4.5.6, on port 9376.\n\nThe Kubernetes API server does not allow proxying to endpoints that are not mapped to\npods. Actions such as `kubectl port-forward service/<service-name> forwardedPort:servicePort` where the service has no\nselector will fail due to this constraint. This prevents the Kubernetes API server\nfrom being used as a proxy to endpoints the caller may not be authorized to access.\n\nAn `ExternalName` Service is a special case of Service that does not have\nselectors and uses DNS names instead. For more information, see the\n[ExternalName](#externalname) section."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-the-kube-proxy-working-0",
+  "heading": "Debug Services > Is the kube-proxy working?",
+  "text": "If you get here, your Service is running, has EndpointSlices, and your Pods\nare actually serving.  At this point, the whole Service proxy mechanism is\nsuspect.  Let's confirm it, piece by piece.\n\nThe default implementation of Services, and the one used on most clusters, is\nkube-proxy.  This is a program that runs on every node and configures one of a\nsmall set of mechanisms for providing the Service abstraction.  If your\ncluster does not use kube-proxy, the following sections will not apply, and you\nwill have to investigate whatever implementation of Services you are using."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/service-access-application-cluster#creating-a-service-for-an-application-running-in-two-pods-2",
+  "heading": "Use a Service to Access an Application in a Cluster > Creating a service for an application running in two pods",
+  "text": "   ```none\n   Name:                   example-service\n   Namespace:              default\n   Labels:                 run=load-balancer-example\n   Annotations:            <none>\n   Selector:               run=load-balancer-example\n   Type:                   NodePort\n   IP:                     10.32.0.16\n   Port:                   <unset> 8080/TCP\n   TargetPort:             8080/TCP\n   NodePort:               <unset> 31496/TCP\n   Endpoints:              10.200.1.4:8080,10.200.2.5:8080\n   Session Affinity:       None\n   Events:                 <none>\n   ```\n\n   Make a note of the NodePort value for the Service. For example,\n   in the preceding output, the NodePort value is 31496.\n\n1. List the pods that are running the Hello World application:\n\n   ```shell\n   kubectl get pods --selector=\"run=load-balancer-example\" --output=wide\n   ```\n\n   The output is similar to this:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/daemonset#communicating-with-daemon-pods-0",
+  "heading": "DaemonSet > Communicating with Daemon Pods",
+  "text": "Some possible patterns for communicating with Pods in a DaemonSet are:\n\n- **Push**: Pods in the DaemonSet are configured to send updates to another service, such\n  as a stats database.  They do not have clients.\n- **NodeIP and Known Port**: Pods in the DaemonSet can use a `hostPort`, so that the pods\n  are reachable via the node IPs.\n  Clients know the list of node IPs somehow, and know the port by convention.\n- **DNS**: Create a [headless service](/docs/concepts/services-networking/service/#headless-services)\n  with the same pod selector, and then discover DaemonSets using the `endpoints`\n  resource or retrieve multiple A records from DNS.\n- **Service**: Create a service with the same Pod selector, and use the service to reach a\n  daemon on a random node. Use [Service Internal Traffic Policy](/docs/concepts/services-networking/service-traffic-policy/)\n  to limit to pods on the same node."
+ }
+]

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The documentation I found about init containers is helpful, but I need more specific information about Vault's Kubernetes authentication. Let me search for more details about what could cause a 403 error:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01E3KcFAGCXvFHnUiVkRuwCj",
+   "input": {
+    "query": "Vault permission denied authentication failure diagnosis"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7260,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 100,
+ "stop_reason": "tool_use"
+}

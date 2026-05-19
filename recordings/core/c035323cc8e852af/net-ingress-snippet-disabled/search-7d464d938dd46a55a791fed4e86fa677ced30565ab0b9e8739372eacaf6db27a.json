@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-9",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* [Tyk Operator](https://github.com/TykTechnologies/tyk-operator) extends Ingress with Custom Resources to bring API Management capabilities to Ingress. Tyk Operator works with the Open Source Tyk Gateway & Tyk Cloud control plane.\n* [Voyager](https://voyagermesh.com) is an ingress controller for\n  [HAProxy](https://www.haproxy.org/#desc).\n* [Wallarm Ingress Controller](https://www.wallarm.com/solutions/waf-for-kubernetes) is an Ingress Controller that provides WAAP (WAF) and API Security capabilities."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#using-multiple-ingress-controllers-0",
+  "heading": "Ingress Controllers > Using multiple Ingress controllers",
+  "text": "You may deploy any number of ingress controllers using [ingress class](/docs/concepts/services-networking/ingress/#ingress-class)\nwithin a cluster. Note the `.metadata.name` of your ingress class resource. When you create an ingress you would need that name to specify the `ingressClassName` field on your Ingress object (refer to [IngressSpec v1 reference](/docs/reference/kubernetes-api/service-resources/ingress-v1/#IngressSpec)). `ingressClassName` is a replacement of the older [annotation method](/docs/concepts/services-networking/ingress/#deprecated-annotation)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#default-ingress-class-0",
+  "heading": "Ingress > Ingress class > Default IngressClass",
+  "text": "You can mark a particular IngressClass as default for your cluster. Setting the\n`ingressclass.kubernetes.io/is-default-class` annotation to `true` on an\nIngressClass resource will ensure that new Ingresses without an\n`ingressClassName` field specified will be assigned this default IngressClass.\n\nIf you have more than one IngressClass marked as the default for your cluster,\nthe admission controller prevents creating new Ingress objects that don't have\nan `ingressClassName` specified. You can resolve this by ensuring that at most 1\nIngressClass is marked as default in your cluster.\n\nStart by defining a\ndefault IngressClass. It is recommended though, to specify the default\nIngressClass:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: IngressClass\nmetadata:\n  labels:\n    app.kubernetes.io/component: controller\n  name: example-class\n  annotations:\n    ingressclass.kubernetes.io/is-default-class: \"true\"\nspec:\n  controller: k8s.io/example-class\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#tls-0",
+  "heading": "Ingress > Types of Ingress > TLS",
+  "text": "You can secure an Ingress by specifying a secret\nthat contains a TLS private key and certificate. The Ingress resource only\nsupports a single TLS port, 443, and assumes TLS termination at the ingress point\n(traffic to the Service and its Pods is in plaintext).\nIf the TLS configuration section in an Ingress specifies different hosts, they are\nmultiplexed on the same port according to the hostname specified through the\nSNI TLS extension (provided the Ingress controller supports SNI). The TLS secret\nmust contain keys named `tls.crt` and `tls.key` that contain the certificate\nand private key to use for TLS. For example:\n\n```yaml\napiVersion: v1\nkind: Secret\nmetadata:\n  name: testsecret-tls\n  namespace: default\ndata:\n  tls.crt: base64 encoded cert\n  tls.key: base64 encoded key\ntype: kubernetes.io/tls\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-8",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* The [Pomerium Ingress Controller](https://www.pomerium.com/docs/k8s/ingress.html) is based on [Pomerium](https://pomerium.com/), which offers context-aware access policy.\n* [Skipper](https://opensource.zalando.com/skipper/kubernetes/ingress-controller/) HTTP router and reverse proxy for service composition, including use cases like Kubernetes Ingress, designed as a library to build your custom proxy.\n* The [Traefik Kubernetes Ingress provider](https://doc.traefik.io/traefik/providers/kubernetes-ingress/) is an\n  ingress controller for the [Traefik](https://traefik.io/traefik/) proxy."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-4",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* [EnRoute](https://getenroute.io/) is an [Envoy](https://www.envoyproxy.io) based API gateway that can run as an ingress controller.\n* F5 BIG-IP [Container Ingress Services for Kubernetes](https://clouddocs.f5.com/containers/latest/userguide/kubernetes/)\n  lets you use an Ingress to configure F5 BIG-IP virtual servers.\n* [FortiADC Ingress Controller](https://docs.fortinet.com/document/fortiadc/7.0.0/fortiadc-ingress-controller/742835/fortiadc-ingress-controller-overview) support the Kubernetes Ingress resources and allows you to manage FortiADC objects from Kubernetes\n* [Gloo](https://gloo.solo.io) is an open-source ingress controller based on [Envoy](https://www.envoyproxy.io),"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-3",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* [Cilium Ingress Controller](https://docs.cilium.io/en/stable/network/servicemesh/ingress/) is an ingress controller powered by [Cilium](https://cilium.io/).\n* The [Citrix ingress controller](https://github.com/citrix/citrix-k8s-ingress-controller#readme) works with\n  Citrix Application Delivery Controller.\n* [Contour](https://projectcontour.io/) is an [Envoy](https://www.envoyproxy.io/) based ingress controller.\n* [Emissary-Ingress](https://www.getambassador.io/products/api-gateway) API Gateway is an [Envoy](https://www.envoyproxy.io)-based ingress\n  controller."
+ }
+]

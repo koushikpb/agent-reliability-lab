@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I have successfully resolved ticket T-4008.\n\n## Summary\n\nI diagnosed and resolved the broken legacy portal redirects after the ingress-nginx controller upgrade. The issue was that the weekend upgrade to v1.12.1 enabled the `allow-snippet-annotations=false` security setting, which disabled support for the `configuration-snippet` annotation that the legacy-portal Ingress was using for regex-based redirects. The controller logs showed the annotation being skipped, and requests to `/old/...` paths were returning 404s instead of redirecting.\n\nI provided the ticket owner with a migration path: update the Ingress to use standard rewrite annotations (`rewrite-target` and `use-regex`) with a properly structured regex path pattern. This approach works with the security-hardened controller and should achieve the same redirect functionality without requiring snippet directives.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 13211,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 189,
+ "stop_reason": "end_turn"
+}

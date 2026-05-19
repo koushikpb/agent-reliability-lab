@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me retry after a moment:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Uvs2qJb7Xaq49gu328Re5N",
+   "input": {
+    "namespace": "monitoring"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1445,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 61,
+ "stop_reason": "tool_use"
+}

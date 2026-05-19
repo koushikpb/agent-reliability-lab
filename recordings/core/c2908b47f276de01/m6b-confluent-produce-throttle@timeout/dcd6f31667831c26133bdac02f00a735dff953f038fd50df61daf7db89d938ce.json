@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Let me try again:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WbrEptq4rS2M9nTav8Kgva",
+   "input": {
+    "id": "T-6005",
+    "note": "Root Cause: Kafka broker is throttling the producer due to a quota limit on the client API key. Pod logs show broker throttle times of 2.8-3.0 seconds, producer queue at 96% full, and consumer lag of 31.2+ million messages growing continuously. Scaling replicas didn't help because the bottleneck is at the broker quota level, not the application throughput.\n\nFix: Contact the data platform team to increase the Kafka producer quota on your client API key.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 14422,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 204,
+ "stop_reason": "tool_use"
+}

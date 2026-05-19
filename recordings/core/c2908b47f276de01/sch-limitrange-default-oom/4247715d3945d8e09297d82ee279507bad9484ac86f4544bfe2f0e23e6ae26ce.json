@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Now I have a clear picture. The ingest-worker is being OOMKilled because it exceeds the 512 MiB memory limit when processing the morning batch load. The pod's memory request and limit are both insufficient for the workload. The fix is to increase the memory limit (and request). Let me update the ticket:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01NuxX6dgHxc3fy2QcGeLSr8",
+   "input": {
+    "id": "T-3003",
+    "note": "**Cause:** The ingest-worker pods are being terminated due to out-of-memory (OOMKilled, exit code 137) when the morning batch load begins processing.\n\n**Evidence:** Pod logs show memory usage reaching 497 MiB with the current 512 MiB memory limit, triggering garbage collection warnings. The pod list shows repeated OOMKilled exits on both replicas. The annotation shows LimitRanger set a 512 MiB memory limit for the namespace. The logs indicate batches are buffering 150,000+ records, pushing memory usage to 97% of the limit [cite: concepts/configuration/manage-resources-containers#requests-and-limits-1].\n\n**Root Cause:** When the team moved ingest-worker to the data-platform namespace, the namespace's LimitRanger plugin applied its default 512 MiB memory limit. The application's memory requirements exceed this limit during batch processing, causing the kernel to terminate the container [cite: tasks/administer-cluster/manage-resources/memory-default-namespace#what-if-you-specify-a-container-s-request-but-not-its-limit-1].\n\n**Fix:** Increase both the memory request and memory limit in the ingest-worker manifest. Based on the logs showing 497 MiB usage under load, recommend increasing to at least 1Gi (1024 MiB) for the limit and 512Mi or 768Mi for the request. Update the manifest and redeploy [cite: tasks/configure-pod-container/assign-memory-resource#specify-a-memory-request-and-a-memory-limit-0].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4928,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 532,
+ "stop_reason": "tool_use"
+}

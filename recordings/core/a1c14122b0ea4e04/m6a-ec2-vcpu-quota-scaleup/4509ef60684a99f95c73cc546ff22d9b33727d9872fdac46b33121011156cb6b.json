@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01167i5G3M91oxXubyMdNE4W",
+   "input": {
+    "namespace": "ml-batch"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1868,
+ "model": "claude-opus-4-7",
+ "output_tokens": 70,
+ "stop_reason": "tool_use"
+}

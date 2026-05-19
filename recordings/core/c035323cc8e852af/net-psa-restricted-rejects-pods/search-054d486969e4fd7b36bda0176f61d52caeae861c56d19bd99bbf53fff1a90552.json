@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#updating-a-deployment-8",
+  "heading": "Deployments > Updating a Deployment",
+  "text": "Kubernetes doesn't count terminating Pods when calculating the number of `availableReplicas`, which must be between\n`replicas - maxUnavailable` and `replicas + maxSurge`. As a result, you might notice that there are more Pods than\nexpected during a rollout, and that the total resources consumed by the Deployment is more than `replicas + maxSurge`\nuntil the `terminationGracePeriodSeconds` of the terminating Pods expires."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rolling-back-a-deployment-0",
+  "heading": "Deployments > Rolling Back a Deployment",
+  "text": "Sometimes, you may want to rollback a Deployment; for example, when the Deployment is not stable, such as crash looping.\nBy default, all of the Deployment's rollout history is kept in the system so that you can rollback anytime you want\n(you can change that by modifying revision history limit).\n\nA Deployment's revision is created when a Deployment's rollout is triggered. This means that the\nnew revision is created if and only if the Deployment's Pod template (`.spec.template`) is changed,\nfor example if you update the labels or container images of the template. Other updates, such as scaling the Deployment,\ndo not create a Deployment revision, so that you can facilitate simultaneous manual- or auto-scaling.\nThis means that when you roll back to an earlier revision, only the Deployment's Pod template part is\nrolled back.\n\n* Suppose that you made a typo while updating the Deployment, by putting the image name as `nginx:1.161` instead of `nginx:1.16.1`:"
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#performing-a-rolling-update-0",
+  "heading": "Update a Deployment Without Downtime > Performing a rolling update",
+  "text": "Any change to the `.spec.template` field of a Deployment triggers a rolling\nupdate. Kubernetes creates new Pods with the updated configuration and gradually\nterminates old Pods."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/update-api-object-kubectl-patch#use-a-strategic-merge-patch-to-update-a-deployment-2",
+  "heading": "Update API Objects in Place Using kubectl patch > Use a strategic merge patch to update a Deployment",
+  "text": "The output shows that the PodSpec in the Deployment has two Containers:\n\n```yaml\ncontainers:\n- image: redis\n  imagePullPolicy: Always\n  name: patch-demo-ctr-2\n  ...\n- image: nginx\n  imagePullPolicy: Always\n  name: patch-demo-ctr\n  ...\n```\n\nView the Pods associated with your patched Deployment:\n\n```shell\nkubectl get pods\n```\n\nThe output shows that the running Pods have different names from the Pods that\nwere running previously. The Deployment terminated the old Pods and created two\nnew Pods that comply with the updated Deployment spec. The `2/2` indicates that\neach Pod has two Containers:\n\n```\nNAME                          READY     STATUS    RESTARTS   AGE\npatch-demo-1081991389-2wrn5   2/2       Running   0          1m\npatch-demo-1081991389-jmg7b   2/2       Running   0          1m\n```\n\nTake a closer look at one of the patch-demo Pods:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#updating-a-deployment-1",
+  "heading": "Deployments > Updating a Deployment",
+  "text": "   ```\n   deployment.apps/nginx-deployment image updated\n   ```\n\n   Alternatively, you can `edit` the Deployment and change `.spec.template.spec.containers[0].image` from `nginx:1.14.2` to `nginx:1.16.1`:\n\n   ```shell\n   kubectl edit deployment/nginx-deployment\n   ```\n\n   The output is similar to:\n\n   ```\n   deployment.apps/nginx-deployment edited\n   ```\n\n2. To see the rollout status, run:\n\n   ```shell\n   kubectl rollout status deployment/nginx-deployment\n   ```\n\n   The output is similar to this:\n\n   ```\n   Waiting for rollout to finish: 2 out of 3 new replicas have been updated...\n   ```\n\n   or\n\n   ```\n   deployment \"nginx-deployment\" successfully rolled out\n   ```\n\nGet more details on your updated Deployment:\n\n* After the rollout succeeds, you can view the Deployment by running `kubectl get deployments`.\n  The output is similar to this:"
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#intro-0",
+  "heading": "Update a Deployment Without Downtime",
+  "text": "This page shows how to update a running Deployment to a new version using a\nrolling update. A rolling update gradually replaces old Pods with new ones, so\nyour application remains available throughout the process."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rollover-aka-multiple-updates-in-flight-1",
+  "heading": "Deployments > Updating a Deployment > Rollover (aka multiple updates in-flight)",
+  "text": "For example, suppose you create a Deployment to create 5 replicas of `nginx:1.14.2`,\nbut then update the Deployment to create 5 replicas of `nginx:1.16.1`, when only 3\nreplicas of `nginx:1.14.2` had been created. In that case, the Deployment immediately starts\nkilling the 3 `nginx:1.14.2` Pods that it had created, and starts creating\n`nginx:1.16.1` Pods. It does not wait for the 5 replicas of `nginx:1.14.2` to be created\nbefore changing course."
+ },
+ {
+  "chunk_id": "concepts/containers/images#updating-images-0",
+  "heading": "Images > Updating images",
+  "text": "When you first create a Deployment,\nStatefulSet, Pod, or other\nobject that includes a PodTemplate, and a pull policy was not explicitly specified,\nthen by default the pull policy of all containers in that Pod will be set to\n`IfNotPresent`. This policy causes the\nkubelet to skip pulling an\nimage if it already exists."
+ }
+]

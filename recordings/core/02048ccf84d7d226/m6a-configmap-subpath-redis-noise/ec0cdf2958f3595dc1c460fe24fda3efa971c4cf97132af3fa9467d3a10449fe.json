@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Ticket T-5004 is resolved. Here's a summary of what I did:\n\n1. **Read the ticket** \u2014 acme-logistics was still getting HTTP 429s two hours after the `gateway-limits` ConfigMap was updated from 100 \u2192 500 rps.\n2. **Inspected the pods** in the `edge` namespace \u2014 found both `api-gateway` pods mount the ConfigMap with `subPath: limits.yaml`.\n3. **Searched the docs** \u2014 confirmed that Kubernetes explicitly does not propagate ConfigMap updates to containers using a `subPath` volume mount.\n4. **Checked pod logs** \u2014 both pods confirmed the file watcher kept reporting the same unchanged sha256 hash (`9c1e4b07`) every 30 seconds after the ConfigMap was updated at 09:10, while still enforcing `limit_rps=100` and issuing 429s.\n5. **Resolved the ticket** with:\n   - The root cause: `subPath` mount prevents automatic ConfigMap propagation.\n   - An **immediate fix**: `kubectl rollout restart deployment/api-gateway -n edge` (rolling restart picks up the new limit safely).\n   - A **permanent fix**: remove `subPath` and mount the full directory so future hot-reloads work as intended.\n   - A side note flagging persistent Redis i/o timeout errors (separate issue, worth a new ticket).",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9933,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 323,
+ "stop_reason": "end_turn"
+}

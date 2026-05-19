@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/storage-limits#mutable-csi-node-allocatable-count-1",
+  "heading": "Node-specific Volume Limits > Dynamic volume limits > Mutable CSI Node Allocatable Count",
+  "text": "Kubelet will periodically call the corresponding CSI driver\u2019s `NodeGetInfo` endpoint to refresh the maximum number of attachable volumes, using the interval specified in `nodeAllocatableUpdatePeriodSeconds`. The minimum allowed value for this field is 10 seconds.\n\nIf a volume attachment operation fails with a `ResourceExhausted` error (gRPC code 8), Kubernetes triggers an immediate update to the allocatable volume count for that Node. Additionally, kubelet marks affected pods as Failed, allowing their controllers to handle recreation. This prevents pods from getting stuck indefinitely in the `ContainerCreating` state."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#image-1",
+  "heading": "Volumes > Types of volumes > image",
+  "text": "`IfNotPresent`\n: The kubelet pulls if the reference isn't already present on disk. The Pod becomes\n  `Failed` if the reference isn't present and the pull fails.\n\nThe volume gets re-resolved if the Pod gets deleted and recreated, which means\nthat new remote content will become available on Pod recreation. A failure to\nresolve or pull the image during Pod startup will block containers from starting\nand may add significant latency. Failures will be retried using normal volume\nbackoff and will be reported on the Pod reason and message.\n\nThe types of objects that may be mounted by this volume are defined by the\ncontainer runtime implementation on a host machine. At a minimum, they must include\nall valid types supported by the container image field. The OCI object gets\nmounted in a single directory (`spec.containers[*].volumeMounts[*].mountPath`)\nand will be mounted read-only.\n\nBesides that:"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#bind-mount-options-0",
+  "heading": "Volumes > Bind mount options",
+  "text": "The `.spec.containers[*].volumeMounts[*].bindMountOptions` field lets you apply security-related\nLinux bind mount flags to any volume mount. The allowed values are:\n\n* `noexec` - prevents execution of binaries on the mounted volume\n* `nodev` - ignores device special files on the mounted volume\n* `nosuid` - ignores set-user-identifier or set-group-identifier bits on the mounted volume\n\nThese options apply per container, so different containers in the same Pod can mount\nthe same volume with different bind mount options. The field is not supported with\n[image volumes](#image).\n\nThe container runtime (such as containerd or CRI-O) must support the `mount_options`\nfield in the CRI `Mount` message. If the runtime does not advertise support, the kubelet\nrejects Pods that use `bindMountOptions`. This field has no effect on Windows nodes."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#mount-propagation-3",
+  "heading": "Volumes > Mount propagation",
+  "text": "  `Bidirectional` mount propagation can be dangerous. It can damage\n  the host operating system, and therefore, it is allowed only in privileged\n  containers. Familiarity with Linux kernel behavior is strongly recommended.\n  In addition, any volume mounts created by containers in Pods must be destroyed\n  (unmounted) by the containers on termination."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/create-hostprocess-pod#volume-mounts-0",
+  "heading": "Create a Windows HostProcess Pod > Volume mounts",
+  "text": "HostProcess containers support the ability to mount volumes within the container volume space.\nVolume mount behavior differs depending on the version of containerd runtime used by on the node."
+ },
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-1",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "* Volume subpath mounts: only the entire volume can be mounted in a Windows container\n* Subpath volume mounting for Secrets\n* Host mount projection\n* Read-only root filesystem (mapped volumes still support `readOnly`)\n* Block device mapping\n* Memory as the storage medium (for example, `emptyDir.medium` set to `Memory`)\n* File system features like uid/gid; per-user Linux filesystem permissions\n* Setting [secret permissions with DefaultMode](/docs/tasks/inject-data-application/distribute-credentials-secure/#set-posix-permissions-for-secret-keys) (due to UID/GID dependency)\n* NFS based storage/volume support\n* Expanding the mounted volume (resizefs)"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#hostpath-4",
+  "heading": "Volumes > Types of volumes > hostPath",
+  "text": "The `FileOrCreate` mode does **not** create the parent directory of the file. If the parent directory\nof the mounted file does not exist, the Pod fails to start. To ensure that this mode works,\nyou can try to mount directories and files separately, as shown in the\n[`FileOrCreate` example](#hostpath-fileorcreate-example) for `hostPath`.\n\nSome files or directories created on the underlying hosts might only be\naccessible by root. You then either need to run your process as root in a\n[privileged container](/docs/tasks/configure-pod-container/security-context/)\nor modify the file permissions on the host to read from or write to a `hostPath` volume.\n\n#### hostPath configuration example"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-bind-mount-options#create-pod-0",
+  "heading": "Set Bind Mount Options on Volume Mounts > Create a Pod with bind mount options",
+  "text": "The `.spec.containers[*].volumeMounts[*].bindMountOptions` field accepts a list of bind mount flags.\nThe allowed values are `noexec`, `nodev`, and `nosuid`.\n\nFor example, to mount an emptyDir volume at `/tmp` with `noexec` and `nosuid`\nso that binaries cannot be executed and set-user-ID bits are ignored:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: bind-mount-options-demo\nspec:\n  containers:\n  - image: registry.k8s.io/busybox\n    name: test-container\n    command: [\"sleep\", \"3600\"]\n    volumeMounts:\n    - mountPath: /tmp\n      name: tmp-volume\n      bindMountOptions:\n      - noexec\n      - nosuid\n  volumes:\n  - name: tmp-volume\n    emptyDir: {}\n```\n\n1. Create the pod on your cluster:"
+ }
+]

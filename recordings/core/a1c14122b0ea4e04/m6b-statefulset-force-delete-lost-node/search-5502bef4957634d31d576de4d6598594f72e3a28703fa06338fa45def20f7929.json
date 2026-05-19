@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#non-graceful-node-shutdown-2",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling",
+  "text": "To mitigate the above situation, a user can manually add the taint `node.kubernetes.io/out-of-service`\nwith either `NoExecute` or `NoSchedule` effect to a Node marking it out-of-service.\nIf a Node is marked out-of-service with this taint, the pods on the node will be forcefully deleted\nif there are no matching tolerations on it and volume detach operations for the pods terminating on\nthe node will happen immediately. This allows the Pods on the out-of-service node to recover quickly\non a different node.\n\nDuring a non-graceful shutdown, Pods are terminated in the two phases:\n\n1. Force delete the Pods that do not have matching `out-of-service` tolerations.\n1. Immediately perform detach volume operation for such pods."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "Force storage detach on timeout can be disabled by setting the `disable-force-detach-on-timeout`\nconfig field in `kube-controller-manager`. Disabling the force detach on timeout feature means\nthat a volume that is hosted on a node that is unhealthy for more than 6 minutes will not have\nits associated\n[VolumeAttachment](/docs/reference/kubernetes-api/config-and-storage-resources/volume-attachment-v1/)\ndeleted.\n\nAfter this setting has been applied, unhealthy pods still attached to volumes must be recovered\nvia the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure mentioned above.\n\n- Caution must be taken while using the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure.\n- Deviation from the steps documented above can result in data corruption."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-0",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "In any situation where a pod deletion has not succeeded for 6 minutes, kubernetes will\nforce detach volumes being unmounted if the node is unhealthy at that instant. Any\nworkload still running on the node that uses a force-detached volume will cause a\nviolation of the\n[CSI specification](https://github.com/container-storage-interface/spec/blob/master/spec.md#controllerunpublishvolume),\nwhich states that `ControllerUnpublishVolume` \"**must** be called after all\n`NodeUnstageVolume` and `NodeUnpublishVolume` on the volume are called and succeed\".\nIn such circumstances, volumes on the node in question might encounter data corruption.\n\nThe forced storage detach behaviour is optional; users might opt to use the \"Non-graceful\nnode shutdown\" feature instead."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#non-graceful-node-shutdown-3",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling",
+  "text": "- Before adding the taint `node.kubernetes.io/out-of-service`, it should be verified\n  that the node is already in shutdown or power off state (not in the middle of restarting).\n- The user is required to manually remove the out-of-service taint after the pods are\n  moved to a new node and the user has checked that the shutdown node has been\n  recovered since the user was the one who originally added the taint."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#non-graceful-node-shutdown-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling",
+  "text": "When a node is shutdown but not detected by kubelet's Node Shutdown Manager, the pods\nthat are part of a StatefulSet\nwill be stuck in terminating status on the shutdown node and cannot move to a new running node.\nThis is because kubelet on the shutdown node is not available to delete the pods so\nthe StatefulSet cannot create a new pod with the same name. If there are volumes used by the pods,\nthe VolumeAttachments will not be deleted from the original shutdown node so the volumes\nused by these pods cannot be attached to a new running node. As a result, the\napplication running on the StatefulSet cannot function properly. If the original\nshutdown node comes up, the pods will be deleted by kubelet and new pods will be\ncreated on a different running node. If the original shutdown node does not come up,\nthese pods will be stuck in terminating status on the shutdown node forever."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#enabling-graceful-node-shutdown-1",
+  "heading": "Node Shutdowns > Graceful node shutdown > Enabling graceful node shutdown",
+  "text": "The Windows graceful node shutdown feature depends on kubelet running as a Windows service,\nit will then have a registered [service control handler](https://learn.microsoft.com/en-us/windows/win32/services/service-control-handler-function)\nto delay the preshutdown event with a given duration.\n\nWindows graceful node shutdown can not be cancelled.\n\nIf kubelet is not running as a Windows service, it will not be able to set and monitor\nthe [Preshutdown](https://learn.microsoft.com/en-us/windows/win32/api/winsvc/ns-winsvc-service_preshutdown_info) event,\nthe node will have to go through the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure mentioned above.\n\nIn the case where the Windows graceful node shutdown feature is enabled, but the kubelet is not\nrunning as a Windows service, the kubelet will continue running instead of failing. However,\nit will log an error indicating that it needs to be run as a Windows service."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#intro-0",
+  "heading": "Node Shutdowns",
+  "text": "In a Kubernetes cluster, a node\ncan be shut down in a planned graceful way or unexpectedly because of reasons such\nas a power outage or something else external. A node shutdown could lead to workload\nfailure if the node is not drained before the shutdown. A node shutdown can be\neither **graceful** or **non-graceful**.\n\nThe `unattended-upgrades` package from Debian conflicts with node graceful shutdown in\nits normal configuration.\nIf you use the default configuration of `unattended-upgrades`, which customizes the server shutdown\ngrace period, then the kubelet fails to obtain the necessary lock to handle shutdown events properly.\n\nThis happens if the `shutdownGracePeriod` value is greater than 30 seconds.\nTo avoid this, you can suppress part of the `unattended-upgrades` configuration,\nby making `/etc/systemd/logind.conf.d/unattended-upgrades-logind-maxdelay.conf` be a symbolic link\nto `/dev/null`."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#non-graceful-node-shutdown-0",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling",
+  "text": "A node shutdown action may not be detected by kubelet's Node Shutdown Manager,\neither because the command does not trigger the inhibitor locks mechanism used by\nkubelet or because of a user error, i.e., the ShutdownGracePeriod and\nShutdownGracePeriodCriticalPods are not configured properly. Please refer to above\nsection [Graceful Node Shutdown](#graceful-node-shutdown) for more details."
+ }
+]

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-6001. The issue was that the 4.8.0 release added a `log-forwarder` sidecar container without resource requests. Kubernetes requires all containers in a pod to have resource requests defined for the HPA to calculate CPU metrics. The missing resource requests on the sidecar caused the HPA to show \"cpu <unknown>\" and stop scaling. I provided two fix options: adding resource requests to the sidecar (recommended) or switching the HPA to track only the main container using ContainerResource metrics.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 15000,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 125,
+ "stop_reason": "end_turn"
+}

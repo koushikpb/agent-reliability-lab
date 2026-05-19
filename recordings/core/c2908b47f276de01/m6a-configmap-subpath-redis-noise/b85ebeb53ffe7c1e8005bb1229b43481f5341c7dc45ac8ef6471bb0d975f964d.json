@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the current state of the gateway pods in the edge namespace:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011ryn2mvgNiMNBskRWVWemb",
+   "input": {
+    "namespace": "edge"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1378,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 70,
+ "stop_reason": "tool_use"
+}

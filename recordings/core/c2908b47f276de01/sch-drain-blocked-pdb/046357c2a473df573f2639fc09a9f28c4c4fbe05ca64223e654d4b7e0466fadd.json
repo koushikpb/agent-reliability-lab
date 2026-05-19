@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me search for information about the --disable-eviction flag and when it's appropriate to use it:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CJXd973subiQpZJBoRiSGY",
+   "input": {
+    "query": "--skip-wait-for-delete-timeout --disable-eviction drain"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6493,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 92,
+ "stop_reason": "tool_use"
+}

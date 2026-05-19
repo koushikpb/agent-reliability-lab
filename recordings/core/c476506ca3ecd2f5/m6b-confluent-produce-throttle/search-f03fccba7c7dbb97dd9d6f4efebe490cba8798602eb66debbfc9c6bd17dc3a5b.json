@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/workload-aware-preemption#intro-1",
+  "heading": "Workload-Aware Preemption",
+  "text": "This feature is coupled with [Gang Scheduling](/docs/concepts/scheduling-eviction/gang-scheduling/)\nand depends on the [Workload API](/docs/concepts/workloads/workload-api/).\nEnsure the [`scheduling.k8s.io/v1beta1`]API group is enabled in the cluster."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/gang-scheduling#hierarchical-gang-scheduling-with-compositepodgroups-0",
+  "heading": "Gang Scheduling > Hierarchical gang scheduling with CompositePodGroups",
+  "text": "When the [`CompositePodGroup`](/docs/reference/command-line-tools-reference/feature-gates/#CompositePodGroup)\nfeature gate and the `scheduling.k8s.io/v1alpha3` API group\nare enabled, gang scheduling extends its support to `CompositePodGroups`.\n\nContrary to `PodGroups` that group Pods, `CompositePodGroups` group child groups together - either\n`PodGroups` or other `CompositePodGroups`. `CompositePodGroup` specifies a scheduling policy that\napplies to its child groups during scheduling:\n\n* `gang` policy with a `minGroupCount` field, specifying the minimum number of child groups (either\n  `CompositePodGroup` or `PodGroup` objects) that must be scheduled together as a single unit\n  atomically.\n* `basic` policy which indicates that child groups can be scheduled independently.\n\n`gang` policy is useful for multi-component workloads that require all-or-nothing scheduling across\nmultiple child groups, ensuring that a minimum number of child groups are scheduled together. An\nexample workload with such needs is replicated AI training."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/gang-scheduling#placement-feasibility-0",
+  "heading": "Gang Scheduling > Hierarchical gang scheduling with CompositePodGroups > Placement feasibility",
+  "text": "The `GangScheduling` plugin's `PlacementFeasible` method supports evaluation for both\n`PodGroups` and `CompositePodGroups`. It is invoked by the scheduling cycle before starting child\nevaluation and after evaluating each child group of a `CompositePodGroup`.\n\nBy taking into account the number of child groups that were successfully scheduled and the child\ngroups that were not evaluated in the scheduling cycle just yet, `PlacementFeasible` determines\nwhether the group's policy constraint is still achievable, allowing the scheduling cycle to abort\nthe evaluation of the `CompositePodGroup` early if its underlying scheduling policy cannot be\nsatisfied anymore."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/scheduling-group#behavior-0",
+  "heading": "Scheduling Group > Behavior",
+  "text": "When you set `spec.schedulingGroup`, the scheduler looks up the referenced\n[PodGroup](/docs/concepts/workloads/podgroup-api/) and applies the\n[scheduling policy](/docs/concepts/workloads/workload-api/policies/) defined in it:\n\n* If the `PodGroup` uses the `basic` policy, each `Pod` is scheduled independently using\n  standard Kubernetes behavior. The grouping is used as group-level label.\n* If the `PodGroup` uses the `gang` policy, the `Pod` enters an \"all-or-nothing\" scheduling\n  lifecycle. The scheduler tries to place at least `minCount` `Pods` in the group\n  simultaneously; none of them bind to nodes unless the minimum is met."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/gang-scheduling#how-it-works-0",
+  "heading": "Gang Scheduling > How it works",
+  "text": "When the `GangScheduling` plugin is enabled, the scheduler alters the lifecycle for Pods belonging\nto a [PodGroup](/docs/concepts/workloads/podgroup-api/) that has a `gang`\n[scheduling policy](/docs/concepts/workloads/workload-api/policies/).\nThe process follows these steps for each PodGroup:\n\n1. The scheduler holds Pods in the `PreEnqueue` phase until:\n   * The referenced PodGroup object exists.\n   * The number of Pods created for the PodGroup (both already scheduled and unscheduled) is at least equal to `minCount`.\n\n   The PodGroup does not enter the active scheduling queue until both conditions are met."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/gang-scheduling#intro-0",
+  "heading": "Gang Scheduling",
+  "text": "Gang scheduling ensures that a group of Pods are scheduled on an \"all-or-nothing\" basis.\nIf the cluster cannot accommodate the entire group (or a defined minimum number of Pods, specified by `minCount`),\nnone of the Pods are bound to a node.\n\nWhile the scheduler never admits fewer Pods than the configured `minCount` during initial placement, the actual runtime\ncount of scheduled Pods can drop below this threshold if running Pods are later deleted or evicted, or if the\n`minCount` requirement increases. When this happens, the scheduler will only place additional Pods if the\ncombined total of already scheduled Pods and newly feasible unscheduled Pods reaches or exceeds `minCount`.\n\nThis feature depends on the [PodGroup API](/docs/concepts/workloads/podgroup-api/).\nEnsure the [`GenericWorkload`](/docs/reference/command-line-tools-reference/feature-gates/#GenericWorkload)\nfeature gate and the `scheduling.k8s.io/v1beta1`\nAPI group are enabled in the cluster."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/podgroup-scheduling#podgroup-scheduling-cycle-2",
+  "heading": "PodGroup Scheduling > PodGroup scheduling cycle",
+  "text": "   * **Success:** If the scheduler finds sufficient resources and valid placements for the Pods\n     (e.g., satisfying the `minCount` constraint for [gang scheduling](/docs/concepts/scheduling-eviction/gang-scheduling/)),\n     those Pods proceed directly to the binding cycle with their selected nodes.\n     Any remaining unschedulable Pods in the group are requeued directly into the active scheduling queue without backoff, retaining their previous timestamp so they are re-evaluated immediately to attempt preemption.\n\n     Furthermore, if new Pods are added to a PodGroup after others have already been scheduled,\n     the cycle evaluates the new Pods while accounting for the existing ones.\n\n   * **Failure:** If the scheduler cannot find enough resources to make the PodGroup feasible\n     (e.g., failing to meet the `minCount` constraint), the entire PodGroup is considered unschedulable."
+ },
+ {
+  "chunk_id": "concepts/workloads/compositepodgroup-api/_index#scheduling-policy-0",
+  "heading": "CompositePodGroup API > API structure > Scheduling policy",
+  "text": "Each `CompositePodGroup` carries a [scheduling policy](/docs/concepts/workloads/workload-api/policies/)\n(`basic` or `gang`) in `spec.schedulingPolicy`. When a workload controller creates a\n`CompositePodGroup`, this policy is copied from the `Workload`'s `CompositePodGroupTemplate`\nat creation time.\n\nFor a `gang` policy on a `CompositePodGroup`, the `minGroupCount` field specifies the\nminimum number of child groups that must be schedulable simultaneously:\n\n```yaml\nspec:\n  schedulingPolicy:\n    gang:\n      minGroupCount: 2\n```"
+ }
+]

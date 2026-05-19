@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EtECCqQBCBMYAipAwvMuU16gqIAZbDHjpXhztvmhUf2SJkI/EYCkiiL5dC4/MpFnhn9GjgYQiPDtkQ8Bl9xDqKpPNGSckI4giIUjQDIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBnr7w1gYSDGIkqa/+pKejSYDDbRoM85TeB/205WYVvXIHIjD9nFM5WsNMeF0qcsbAjCAZAk8fX/TNpU+H6riQUGwSmDopiacKrMKpq60qdtg/GZIqWuXldBHTF44nf/HnWcem5+Y888ISEb7uUz3lIGTZLqNF+oNSg5XYMWwR8D4+nnckndP8yP4p0D7bYfeExPRuzXCN8WmZ2lSpC85WggTUHz/pg2WNGe8bnBjLwhgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019ehXUMBKeK73gYopr48hhJ",
+   "input": {
+    "pod": "orders-db-0"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2036,
+ "model": "claude-opus-4-7",
+ "output_tokens": 121,
+ "stop_reason": "tool_use"
+}

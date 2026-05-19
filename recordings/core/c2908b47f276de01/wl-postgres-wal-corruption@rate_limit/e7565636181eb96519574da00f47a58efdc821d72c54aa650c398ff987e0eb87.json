@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results don't have specific PostgreSQL recovery guidance. Let me search more specifically:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01M7ixn8sBZGoHd5HVGQoRQz",
+   "input": {
+    "query": "database StatefulSet persistent volume recovery"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4739,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 78,
+ "stop_reason": "tool_use"
+}

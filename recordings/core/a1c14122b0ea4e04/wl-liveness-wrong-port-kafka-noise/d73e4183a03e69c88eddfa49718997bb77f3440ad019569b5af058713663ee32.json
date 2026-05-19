@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Resolved T-2006. The orders-consumer 2.0.1 build moved its health server from port 8080 to 9090, but the Deployment's liveness probe still targets 8080, so every probe fails with \"connection refused\" and the kubelet keeps killing the container \u2014 which also prevents Kafka offset commits, causing the growing backlog. Fix: either set `HTTP_PORT=8080` on the container, or update the containerPort and probe to 9090.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7436,
+ "model": "claude-opus-4-7",
+ "output_tokens": 151,
+ "stop_reason": "end_turn"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results don't have specific Vault documentation, but I can see the core issue. The vault-agent-init container is failing to authenticate to Vault with a 403 error. Let me search more specifically for Vault Agent issues.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_012Hk92m4opepd1Gb2PhLN1u",
+   "input": {
+    "query": "Vault Agent init container 403 permission denied authentication failure"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4775,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 116,
+ "stop_reason": "tool_use"
+}

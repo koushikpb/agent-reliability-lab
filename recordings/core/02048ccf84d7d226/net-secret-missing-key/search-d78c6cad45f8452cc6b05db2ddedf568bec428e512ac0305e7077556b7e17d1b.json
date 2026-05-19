@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/containers/images#creating-a-secret-with-a-docker-config-1",
+  "heading": "Images > Using a private registry > Creating a Secret with a Docker config",
+  "text": "This is particularly useful if you are using multiple private container\nregistries, as `kubectl create secret docker-registry` creates a Secret that\nonly works with a single private registry.\n\nPods can only reference image pull secrets in their own namespace,\nso this process needs to be done one time per namespace.\n\n#### Referring to `imagePullSecrets` on a Pod\n\nNow, you can create pods which reference that secret by adding the `imagePullSecrets`\nsection to a Pod definition. Each item in the `imagePullSecrets` array can only\nreference one Secret in the same namespace.\n\nFor example:\n\n```shell\ncat <<EOF > pod.yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: foo\n  namespace: awesomeapps\nspec:\n  containers:\n    - name: foo\n      image: janedoe/awesomeapp:v1\n  imagePullSecrets:\n    - name: myregistrykey\nEOF\n\ncat <<EOF >> ./kustomization.yaml\nresources:\n- pod.yaml\nEOF\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-a-secret-1",
+  "heading": "Secrets > Working with Secrets > Using a Secret",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: mypod\n    image: redis\n    volumeMounts:\n    - name: foo\n      mountPath: \"/etc/foo\"\n      readOnly: true\n  volumes:\n  - name: foo\n    secret:\n      secretName: mysecret\n      optional: true\n```\n\nBy default, Secrets are required. None of a Pod's containers will start until\nall non-optional Secrets are available.\n\nIf a Pod references a specific key in a non-optional Secret and that Secret\ndoes exist, but is missing the named key, the Pod fails during startup."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#project-secret-keys-to-specific-file-paths-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Create a Pod that has access to the secret data through a Volume > Project Secret keys to specific file paths",
+  "text": "You can also control the paths within the volume where Secret keys are projected. Use the\n`.spec.volumes[].secret.items` field to change the target path of each key:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: mypod\n    image: redis\n    volumeMounts:\n    - name: foo\n      mountPath: \"/etc/foo\"\n      readOnly: true\n  volumes:\n  - name: foo\n    secret:\n      secretName: mysecret\n      items:\n      - key: username\n        path: my-group/my-username\n```\n\nWhen you deploy this Pod, the following happens:\n\n- The `username` key from `mysecret` is available to the container at the path\n  `/etc/foo/my-group/my-username` instead of at `/etc/foo/username`.\n- The `password` key from that Secret object is not projected.\n\nIf you list keys explicitly using `.spec.volumes[].secret.items`, consider the\nfollowing:"
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#intro-0",
+  "heading": "Secrets",
+  "text": "A Secret is an object that contains a small amount of sensitive data such as\na password, a token, or a key. Such information might otherwise be put in a\npod specification or in a\ncontainer image. Using a\nSecret means that you don't need to include confidential data in your\napplication code.\n\nBecause Secrets can be created independently of the Pods that use them, there\nis less risk of the Secret (and its data) being exposed during the workflow of\ncreating, viewing, and editing Pods. Kubernetes, and applications that run in\nyour cluster, can also take additional precautions with Secrets, such as avoiding\nwriting sensitive data to nonvolatile storage.\n\nSecrets are similar to ConfigMaps\nbut are specifically intended to hold confidential data.\n\nKubernetes Secrets are, by default, stored unencrypted in the API server's underlying data store\n(etcd). Anyone with API access can retrieve or modify a Secret, and so can anyone with access to etcd.\nAdditionally, anyone who is authorized to create a Pod in a namespace can use that access to read\nany Secret in that namespace; this includes indirect access such as the ability to create a\nDeployment."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Configure all key-value pairs in a Secret as container environment variables",
+  "text": "This functionality is available in Kubernetes v1.6 and later.\n\n- Create a Secret containing multiple key-value pairs\n\n  ```shell\n  kubectl create secret generic test-secret --from-literal=username='my-app' --from-literal=password='39528$vdg7Jb'\n  ```\n\n- Use envFrom to define all of the Secret's data as container environment variables.\n  The key from the Secret becomes the environment variable name in the Pod.\n\n  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: envfrom-secret\nspec:\n  containers:\n  - name: envars-test-container\n    image: nginx\n    envFrom:\n    - secretRef:\n        name: test-secret\n```\n\n- Create the Pod:\n\n  ```shell\n  kubectl create -f https://k8s.io/examples/pods/inject/pod-secret-envFrom.yaml\n  ```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#create-a-pod-that-uses-your-secret-2",
+  "heading": "Pull an Image from a Private Registry > Create a Pod that uses your Secret",
+  "text": "If you then see an event with the reason set to `FailedToRetrieveImagePullSecret`,\nKubernetes can't find a Secret with name (`regcred`, in this example).\n\nMake sure that the Secret you have specified exists, and that its name is spelled properly.\n```shell\nEvents:\n  ...  Reason                           ...  Message\n       ------                                -------\n  ...  FailedToRetrieveImagePullSecret  ...  Unable to retrieve some image pull secrets (<regcred>); attempting to pull the image may not succeed.\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#create-a-configmap-using-kubectl-create-configmap-18",
+  "heading": "Configure a Pod to Use a ConfigMap > Create a ConfigMap > Create a ConfigMap using `kubectl create configmap`",
+  "text": "where the output is similar to this:\n```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  creationTimestamp: 2022-02-18T18:54:22Z\n  name: game-config-3\n  namespace: default\n  resourceVersion: \"530\"\n  uid: 05f8da22-d671-11e5-8cd0-68f728db1985\ndata:\n  game-special-key: |\n    enemies=aliens\n    lives=3\n    enemies.cheat=true\n    enemies.cheat.level=noGoodRotten\n    secret.code.passphrase=UUDDLRLRBABAS\n    secret.code.allowed=true\n    secret.code.lives=30\n```\n\n#### Create ConfigMaps from literal values\n\nYou can use `kubectl create configmap` with the `--from-literal` argument to define a literal\nvalue from the command line:"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#create-a-pod-that-has-access-to-the-secret-data-through-a-volume-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Create a Pod that has access to the secret data through a Volume",
+  "text": "Here is a configuration file you can use to create a Pod:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: secret-test-pod\nspec:\n  containers:\n    - name: test-container\n      image: nginx\n      volumeMounts:\n        # name must match the volume name below\n        - name: secret-volume\n          mountPath: /etc/secret-volume\n          readOnly: true\n  # The secret data is exposed to Containers in the Pod through a Volume.\n  volumes:\n    - name: secret-volume\n      secret:\n        secretName: test-secret\n```\n\n1. Create the Pod:\n\n   ```shell\n   kubectl apply -f https://k8s.io/examples/pods/inject/secret-pod.yaml\n   ```\n\n1. Verify that your Pod is running:\n\n   ```shell\n   kubectl get pod secret-test-pod\n   ```\n\n   Output:\n\n   ```\n   NAME              READY     STATUS    RESTARTS   AGE\n   secret-test-pod   1/1       Running   0          42m\n   ```\n\n1. Get a shell into the Container that is running in your Pod:"
+ }
+]

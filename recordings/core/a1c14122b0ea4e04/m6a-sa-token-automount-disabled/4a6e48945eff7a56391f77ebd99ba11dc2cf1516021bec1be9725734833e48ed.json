@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_014KqwM3SCZhpwdPhQLE6uqm",
+   "input": {
+    "id": "T-5007",
+    "note": "Cause: The new job-dispatcher pod (chart platform-base-2.0.3) is launched with `automountServiceAccountToken: false` in the Pod spec, while the previously working pod (chart 1.8.0) had the token mounted. The app needs in-cluster config; the kubelet therefore does not project a token at /var/run/secrets/kubernetes.io/serviceaccount, and the process exits.\n\nEvidence:\n- New pod job-dispatcher-7b6f9c4d8-zk5np: automountServiceAccountToken=false, no kube-api-access volume mount, CrashLoopBackOff (219 restarts).\n- Logs: \"FATAL unable to load in-cluster configuration: open /var/run/secrets/kubernetes.io/serviceaccount/token: no such file or directory\".\n- Old pod job-dispatcher-5d8b7c9f6d-q7m2x (chart 1.8.0, same image/SA) is Running and has the kube-api-access-7xq2d projected token mount.\n- Per docs, when both the ServiceAccount and the Pod spec set automountServiceAccountToken, the Pod spec wins [cite: tasks/configure-pod-container/configure-service-account#opt-out-of-api-credential-automounting-1], and setting it to false on the Pod prevents Kubernetes from injecting the credentials [cite: concepts/security/service-accounts#assign-to-pod-0][cite: concepts/security/rbac-good-practices#hardening-0].\n\nFix: In the job-dispatcher Helm values for platform-base 2.0.3, override the new chart default and set the Pod-level `automountServiceAccountToken: true` (or remove the explicit false). Re-roll the deployment; the projected service account token will be mounted at /var/run/secrets/kubernetes.io/serviceaccount/token and in-cluster config will load [cite: tasks/configure-pod-container/configure-service-account#opt-out-of-api-credential-automounting-0].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5296,
+ "model": "claude-opus-4-7",
+ "output_tokens": 777,
+ "stop_reason": "tool_use"
+}

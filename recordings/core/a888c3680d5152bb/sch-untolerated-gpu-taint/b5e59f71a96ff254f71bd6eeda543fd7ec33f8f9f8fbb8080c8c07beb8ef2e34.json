@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary**: Investigated ticket T-3002 and found that the doc-embedder pod is stuck in Pending because the GPU node pool has a `dedicated: gpu` taint that the pod lacks a toleration for. The fix is to add a matching toleration to the deployment spec so it can be scheduled on those nodes.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 4322,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 73,
+ "stop_reason": "end_turn"
+}

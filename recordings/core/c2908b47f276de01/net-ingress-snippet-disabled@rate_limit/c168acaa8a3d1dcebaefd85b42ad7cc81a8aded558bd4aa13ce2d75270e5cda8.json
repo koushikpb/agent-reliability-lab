@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me retry the legacy namespace query:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Nit77wf8mkFmrJrczxejuH",
+   "input": {
+    "namespace": "legacy"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1737,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 62,
+ "stop_reason": "tool_use"
+}

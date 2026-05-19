@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#creating-the-backend-using-a-deployment-1",
+  "heading": "Connect a Frontend to a Backend Using Services > Creating the backend using a Deployment",
+  "text": "```\nName:                           backend\nNamespace:                      default\nCreationTimestamp:              Mon, 24 Oct 2016 14:21:02 -0700\nLabels:                         app=hello\n                                tier=backend\n                                track=stable\nAnnotations:                    deployment.kubernetes.io/revision=1\nSelector:                       app=hello,tier=backend,track=stable\nReplicas:                       3 desired | 3 updated | 3 total | 3 available | 0 unavailable\nStrategyType:                   RollingUpdate\nMinReadySeconds:                0\nRollingUpdateStrategy:          1 max unavailable, 1 max surge\nPod Template:\n  Labels:       app=hello\n                tier=backend\n                track=stable\n  Containers:\n   hello:\n    Image:              \"gcr.io/google-samples/hello-go-gke:1.0\"\n    Port:               80/TCP\n    Environment:        <none>\n    Mounts:             <none>\n  Volumes:              <none>\nConditions:\n  Type          Status  Reason\n  ----          ------  ------\n  Available     True    MinimumReplicasAvailable\n  Progressing   True    NewReplicaSetAvailable\nOldReplicaSets:                 <none>\n```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#creating-the-hello-service-object-1",
+  "heading": "Connect a Frontend to a Backend Using Services > Creating the `hello` Service object",
+  "text": "At this point, you have a `backend` Deployment running three replicas of your `hello`\napplication, and you have a Service that can route traffic to them. However, this \nservice is neither available nor resolvable outside the cluster."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#creating-the-hello-service-object-0",
+  "heading": "Connect a Frontend to a Backend Using Services > Creating the `hello` Service object",
+  "text": "The key to sending requests from a frontend to a backend is the backend\nService. A Service creates a persistent IP address and DNS name entry\nso that the backend microservice can always be reached. A Service uses\nselectors to find\nthe Pods that it routes traffic to.\n\nFirst, explore the Service configuration file:\n\n```yaml\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: hello\nspec:\n  selector:\n    app: hello\n    tier: backend\n  ports:\n  - protocol: TCP\n    port: 80\n    targetPort: http\n...\n```\n\nIn the configuration file, you can see that the Service, named `hello` routes \ntraffic to Pods that have the labels `app: hello` and `tier: backend`.\n\nCreate the backend Service:\n\n```shell\nkubectl apply -f https://k8s.io/examples/service/access/backend-service.yaml\n```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#creating-the-frontend-0",
+  "heading": "Connect a Frontend to a Backend Using Services > Creating the frontend",
+  "text": "Now that you have your backend running, you can create a frontend that is accessible \noutside the cluster, and connects to the backend by proxying requests to it.\n\nThe frontend sends requests to the backend worker Pods by using the DNS name\ngiven to the backend Service. The DNS name is `hello`, which is the value\nof the `name` field in the `examples/service/access/backend-service.yaml` \nconfiguration file.\n\nThe Pods in the frontend Deployment run a nginx image that is configured\nto proxy requests to the `hello` backend Service. Here is the nginx configuration file:\n\n```conf\n# The identifier Backend is internal to nginx, and used to name this specific upstream\nupstream Backend {\n    # hello is the internal DNS name used by the backend Service inside Kubernetes\n    server hello;\n}\n\nserver {\n    listen 80;\n\n    location / {\n        # The following statement will proxy traffic to the upstream named Backend\n        proxy_pass http://Backend;\n    }\n}\n```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#before-you-begin-0",
+  "heading": "Connect a Frontend to a Backend Using Services > Before you begin",
+  "text": "This task uses\n[Services with external load balancers](/docs/tasks/access-application-cluster/create-external-load-balancer/), which\nrequire a supported environment. If your environment does not support this, you can use a Service of type\n[NodePort](/docs/concepts/services-networking/service/#type-nodeport) instead."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-in-kubernetes-0",
+  "heading": "Service > Services in Kubernetes",
+  "text": "The Service API, part of Kubernetes, is an abstraction to help you expose groups of\nPods over a network. Each Service object defines a logical set of endpoints (usually\nthese endpoints are Pods) along with a policy about how to make those pods accessible.\n\nFor example, consider a stateless image-processing backend which is running with\n3 replicas.  Those replicas are fungible&mdash;frontends do not care which backend\nthey use.  While the actual Pods that compose the backend set may change, the\nfrontend clients should not need to be aware of that, nor should they need to keep\ntrack of the set of backends themselves.\n\nThe Service abstraction enables this decoupling.\n\nCanary deployments are a common use case for Services. To learn what's involved, follow the [Deploy a Release Using a Canary Deployment](/docs/tutorials/stateless-application/canary-deployment/) tutorial.\n\nThe set of Pods targeted by a Service is usually determined\nby a selector that you\ndefine.\nTo learn about other ways to define Service endpoints,\nsee [Services _without_ selectors](#services-without-selectors)."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#creating-the-frontend-1",
+  "heading": "Connect a Frontend to a Backend Using Services > Creating the frontend",
+  "text": "Similar to the backend, the frontend has a Deployment and a Service. An important\ndifference to notice between the backend and frontend services, is that the\nconfiguration for the frontend Service has `type: LoadBalancer`, which means that\nthe Service uses a load balancer provisioned by your cloud provider and will be\naccessible from outside the cluster.\n\n```yaml\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: frontend\nspec:\n  selector:\n    app: hello\n    tier: frontend\n  ports:\n  - protocol: \"TCP\"\n    port: 80\n    targetPort: 80\n  type: LoadBalancer\n...\n```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#cleaning-up-0",
+  "heading": "Connect a Frontend to a Backend Using Services > Cleaning up",
+  "text": "To delete the Services, enter this command:\n\n```shell\nkubectl delete services frontend backend\n```\n\nTo delete the Deployments, the ReplicaSets and the Pods that are running the backend and frontend applications, enter this command:\n\n```shell\nkubectl delete deployment frontend backend\n```"
+ }
+]

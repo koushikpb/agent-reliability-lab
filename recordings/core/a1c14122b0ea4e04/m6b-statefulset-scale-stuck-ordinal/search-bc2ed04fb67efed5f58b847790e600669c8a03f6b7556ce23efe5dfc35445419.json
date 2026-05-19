@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#recreate-1",
+  "heading": "StatefulSets > Recreate",
+  "text": "The deletion always removes every Pod together, regardless of the\n[Pod Management Policy](#pod-management-policies). Once all Pods have terminated, the new\nPods are created according to that policy: with `OrderedReady` (the default) the Pods are\nrecreated one at a time, in ascending ordinal order, waiting for each to become Running and\nReady before creating the next; with `Parallel` all of the Pods are recreated at once.\n\nBecause this is an alpha feature, you must enable the `StatefulSetRecreateStrategy`\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/#StatefulSetRecreateStrategy)\non the kube-controller-manager and the kube-apiserver to use this strategy."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0",
+  "heading": "StatefulSets > Deployment and Scaling Guarantees",
+  "text": "* For a StatefulSet with N replicas, when Pods are being deployed, they are created sequentially, in order from {0..N-1}.\n* When Pods are being deleted, they are terminated in reverse order, from {N-1..0}.\n* Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready. If [`.spec.minReadySeconds`](#minimum-ready-seconds) is set, predecessors must be available (Ready for at least `minReadySeconds`).\n* Before a Pod is terminated, all of its successors must be completely shutdown.\n\nThe StatefulSet should not specify a `pod.Spec.TerminationGracePeriodSeconds` of 0. This practice\nis unsafe and strongly discouraged. For further explanation, please refer to\n[force deleting StatefulSet Pods](/docs/tasks/run-application/force-delete-stateful-set-pod/)."
+ },
+ {
+  "chunk_id": "tasks/run-application/run-replicated-stateful-application#understanding-stateful-pod-initialization-0",
+  "heading": "Run a Replicated Stateful Application > Understanding stateful Pod initialization",
+  "text": "The StatefulSet controller starts Pods one at a time, in order by their\nordinal index.\nIt waits until each Pod reports being Ready before starting the next one.\n\nIn addition, the controller assigns each Pod a unique, stable name of the form\n`<statefulset-name>-<ordinal-index>`, which results in Pods named `mysql-0`,\n`mysql-1`, and `mysql-2`.\n\nThe Pod template in the above StatefulSet manifest takes advantage of these\nproperties to perform orderly startup of MySQL replication."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#pod-management-policies-0",
+  "heading": "StatefulSets > Deployment and Scaling Guarantees > Pod Management Policies",
+  "text": "StatefulSet allows you to relax its ordering guarantees while\npreserving its uniqueness and identity guarantees via its `.spec.podManagementPolicy` field.\n\n#### OrderedReady Pod Management\n\n`OrderedReady` pod management is the default for StatefulSets. It implements the behavior\ndescribed in [Deployment and Scaling Guarantees](#deployment-and-scaling-guarantees).\n\n#### Parallel Pod Management\n\n`Parallel` pod management tells the StatefulSet controller to launch or\nterminate all Pods in parallel, and to not wait for Pods to become Running\nand Ready or completely terminated prior to launching or terminating another\nPod.\n\nFor scaling operations, this means all Pods are created or terminated simultaneously.\n\nFor rolling updates when [`.spec.updateStrategy.rollingUpdate.maxUnavailable`](#maximum-unavailable-pods)\nis greater than 1, the StatefulSet controller terminates and creates up to `maxUnavailable` Pods\nsimultaneously (also known as \"bursting\"). This can speed up updates but may result in Pods becoming ready out of order, which might not be suitable for applications requiring strict ordering."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#ordinal-index-0",
+  "heading": "StatefulSets > Pod Identity > Ordinal Index",
+  "text": "For a StatefulSet with N [replicas](#replicas), each Pod in the StatefulSet\nwill be assigned an integer ordinal, that is unique over the Set. By default,\npods will be assigned ordinals from 0 up through N-1. The StatefulSet controller\nwill also add a pod label with this index: `apps.kubernetes.io/pod-index`."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#using-statefulsets-0",
+  "heading": "StatefulSets > Using StatefulSets",
+  "text": "StatefulSets are valuable for applications that require one or more of the\nfollowing:\n\n* Stable, unique network identifiers.\n* Stable, persistent storage.\n* Ordered, graceful deployment and scaling.\n* Ordered, automated rolling updates.\n\nIn the above, stable is synonymous with persistence across Pod (re)scheduling.\nIf an application doesn't require any stable identifiers or ordered deployment,\ndeletion, or scaling, you should deploy your application using a workload object\nthat provides a set of stateless replicas.\n[Deployment](/docs/concepts/workloads/controllers/deployment/) or\n[ReplicaSet](/docs/concepts/workloads/controllers/replicaset/) may be better suited to your stateless needs."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-1",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "`Delete`\n: The PVCs created from the StatefulSet `volumeClaimTemplate` are deleted for each Pod\n  affected by the policy. With the `whenDeleted` policy all PVCs from the\n  `volumeClaimTemplate` are deleted after their Pods have been deleted. With the\n  `whenScaled` policy, only PVCs corresponding to Pod replicas being scaled down are\n  deleted, after their Pods have been deleted.\n\n`Retain` (default)\n: PVCs from the `volumeClaimTemplate` are not affected when their Pod is\n  deleted. This is the behavior before this new feature.\n\nBear in mind that these policies **only** apply when Pods are being removed due to the\nStatefulSet being deleted or scaled down. For example, if a Pod associated with a StatefulSet\nfails due to node failure, and the control plane creates a replacement Pod, the StatefulSet\nretains the existing PVC.  The existing volume is unaffected, and the cluster will attach it to\nthe node where the new Pod is about to launch.\n\nThe default for policies is `Retain`, matching the StatefulSet behavior before this new feature.\n\nHere is an example policy:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicaset#non-template-pod-acquisitions-1",
+  "heading": "ReplicaSet > Non-Template Pod acquisitions",
+  "text": "Suppose you create the Pods after the frontend ReplicaSet has been deployed and has set up its initial Pod replicas to\nfulfill its replica count requirement:\n\n```shell\nkubectl apply -f https://kubernetes.io/examples/pods/pod-rs.yaml\n```\n\nThe new Pods will be acquired by the ReplicaSet, and then immediately terminated as the ReplicaSet would be over\nits desired count.\n\nFetching the Pods:\n\n```shell\nkubectl get pods\n```\n\nThe output shows that the new Pods are either already terminated, or in the process of being terminated:\n\n```\nNAME             READY   STATUS        RESTARTS   AGE\nfrontend-b2zdv   1/1     Running       0          10m\nfrontend-vcmts   1/1     Running       0          10m\nfrontend-wtsmm   1/1     Running       0          10m\npod1             0/1     Terminating   0          1s\npod2             0/1     Terminating   0          1s\n```\n\nIf you create the Pods first:\n\n```shell\nkubectl apply -f https://kubernetes.io/examples/pods/pod-rs.yaml\n```"
+ }
+]

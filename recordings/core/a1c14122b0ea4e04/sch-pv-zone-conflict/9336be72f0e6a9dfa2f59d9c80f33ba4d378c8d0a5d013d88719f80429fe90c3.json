@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EuADCqQBCBMYAipAi/hlnw118XTU59USAT0/BAu7YA5PpguuDgg0MukwngpKed5SDSsKMiNnW0QDdSZ7OoDgP3htiN9x9cU4YQ4KgDIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB9dDw1gYSDFcSd2FnSqKW+Jb+zBoMQiuCk6WtSn3ip/jsIjAgh1zSK4WtI+cZ4iI9CUJASf+YLG5M6t93iSx+fbXKUeqXr3qlmvVJTFn0rncEyFoq6AEegjqEvr9jUvjjn1zxf9BTFL7e/CMYbHY9W1JXO8JkuHjDMXKziKdZCSumPJKB90Xf1N8x2jkGUzUSy4ZaVh1wWjnb28Dr2sPqUMi6ePXaVBdoW4ftv5hqea8/VG6pf0OaI9qiWFc1mhmRJkp9+MBSZOvBG4hREIWLsLJ6j+QaDbIY+63KDK2opwt6o/wHZyZdyIc7zXf4hU8Do8P7fwoAcAYZq+zgQ0UhgsH1LgdiWZCjN/lCSB5ENVwWobEJOECknNKvSmw7GbIRlNJcOfMoj3Y5l0/L42+sgvM0EjXh2g04XUEqNI7lGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Vx5S6X4jXQbv9bXd6LHnHv",
+   "input": {
+    "query": "volume node affinity conflict zone WaitForFirstConsumer StatefulSet"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2709,
+ "model": "claude-opus-4-7",
+ "output_tokens": 199,
+ "stop_reason": "tool_use"
+}

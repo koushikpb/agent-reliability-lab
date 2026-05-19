@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "The search results don't provide specific guidance on Prometheus storage handling. However, looking at the pod information I already have, I can see the Prometheus volume is a 100Gi PVC with a storage class that supports volume expansion (`allowVolumeExpansion: true`). The immediate issue is that the disk is full.\n\nBased on the evidence, I have a clear diagnosis:\n\n1. **Cause**: The Prometheus persistent volume filled up at approximately 03:00 on 2026-05-22\n2. **Evidence**: The logs show `\"no space left on device\"` errors for writes to `/prometheus/wal/` starting at 03:02:44\n3. **Impact**: Prometheus couldn't append new metrics, causing data collection to stop, resulting in gaps in Grafana dashboards and alerts not firing\n4. **Solution**: The volume needs to be expanded since it's using the `gp3-resizable` storage class with `allowVolumeExpansion: true`\n\nLet me update the ticket with this resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_013fkoVqtgqmsLrrrcX7Ysp4",
+   "input": {
+    "id": "T-5005",
+    "note": "**Root Cause**: The Prometheus persistent volume (100Gi) ran out of disk space starting at 03:02:44 on 2026-05-22, preventing metric collection and causing dashboard gaps.\n\n**Evidence**: Pod logs show multiple \"no space left on device\" errors writing to `/prometheus/wal/` and compaction failures from 03:02 onwards, which aligns with the 03:00 start of dashboard gaps reported in the ticket.\n\n**Fix**: Since your PVC uses the `gp3-resizable` storage class with `allowVolumeExpansion: true`, you can expand the volume capacity:\n1. Edit the PVC `prometheus-k8s-db-prometheus-k8s-0` in the monitoring namespace\n2. Increase the `spec.resources.requests.storage` value from 100Gi to a larger size appropriate for your retention policy (30d)\n3. Kubernetes and the EBS CSI driver will automatically expand the underlying volume and filesystem\n\nAfter expansion, Prometheus will resume normal data collection. You may want to review your 30-day retention policy and storage sizing to prevent future incidents.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5424,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 574,
+ "stop_reason": "tool_use"
+}

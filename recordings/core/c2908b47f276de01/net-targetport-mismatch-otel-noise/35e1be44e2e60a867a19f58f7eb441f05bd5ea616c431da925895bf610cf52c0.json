@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results don't directly address the 502 issue. Let me search more specifically about application failures causing 502 errors:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01GVGCwYpLxW82vipUfbbhEF",
+   "input": {
+    "query": "application crash upstream error response 502"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6558,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 87,
+ "stop_reason": "tool_use"
+}

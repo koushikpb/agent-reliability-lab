@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#notes-2",
+  "heading": "Configure Quotas for API Objects > Notes",
+  "text": "<tr><td>\"services.nodeports\"</td><td>Service of type NodePort</td></tr>\n<tr><td>\"services.loadbalancers\"</td><td>Service of type LoadBalancer</td></tr>\n</table>"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-for-dra-resource-claims-1",
+  "heading": "Resource Quotas > Types of resource quota > Quota for DRA resource claims",
+  "text": "All devices requested from resource claims or extended resources are counted towards all three quotas\nlisted above. The extended resource quota e.g. `requests.example.com/gpu: 4`, also counts the devices provided\nby device plugin.\n\nSee [Viewing and Setting Quotas](#viewing-and-setting-quotas) for more details."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-6",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My Pods are pending with event message `FailedScheduling`",
+  "text": "You can configure [resource quotas](/docs/concepts/policy/resource-quotas/)\nto limit the total amount of resources that a namespace can consume.\nKubernetes enforces quotas for objects in particular namespace when there is a\nResourceQuota in that namespace.\nFor example, if you assign specific namespaces to different teams, you\ncan add ResourceQuotas into those namespaces. Setting resource quotas helps to\nprevent one team from using so much of any resource that this over-use affects other teams.\n\nYou should also consider what access you grant to that namespace:\n**full** write access to a namespace allows someone with that access to remove any\nresource, including a configured ResourceQuota."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#intro-0",
+  "heading": "Configure Quotas for API Objects",
+  "text": "This page shows how to configure quotas for API objects, including\nPersistentVolumeClaims and Services. A quota restricts the number of\nobjects, of a particular type, that can be created in a namespace.\nYou specify quotas in a\n[ResourceQuota](/docs/reference/generated/kubernetes-api//#resourcequota-v1-core)\nobject."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#resource-quota-per-priorityclass-6",
+  "heading": "Resource Quotas > Quota scopes > PriorityClass scope",
+  "text": "To enforce this, `kube-apiserver` flag `--admission-control-config-file` should be\nused to pass path to the following configuration file:\n\n```yaml\napiVersion: apiserver.config.k8s.io/v1\nkind: AdmissionConfiguration\nplugins:\n- name: \"ResourceQuota\"\n  configuration:\n    apiVersion: apiserver.config.k8s.io/v1\n    kind: ResourceQuotaConfiguration\n    limitedResources:\n    - resource: pods\n      matchScopes:\n      - scopeName: PriorityClass\n        operator: In\n        values: [\"cluster-services\"]\n```\n\nThen, create a resource quota object in the `kube-system` namespace:\n\n```yaml\napiVersion: v1\nkind: ResourceQuota\nmetadata:\n  name: pods-cluster-services\nspec:\n  scopeSelector:\n    matchExpressions:\n      - operator : In\n        scopeName: PriorityClass\n        values: [\"cluster-services\"]\n```"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-for-extended-resources-0",
+  "heading": "Resource Quotas > Types of resource quota > Quota for extended resources",
+  "text": "In addition to the resources mentioned above, in release 1.10, quota support for\n[extended resources](/docs/concepts/configuration/manage-resources-containers/#extended-resources) is added.\n\nAs overcommit is not allowed for extended resources, it makes no sense to specify both `requests`\nand `limits` for the same extended resource in a quota. So for extended resources, only quota items\nwith prefix `requests.` are allowed.\n\nTake the GPU resource as an example, if the resource name is `nvidia.com/gpu`, and you want to\nlimit the total number of GPUs requested in a namespace to 4, you can define a quota as follows:\n\n* `requests.nvidia.com/gpu: 4`\n\nSee [Viewing and Setting Quotas](#viewing-and-setting-quotas) for more details."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#notes-1",
+  "heading": "Configure Quotas for API Objects > Notes",
+  "text": "<table>\n<tr><th>String</th><th>API Object</th></tr>\n<tr><td>\"pods\"</td><td>Pod</td></tr>\n<tr><td>\"services\"</td><td>Service</td></tr>\n<tr><td>\"replicationcontrollers\"</td><td>ReplicationController</td></tr>\n<tr><td>\"resourcequotas\"</td><td>ResourceQuota</td></tr>\n<tr><td>\"secrets\"</td><td>Secret</td></tr>\n<tr><td>\"configmaps\"</td><td>ConfigMap</td></tr>\n<tr><td>\"persistentvolumeclaims\"</td><td>PersistentVolumeClaim</td></tr>"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-for-storage-3",
+  "heading": "Resource Quotas > Types of resource quota > Quota for storage",
+  "text": "For example, if you want to quota storage with `gold` StorageClass separate from\na `bronze` StorageClass, you can define a quota as follows:\n\n* `gold.storageclass.storage.k8s.io/requests.storage: 500Gi`\n* `bronze.storageclass.storage.k8s.io/requests.storage: 100Gi`\n\n#### Quota for local ephemeral storage\n\n| Resource Name | Description |\n| ------------- | ----------- |\n| `requests.ephemeral-storage` | Across all pods in the namespace, the sum of local ephemeral storage requests cannot exceed this value. |\n| `limits.ephemeral-storage` | Across all pods in the namespace, the sum of local ephemeral storage limits cannot exceed this value. |\n| `ephemeral-storage` | Same as `requests.ephemeral-storage`. |"
+ }
+]

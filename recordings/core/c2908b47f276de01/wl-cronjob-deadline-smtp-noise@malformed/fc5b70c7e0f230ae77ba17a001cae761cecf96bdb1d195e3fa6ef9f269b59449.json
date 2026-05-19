@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I can see the issue. The last two ledger-export jobs failed with `DeadlineExceeded` (exit code 143), but there was a successful run before that. The jobs are hitting the `activeDeadlineSeconds: 3600` timeout. Let me check the pod logs to see what the job was doing.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01BJByaiLSNVbf8KBdeb62V7",
+   "input": {
+    "pod": "ledger-export-29637420-k4x9d"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1936,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 140,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the issue. The logs clearly show that starting at 03:02:44 on May 22, Prometheus is encountering \"no space left on device\" errors when writing to the Write-Ahead Log (WAL). This explains the dashboard gaps since around 03:00 - Prometheus cannot write new metrics to disk.\n\nLet me search the Kubernetes documentation to understand the persistent volume situation better:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011yrjDWYDg3BVao8dFirqAZ",
+   "input": {
+    "query": "persistent volume capacity disk space full resize"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3453,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 150,
+ "stop_reason": "tool_use"
+}

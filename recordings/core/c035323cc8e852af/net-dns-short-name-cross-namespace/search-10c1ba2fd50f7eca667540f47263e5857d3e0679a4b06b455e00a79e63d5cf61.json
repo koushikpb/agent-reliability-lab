@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#intro-0",
+  "heading": "DNS for Services and Pods",
+  "text": "Kubernetes creates DNS records for Services and Pods. You can contact\nServices with consistent DNS names instead of IP addresses.\n\nKubernetes publishes information about Pods and Services which is used\nto program DNS. kubelet configures Pods' DNS so that running containers\ncan look up Services by name rather than IP.\n\nServices defined in the cluster are assigned DNS names. By default, a\nclient Pod's DNS search list includes the Pod's own namespace and the\ncluster's default domain."
+ },
+ {
+  "chunk_id": "tasks/run-application/access-api-from-pod#directly-accessing-the-rest-api-0",
+  "heading": "Accessing the Kubernetes API from a Pod > Accessing the API from within a Pod > Directly accessing the REST API",
+  "text": "While running in a Pod, your container can create an HTTPS URL for the Kubernetes API\nserver by fetching the `KUBERNETES_SERVICE_HOST` and `KUBERNETES_SERVICE_PORT_HTTPS`\nenvironment variables. The API server's in-cluster address is also published to a\nService named `kubernetes` in the `default` namespace so that pods may reference\n`kubernetes.default.svc` as a DNS name for the local API server.\n\nKubernetes does not guarantee that the API server has a valid certificate for\nthe hostname `kubernetes.default.svc`;\nhowever, the control plane **is** expected to present a valid certificate for the\nhostname or IP address that `$KUBERNETES_SERVICE_HOST` represents."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-horizontal-autoscaling#find-scaling-target-1",
+  "heading": "Autoscale the DNS Service in a Cluster > Get the name of your DNS Deployment",
+  "text": "CoreDNS is the default DNS service for Kubernetes. CoreDNS sets the label\n`k8s-app=kube-dns` so that it can work in clusters that originally used\nkube-dns."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/nodelocaldns#configuration-5",
+  "heading": "Using NodeLocal DNSCache in Kubernetes Clusters > Configuration",
+  "text": "Once enabled, the `node-local-dns` Pods will run in the `kube-system` namespace\non each of the cluster nodes. This Pod runs [CoreDNS](https://github.com/coredns/coredns)\nin cache mode, so all CoreDNS metrics exposed by the different plugins will\nbe available on a per-node basis.\n\nYou can disable this feature by removing the DaemonSet, using `kubectl delete -f <manifest>`.\nYou should also revert any changes you made to the kubelet configuration."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#default-service-accounts-0",
+  "heading": "Service Accounts > What are service accounts? > Default service accounts",
+  "text": "When you create a cluster, Kubernetes automatically creates a ServiceAccount\nobject named `default` for every namespace in your cluster. The `default`\nservice accounts in each namespace get no permissions by default other than the\n[default API discovery permissions](/docs/reference/access-authn-authz/rbac/#default-roles-and-role-bindings)\nthat Kubernetes grants to all authenticated principals if role-based access control (RBAC) is enabled.\nIf you delete the `default` ServiceAccount object in a namespace, the\ncontrol plane\nreplaces it with a new one.\n\nIf you deploy a Pod in a namespace, and you don't\n[manually assign a ServiceAccount to the Pod](#assign-to-pod), Kubernetes\nassigns the `default` ServiceAccount for that namespace to the Pod."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-custom-nameservers#coredns-configmap-options-1",
+  "heading": "Customizing DNS Service > CoreDNS > CoreDNS ConfigMap options",
+  "text": "```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: coredns\n  namespace: kube-system\ndata:\n  Corefile: |\n    .:53 {\n        errors\n        health {\n            lameduck 5s\n        }\n        ready\n        kubernetes cluster.local in-addr.arpa ip6.arpa {\n            pods insecure\n            fallthrough in-addr.arpa ip6.arpa\n            ttl 30\n        }\n        prometheus :9153\n        forward . /etc/resolv.conf\n        cache 30\n        loop\n        reload\n        loadbalance\n    }\n```\n\nThe Corefile configuration includes the following [plugins](https://coredns.io/plugins/) of CoreDNS:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#discovering-services-0",
+  "heading": "Service > Discovering services",
+  "text": "For clients running inside your cluster, Kubernetes supports two primary modes of\nfinding a Service: environment variables and DNS."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#a-aaaa-records-1-0",
+  "heading": "DNS for Services and Pods > Pods > A/AAAA records",
+  "text": "Kube-DNS versions, prior to the implementation of the\n[DNS specification](https://github.com/kubernetes/dns/blob/master/docs/specification.md),\nhad the following DNS resolution:\n\n```\n<pod-IPv4-address>.<namespace>.pod.<cluster-domain>\n```\n\nFor example, if a Pod in the `default` namespace has the IP address 172.17.0.3,\nand the domain name for your cluster is `cluster.local`, then the Pod has a DNS name:\n\n```\n172-17-0-3.default.pod.cluster.local\n```\n\nSome cluster DNS mechanisms, like [CoreDNS](https://coredns.io/), also provide `A` records for:\n\n```\n<pod-ipv4-address>.<service-name>.<my-namespace>.svc.<cluster-domain.example>\n```"
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#reclaim-node-resources-0",
+  "heading": "Node-pressure Eviction > Node conditions > Reclaiming node level resources",
+  "text": "The kubelet tries to reclaim node-level resources before it evicts end-user pods.\n\nWhen a `DiskPressure` node condition is reported, the kubelet reclaims node-level\nresources based on the filesystems on the node.\n\n#### Without `imagefs` or `containerfs`\n\nIf the node only has a `nodefs` filesystem that meets eviction thresholds,\nthe kubelet frees up disk space in the following order:\n\n1. Garbage collect dead pods and containers.\n1. Delete unused images.\n\n#### With `imagefs`\n\nIf the node has a dedicated `imagefs` filesystem for container runtimes to use,\nthe kubelet does the following:\n\n- If the `nodefs` filesystem meets the eviction thresholds, the kubelet garbage\n  collects dead pods and containers.\n\n- If the `imagefs` filesystem meets the eviction thresholds, the kubelet\n  deletes all unused images.\n\n#### With `imagefs` and `containerfs`"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-volume-storage#intro-0",
+  "heading": "Configure a Pod to Use a Volume for Storage",
+  "text": "This page shows how to configure a Pod to use a Volume for storage.\n\nA Container's file system lives only as long as the Container does. So when a\nContainer terminates and restarts, filesystem changes are lost. For more\nconsistent storage that is independent of the Container, you can use a\n[Volume](/docs/concepts/storage/volumes/). This is especially important for stateful\napplications, such as key-value stores (such as Redis) and databases."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-volume-storage#configure-a-volume-for-a-pod-3",
+  "heading": "Configure a Pod to Use a Volume for Storage > Configure a volume for a Pod",
+  "text": "At this point, the Container has terminated and restarted. This is because the\nRedis Pod has a\n[restartPolicy](/docs/reference/generated/kubernetes-api//#podspec-v1-core)\nof `Always`.\n\n1. Get a shell into the restarted Container:\n\n   ```shell\n   kubectl exec -it redis -- /bin/bash\n   ```\n\n1. In your shell, go to `/data/redis`, and verify that `test-file` is still there.\n\n   ```shell\n   root@redis:/data/redis# cd /data/redis/\n   root@redis:/data/redis# ls\n   test-file\n   ```\n\n1. Delete the Pod that you created for this exercise:\n\n   ```shell\n   kubectl delete pod redis\n   ```"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#eviction-signals-7",
+  "heading": "Node-pressure Eviction > Eviction signals and thresholds > Eviction signals",
+  "text": "The kubelet recognizes three specific filesystem identifiers that can be used with\neviction signals (`<identifier>.inodesFree` or `<identifier>.available`):\n\n1. `nodefs`: The node's main filesystem, used for local disk volumes,\n    emptyDir volumes not backed by memory, log storage, ephemeral storage,\n    and more. For example, `nodefs` contains `/var/lib/kubelet`.\n\n1. `imagefs`: An optional filesystem that container runtimes can use to store\n   container images (which are the read-only layers). If there is no separate\n   `containerfs`, the image filesystem also stores container writable layers.\n\n1. `containerfs`: An optional filesystem that container runtimes can use to\n   store container writable layers. When `containerfs` is used, the `imagefs`\n   filesystem can be split to only store images (read-only layers) and nothing\n   else."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#configurations-1",
+  "heading": "Local ephemeral storage > Configurations for local ephemeral storage",
+  "text": "You use one filesystem on the node for ephemeral data from running Pods, such as\nlogs and `emptyDir` volumes. You can also use this filesystem for other data,\nsuch as system logs that are not related to Kubernetes; it can even be the root\nfilesystem.\n\nThe kubelet also writes\n[node-level container logs](/docs/concepts/cluster-administration/logging/#logging-at-the-node-level)\ninto the first filesystem, and treats these similarly to ephemeral local storage.\n\nYou also use a separate filesystem, backed by a different logical storage device.\nIn this configuration, the container runtime stores both container image layers\nand writeable layers on this second filesystem. Configure this storage location\nin your container runtime, not in the kubelet.\n\nThe first filesystem does not hold any image layers or writeable layers.\n\nYour node can have as many other filesystems, not used for Kubernetes,\nas you like."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#eviction-signals-9",
+  "heading": "Node-pressure Eviction > Eviction signals and thresholds > Eviction signals",
+  "text": "- Container runtime storage is on a dedicated disk, separate from the root\n  filesystem. In this layout, `imagefs` and `containerfs` refer to the same\n  underlying filesystem, which stores both image layers and container writable\n  layers. This is often referred to as \"split disk\" (or \"separate disk\")\n  filesystem.\n\n- Container writable layers are on `nodefs`, and the container images\n  (read-only layers) are stored on a separate `imagefs`. In this layout,\n  `containerfs` and `nodefs` refer to the same underlying filesystem. This is\n  often referred to as a \"split image\" filesystem.\n\nThe kubelet will attempt to auto-discover these filesystems with their current\nconfiguration directly from the underlying container runtime and will ignore\nother local node filesystems.\n\nThe kubelet does not support other container filesystems or storage configurations,\nand it does not currently support multiple filesystems for images and containers."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-4",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "```shell\nName:            pvc-2f0bab97-85a8-4552-8044-eb8be45cf48d\nLabels:          <none>\nAnnotations:     pv.kubernetes.io/provisioned-by: csi.vsphere.vmware.com\nFinalizers:      [kubernetes.io/pv-protection external-provisioner.volume.kubernetes.io/finalizer]\nStorageClass:    fast\nStatus:          Bound\nClaim:           demo-app/nginx-logs\nReclaim Policy:  Delete\nAccess Modes:    RWO\nVolumeMode:      Filesystem\nCapacity:        200Mi\nNode Affinity:   <none>\nMessage:\nSource:\n    Type:              CSI (a Container Storage Interface (CSI) volume source)\n    Driver:            csi.vsphere.vmware.com\n    FSType:            ext4\n    VolumeHandle:      44830fa8-79b4-406b-8b58-621ba25353fd\n    ReadOnly:          false\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-capacity#rescheduling-0",
+  "heading": "Storage Capacity > Rescheduling",
+  "text": "When a node has been selected for a Pod with `WaitForFirstConsumer`\nvolumes, that decision is still tentative. The next step is that the\nCSI storage driver gets asked to create the volume with a hint that the\nvolume is supposed to be available on the selected node.\n\nBecause Kubernetes might have chosen a node based on out-dated\ncapacity information, it is possible that the volume cannot really be\ncreated. The node selection is then reset and the Kubernetes scheduler\ntries again to find a node for the Pod."
+ }
+]

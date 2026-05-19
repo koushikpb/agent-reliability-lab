@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/policy/limit-range#constraints-on-resource-limits-and-requests-1",
+  "heading": "Limit Ranges > Constraints on resource limits and requests",
+  "text": "  continue unchanged.\n- If two or more LimitRange objects exist in the namespace, it is not deterministic\n  which default value will be applied."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-default-namespace#what-if-you-specify-a-container-s-limit-but-not-its-request-1",
+  "heading": "Configure Default Memory Requests and Limits for a Namespace > What if you specify a container's limit, but not its request?",
+  "text": "```\nresources:\n  limits:\n    memory: 1Gi\n  requests:\n    memory: 1Gi\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-constraint-namespace#intro-0",
+  "heading": "Configure Minimum and Maximum Memory Constraints for a Namespace",
+  "text": "This page shows how to set minimum and maximum values for memory used by containers\nrunning in a namespace. \nYou specify minimum and maximum memory values in a\n[LimitRange](/docs/reference/kubernetes-api/core/limit-range-v1/)\nobject. If a Pod does not meet the constraints imposed by the LimitRange,\nit cannot be created in the namespace."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/limit-storage-consumption#intro-0",
+  "heading": "Limit Storage Consumption",
+  "text": "This example demonstrates how to limit the amount of storage consumed in a namespace.\n\nThe following resources are used in the demonstration: [ResourceQuota](/docs/concepts/policy/resource-quotas/),\n[LimitRange](/docs/tasks/administer-cluster/manage-resources/memory-default-namespace/),\nand [PersistentVolumeClaim](/docs/concepts/storage/persistent-volumes/).\n\nBefore you begin\n*"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-constraint-namespace#create-a-limitrange-and-a-pod-3",
+  "heading": "Configure Minimum and Maximum Memory Constraints for a Namespace > Create a LimitRange and a Pod",
+  "text": "The output shows that the container within that Pod has a memory request of 600 MiB and\na memory limit of 800 MiB. These satisfy the constraints imposed by the LimitRange for\nthis namespace:\n\n```yaml\nresources:\n  limits:\n     memory: 800Mi\n  requests:\n    memory: 600Mi\n```\n\nDelete your Pod:\n\n```shell\nkubectl delete pod constraints-mem-demo --namespace=constraints-mem-example\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-default-namespace#motivation-for-default-memory-limits-and-requests-0",
+  "heading": "Configure Default Memory Requests and Limits for a Namespace > Motivation for default memory limits and requests",
+  "text": "If your namespace has a memory resource quota\nconfigured,\nit is helpful to have a default value in place for memory limit.\nHere are three of the restrictions that a resource quota imposes on a namespace:\n\n* For every Pod that runs in the namespace, the Pod and each of its containers must have a memory limit.\n  (If you specify a memory limit for every container in a Pod, Kubernetes can infer the Pod-level memory\n  limit by adding up the limits for its containers).\n* Memory limits apply a resource reservation on the node where the Pod in question is scheduled.\n  The total amount of memory reserved for all Pods in the namespace must not exceed a specified limit.\n* The total amount of memory actually used by all Pods in the namespace must also not exceed a specified limit.\n\nWhen you add a LimitRange:\n\nIf any Pod in that namespace that includes a container does not specify its own memory limit,\nthe control plane applies the default memory limit to that container, and the Pod can be\nallowed to run in a namespace that is restricted by a memory ResourceQuota."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-default-namespace#intro-0",
+  "heading": "Configure Default Memory Requests and Limits for a Namespace",
+  "text": "This page shows how to configure default memory requests and limits for a\nnamespace.\n\nA Kubernetes cluster can be divided into namespaces. Once you have a namespace that\nhas a default memory\n[limit](/docs/concepts/configuration/manage-resources-containers/#requests-and-limits),\nand you then try to create a Pod with a container that does not specify its own memory\nlimit, then the\ncontrol plane assigns the default\nmemory limit to that container.\n\nKubernetes assigns a default memory request under certain conditions that are explained later in this topic."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-constraint-namespace#create-a-limitrange-and-a-pod-0",
+  "heading": "Configure Minimum and Maximum Memory Constraints for a Namespace > Create a LimitRange and a Pod",
+  "text": "Here's an example manifest for a LimitRange:\n\n```yaml\napiVersion: v1\nkind: LimitRange\nmetadata:\n  name: mem-min-max-demo-lr\nspec:\n  limits:\n  - max:\n      memory: 1Gi\n    min:\n      memory: 500Mi\n    type: Container\n```\n\nCreate the LimitRange:\n\n```shell\nkubectl apply -f https://k8s.io/examples/admin/resource/memory-constraints.yaml --namespace=constraints-mem-example\n```\n\nView detailed information about the LimitRange:\n\n```shell\nkubectl get limitrange mem-min-max-demo-lr --namespace=constraints-mem-example --output=yaml\n```\n\nThe output shows the minimum and maximum memory constraints as expected. But\nnotice that even though you didn't specify default values in the configuration\nfile for the LimitRange, they were created automatically."
+ }
+]

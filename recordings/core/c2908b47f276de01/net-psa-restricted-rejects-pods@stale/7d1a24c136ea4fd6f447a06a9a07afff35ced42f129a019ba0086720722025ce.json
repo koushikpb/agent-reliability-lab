@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The documentation indicates that image pull errors are a common cause of deployment rollout failures [cite: concepts/workloads/controllers/deployment#failed-deployment-0]. The issue is that the new 1.5.0 version pods are likely failing to pull the image, which would keep them in a `ImagePullBackOff` state while the old 1.4.2 pods remain running. \n\nLet me search for more information about what might cause image pull errors:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01FHKANraAKLRXjP6TbRjjHc",
+   "input": {
+    "query": "private registry image pull authentication credentials"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5976,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 162,
+ "stop_reason": "tool_use"
+}

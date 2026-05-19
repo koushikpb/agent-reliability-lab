@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the pod status in the analytics namespace to see the state of the clickhouse replica.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01C2vkXxxAwgrufx1TeMA6CW",
+   "input": {
+    "namespace": "analytics"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1354,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 75,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I now have a clear understanding of the issue. The problem is that the `activeDeadlineSeconds` of 3600 seconds (1 hour) is too short for the ledger export job, which needs to process 95 batches of 100,000 ledger rows. The job is being terminated by Kubernetes after exactly 1 hour because it exceeds the deadline.\n\nNow I'll resolve the ticket with the fix:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016H94Zv1U78kAE8Pt8puE4h",
+   "input": {
+    "id": "T-2005",
+    "note": "**Cause:** The ledger-export cronjob is failing due to activeDeadlineSeconds timeout. The job has an activeDeadlineSeconds of 3600 seconds (1 hour), but processing 9.4 million ledger rows in 95 batches requires more time. Both recent job runs were terminated with SIGTERM at exactly the 1-hour mark after reaching approximately batch 69/95, with a job status of \"Failed: DeadlineExceeded\" [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-1].\n\n**Evidence:** Pod logs show the job started at 01:00:04Z and received SIGTERM at 02:00:04Z (exactly 1 hour later) while still processing batches. The job status shows exit code 143 (SIGTERM) and \"DeadlineExceeded\" reason. A previous successful run (ledger-export-29635540-p2mcs) completed with exit code 0.\n\n**Fix:** Increase the activeDeadlineSeconds value in the ledger-export cronjob spec to allow sufficient time for the export to complete. Based on the current progress (69 batches in ~60 minutes for 95 total batches), recommend setting activeDeadlineSeconds to at least 5400 seconds (1.5 hours) or higher. The activeDeadlineSeconds applies to the duration of the job regardless of pod count [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-1].\n\nNote: While SMTP connection errors are present in the logs, these are non-fatal and do not cause the job failure.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4853,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 560,
+ "stop_reason": "tool_use"
+}

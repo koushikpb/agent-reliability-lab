@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#intro-0",
+  "heading": "Taints and Tolerations",
+  "text": "[_Node affinity_](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)\nis a property of Pods that *attracts* them to\na set of nodes (either as a preference or a\nhard requirement). _Taints_ are the opposite -- they allow a node to repel a set of pods.\n\n_Tolerations_ are applied to pods. Tolerations allow the scheduler to schedule pods with matching\ntaints. Tolerations allow scheduling but don't guarantee scheduling: the scheduler also\n[evaluates other parameters](/docs/concepts/scheduling-eviction/pod-priority-preemption/)\nas part of its function.\n\nTaints and tolerations work together to ensure that pods are not scheduled\nonto inappropriate nodes. One or more taints are applied to a node; this\nmarks that the node should not accept any pods that do not tolerate the taints."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#example-use-cases-2",
+  "heading": "Taints and Tolerations > Example Use Cases",
+  "text": "* **Nodes with Special Hardware**: In a cluster where a small subset of nodes have specialized\nhardware (for example GPUs), it is desirable to keep pods that don't need the specialized\nhardware off of those nodes, thus leaving room for later-arriving pods that do need the\nspecialized hardware. This can be done by tainting the nodes that have the specialized\nhardware (e.g. `kubectl taint nodes nodename special=true:NoSchedule` or\n`kubectl taint nodes nodename special=true:PreferNoSchedule`) and adding a corresponding\ntoleration to pods that use the special hardware. As in the dedicated nodes use case,\nit is probably easiest to apply the tolerations using a custom\n[admission controller](/docs/reference/access-authn-authz/admission-controllers/).\nFor example, it is recommended to use [Extended\nResources](/docs/concepts/configuration/manage-resources-containers/#extended-resources)\nto represent the special hardware, taint your special hardware nodes with the\nextended resource name and run the"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#taint-based-evictions-5",
+  "heading": "Taints and Tolerations > Taint based Evictions",
+  "text": "[DaemonSet](/docs/concepts/workloads/controllers/daemonset/) pods are created with\n`NoExecute` tolerations for the following taints with no `tolerationSeconds`:\n\n  * `node.kubernetes.io/unreachable`\n  * `node.kubernetes.io/not-ready`\n\nThis ensures that DaemonSet pods are never evicted due to these problems.\n\nThe node controller was responsible for adding taints to nodes and evicting pods. But after 1.29,\nthe taint-based eviction implementation has been moved out of node controller into a separate,\nand independent component called taint-eviction-controller. Users can optionally disable taint-based\neviction by setting `--controllers=-taint-eviction-controller` in kube-controller-manager."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#taint-nodes-by-condition-1",
+  "heading": "Taints and Tolerations > Taint Nodes by Condition",
+  "text": "You can ignore node conditions for newly created pods by adding the corresponding\nPod tolerations. The control plane also adds the `node.kubernetes.io/memory-pressure`\ntoleration on pods that have a QoS class\nother than `BestEffort`. This is because Kubernetes treats pods in the `Guaranteed`\nor `Burstable` QoS classes (even pods with no memory request set) as if they are\nable to cope with memory pressure, while new `BestEffort` pods are not scheduled\nonto the affected node.\n\nThe DaemonSet controller automatically adds the following `NoSchedule`\ntolerations to all daemons, to prevent DaemonSets from breaking."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#numeric-comparison-operators-1",
+  "heading": "Taints and Tolerations > Numeric comparison operators",
+  "text": "For example, if nodes are tainted with a value representing a service level agreement (SLA):\n\n```shell\nkubectl taint nodes node1 servicelevel.organization.example/agreed-service-level=950:NoSchedule\n```\n\nA pod can tolerate nodes with SLA greater than 900:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx-numeric-toleration\n  labels:\n    env: test\nspec:\n  containers:\n    - name: nginx\n      image: nginx\n      imagePullPolicy: IfNotPresent\n  tolerations:\n    - key: \"servicelevel.organization.example/agreed-service-level\"\n      operator: \"Gt\"\n      value: \"900\"\n      effect: \"NoSchedule\"\n```\n\nThis toleration matches the taint on `node1` because `950 > 900` (the taint value  \nis greater than the toleration value for the `Gt` operator).  \nSimilarly, you can use the `Lt` operator to match taints where the taint value is  \nless than the toleration value:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/advanced-pod-config#tolerations-0",
+  "heading": "Advanced Pod Configuration > Influencing Pod scheduling decisions > Tolerations",
+  "text": "_Tolerations_ allow Pods to be scheduled on nodes with matching taints:\n\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: myapp\n    image: nginx\n  tolerations:\n  - key: \"key\"\n    operator: \"Equal\"\n    value: \"value\"\n    effect: \"NoSchedule\"\n\nFor more information, see [Assign Pods to Nodes](/docs/concepts/scheduling-eviction/assign-pod-node/)."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#taint-based-evictions-4",
+  "heading": "Taints and Tolerations > Taint based Evictions",
+  "text": "You can specify `tolerationSeconds` for a Pod to define how long that Pod stays bound\nto a failing or unresponsive Node.\n\nFor example, you might want to keep an application with a lot of local state\nbound to node for a long time in the event of network partition, hoping\nthat the partition will recover and thus the pod eviction can be avoided.\nThe toleration you set for that Pod might look like:\n\n```yaml\ntolerations:\n- key: \"node.kubernetes.io/unreachable\"\n  operator: \"Exists\"\n  effect: \"NoExecute\"\n  tolerationSeconds: 6000\n```\n\nKubernetes automatically adds a toleration for\n`node.kubernetes.io/not-ready` and `node.kubernetes.io/unreachable`\nwith `tolerationSeconds=300`,\nunless you, or a controller, set those tolerations explicitly.\n\nThese automatically-added tolerations mean that Pods remain bound to\nNodes for 5 minutes after one of these problems is detected."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-0",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "You add a taint to a node using [kubectl taint](/docs/reference/generated/kubectl/kubectl-commands#taint).\nFor example,\n\n```shell\nkubectl taint nodes node1 key1=value1:NoSchedule\n```\n\nplaces a taint on node `node1`. The taint has key `key1`, value `value1`, and taint effect `NoSchedule`.\nThis means that no pod will be able to schedule onto `node1` unless it has a matching toleration.\n\nTo remove the taint added by the command above, you can run:\n\n```shell\nkubectl taint nodes node1 key1=value1:NoSchedule-\n```\n\nYou specify a toleration for a pod in the PodSpec. Both of the following tolerations \"match\" the\ntaint created by the `kubectl taint` line above, and thus a pod with either toleration would be able\nto schedule onto `node1`:"
+ }
+]

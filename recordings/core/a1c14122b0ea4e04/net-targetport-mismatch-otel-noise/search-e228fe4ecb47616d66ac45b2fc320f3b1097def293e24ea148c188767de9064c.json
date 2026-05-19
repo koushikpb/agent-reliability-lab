@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-6",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  is an ingress controller driving [Kong Gateway](https://konghq.com/kong/).\n* [Kusk Gateway](https://kusk.kubeshop.io/) is an OpenAPI-driven ingress controller based on [Envoy](https://www.envoyproxy.io).\n* [N42 Gateway](https://n42-gateway.github.io/) is an Ingress and Gateway API controller for [HAProxy](https://www.haproxy.org/#desc).\n* The [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx-ingress-controller/)\n  works with the [NGINX](https://www.nginx.com/resources/glossary/nginx/) webserver (as a proxy)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-in-kubernetes-1",
+  "heading": "Service > Services in Kubernetes",
+  "text": "If your workload speaks HTTP, you might choose to use an\n[Ingress](/docs/concepts/services-networking/ingress/) to control how web traffic\nreaches that workload.\nIngress is not a Service type, but it acts as the entry point for your\ncluster. An Ingress lets you consolidate your routing rules into a single resource, so\nthat you can expose multiple components of your workload, running separately in your\ncluster, behind a single listener.\n\nThe [Gateway](https://gateway-api.sigs.k8s.io/#what-is-the-gateway-api) API for Kubernetes\nprovides extra capabilities beyond Ingress and Service. You can add Gateway to your cluster -\nit is a family of extension APIs, implemented using\nCustomResourceDefinitions -\nand then use these to configure access to network services that are running in your cluster."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#field-spec-ports-0",
+  "heading": "Service > Defining a Service > Port definitions",
+  "text": "Port definitions in Pods have names, and you can reference these names in the\n`targetPort` attribute of a Service. For example, we can bind the `targetPort`\nof the Service to the Pod port in the following way:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx-service\nspec:\n  selector:\n    app.kubernetes.io/name: proxy\n  ports:\n  - name: name-of-service-port\n    protocol: TCP\n    port: 80\n    targetPort: http-web-svc\n\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx\n  labels:\n    app.kubernetes.io/name: proxy\nspec:\n  containers:\n  - name: nginx\n    image: nginx:stable\n    ports:\n      - containerPort: 80\n        name: http-web-svc\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-services-1",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Services",
+  "text": "You can use:\n\n```shell\nkubectl get pods --selector=name=nginx,type=frontend\n```\n\nto list pods that match this selector. Verify that the list matches the Pods that you expect to provide your Service.\nVerify that the pod's `containerPort` matches the Service's `targetPort`\n\n#### Network traffic is not forwarded\n\nPlease see [debugging service](/docs/tasks/debug/debug-application/debug-service/) for more information."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#intro-0",
+  "heading": "Ingress",
+  "text": "The Kubernetes project recommends using [Gateway](https://gateway-api.sigs.k8s.io/) instead of\n[Ingress](/docs/concepts/services-networking/ingress/).\nThe Ingress API has been frozen.\n\nThis means that:\n* The Ingress API is generally available, and is subject to the [stability guarantees](/docs/reference/using-api/deprecation-policy/#deprecating-parts-of-the-api) for generally available APIs.\n  The Kubernetes project has no plans to remove Ingress from Kubernetes.\n* The Ingress API is no longer being developed, and will have no further changes\n  or updates made to it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#intro-0",
+  "heading": "Ingress Controllers",
+  "text": "The Kubernetes project recommends using [Gateway](https://gateway-api.sigs.k8s.io/) instead of\n[Ingress](/docs/concepts/services-networking/ingress/).\nThe Ingress API has been frozen.\n\nThis means that:\n* The Ingress API is generally available, and is subject to the [stability guarantees](/docs/reference/using-api/deprecation-policy/#deprecating-parts-of-the-api) for generally available APIs.\n  The Kubernetes project has no plans to remove Ingress from Kubernetes.\n* The Ingress API is no longer being developed, and will have no further changes\n  or updates made to it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-5",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  which offers API gateway functionality.\n* [Higress](https://github.com/alibaba/higress) is an [Envoy](https://www.envoyproxy.io) based API gateway that can run as an ingress controller.\n* The [HAProxy Ingress Controller for Kubernetes](https://github.com/haproxytech/kubernetes-ingress#readme)\n  is an ingress controller for [HAProxy](https://www.haproxy.org/#desc).\n* [Istio Ingress](https://istio.io/latest/docs/tasks/traffic-management/ingress/kubernetes-ingress/)\n  is an [Istio](https://istio.io/) based ingress controller.\n* The [Kong Ingress Controller for Kubernetes](https://github.com/Kong/kubernetes-ingress-controller#readme)"
+ }
+]

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:** I read ticket T-3002, inspected the `vision` namespace, and found `doc-embedder-6f9b8d7c5-r4tkq` stuck in `Pending`. The scheduler condition message revealed the GPU nodes carry the taint `dedicated=gpu:NoSchedule`, which the pod's toleration list does not cover \u2014 despite having the `nvidia.com/gpu:NoSchedule` toleration. I resolved the ticket with instructions to add a `dedicated=gpu:NoSchedule` toleration to the Deployment spec, which will allow the scheduler to place the pod on the GPU nodes.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5502,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 140,
+ "stop_reason": "end_turn"
+}

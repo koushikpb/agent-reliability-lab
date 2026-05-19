@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the current state of the pods in the documents namespace where pdf-exporter is deployed.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MfTm8B8n7nGQhV8mF9zk1L",
+   "input": {
+    "namespace": "documents"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1368,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 76,
+ "stop_reason": "tool_use"
+}

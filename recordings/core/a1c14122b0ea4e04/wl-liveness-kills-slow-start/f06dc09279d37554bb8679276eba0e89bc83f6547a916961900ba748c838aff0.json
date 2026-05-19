@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01VghyEYsebHp6FzCAN916e4",
+   "input": {
+    "pod": "catalog-search-7d6f9b8c5-4kxpw"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01JAXGdKraX633EEz5eDdQbq",
+   "input": {
+    "pod": "catalog-search-7d6f9b8c5-s9m2t"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2531,
+ "model": "claude-opus-4-7",
+ "output_tokens": 157,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-2",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "Kubernetes volumes enable complex\napplications, with data persistence and Pod volume sharing requirements, to be deployed\non Kubernetes. Management of persistent volumes associated with a specific storage\nback-end or protocol includes actions such as provisioning/de-provisioning/resizing\nof volumes, attaching/detaching a volume to/from a Kubernetes node and\nmounting/dismounting a volume to/from individual containers in a pod that needs to\npersist data.\n\nVolume management components are shipped as Kubernetes volume\n[plugin](/docs/concepts/storage/volumes/#volume-types).\nThe following broad classes of Kubernetes volume plugins are supported on Windows:\n\n* [`FlexVolume plugins`](/docs/concepts/storage/volumes/#flexvolume)\n  * Please note that FlexVolumes have been deprecated as of 1.23\n* [`CSI Plugins`](/docs/concepts/storage/volumes/#csi)\n\n##### In-tree volume plugins\n\nThe following in-tree plugins support persistent storage on Windows nodes:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#introduction-1",
+  "heading": "Persistent Volumes > Introduction",
+  "text": "A _PersistentVolumeClaim_ (PVC) is a request for storage by a user. It is similar\nto a Pod. Pods consume node resources and PVCs consume PV resources. Pods can\nrequest specific levels of resources (CPU and Memory). Claims can request specific\nsize and access modes (e.g., they can be mounted ReadWriteOnce, ReadOnlyMany,\nReadWriteMany, or ReadWriteOncePod, see [AccessModes](#access-modes)).\n\nWhile PersistentVolumeClaims allow a user to consume abstract storage resources,\nit is common that users need PersistentVolumes with varying properties, such as\nperformance, for different problems. Cluster administrators need to be able to\noffer a variety of PersistentVolumes that differ in more ways than size and access\nmodes, without exposing users to the details of how those volumes are implemented.\nFor these needs, there is the _StorageClass_ resource.\n\nSee the [detailed walkthrough with working examples](/docs/tutorials/configuration/configure-persistent-volume-storage)."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-volumes#generic-ephemeral-volumes-0",
+  "heading": "Ephemeral Volumes > Types of ephemeral volumes > Generic ephemeral volumes",
+  "text": "Generic ephemeral volumes are similar to `emptyDir` volumes in the\nsense that they provide a per-pod directory for scratch data that is\nusually empty after provisioning. But they may also have additional\nfeatures:\n\n- Storage can be local or network-attached.\n- Volumes can have a fixed size that Pods are not able to exceed.\n- Volumes may have some initial data, depending on the driver and\n  parameters.\n- Typical operations on volumes are supported assuming that the driver\n  supports them, including\n  [snapshotting](/docs/concepts/storage/volume-snapshots/),\n  [cloning](/docs/concepts/storage/volume-pvc-datasource/),\n  [resizing](/docs/concepts/storage/persistent-volumes/#expanding-persistent-volumes-claims),\n  and [storage capacity tracking](/docs/concepts/storage/storage-capacity/).\n\nExample:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#introduction-0",
+  "heading": "Persistent Volumes > Introduction",
+  "text": "Managing storage is a distinct problem from managing compute instances.\nThe PersistentVolume subsystem provides an API for users and administrators\nthat abstracts details of how storage is provided from how it is consumed.\nTo do this, we introduce two new API resources: PersistentVolume and PersistentVolumeClaim.\n\nA _PersistentVolume_ (PV) is a piece of storage in the cluster that has been\nprovisioned by an administrator or dynamically provisioned using\n[Storage Classes](/docs/concepts/storage/storage-classes/). It is a resource in\nthe cluster just like a node is a cluster resource. PVs are volume plugins like\nVolumes, but have a lifecycle independent of any individual Pod that uses the PV.\nThis API object captures the details of the implementation of the storage, be that\nNFS, iSCSI, or a cloud-provider-specific storage system."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#writing-portable-configuration-2",
+  "heading": "Persistent Volumes > Writing Portable Configuration",
+  "text": "  dynamic storage support (in which case the user should create a matching PV)\n  or the cluster has no storage system (in which case the user cannot deploy\n  config requiring PVCs)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#types-of-persistent-volumes-5",
+  "heading": "Persistent Volumes > Types of Persistent Volumes",
+  "text": "* [`cephfs`](/docs/concepts/storage/volumes/#cephfs)\n  (**not available** starting v1.31)\n* `flocker` - Flocker storage.\n  (**not available** starting v1.25)\n* `glusterfs` - GlusterFS storage.\n  (**not available** starting v1.26)\n* `photonPersistentDisk` - Photon controller persistent disk.\n  (**not available** starting v1.15)\n* `quobyte` - Quobyte volume.\n  (**not available** starting v1.25)\n* [`rbd`](/docs/concepts/storage/volumes/#rbd) - Rados Block Device (RBD) volume \n  (**not available** starting v1.31)\n* `scaleIO` - ScaleIO volume.\n  (**not available** starting v1.21)\n* `storageos` - StorageOS volume.\n  (**not available** starting v1.25)"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#persistentvolumeclaim-0",
+  "heading": "Volumes > Types of volumes > persistentVolumeClaim",
+  "text": "A `persistentVolumeClaim` volume is used to mount a\n[PersistentVolume](/docs/concepts/storage/persistent-volumes/) into a Pod. PersistentVolumeClaims\nare a way for users to \"claim\" durable storage (such as an iSCSI volume)\nwithout knowing the details of the particular cloud environment.\n\nSee the information about [PersistentVolumes](/docs/concepts/storage/persistent-volumes/) for more\ndetails."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#types-of-persistent-volumes-0",
+  "heading": "Persistent Volumes > Types of Persistent Volumes",
+  "text": "PersistentVolume types are implemented as plugins. Kubernetes currently supports the following plugins:\n\n* [`csi`](/docs/concepts/storage/volumes/#csi) - Container Storage Interface (CSI)\n* [`fc`](/docs/concepts/storage/volumes/#fc) - Fibre Channel (FC) storage\n* [`hostPath`](/docs/concepts/storage/volumes/#hostpath) - HostPath volume\n  (for single node testing only; WILL NOT WORK in a multi-node cluster;\n  consider using `local` volume instead)\n* [`iscsi`](/docs/concepts/storage/volumes/#iscsi) - iSCSI (SCSI over IP) storage\n* [`local`](/docs/concepts/storage/volumes/#local) - local storage devices\n  mounted on nodes.\n* [`nfs`](/docs/concepts/storage/volumes/#nfs) - Network File System (NFS) storage"
+ }
+]

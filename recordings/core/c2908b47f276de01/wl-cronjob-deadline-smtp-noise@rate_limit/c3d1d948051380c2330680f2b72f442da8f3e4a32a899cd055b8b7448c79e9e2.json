@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me retry after a moment:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0152k9imEksKu4QmZWqHmFh7",
+   "input": {
+    "namespace": "finance"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1426,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 61,
+ "stop_reason": "tool_use"
+}

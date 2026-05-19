@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "EvQCCqgBCBMYAipAJWm0VQfckHmQAfJ21ex3wTE6w+lb1djwDCbhXcw5HZLlpkIECxxtlhTD+Qi1nB03II8N67zv//kE4JEtHzOAUjIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAbPs8dYGEgwOl/kOQ7PcxZw9cKIaDO1HgpJ2RaQDLPQPMyIwzo9lbEUTL+91e1iqaZ346pC+nTjM00YI2780MzX+UaS0txCKCKchBT+FbuQdTxr4KnlOuzPyAN10MesbX2mvojyWZgKKo9uaGKOjcDPX0IF40XVE0ThWQqqMWm31IH56iwG5QhUpPiWIC4KFzG+5JUL4ZXrKGpTJlR0u3JPFsujYT+NS9NbN2MUVtVzgjXEzxkSGCKWpihTbC05sROWLrtljQr4/SzfThHTLGAE=",
+   "thinking": "Let me look at the pods in the marketing namespace and search for relevant documentation simultaneously.",
+   "type": "thinking"
+  },
+  {
+   "text": "Now let me look at the pods in the `marketing` namespace.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01GpnB4J2vyhBsQr3e2m7wCc",
+   "input": {
+    "namespace": "marketing"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1527,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 100,
+ "stop_reason": "tool_use"
+}

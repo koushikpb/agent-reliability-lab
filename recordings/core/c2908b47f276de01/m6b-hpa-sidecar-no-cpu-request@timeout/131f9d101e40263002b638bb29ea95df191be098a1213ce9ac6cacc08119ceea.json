@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the critical information. The first search result describes container resource metrics, which states that when scaling based on container resources, you can track individual containers and ignore sidecar containers. However, looking back at the pod data, I see that the `log-forwarder` sidecar container has NO resource requests defined. \n\nLet me search for the specific error condition about missing CPU requests:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LwUhut5UyFFSTwLvAsNd4B",
+   "input": {
+    "query": "if some Pod containers do not have relevant resource request CPU utilization will not be defined"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 17745,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 154,
+ "stop_reason": "tool_use"
+}

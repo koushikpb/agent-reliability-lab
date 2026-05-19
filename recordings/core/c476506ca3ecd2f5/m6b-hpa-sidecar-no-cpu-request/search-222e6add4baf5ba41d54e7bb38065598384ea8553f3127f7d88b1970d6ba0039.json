@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#resource-sharing-within-containers-0",
+  "heading": "Sidecar Containers > Resource sharing within containers",
+  "text": "This section is also present in the [init containers](/docs/concepts/workloads/pods/init-containers/) page.\nIf you're editing this section, change both places.\n\nGiven the order of execution for init, sidecar and app containers, the following rules\nfor resource usage apply:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#intro-0",
+  "heading": "Assign CPU Resources to Containers and Pods",
+  "text": "This page shows how to assign a CPU *request* and a CPU *limit* to\na container. Containers cannot use more CPU than the configured limit.\nProvided the system has CPU time free, a container is guaranteed to be\nallocated as much CPU as it requests."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#for-cluster-administrators-1",
+  "heading": "Assign CPU Resources to Containers and Pods > What's next > For cluster administrators",
+  "text": "* [Configure Quotas for API Objects](/docs/tasks/administer-cluster/quota-api-object/)\n\n* [Resize CPU and Memory Resources assigned to Containers](/docs/tasks/configure-pod-container/resize-container-resources/)"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/resize-container-resources#intro-2",
+  "heading": "Resize CPU and Memory Resources assigned to Containers",
+  "text": "  For most monitoring and validation purposes, focus on `status.containerStatuses[*].resources`."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-default-namespace#what-if-you-specify-a-container-s-limit-but-not-its-request-1",
+  "heading": "Configure Default CPU Requests and Limits for a Namespace > What if you specify a container's limit, but not its request?",
+  "text": "The output shows that the container's CPU request is set to match its CPU limit.\nNotice that the container was not assigned the default CPU request value of 0.5 `cpu`:\n\n```\nresources:\n  limits:\n    cpu: \"1\"\n  requests:\n    cpu: \"1\"\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-2",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request that is too big for your Nodes",
+  "text": "```shell\nkubectl describe pod cpu-demo-2 --namespace=cpu-example\n```\n\nThe output shows that the Container cannot be scheduled because of insufficient\nCPU resources on the Nodes:\n\n```\nEvents:\n  Reason                        Message\n  ------                        -------\n  FailedScheduling      No nodes are available that match all of the following predicates:: Insufficient cpu (3).\n```\n\nDelete your Pod:\n\n```shell\nkubectl delete pod cpu-demo-2 --namespace=cpu-example\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/resize-container-resources#limitations-2",
+  "heading": "Resize CPU and Memory Resources assigned to Containers > Limitations",
+  "text": "    * *Burstable*: Requests and limits cannot become equal for *both* CPU and memory simultaneously\n      (as this would change it to Guaranteed).\n    * *BestEffort*: Resource requirements (`requests` or `limits`) cannot be added\n      (as this would change it to Burstable or Guaranteed).\n* **Container Types:** Non-restartable init containers and\n  ephemeral containers cannot be resized.\n  [Sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/) can be resized.\n* **Resource Removal:** Resource requests and limits cannot be entirely removed once set;\n  they can only be changed to different values.\n* **Operating System:** Windows pods do not support in-place resize.\n* **Node Policies:** Pods managed by [static CPU or Memory manager policies](/docs/tasks/administer-cluster/cpu-management-policies/)\n  cannot be resized in-place."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/extended-resource#for-application-developers-0",
+  "heading": "Assign Extended Resources to a Container > What's next > For application developers",
+  "text": "* [Assign Memory Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-memory-resource/)\n* [Assign CPU Resources to Containers and Pods](/docs/tasks/configure-pod-container/assign-cpu-resource/)"
+ }
+]

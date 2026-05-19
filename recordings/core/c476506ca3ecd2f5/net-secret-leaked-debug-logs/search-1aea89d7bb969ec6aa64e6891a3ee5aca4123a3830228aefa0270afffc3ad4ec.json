@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/observability#logs-1",
+  "heading": "Observability > Logs",
+  "text": "- On machines with `systemd`, the kubelet and container runtime write to journald. Otherwise, they write to `.log` files in the `/var/log` directory.\n- System components that run inside containers always write to `.log` files in `/var/log`, bypassing the default container logging mechanism.\n\nSystem component and container logs stored under `/var/log` require log rotation to prevent uncontrolled growth. Some cluster provisioning scripts install log rotation by default; verify your environment and adjust as needed. See the [system logs reference](/docs/concepts/cluster-administration/system-logs/) for details on locations, formats, and configuration options.\n\nMost clusters run a node-level logging agent (for example, Fluent Bit or Fluentd) that tails these files and forwards entries to a central log store. The [logging architecture guidance](/docs/concepts/cluster-administration/logging/) explains how to design such pipelines, apply retention, and log flows to backends.\n\nFigure 3 outlines a common log aggregation pipeline."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/logging#using-a-node-logging-agent-0",
+  "heading": "Logging Architecture > Cluster-level logging architectures > Using a node logging agent",
+  "text": "![Using a node level logging agent](/images/docs/user-guide/logging/logging-with-node-agent.png)\n\nYou can implement cluster-level logging by including a _node-level logging agent_ on each node.\nThe logging agent is a dedicated tool that exposes logs or pushes logs to a backend.\nCommonly, the logging agent is a container that has access to a directory with log files from all of the\napplication containers on that node.\n\nBecause the logging agent must run on every node, it is recommended to run the agent\nas a `DaemonSet`.\n\nNode-level logging creates only one agent per node and doesn't require any changes to the\napplications running on the node.\n\nContainers write to stdout and stderr, but with no agreed format. A node-level agent collects\nthese logs and forwards them for aggregation."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-logs#log-location-0",
+  "heading": "System Logs > Klog > Log location",
+  "text": "There are two types of system components: those that run in a container and those\nthat do not run in a container. For example:\n\n* The Kubernetes scheduler and kube-proxy run in a container.\n* The kubelet and container runtime\n  do not run in containers.\n\nOn machines with systemd, the kubelet and container runtime write to journald.\nOtherwise, they write to `.log` files in the `/var/log` directory.\nSystem components inside containers always write to `.log` files in the `/var/log` directory,\nbypassing the default logging mechanism.\nSimilar to the container logs, you should rotate system component logs in the `/var/log` directory.\nIn Kubernetes clusters created by the `kube-up.sh` script, log rotation is configured by the `logrotate` tool.\nThe `logrotate` tool rotates logs daily, or once the log size is greater than 100MB."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/logging#log-location-node-2",
+  "heading": "Logging Architecture > System component logs > Log locations",
+  "text": "For Kubernetes cluster components that run in pods, these write to files inside\nthe `/var/log` directory, bypassing the default logging mechanism (the components\ndo not write to the systemd journal). You can use Kubernetes' storage mechanisms\nto map persistent storage into the container that runs the component.\n\nKubelet allows changing the pod logs directory from default `/var/log/pods`\nto a custom path. This adjustment can be made by configuring the `podLogsDir`\nparameter in the kubelet's configuration file.\n\nIt's important to note that the default location `/var/log/pods` has been in use for\nan extended period and certain processes might implicitly assume this path.\nTherefore, altering this parameter must be approached with caution and at your own risk.\n\nAnother caveat to keep in mind is that the kubelet supports the location being on the same\ndisk as `/var`. Otherwise, if the logs are on a separate filesystem from `/var`,\nthen the kubelet will not track that filesystem's usage, potentially leading to issues if\nit fills up."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-logs#log-verbosity-level-0",
+  "heading": "System Logs > Klog > Log verbosity level",
+  "text": "The `-v` flag controls log verbosity. Increasing the value increases the number of logged events.\nDecreasing the value decreases the number of logged events.  Increasing verbosity settings logs\nincreasingly less severe events. A verbosity setting of 0 logs only critical events."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/logging#sidecar-container-with-logging-agent-11",
+  "heading": "Logging Architecture > Cluster-level logging architectures > Using a sidecar container with the logging agent",
+  "text": "```yaml\n  - name: config-volume\n    configMap:\n      name: fluentd-config\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/logging#intro-0",
+  "heading": "Logging Architecture",
+  "text": "Application logs can help you understand what is happening inside your application. The\nlogs are particularly useful for debugging problems and monitoring cluster activity. Most\nmodern applications have some kind of logging mechanism. Likewise, container engines\nare designed to support logging. The easiest and most adopted logging method for\ncontainerized applications is writing to standard output and standard error streams.\n\nHowever, the native functionality provided by a container engine or runtime is usually\nnot enough for a complete logging solution.\n\nFor example, you may want to access your application's logs if a container crashes,\na pod gets evicted, or a node dies.\n\nIn a cluster, logs should have a separate storage and lifecycle independent of nodes,\npods, or containers. This concept is called\n[cluster-level logging](#cluster-level-logging-architectures).\n\nCluster-level logging architectures require a separate backend to store, analyze, and\nquery logs. Kubernetes does not provide a native storage solution for log data. Instead,\nthere are many logging solutions that integrate with Kubernetes. The following sections\ndescribe how to handle and store logs on nodes."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#configurations-0",
+  "heading": "Local ephemeral storage > Configurations for local ephemeral storage",
+  "text": "Kubernetes supports the following ways to configure local ephemeral storage on a\nnode:\n\nIn this configuration, you place all different kinds of ephemeral local data\n(`emptyDir` volumes, writeable layers, container images, logs) into one filesystem.\n\nThe kubelet also writes\n[node-level container logs](/docs/concepts/cluster-administration/logging/#logging-at-the-node-level)\nand treats these similarly to ephemeral local storage.\n\nThe kubelet writes logs to files inside its configured log directory (`/var/log`\nby default); and has a base directory for other locally stored data\n(`/var/lib/kubelet` by default).\n\nTypically, both `/var/lib/kubelet` and `/var/log` are on the system root filesystem,\nand the kubelet is designed with that layout in mind.\n\nYour node can have as many other filesystems, not used for Kubernetes,\nas you like."
+ }
+]

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now I can see the issue clearly. The job is timing out at the `activeDeadlineSeconds: 3600` (1 hour) limit. The job started at 01:00:04Z and received SIGTERM at 02:00:04Z, which is exactly 1 hour later. The job is taking more than 1 hour to complete because it needs to export 9.4 million rows in 95 batches.\n\nLet me search the documentation for information about how to adjust job deadlines.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01A7DmCsCscuY9SGx2g1Mh5W",
+   "input": {
+    "query": "activeDeadlineSeconds job timeout duration"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2651,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 175,
+ "stop_reason": "tool_use"
+}

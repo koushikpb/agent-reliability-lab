@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "The search didn't return specific documentation about `allow-snippet-annotations`. Let me search more specifically for ingress-nginx controller settings:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KtEGCGuopNJqpKyUtJxL53",
+   "input": {
+    "query": "ingress nginx controller arguments flags allow-snippet"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Hth4HeSaHVZmDb5UsN8rPd",
+   "input": {
+    "query": "ingress redirect permanent rewrite rule"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7068,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 132,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for documentation about job deadlines in Kubernetes.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Js9DrLDru6A9GYzpM2AmrX",
+   "input": {
+    "query": "job activeDeadlineSeconds timeout deadline"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2168,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 74,
+ "stop_reason": "tool_use"
+}

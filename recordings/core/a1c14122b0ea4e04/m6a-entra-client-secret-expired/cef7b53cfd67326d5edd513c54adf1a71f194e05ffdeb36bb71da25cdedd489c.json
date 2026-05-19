@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Summary: I read T-5002, listed pods in `internal-tools` (all Running/Ready), and checked logs. The oauth2-proxy log clearly shows Azure AD returning `AADSTS7000222: client secret ... are expired` on every `/oauth2/callback` since 08:01 \u2014 matching the user-reported symptom (MS login works, then 500 at the portal). Cluster is healthy, so the fix is for IT identity to issue a new client secret, then the team updates the Kubernetes Secret in `internal-tools` and does `kubectl rollout restart` on the oauth2-proxy Deployment. Resolved with cited docs on Secret volume propagation and Deployment rolling updates.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 12690,
+ "model": "claude-opus-4-7",
+ "output_tokens": 235,
+ "stop_reason": "end_turn"
+}

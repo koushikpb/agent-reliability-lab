@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-2005 by identifying that the ledger-export CronJob was being terminated due to an insufficient `activeDeadlineSeconds` timeout. The job was processing 95 batches at ~8-9 minutes per batch, requiring 2-3 hours to complete, but the deadline was set to only 1 hour. The fix is to increase the activeDeadlineSeconds value in the CronJob spec to allow the job more time to finish its work before the next scheduled run.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5809,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 116,
+ "stop_reason": "end_turn"
+}

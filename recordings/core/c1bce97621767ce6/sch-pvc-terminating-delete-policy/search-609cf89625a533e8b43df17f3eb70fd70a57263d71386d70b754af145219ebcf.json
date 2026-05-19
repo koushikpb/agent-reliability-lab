@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-1",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "```shell\nkubectl describe pvc hostpath\nName:          hostpath\nNamespace:     default\nStorageClass:  example-hostpath\nStatus:        Terminating\nVolume:\nLabels:        <none>\nAnnotations:   volume.beta.kubernetes.io/storage-class=example-hostpath\n               volume.beta.kubernetes.io/storage-provisioner=example.com/hostpath\nFinalizers:    [kubernetes.io/pvc-protection]\n...\n```\n\nYou can see that a PV is protected when the PV's status is `Terminating` and\nthe `Finalizers` list includes `kubernetes.io/pv-protection` too:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "The purpose of the Storage Object in Use Protection feature is to ensure that\nPersistentVolumeClaims (PVCs) in active use by a Pod and PersistentVolume (PVs)\nthat are bound to PVCs are not removed from the system, as this may result in data loss.\n\nPVC is in active use by a Pod when a Pod object exists that is using the PVC.\n\nIf a user deletes a PVC in active use by a Pod, the PVC is not removed immediately.\nPVC removal is postponed until the PVC is no longer actively used by any Pods. Also,\nif an admin deletes a PV that is bound to a PVC, the PV is not removed immediately.\nPV removal is postponed until the PV is no longer bound to a PVC.\n\nYou can see that a PVC is protected when the PVC's status is `Terminating` and the\n`Finalizers` list includes `kubernetes.io/pvc-protection`:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-2",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "```shell\nkubectl describe pv task-pv-volume\nName:            task-pv-volume\nLabels:          type=local\nAnnotations:     <none>\nFinalizers:      [kubernetes.io/pv-protection]\nStorageClass:    standard\nStatus:          Terminating\nClaim:\nReclaim Policy:  Delete\nAccess Modes:    RWO\nCapacity:        1Gi\nMessage:\nSource:\n    Type:          HostPath (bare host directory volume)\n    Path:          /tmp/data\n    HostPathType:\nEvents:            <none>\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-1",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "```shell\nkubectl describe pv pvc-74a498d6-3929-47e8-8c02-078c1ece4d78\nName:            pvc-74a498d6-3929-47e8-8c02-078c1ece4d78\nLabels:          <none>\nAnnotations:     kubernetes.io/createdby: vsphere-volume-dynamic-provisioner\n                 pv.kubernetes.io/bound-by-controller: yes\n                 pv.kubernetes.io/provisioned-by: kubernetes.io/vsphere-volume\nFinalizers:      [kubernetes.io/pv-protection kubernetes.io/pv-controller]\nStorageClass:    vcp-sc\nStatus:          Bound\nClaim:           default/vcp-pvc-1\nReclaim Policy:  Delete\nAccess Modes:    RWO\nVolumeMode:      Filesystem\nCapacity:        1Gi\nNode Affinity:   <none>\nMessage:\nSource:\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#access-modes-3",
+  "heading": "Persistent Volumes > Persistent Volumes > Access Modes",
+  "text": "Kubernetes uses volume access modes to match PersistentVolumeClaims and PersistentVolumes.\nIn some cases, the volume access modes also constrain where the PersistentVolume can be mounted.\nVolume access modes do **not** enforce write protection once the storage has been mounted.\nEven if the access modes are specified as ReadWriteOnce, ReadOnlyMany, or ReadWriteMany,\nthey don't set any constraints on the volume. For example, even if a PersistentVolume is\ncreated as ReadOnlyMany, it is no guarantee that it will be read-only. If the access modes\nare specified as ReadWriteOncePod, the volume is constrained and can be mounted on only a single Pod.\n\n> __Important!__ A volume can only be mounted using one access mode at a time,\n> even if it supports many."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#access-modes-1",
+  "heading": "Persistent Volumes > Persistent Volumes > Access Modes",
+  "text": " `ReadWriteOncePod`\n: \n  the volume can be mounted as read-write by a single Pod. Use ReadWriteOncePod\n  access mode if you want to ensure that only one pod across the whole cluster can\n  read that PVC or write to it.\n\nThe `ReadWriteOncePod` access mode is only supported for\nCSI volumes and Kubernetes version\n1.22+. To use this feature you will need to update the following\n[CSI sidecars](https://kubernetes-csi.github.io/docs/sidecar-containers.html)\nto these versions or greater:"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-capacity#scheduling-0",
+  "heading": "Storage Capacity > Scheduling",
+  "text": "Storage capacity information is used by the Kubernetes scheduler if:\n- a Pod uses a volume that has not been created yet,\n- that volume uses a StorageClass which references a CSI driver and\n  uses `WaitForFirstConsumer` [volume binding\n  mode](/docs/concepts/storage/storage-classes/#volume-binding-mode),\n  and\n- the `CSIDriver` object for the driver has `StorageCapacity` set to\n  true.\n\nIn that case, the scheduler only considers nodes for the Pod which\nhave enough storage available to them. This check is very\nsimplistic and only compares the size of the volume against the\ncapacity listed in `CSIStorageCapacity` objects with a topology that\nincludes the node.\n\nFor volumes with `Immediate` volume binding mode, the storage driver\ndecides where to create the volume, independently of Pods that will\nuse the volume. The scheduler then schedules Pods onto nodes where the\nvolume is available after the volume has been created."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#fc-0",
+  "heading": "Volumes > Types of volumes > fc (fibre channel)",
+  "text": "An `fc` volume type allows an existing fibre channel block storage volume\nto be mounted in a Pod. You can specify single or multiple target world wide names (WWNs)\nusing the parameter `targetWWNs` in your Volume configuration. If multiple WWNs are specified,\ntargetWWNs expect that those WWNs are from multi-path connections.\n\nYou must configure FC SAN Zoning to allocate and mask those LUNs (volumes) to the target WWNs\nbeforehand so that Kubernetes hosts can access them."
+ }
+]

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I can see the issue! The logs show that version 3.0 of storefront-web is attempting to export OpenTelemetry (OTEL) spans and metrics to `otel-collector.observability.svc:4317`, but the connection is being refused (`ECONNREFUSED`). The export queue is filling up and spans are being dropped. This is causing the application to fail, which results in 502 errors to the ingress-nginx.\n\nLet me search the Kubernetes documentation for information about service connectivity and DNS resolution to confirm this is a common issue.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01ALLCbEeNmmPbdg5Co1K6H1",
+   "input": {
+    "query": "service DNS resolution svc connection refused"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2376,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 186,
+ "stop_reason": "tool_use"
+}

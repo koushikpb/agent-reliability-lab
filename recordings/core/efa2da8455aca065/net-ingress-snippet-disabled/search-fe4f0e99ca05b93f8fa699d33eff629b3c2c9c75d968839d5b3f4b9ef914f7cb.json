@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-1",
+  "heading": "Ingress > The Ingress resource",
+  "text": "An Ingress needs `apiVersion`, `kind`, `metadata` and `spec` fields.\nThe name of an Ingress object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).\nFor general information about working with config files, see\n[deploying applications](/docs/tasks/run-application/run-stateless-application-deployment/),\n[configuring containers](/docs/tasks/configure-pod-container/configure-pod-configmap/),\n[managing resources](/docs/concepts/workloads/management/).\nIngress controllers frequently use [annotations](/docs/concepts/overview/working-with-objects/annotations/) to configure behavior.\nReview the documentation for your choice of ingress controller to learn which annotations are expected and / or supported."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-environment-variables-3",
+  "heading": "ConfigMaps > Using ConfigMaps > Using Configmaps as environment variables",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: env-configmap\nspec:\n  containers:\n  - name: envars-test-container\n    image: nginx\n    env:\n    - name: CONFIGMAP_USERNAME\n      valueFrom:\n        configMapKeyRef:\n          name: myconfigmap\n          key: username\n```\n\nIn the Pod created from this manifest, you will see that the environment variable\n`CONFIGMAP_USERNAME` is set to the value of the `username` value from the ConfigMap.\nOther keys from the ConfigMap data are not copied into the environment.\n\nIt's important to note that the range of characters allowed for environment\nvariable names in pods is [restricted](/docs/tasks/inject-data-application/define-environment-variable-container/#using-environment-variables-inside-of-your-config).\nIf any keys do not meet the rules, those keys are not made available to your container, though\nthe Pod is allowed to start."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/declare-network-policy#limit-access-to-the-nginx-service-0",
+  "heading": "Declare Network Policy > Limit access to the `nginx` service",
+  "text": "To limit the access to the `nginx` service so that only Pods with the label `access: true` can query it, create a NetworkPolicy object as follows:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: access-nginx\nspec:\n  podSelector:\n    matchLabels:\n      app: nginx\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels:\n          access: \"true\"\n```\n\nThe name of a NetworkPolicy object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).\n\nNetworkPolicy includes a `podSelector` which selects the grouping of Pods to which the policy applies. You can see this policy selects Pods with the label `app=nginx`. The label was automatically added to the Pod in the `nginx` Deployment. An empty `podSelector` selects all pods in the namespace."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/management#updating-annotations-0",
+  "heading": "Managing Workloads > Updating annotations",
+  "text": "Sometimes you would want to attach annotations to resources. Annotations are arbitrary\nnon-identifying metadata for retrieval by API clients such as tools or libraries.\nThis can be done with `kubectl annotate`. For example:\n\n```shell\nkubectl annotate pods my-nginx-v4-9gw19 description='my frontend running nginx'\nkubectl get pods my-nginx-v4-9gw19 -o yaml\n```\n\n```shell\napiVersion: v1\nkind: pod\nmetadata:\n  annotations:\n    description: my frontend running nginx\n...\n```\n\nFor more information, see [annotations](/docs/concepts/overview/working-with-objects/annotations/)\nand [kubectl annotate](/docs/reference/kubectl/generated/kubectl_annotate/)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#ingressclass-scope-2",
+  "heading": "Ingress > Ingress class > IngressClass scope",
+  "text": "The `kind` (in combination the `apiGroup`) of the parameters\nrefers to a namespaced API (for example: ConfigMap), and\nthe `name` of the parameters identifies a specific resource\nin the namespace you specified in `namespace`.\n\nNamespace-scoped parameters help the cluster operator delegate control over the\nconfiguration (for example: load balancer settings, API gateway definition)\nthat is used for a workload. If you used a cluster-scoped parameter then either:\n\n- the cluster operator team needs to approve a different team's changes every\n  time there's a new configuration change being applied.\n- the cluster operator must define specific access controls, such as\n  [RBAC](/docs/reference/access-authn-authz/rbac/) roles and bindings, that let\n  the application team make changes to the cluster-scoped parameters resource.\n\nThe IngressClass API itself is always cluster-scoped.\n\nHere is an example of an IngressClass that refers to parameters that are\nnamespaced:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicationcontroller#running-an-example-replicationcontroller-1",
+  "heading": "ReplicationController > Running an example ReplicationController",
+  "text": "```\nName:        nginx\nNamespace:   default\nSelector:    app=nginx\nLabels:      app=nginx\nAnnotations:    <none>\nReplicas:    3 current / 3 desired\nPods Status: 0 Running / 3 Waiting / 0 Succeeded / 0 Failed\nPod Template:\n  Labels:       app=nginx\n  Containers:\n   nginx:\n    Image:              nginx\n    Port:               80/TCP\n    Environment:        <none>\n    Mounts:             <none>\n  Volumes:              <none>\nEvents:\n  FirstSeen       LastSeen     Count    From                        SubobjectPath    Type      Reason              Message\n  ---------       --------     -----    ----                        -------------    ----      ------              -------\n  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-qrm3m\n  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-3ntk0\n  20s             20s          1        {replication-controller }                    Normal    SuccessfulCreate    Created pod: nginx-4ok8v\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-update-objects-9",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to update objects",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # The annotation contains the updated image to nginx 1.16.1,\n    # but does not contain the updated replicas to 2\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.16.1\",\"name\":\"nginx\",\n```"
+ }
+]

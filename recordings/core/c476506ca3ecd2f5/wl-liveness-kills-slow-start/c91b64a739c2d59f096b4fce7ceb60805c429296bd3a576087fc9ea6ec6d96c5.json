@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Ticket T-2003 resolved.** Here's a summary of what I did:\n\n1. **Read the ticket** \u2014 two `catalog-search` pods stuck restarting since 9am, no new deployment.\n2. **Listed pods** in the `search` namespace \u2014 both pods were in `CrashLoopBackOff` (10\u201311 restarts each), terminated with exit code **143 (SIGTERM)**, with liveness probe failures citing \"connection refused\" on port 8080.\n3. **Pulled logs** from both pods \u2014 the app logs revealed it loads today's larger index snapshot (`catalog-2026-05-12T03`, **48 shards / 12.4 GiB**) fully into memory *before* opening the HTTP listener. At ~9 seconds per 4 shards, full load takes ~108 seconds. The liveness probe (`initialDelaySeconds=30`, `periodSeconds=10`, `failureThreshold=3`) kills the container at ~60 seconds \u2014 before startup completes.\n4. **Searched docs** \u2014 confirmed that a `startupProbe` is the correct solution for slow-starting containers, suspending the liveness probe until the app is ready.\n5. **Resolved the ticket** with the root cause, evidence, and a concrete fix: add a `startupProbe` (same `/healthz` endpoint, `failureThreshold: 18`) to give the container up to ~210 seconds to finish loading before the liveness probe activates.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9880,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 347,
+ "stop_reason": "end_turn"
+}

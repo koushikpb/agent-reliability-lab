@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#updating-a-deployment-7",
+  "heading": "Deployments > Updating a Deployment",
+  "text": "      Normal  ScalingReplicaSet  14s   deployment-controller  Scaled down replica set nginx-deployment-2035384211 to 0\n  ```\n  Here you see that when you first created the Deployment, it created a ReplicaSet (nginx-deployment-2035384211)\n  and scaled it up to 3 replicas directly. When you updated the Deployment, it created a new ReplicaSet\n  (nginx-deployment-1564180365) and scaled it up to 1 and waited for it to come up. Then it scaled down the old ReplicaSet\n  to 2 and scaled up the new ReplicaSet to 2 so that at least 3 Pods were available and at most 4 Pods were created at all times.\n  It then continued scaling up and down the new and the old ReplicaSet, with the same rolling update strategy.\n  Finally, you'll have 3 available replicas in the new ReplicaSet, and the old ReplicaSet is scaled down to 0."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#proportional-scaling-2",
+  "heading": "Deployments > Scaling a Deployment > Proportional scaling",
+  "text": "* Then a new scaling request for the Deployment comes along. The autoscaler increments the Deployment replicas\nto 15. The Deployment controller needs to decide where to add these new 5 replicas. If you weren't using\nproportional scaling, all 5 of them would be added in the new ReplicaSet. With proportional scaling, you\nspread the additional replicas across all ReplicaSets. Bigger proportions go to the ReplicaSets with the\nmost replicas and lower proportions go to ReplicaSets with less replicas. Any leftovers are added to the\nReplicaSet with the most replicas. ReplicaSets with zero replicas are not scaled up.\n\nIn our example above, 3 replicas are added to the old ReplicaSet and 2 replicas are added to the\nnew ReplicaSet. The rollout process should eventually move all replicas to the new ReplicaSet, assuming\nthe new replicas become healthy. To confirm this, run:\n\n```shell\nkubectl get deploy\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#proportional-scaling-0",
+  "heading": "Deployments > Scaling a Deployment > Proportional scaling",
+  "text": "RollingUpdate Deployments support running multiple versions of an application at the same time. When you\nor an autoscaler scales a RollingUpdate Deployment that is in the middle of a rollout (either in progress\nor paused), the Deployment controller balances the additional replicas in the existing active\nReplicaSets (ReplicaSets with Pods) in order to mitigate risk. This is called *proportional scaling*.\n\nFor example, you are running a Deployment with 10 replicas, [maxSurge](#max-surge)=3, and [maxUnavailable](#max-unavailable)=2.\n\n* Ensure that the 10 replicas in your Deployment are running.\n  ```shell\n  kubectl get deploy\n  ```\n  The output is similar to this:\n\n  ```\n  NAME                 DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE\n  nginx-deployment     10        10        10           10          50s\n  ```\n\n* You update to a new image which happens to be unresolvable from inside the cluster.\n  ```shell\n  kubectl set image deployment/nginx-deployment nginx=nginx:sometag\n  ```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#replicas-0",
+  "heading": "Deployments > Writing a Deployment Spec > Replicas",
+  "text": "`.spec.replicas` is an optional field that specifies the number of desired Pods. It defaults to 1.\n\nShould you manually scale a Deployment, example via `kubectl scale deployment\ndeployment --replicas=X`, and then you update that Deployment based on a manifest\n(for example: by running `kubectl apply -f deployment.yaml`),\nthen applying that manifest overwrites the manual scaling that you previously did.\n\nIf a [HorizontalPodAutoscaler](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/) (or any\nsimilar API for horizontal scaling) is managing scaling for a Deployment, don't set `.spec.replicas`.\n\nInstead, allow the Kubernetes\ncontrol plane to manage the\n`.spec.replicas` field automatically."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rolling-back-a-deployment-6",
+  "heading": "Deployments > Rolling Back a Deployment",
+  "text": "    21s       21s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-1564180365 to 3\n    13s       13s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled down replica set nginx-deployment-2035384211 to 0\n    13s       13s         1       {deployment-controller }                Normal      ScalingReplicaSet   Scaled up replica set nginx-deployment-3066724191 to 1\n  ```"
+ },
+ {
+  "chunk_id": "tasks/run-application/scale-deployment#scaling-to-zero-0",
+  "heading": "Horizontal Manual Scaling for a Deployment > Scaling to zero",
+  "text": "You can scale a Deployment to zero to temporarily suspend the workload without\ndeleting the Deployment itself:\n\n```shell\nkubectl scale deployment/nginx-deployment --replicas=0\n```\n\nVerify that no Pods are running:\n\n```shell\nkubectl get deployment nginx-deployment\n```\n\nThe output is similar to:\n\n```\nNAME               READY   UP-TO-DATE   AVAILABLE   AGE\nnginx-deployment   0/0     0            0           5m\n```\n\nScaling to zero removes all Pods but preserves the Deployment and its\nReplicaSet. Scale back up at any time by setting `--replicas` to a positive\nnumber.\n\nCommon use cases for scaling to zero include:\n\n- Temporarily suspending a workload to save resources\n- Debugging or maintenance windows\n- Cost control in development or staging environments"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rollover-aka-multiple-updates-in-flight-0",
+  "heading": "Deployments > Updating a Deployment > Rollover (aka multiple updates in-flight)",
+  "text": "Each time a new Deployment is observed by the Deployment controller, a ReplicaSet is created to bring up\nthe desired Pods. If the Deployment is updated, the existing ReplicaSet that controls Pods whose labels\nmatch `.spec.selector` but whose template does not match `.spec.template` is scaled down. Eventually, the new\nReplicaSet is scaled to `.spec.replicas` and all old ReplicaSets is scaled to 0.\n\nIf you update a Deployment while an existing rollout is in progress, the Deployment creates a new ReplicaSet\nas per the update and start scaling that up, and rolls over the ReplicaSet that it was scaling up previously\n-- it will add it to its list of old ReplicaSets and start scaling it down."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rolling-back-to-a-previous-revision-4",
+  "heading": "Deployments > Rolling Back a Deployment > Rolling Back to a Previous Revision",
+  "text": "     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set nginx-deployment-75675f5897 to 1\n     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-c4747d96c to 3\n     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled down replica set nginx-deployment-75675f5897 to 0\n     Normal  ScalingReplicaSet   11m   deployment-controller  Scaled up replica set nginx-deployment-595696685f to 1\n     Normal  DeploymentRollback  15s   deployment-controller  Rolled back deployment \"nginx-deployment\" to revision 2\n     Normal  ScalingReplicaSet   15s   deployment-controller  Scaled down replica set nginx-deployment-595696685f to 0\n   ```"
+ }
+]

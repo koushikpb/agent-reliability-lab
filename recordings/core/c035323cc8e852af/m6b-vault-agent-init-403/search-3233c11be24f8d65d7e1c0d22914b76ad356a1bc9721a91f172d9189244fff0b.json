@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#detailed-behavior-1",
+  "heading": "Init Containers > Detailed behavior",
+  "text": "Changes to the init container spec are limited to the container image field.\nDirectly altering the `image` field of  an init container does _not_ restart the\nPod or trigger its recreation. If the Pod has yet to start, that change may\nhave an effect on how the Pod boots up.\n\nFor a [pod template](/docs/concepts/workloads/pods/#pod-templates)\nyou can typically change any field for an init container; the impact of making\nthat change depends on where the pod template is used.\n\nBecause init containers can be restarted, retried, or re-executed, init container\ncode should be idempotent. In particular, code that writes into any `emptyDir` volume\nshould be prepared for the possibility that an output file already exists.\n\nInit containers have all of the fields of an app container. However, Kubernetes\nprohibits `readinessProbe` from being used because init containers cannot\ndefine readiness distinct from completion. This is enforced during validation."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#detailed-behavior-0",
+  "heading": "Init Containers > Detailed behavior",
+  "text": "During Pod startup, the kubelet delays running init containers until the networking\nand storage are ready. Then the kubelet runs the Pod's init containers in the order\nthey appear in the Pod's spec.\n\nEach init container must exit successfully before\nthe next container starts. If a container fails to start due to the runtime or\nexits with failure, it is retried according to the Pod `restartPolicy`. However,\nif the Pod `restartPolicy` is set to Always, the init containers use\n`restartPolicy` OnFailure.\n\nA Pod cannot be `Ready` until all init containers have succeeded. The ports on an\ninit container are not aggregated under a Service. A Pod that is initializing\nis in the `Pending` state but should have a condition `Initialized` set to false.\n\nIf the Pod [restarts](#pod-restart-reasons), or is restarted, all init containers\nmust execute again."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#differences-from-sidecar-containers-0",
+  "heading": "Init Containers > Understanding init containers > Differences from sidecar containers",
+  "text": "Init containers run and complete their tasks before the main application container starts.\nUnlike [sidecar containers](/docs/concepts/workloads/pods/sidecar-containers),\ninit containers are not continuously running alongside the main containers.\n\nInit containers run to completion sequentially, and the main container does not start\nuntil all the init containers have successfully completed.\n\ninit containers do not support `lifecycle`, `livenessProbe`, `readinessProbe`, or\n`startupProbe` whereas sidecar containers support all these [probes](/docs/concepts/workloads/pods/pod-lifecycle/#types-of-probe) to control their lifecycle.\n\nInit containers share the same resources (CPU, memory, network) with the main application\ncontainers but do not interact directly with them. They can, however, use shared volumes\nfor data exchange."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-init-containers#understanding-pod-status-0",
+  "heading": "Debug Init Containers > Understanding Pod status",
+  "text": "A Pod status beginning with `Init:` summarizes the status of Init Container\nexecution. The table below describes some example status values that you might\nsee while debugging Init Containers.\n\nStatus | Meaning\n------ | -------\n`Init:N/M` | The Pod has `M` Init Containers, and `N` have completed so far.\n`Init:Error` | An Init Container has failed to execute.\n`Init:CrashLoopBackOff` | An Init Container has failed repeatedly.\n`Pending` | The Pod has not yet begun executing Init Containers.\n`PodInitializing` or `Running` | The Pod has already finished executing Init Containers."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#sidecar-containers-and-pod-lifecycle-0",
+  "heading": "Sidecar Containers > Sidecar containers and Pod lifecycle",
+  "text": "If an init container is created with its `restartPolicy` set to `Always`, it will\nstart and remain running during the entire life of the Pod. This can be helpful for\nrunning supporting services separated from the main application containers.\n\nIf a `readinessProbe` is specified for this init container, its result will be used\nto determine the `ready` state of the Pod.\n\nSince these containers are defined as init containers, they benefit from the same\nordering and sequential guarantees as regular init containers, allowing you to mix\nsidecar containers with regular init containers for complex Pod initialization flows."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-initialization#create-a-pod-that-has-an-init-container-0",
+  "heading": "Configure Pod Initialization > Create a Pod that has an Init Container",
+  "text": "In this exercise you create a Pod that has one application Container and one\nInit Container. The init container runs to completion before the application\ncontainer starts.\n\nHere is the configuration file for the Pod:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: init-demo\nspec:\n  containers:\n  - name: nginx\n    image: nginx\n    ports:\n    - containerPort: 80\n    volumeMounts:\n    - name: workdir\n      mountPath: /usr/share/nginx/html\n  # These containers are run during pod initialization\n  initContainers:\n  - name: install\n    image: busybox:1.28\n    command:\n    - wget\n    - \"-O\"\n    - \"/work-dir/index.html\"\n    - http://info.cern.ch\n    volumeMounts:\n    - name: workdir\n      mountPath: \"/work-dir\"\n  dnsPolicy: Default\n  volumes:\n  - name: workdir\n    emptyDir: {}\n```\n\nIn the configuration file, you can see that the Pod has a Volume that the init\ncontainer and the application container share."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/_index#how-pods-manage-multiple-containers-2",
+  "heading": "Pods > Pods with multiple containers",
+  "text": "Some Pods have init containers\nas well as app containers.\nBy default, init containers run and complete before the app containers are started.\n\nYou can also have [sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/)\nthat provide auxiliary services to the main application Pod (for example: a service mesh).\n\nEnabled by default, the `SidecarContainers` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)\nallows you to specify `restartPolicy: Always` for init containers.\nSetting the `Always` restart policy ensures that the containers where you set it are\ntreated as _sidecars_ that are kept running during the entire lifetime of the Pod.\nContainers that you explicitly define as sidecar containers\nstart up before the main application Pod and remain running until the Pod is\nshut down."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#pod-sidecar-containers-0",
+  "heading": "Sidecar Containers > Sidecar containers in Kubernetes",
+  "text": "Kubernetes implements sidecar containers as a special case of\n[init containers](/docs/concepts/workloads/pods/init-containers/); sidecar containers remain\nrunning after Pod startup. This document uses the term _regular init containers_ to clearly\nrefer to containers that only run during Pod startup.\n\nProvided that your cluster has the `SidecarContainers`\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) enabled\n(the feature is active by default since Kubernetes v1.29), you can specify a `restartPolicy`\nfor containers listed in a Pod's `initContainers` field.\nThese restartable _sidecar_ containers are independent from other init containers and from\nthe main application container(s) within the same pod.\nThese can be started, stopped, or restarted without affecting the main application container\nand other init containers."
+ }
+]

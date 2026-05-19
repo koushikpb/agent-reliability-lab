@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-2",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "Kubernetes volumes enable complex\napplications, with data persistence and Pod volume sharing requirements, to be deployed\non Kubernetes. Management of persistent volumes associated with a specific storage\nback-end or protocol includes actions such as provisioning/de-provisioning/resizing\nof volumes, attaching/detaching a volume to/from a Kubernetes node and\nmounting/dismounting a volume to/from individual containers in a pod that needs to\npersist data.\n\nVolume management components are shipped as Kubernetes volume\n[plugin](/docs/concepts/storage/volumes/#volume-types).\nThe following broad classes of Kubernetes volume plugins are supported on Windows:\n\n* [`FlexVolume plugins`](/docs/concepts/storage/volumes/#flexvolume)\n  * Please note that FlexVolumes have been deprecated as of 1.23\n* [`CSI Plugins`](/docs/concepts/storage/volumes/#csi)\n\n##### In-tree volume plugins\n\nThe following in-tree plugins support persistent storage on Windows nodes:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#introduction-0",
+  "heading": "Persistent Volumes > Introduction",
+  "text": "Managing storage is a distinct problem from managing compute instances.\nThe PersistentVolume subsystem provides an API for users and administrators\nthat abstracts details of how storage is provided from how it is consumed.\nTo do this, we introduce two new API resources: PersistentVolume and PersistentVolumeClaim.\n\nA _PersistentVolume_ (PV) is a piece of storage in the cluster that has been\nprovisioned by an administrator or dynamically provisioned using\n[Storage Classes](/docs/concepts/storage/storage-classes/). It is a resource in\nthe cluster just like a node is a cluster resource. PVs are volume plugins like\nVolumes, but have a lifecycle independent of any individual Pod that uses the PV.\nThis API object captures the details of the implementation of the storage, be that\nNFS, iSCSI, or a cloud-provider-specific storage system."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reclaiming-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reclaiming",
+  "text": "When a user is done with their volume, they can delete the PVC objects from the\nAPI that allows reclamation of the resource. The reclaim policy for a PersistentVolume\ntells the cluster what to do with the volume after it has been released of its claim.\nCurrently, volumes can either be Retained, Recycled, or Deleted.\n\n#### Retain\n\nThe `Retain` reclaim policy allows for manual reclamation of the resource.\nWhen the PersistentVolumeClaim is deleted, the PersistentVolume still exists\nand the volume is considered \"released\". But it is not yet available for\nanother claim because the previous claimant's data remains on the volume.\nAn administrator can manually reclaim the volume with the following steps.\n\n1. Delete the PersistentVolume. The associated storage asset in external infrastructure\n   still exists after the PV is deleted.\n1. Manually clean up the data on the associated storage asset accordingly.\n1. Manually delete the associated storage asset.\n\nIf you want to reuse the same storage asset, create a new PersistentVolume with\nthe same storage asset definition.\n\n#### Delete"
+ },
+ {
+  "chunk_id": "concepts/storage/dynamic-provisioning#intro-0",
+  "heading": "Dynamic Volume Provisioning",
+  "text": "Dynamic volume provisioning allows storage volumes to be created on-demand.\nWithout dynamic provisioning, cluster administrators have to manually make\ncalls to their cloud or storage provider to create new storage volumes, and\nthen create [`PersistentVolume` objects](/docs/concepts/storage/persistent-volumes/)\nto represent them in Kubernetes. The dynamic provisioning feature eliminates\nthe need for cluster administrators to pre-provision storage. Instead, it\nautomatically provisions storage when users create\n[`PersistentVolumeClaim` objects](/docs/concepts/storage/persistent-volumes/)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "Finalizers can be added on a PersistentVolume to ensure that PersistentVolumes\nhaving `Delete` reclaim policy are deleted only after the backing storage are deleted.\n\nThe finalizer `external-provisioner.volume.kubernetes.io/finalizer`(introduced\nin  v1.31) is added to both dynamically provisioned and statically provisioned\nCSI volumes.\n\nThe finalizer `kubernetes.io/pv-controller`(introduced in v1.31) is added to \ndynamically provisioned in-tree plugin volumes and skipped for statically \nprovisioned in-tree plugin volumes.\n\nThe following is an example of dynamically provisioned in-tree plugin volume:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reclaiming-1",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reclaiming",
+  "text": "For volume plugins that support the `Delete` reclaim policy, deletion removes\nboth the PersistentVolume object from Kubernetes, as well as the associated\nstorage asset in the external infrastructure. Volumes that were dynamically provisioned\ninherit the [reclaim policy of their StorageClass](#reclaim-policy), which\ndefaults to `Delete`. The administrator should configure the StorageClass\naccording to users' expectations; otherwise, the PV must be edited or\npatched after it is created. See\n[Change the Reclaim Policy of a PersistentVolume](/docs/tasks/administer-cluster/change-pv-reclaim-policy/).\n\n#### Recycle\n\nThe `Recycle` reclaim policy is deprecated. Instead, the recommended approach\nis to use dynamic provisioning.\n\nIf supported by the underlying volume plugin, the `Recycle` reclaim policy performs\na basic scrub (`rm -rf /thevolume/*`) on the volume and makes it available again for a new claim."
+ },
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-1",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "* Volume subpath mounts: only the entire volume can be mounted in a Windows container\n* Subpath volume mounting for Secrets\n* Host mount projection\n* Read-only root filesystem (mapped volumes still support `readOnly`)\n* Block device mapping\n* Memory as the storage medium (for example, `emptyDir.medium` set to `Memory`)\n* File system features like uid/gid; per-user Linux filesystem permissions\n* Setting [secret permissions with DefaultMode](/docs/tasks/inject-data-application/distribute-credentials-secure/#set-posix-permissions-for-secret-keys) (due to UID/GID dependency)\n* NFS based storage/volume support\n* Expanding the mounted volume (resizefs)"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-6",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "When the `CSIMigration{provider}` feature flag is enabled for a specific in-tree volume plugin,\nthe `kubernetes.io/pv-controller` finalizer is replaced by the\n`external-provisioner.volume.kubernetes.io/finalizer` finalizer.\n\nThe finalizers ensure that the PV object is removed only after the volume is deleted\nfrom the storage backend provided the reclaim policy of the PV is `Delete`. This\nalso ensures that the volume is deleted from storage backend irrespective of the\norder of deletion of PV and PVC."
+ }
+]

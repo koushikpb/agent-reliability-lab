@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#requests-and-limits-0",
+  "heading": "Resource Management for Pods and Containers > Requests and limits",
+  "text": "If the node where a Pod is running has enough of a resource available, it's possible (and\nallowed) for a container to use more resource than its `request` for that resource specifies.\n\nFor example, if you set a `memory` request of 256 MiB for a container, and that container is in\na Pod scheduled to a Node with 8GiB of memory and no other Pods, then the container can try to use\nmore RAM.\n\nLimits are a different story. Both `cpu` and `memory` limits are applied by the kubelet (and\ncontainer runtime),\nand are ultimately enforced by the kernel. On Linux nodes, the Linux kernel\nenforces limits with\ncgroups.\nThe behavior of `cpu` and `memory` limit enforcement is slightly different.\n\n`cpu` limits are enforced by CPU throttling. When a container approaches\nits `cpu` limit, the kernel will restrict access to the CPU corresponding to the\ncontainer's limit. Thus, a `cpu` limit is a hard limit the kernel enforces.\nContainers may not use more CPU than is specified in their `cpu` limit."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-constraint-namespace#attempt-to-create-a-pod-that-does-not-meet-the-minimum-cpu-request-0",
+  "heading": "Configure Minimum and Maximum CPU Constraints for a Namespace > Attempt to create a Pod that does not meet the minimum CPU request",
+  "text": "Here's a manifest for a Pod that has one container. The container specifies a\nCPU request of 100 millicpu and a CPU limit of 800 millicpu.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: constraints-cpu-demo-3\nspec:\n  containers:\n  - name: constraints-cpu-demo-3-ctr\n    image: nginx\n    resources:\n      limits:\n        cpu: \"800m\"\n      requests:\n        cpu: \"100m\"\n```\n\nAttempt to create the Pod:\n\n```shell\nkubectl apply -f https://k8s.io/examples/admin/resource/cpu-constraints-pod-3.yaml --namespace=constraints-cpu-example\n```\n\nThe output shows that the Pod does not get created, because it defines an unacceptable container.\nThat container is not acceptable because it specifies a CPU request that is lower than the\nenforced minimum:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-and-a-cpu-limit-2",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request and a CPU limit",
+  "text": "```\nNAME                        CPU(cores)   MEMORY(bytes)\ncpu-demo                    974m         <something>\n```\n\nRecall that by setting `-cpu \"2\"`, you configured the Container to attempt to use 2 CPUs, but the Container is only being allowed to use about 1 CPU. The container's CPU use is being throttled, because the container is attempting to use more CPU resources than its limit.\n\nAnother possible explanation for the CPU use being below 1.0 is that the Node might not have\nenough CPU resources available. Recall that the prerequisites for this exercise require your cluster to have at least 1 CPU available for use. If your Container runs on a Node that has only 1 CPU, the Container cannot use more than 1 CPU regardless of the CPU limit specified for the Container."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#if-you-do-not-specify-a-cpu-limit-0",
+  "heading": "Assign CPU Resources to Containers and Pods > If you do not specify a CPU limit",
+  "text": "If you do not specify a CPU limit for a Container, then one of these situations applies:\n\n* The Container has no upper bound on the CPU resources it can use. The Container\ncould use all of the CPU resources available on the Node where it is running.\n\n* The Container is running in a namespace that has a default CPU limit, and the\nContainer is automatically assigned the default limit. Cluster administrators can use a\n[LimitRange](/docs/reference/generated/kubernetes-api//#limitrange-v1-core/)\nto specify a default value for the CPU limit."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#example-1-0",
+  "heading": "Resource Management for Pods and Containers > Container resources example",
+  "text": "The following Pod has two containers. Both containers are defined with a request for\n0.25 CPU\nand 64MiB (2<sup>26</sup> bytes) of memory. Each container has a limit of 0.5\nCPU and 128MiB of memory. You can say the Pod has a request of 0.5 CPU and 128\nMiB of memory, and a limit of 1 CPU and 256MiB of memory.\n\n```yaml\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: frontend\nspec:\n  containers:\n  - name: app\n    image: images.my-company.example/app:v4\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n  - name: log-aggregator\n    image: images.my-company.example/log-aggregator:v6\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n```"
+ },
+ {
+  "chunk_id": "concepts/policy/limit-range#limitrange-and-admission-checks-for-pods-1",
+  "heading": "Limit Ranges > LimitRange and admission checks for Pods",
+  "text": "```yaml\napiVersion: v1\nkind: LimitRange\nmetadata:\n  name: cpu-resource-constraint\nspec:\n  limits:\n  - default: # this section defines default limits\n      cpu: 500m\n    defaultRequest: # this section defines default requests\n      cpu: 500m\n    max: # max and min define the limit range\n      cpu: \"1\"\n    min:\n      cpu: 100m\n    type: Container\n```\n\nalong with a Pod that declares a CPU resource request of `700m`, but not a limit:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: example-conflict-with-limitrange-cpu\nspec:\n  containers:\n  - name: demo\n    image: registry.k8s.io/pause:3.8\n    resources:\n      requests:\n        cpu: 700m\n```\n\nthen that Pod will not be scheduled, failing with an error similar to:\n```\nPod \"example-conflict-with-limitrange-cpu\" is invalid: spec.containers[0].resources.requests: Invalid value: \"700m\": must be less than or equal to cpu limit\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-qos#guaranteed-0",
+  "heading": "Pod Quality of Service Classes > Quality of Service classes > Guaranteed",
+  "text": "Pods that are `Guaranteed` have the strictest resource limits and are least likely\nto face eviction. They are guaranteed not to be killed until they exceed their limits\nor there are no lower-priority Pods that can be preempted from the Node. They may\nnot acquire resources beyond their specified limits. These Pods can also make\nuse of exclusive CPUs using the\n[`static`](/docs/tasks/administer-cluster/cpu-management-policies/#static-policy-configuration) CPU management policy.\n\n#### Criteria\n\nFor a Pod to be given a QoS class of `Guaranteed`:\n\n* Every Container in the Pod must have a memory limit and a memory request, both greater than zero.\n* For every Container in the Pod, the memory limit must equal the memory request.\n* Every Container in the Pod must have a CPU limit and a CPU request, both greater than zero.\n* For every Container in the Pod, the CPU limit must equal the CPU request.\n\nIf instead the Pod uses [Pod-level resources](/docs/concepts/configuration/manage-resources-containers/#pod-level-resource-specification):"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-0",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request that is too big for your Nodes",
+  "text": "CPU requests and limits are associated with Containers, but it is useful to think\nof a Pod as having a CPU request and limit. The CPU request for a Pod is the sum\nof the CPU requests for all the Containers in the Pod. Likewise, the CPU limit for\na Pod is the sum of the CPU limits for all the Containers in the Pod.\n\nPod scheduling is based on requests. A Pod is scheduled to run on a Node only if\nthe Node has enough CPU resources available to satisfy the Pod CPU request.\n\nIn this exercise, you create a Pod that has a CPU request so big that it exceeds\nthe capacity of any Node in your cluster. Here is the configuration file for a Pod\nthat has one Container. The Container requests 100 CPU, which is likely to exceed the\ncapacity of any Node in your cluster."
+ }
+]

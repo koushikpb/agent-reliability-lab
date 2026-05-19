@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Ticket **T-4004** is resolved. Here's a summary of what I did:\n\n1. **Read the ticket** \u2013 the team reported DNS failures for SMTP jobs in the `notify` namespace starting Monday, coinciding with the `smtp-relay` Service being migrated to the `shared-infra` namespace on Sunday night.\n2. **Inspected pods** \u2013 both `notification-worker` replicas were healthy/running; `smtp-relay` pods in `shared-infra` were also healthy, ruling out a service outage.\n3. **Read pod logs** \u2013 both workers logged `lookup smtp-relay on 10.96.0.10:53: no such host`, and their config showed `SMTP_HOST=smtp-relay` (an unqualified short name).\n4. **Searched docs** \u2013 confirmed that Kubernetes DNS search lists only cover a pod's own namespace by default; cross-namespace services must be addressed with a qualified name like `smtp-relay.shared-infra` or `smtp-relay.shared-infra.svc.cluster.local`.\n5. **Resolved the ticket** with the fix: update `SMTP_HOST` to `smtp-relay.shared-infra.svc.cluster.local` in the `notification-worker` Deployment and redeploy.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 6002,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 296,
+ "stop_reason": "end_turn"
+}

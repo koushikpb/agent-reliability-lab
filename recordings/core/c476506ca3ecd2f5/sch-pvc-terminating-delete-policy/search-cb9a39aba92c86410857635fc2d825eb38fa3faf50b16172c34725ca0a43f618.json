@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-1",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "```shell\nkubectl describe pvc hostpath\nName:          hostpath\nNamespace:     default\nStorageClass:  example-hostpath\nStatus:        Terminating\nVolume:\nLabels:        <none>\nAnnotations:   volume.beta.kubernetes.io/storage-class=example-hostpath\n               volume.beta.kubernetes.io/storage-provisioner=example.com/hostpath\nFinalizers:    [kubernetes.io/pvc-protection]\n...\n```\n\nYou can see that a PV is protected when the PV's status is `Terminating` and\nthe `Finalizers` list includes `kubernetes.io/pv-protection` too:"
+ },
+ {
+  "chunk_id": "concepts/workloads/podgroup-api/lifecycle#deletion-protection-0",
+  "heading": "PodGroup Lifecycle > Deletion protection",
+  "text": "A `PodGroup` cannot be fully deleted while any of its Pods are still running.\nA dedicated finalizer ensures that deletion is blocked until all `Pods` referencing the\n`PodGroup` have reached a terminal phase (`Succeeded` or `Failed`)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#unused-pvc-tracking-0",
+  "heading": "Persistent Volumes > PersistentVolumeClaims > Unused PVC tracking",
+  "text": "When enabled, the PVC protection controller adds an `Unused`\n[condition](/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions) to each\nPersistentVolumeClaim to indicate whether it is currently referenced by any\nnon-terminal Pod.\n\nThe condition has two states:\n\n`Unused` with status `\"True\"` (reason `NoPodsUsingPVC`)\n: No non-terminal Pod references this PVC. The `lastTransitionTime` records when\n  the PVC became unused.\n\n`Unused` with status `\"False\"` (reason `PodUsingPVC`)\n: At least one non-terminal Pod currently references this PVC. The\n  `lastTransitionTime` records when the PVC started being used.\n\nA Pod is considered non-terminal if its phase is not `Succeeded` or `Failed`.\nThis means that a Pending Pod (even one that has not yet been scheduled) counts\nas using the PVC."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-tracking-with-finalizers-0",
+  "heading": "Jobs > Advanced usage > Job tracking with finalizers",
+  "text": "The control plane keeps track of the Pods that belong to any Job and notices if\nany such Pod is removed from the API server. To do that, the Job controller\ncreates Pods with the finalizer `batch.kubernetes.io/job-tracking`. The\ncontroller removes the finalizer only after the Pod has been accounted for in\nthe Job status, allowing the Pod to be removed by other controllers or users.\n\nSee [My pod stays terminating](/docs/tasks/debug/debug-application/debug-pods/) if you\nobserve that pods from a Job are stuck with the tracking finalizer."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-6",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "When the `CSIMigration{provider}` feature flag is enabled for a specific in-tree volume plugin,\nthe `kubernetes.io/pv-controller` finalizer is replaced by the\n`external-provisioner.volume.kubernetes.io/finalizer` finalizer.\n\nThe finalizers ensure that the PV object is removed only after the volume is deleted\nfrom the storage backend provided the reclaim policy of the PV is `Delete`. This\nalso ensures that the volume is deleted from storage backend irrespective of the\norder of deletion of PV and PVC."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "The purpose of the Storage Object in Use Protection feature is to ensure that\nPersistentVolumeClaims (PVCs) in active use by a Pod and PersistentVolume (PVs)\nthat are bound to PVCs are not removed from the system, as this may result in data loss.\n\nPVC is in active use by a Pod when a Pod object exists that is using the PVC.\n\nIf a user deletes a PVC in active use by a Pod, the PVC is not removed immediately.\nPVC removal is postponed until the PVC is no longer actively used by any Pods. Also,\nif an admin deletes a PV that is bound to a PVC, the PV is not removed immediately.\nPV removal is postponed until the PV is no longer bound to a PVC.\n\nYou can see that a PVC is protected when the PVC's status is `Terminating` and the\n`Finalizers` list includes `kubernetes.io/pvc-protection`:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-5",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "When you use a `podFailurePolicy`, the job controller only matches Pods in the\n`Failed` phase. Pods with a deletion timestamp that are not in a terminal phase\n(`Failed` or `Succeeded`) are considered still terminating. This implies that\nterminating pods retain a [tracking finalizer](#job-tracking-with-finalizers)\nuntil they reach a terminal phase.\nSince Kubernetes 1.27, Kubelet transitions deleted pods to a terminal phase\n(see: [Pod Phase](/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase)). This\nensures that deleted pods have their finalizers removed by the Job controller.\n\nStarting with Kubernetes v1.28, when Pod failure policy is used, the Job controller recreates\nterminating Pods only once these Pods reach the terminal `Failed` phase. This behavior is similar\nto `podReplacementPolicy: Failed`. For more information, see [Pod replacement policy](#pod-replacement-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-3",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "Since Kubernetes 1.27, the kubelet transitions deleted Pods to a terminal phase\n(`Failed` or `Succeeded` depending on the exit statuses of the pod containers)\nbefore their deletion from the API server, with two exceptions:\n\n* [static Pods](/docs/tasks/configure-pod-container/static-pod/) (which are\nmanaged directly by the kubelet and represented by mirror Pods) \n*  [force-deleted\nPods](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced)\nwithout a finalizer\n\nIf a node dies or is disconnected from the rest of the cluster, Kubernetes\napplies a policy for setting the `phase` of all Pods on the lost node to Failed."
+ }
+]

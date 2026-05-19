@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-0",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "In any situation where a pod deletion has not succeeded for 6 minutes, kubernetes will\nforce detach volumes being unmounted if the node is unhealthy at that instant. Any\nworkload still running on the node that uses a force-detached volume will cause a\nviolation of the\n[CSI specification](https://github.com/container-storage-interface/spec/blob/master/spec.md#controllerunpublishvolume),\nwhich states that `ControllerUnpublishVolume` \"**must** be called after all\n`NodeUnstageVolume` and `NodeUnpublishVolume` on the volume are called and succeed\".\nIn such circumstances, volumes on the node in question might encounter data corruption.\n\nThe forced storage detach behaviour is optional; users might opt to use the \"Non-graceful\nnode shutdown\" feature instead."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-2",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "```yaml\napiVersion: apps/v1\nkind: StatefulSet\n...\nspec:\n  persistentVolumeClaimRetentionPolicy:\n    whenDeleted: Retain\n    whenScaled: Delete\n...\n```\n\nThe StatefulSet controller adds\n[owner references](/docs/concepts/overview/working-with-objects/owners-dependents/#owner-references-in-object-specifications)\nto its PVCs, which are then deleted by the garbage collector after the Pod is terminated. This enables the Pod to\ncleanly unmount all volumes before the PVCs are deleted (and before the backing PV and\nvolume are deleted, depending on the retain policy).  When you set the `whenDeleted`\npolicy to `Delete`, an owner reference to the StatefulSet instance is placed on all PVCs\nassociated with that StatefulSet."
+ },
+ {
+  "chunk_id": "concepts/storage/volume-health-monitoring#health-reported-on-pods-0",
+  "heading": "Volume Health Monitoring > Health reported on Pods",
+  "text": "For volumes that use a CSI driver supporting the node-side `NodeGetVolumeHealth` RPC,\nthe kubelet periodically calls that\nRPC for each CSI volume it has mounted for a Pod, and writes the result to\n`pod.status.volumeHealth`, keyed by the volume name from `pod.spec.volumes`. The probe\ninterval is the kubelet's `volumeStatsAggPeriod` setting (the\n`--volume-stats-agg-period` command line flag).\n\n```yaml\napiVersion: v1\nkind: Pod\n# ...\nstatus:\n  volumeHealth:\n  - name: my-volume\n    healthConditions:\n    - status: Inaccessible\n      reason: VolumeNotFound\n      message: \"volume not found on the storage backend\"\n    lastTransitionTime: \"2026-07-20T12:00:00Z\"\n```\n\nThe kubelet only writes `pods/status`, a subresource it is already authorized to\nupdate for Pods bound to its own node, so no new authorization is required for this\nfield."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-volume-storage#intro-0",
+  "heading": "Configure a Pod to Use a Volume for Storage",
+  "text": "This page shows how to configure a Pod to use a Volume for storage.\n\nA Container's file system lives only as long as the Container does. So when a\nContainer terminates and restarts, filesystem changes are lost. For more\nconsistent storage that is independent of the Container, you can use a\n[Volume](/docs/concepts/storage/volumes/). This is especially important for stateful\napplications, such as key-value stores (such as Redis) and databases."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#stable-storage-0",
+  "heading": "StatefulSets > Pod Identity > Stable Storage",
+  "text": "For each VolumeClaimTemplate entry defined in a StatefulSet, each Pod receives one\nPersistentVolumeClaim. In the nginx example above, each Pod receives a single PersistentVolume\nwith a StorageClass of `my-storage-class` and 1 GiB of provisioned storage. If no StorageClass\nis specified, then the default StorageClass will be used. When a Pod is (re)scheduled\nonto a node, its `volumeMounts` mount the PersistentVolumes associated with its\nPersistentVolume Claims. Note that, the PersistentVolumes associated with the\nPods' PersistentVolume Claims are not deleted when the Pods, or StatefulSet are deleted.\nThis must be done manually."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "Force storage detach on timeout can be disabled by setting the `disable-force-detach-on-timeout`\nconfig field in `kube-controller-manager`. Disabling the force detach on timeout feature means\nthat a volume that is hosted on a node that is unhealthy for more than 6 minutes will not have\nits associated\n[VolumeAttachment](/docs/reference/kubernetes-api/config-and-storage-resources/volume-attachment-v1/)\ndeleted.\n\nAfter this setting has been applied, unhealthy pods still attached to volumes must be recovered\nvia the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure mentioned above.\n\n- Caution must be taken while using the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure.\n- Deviation from the steps documented above can result in data corruption."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-2",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "The recommended best practice is to use the first or second approach. If a Node is confirmed\nto be dead (e.g. permanently disconnected from the network, powered down, etc), then delete\nthe Node object. If the Node is suffering from a network partition, then try to resolve this\nor wait for it to resolve. When the partition heals, the kubelet will complete the deletion\nof the Pod and free up its name in the apiserver.\n\nNormally, the system completes the deletion once the Pod is no longer running on a Node, or\nthe Node is deleted by an administrator. You may override this by force deleting the Pod."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-limits#mutable-csi-node-allocatable-count-1",
+  "heading": "Node-specific Volume Limits > Dynamic volume limits > Mutable CSI Node Allocatable Count",
+  "text": "Kubelet will periodically call the corresponding CSI driver\u2019s `NodeGetInfo` endpoint to refresh the maximum number of attachable volumes, using the interval specified in `nodeAllocatableUpdatePeriodSeconds`. The minimum allowed value for this field is 10 seconds.\n\nIf a volume attachment operation fails with a `ResourceExhausted` error (gRPC code 8), Kubernetes triggers an immediate update to the allocatable volume count for that Node. Additionally, kubelet marks affected pods as Failed, allowing their controllers to handle recreation. This prevents pods from getting stuck indefinitely in the `ContainerCreating` state."
+ }
+]

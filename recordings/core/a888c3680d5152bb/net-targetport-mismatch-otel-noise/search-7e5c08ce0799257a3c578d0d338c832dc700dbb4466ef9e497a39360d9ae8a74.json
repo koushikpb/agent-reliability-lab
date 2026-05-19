@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#using-kubectl-describe-pod-to-fetch-details-about-pods-3",
+  "heading": "Debug Running Pods > Using `kubectl describe pod` to fetch details about pods",
+  "text": "```none\n    Image ID:       docker.io/library/nginx@sha256:2834dc507516af02784808c5f48b7cbe38b8ed5d0f4837f16e78d00deb7e7767\n    Port:           80/TCP\n    Host Port:      0/TCP\n    State:          Running\n      Started:      Thu, 17 Feb 2022 16:51:05 -0500\n    Ready:          True\n    Restart Count:  0\n    Limits:\n      cpu:     500m\n      memory:  128Mi\n    Requests:\n      cpu:        500m\n      memory:     128Mi\n    Environment:  <none>\n    Mounts:\n      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-bgsgp (ro)\nConditions:\n  Type              Status\n  Initialized       True \n  Ready             True \n  ContainersReady   True \n  PodScheduled      True \nVolumes:\n  kube-api-access-bgsgp:\n    Type:                    Projected (a volume that contains injected data from multiple sources)\n    TokenExpirationSeconds:  3607\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#using-kubectl-describe-pod-to-fetch-details-about-pods-6",
+  "heading": "Debug Running Pods > Using `kubectl describe pod` to fetch details about pods",
+  "text": "Here you can see configuration information about the container(s) and Pod (labels, resource requirements, etc.), as well as status information about the container(s) and Pod (state, readiness, restart count, events, etc.).\n\nThe container state is one of Waiting, Running, or Terminated. Depending on the state, additional information will be provided - here you can see that for a container in Running state, the system tells you when the container started.\n\nReady tells you whether the container passed its last readiness probe. (In this case, the container does not have a readiness probe configured; the container is assumed to be ready if no readiness probe is configured.)\n\nRestart Count tells you how many times the container has been restarted; this information can be useful for detecting crash loops in containers that are configured with a restart policy of `Always`.\n\nCurrently the only Condition associated with a Pod is the binary Ready condition, which indicates that the pod is able to service requests and should be added to the load balancing pools of all matching services."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-1",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "Value       | Description\n:-----------|:-----------\n`Pending`   | The Pod has been accepted by the Kubernetes cluster, but one or more of the containers has not been set up and made ready to run. This includes time a Pod spends waiting to be scheduled as well as the time spent downloading container images over the network.\n`Running`   | The Pod has been bound to a node, and all of the containers have been created. At least one container is still running, or is in the process of starting or restarting.\n`Succeeded` | All containers in the Pod have terminated in success, and will not be restarted.\n`Failed`    | All containers in the Pod have terminated, and at least one container has terminated in failure. That is, the container either exited with non-zero status or was terminated by the system, and is not set for automatic restarting.\n`Unknown`   | For some reason the state of the Pod could not be obtained. This phase typically occurs due to an error in communicating with the node where the Pod should be running."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-0",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "If you got this far, you have confirmed that your Service is correctly\ndefined and is resolved by DNS.  Now let's check that the Pods you ran are\nactually being selected by the Service.\n\nEarlier you saw that the Pods were running.  You can re-check that:\n\n```shell\nkubectl get pods -l app=hostnames\n```\n```none\nNAME                        READY     STATUS    RESTARTS   AGE\nhostnames-632524106-bbpiw   1/1       Running   0          1h\nhostnames-632524106-ly40y   1/1       Running   0          1h\nhostnames-632524106-tlaok   1/1       Running   0          1h\n```\n\nThe `-l app=hostnames` argument is a label selector configured on the Service.\n\nThe \"AGE\" column says that these Pods are about an hour old, which implies that\nthey are running fine and not crashing."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-condition#lifecycle-pod-conditions-1",
+  "heading": "Pod Conditions > Lifecycle Pod conditions",
+  "text": "1. `PodScheduled`: the Pod has been scheduled to a node.\n1. `PodReadyToStartContainers`: the Pod sandbox has been successfully created and networking configured. The sandbox and network are set up by the container runtime and CNI plugin.\n1. `Initialized`: all [init containers](/docs/concepts/workloads/pods/init-containers/) have completed successfully. For a Pod without init containers, this is set to `True` before sandbox creation.\n1. `ContainersReady`: all containers in the Pod are ready. A container's readiness is determined by its [readiness probe](/docs/concepts/workloads/pods/probes/#readiness-probe), if configured.\n1. `Ready`: the Pod is able to serve requests and should be added to the load balancing pools of all matching [Services](/docs/concepts/services-networking/service/). Pods that are not `Ready` are removed from Service endpoints."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-condition#lifecycle-pod-conditions-2",
+  "heading": "Pod Conditions > Lifecycle Pod conditions",
+  "text": "The `Ready` condition depends on more than just `ContainersReady`. If the Pod specifies `readinessGates`, all of those custom conditions must also be `True` for the Pod to be `Ready`. See [Pod readiness](#enhanced-pod-readiness) for details.\n\nYou can inspect a Pod's conditions using kubectl:\n\n```shell\nkubectl get pod <pod-name> -o yaml\n```\n\nThe following shows what `status.conditions` looks like for a running Pod:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-conditions-1",
+  "heading": "Pod Lifecycle > Pod conditions",
+  "text": "* `PodScheduled`: the Pod has been scheduled to a node.\n* `PodReadyToStartContainers`: the Pod sandbox has been successfully created,\n  networking configured, storage volumes mounted, and any dynamic resources (if requested) allocated.\n* `ContainersReady`: all containers in the Pod are ready.\n* `Initialized`: all [init containers](/docs/concepts/workloads/pods/init-containers/)\n  have completed successfully.\n* `Ready`: the Pod is able to serve requests and should be added to the load\n  balancing pools of all matching Services.\n* `DisruptionTarget`: the pod is about to be terminated due to a disruption (such as preemption, eviction or garbage-collection).\n* `PodResizePending`: a pod resize was requested but cannot be applied. See [Pod resize status](/docs/tasks/configure-pod-container/resize-container-resources#pod-resize-status).\n* `PodResizeInProgress`: the pod is in the process of resizing. See"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-scheduling-readiness#usage-example-1",
+  "heading": "Pod Scheduling Readiness > Usage example",
+  "text": "To inform scheduler this Pod is ready for scheduling, you can remove its `schedulingGates` entirely\nby reapplying a modified manifest:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pod\nspec:\n  containers:\n  - name: pause\n    image: registry.k8s.io/pause:3.6\n```\n\nYou can check if the `schedulingGates` is cleared by running:\n\n```bash\nkubectl get pod test-pod -o jsonpath='{.spec.schedulingGates}'\n```\n\nThe output is expected to be empty. And you can check its latest status by running:\n\n```bash\nkubectl get pod test-pod -o wide\n```\n\nGiven the test-pod doesn't request any CPU/memory resources, it's expected that this Pod's state get\ntransited from previous `SchedulingGated` to `Running`:\n\n```none\nNAME       READY   STATUS    RESTARTS   AGE   IP         NODE\ntest-pod   1/1     Running   0          15s   10.0.0.4   node-2\n```"
+ }
+]

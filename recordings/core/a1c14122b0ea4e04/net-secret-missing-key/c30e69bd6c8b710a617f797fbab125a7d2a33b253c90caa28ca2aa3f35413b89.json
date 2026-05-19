@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Resolved T-4001. The 3.8.0 pods are failing with CreateContainerConfigError because they reference a `STRIPE_WEBHOOK_SECRET` key that's missing from the `invoice-api-secrets` Secret \u2014 a new key needed by the Stripe webhook feature. The old pods and invoice-worker are fine because they don't use that key. Fix: add the key to the Secret and the rollout will proceed.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7424,
+ "model": "claude-opus-4-7",
+ "output_tokens": 145,
+ "stop_reason": "end_turn"
+}

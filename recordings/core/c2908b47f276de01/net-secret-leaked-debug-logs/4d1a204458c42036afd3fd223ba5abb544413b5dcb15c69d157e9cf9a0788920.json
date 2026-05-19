@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me check the logs from one of the running orders-api pods to see what's being logged at debug level.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_017wykqR589hjRpVnN9Ra1i1",
+   "input": {
+    "pod": "orders-api-8d6f5c7b9-wm4xr"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1662,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 98,
+ "stop_reason": "tool_use"
+}

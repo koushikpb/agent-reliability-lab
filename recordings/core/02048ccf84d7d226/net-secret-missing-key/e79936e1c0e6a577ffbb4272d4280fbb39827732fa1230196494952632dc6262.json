@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "EuACCqgBCBMYAipAEGDOWkYlvcIYiDyLQm6tKQg7qQ/PjoQ6FcUUFCwX6f7Olva90ua2V6irUzcfB0QY0njCugCUafRsx0rCC0jzyDIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAdzv8dYGEgzPm7FfrGWiX6eGWHAaDM4ZojeLAKA1RhMzgyIwo9qXe0siVeiJEsmWukNmwAv6iEDPlhkgILmv4+FSA69GTGi76nYYi6++RcQKeEpeKmUMv8sMAhV2ruhH06tejZZZCF1ykQylW7tXx5Echww3goIoIhwg6wWPAmgPquMRzqBnspi+zSlzTDmPi7ylfHGx+W7b9emAmxEUhFIwTZ3VZR3BZWbMW23gGJ3aghyBttjgqeZM4hgB",
+   "thinking": "Let me look at the pods in the billing namespace and search the docs simultaneously.",
+   "type": "thinking"
+  },
+  {
+   "text": "Let me look at the pods in the `billing` namespace right away.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CgYkG4a1eu2wxNeAQPsF3K",
+   "input": {
+    "namespace": "billing"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1515,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 100,
+ "stop_reason": "tool_use"
+}

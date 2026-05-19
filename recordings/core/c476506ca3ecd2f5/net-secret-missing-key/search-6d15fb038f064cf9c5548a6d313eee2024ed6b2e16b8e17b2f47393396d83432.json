@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#registry-secret-existing-credentials-2",
+  "heading": "Pull an Image from a Private Registry > Create a Secret based on existing credentials",
+  "text": "If you get the error message `error: no objects passed to create`, it may mean the base64 encoded string is invalid.\nIf you get an error message like `Secret \"myregistrykey\" is invalid: data[.dockerconfigjson]: invalid value ...`, it means\nthe base64 encoded string in the data was successfully decoded, but could not be parsed as a `.docker/config.json` file."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#creating-a-secret-0",
+  "heading": "Secrets > Working with Secrets > Creating a Secret",
+  "text": "There are several options to create a Secret:\n\n- [Use `kubectl`](/docs/tasks/configmap-secret/managing-secret-using-kubectl/)\n- [Use a configuration file](/docs/tasks/configmap-secret/managing-secret-using-config-file/)\n- [Use the Kustomize tool](/docs/tasks/configmap-secret/managing-secret-using-kustomize/)\n\n#### Constraints on Secret names and data {#restriction-names-data}\n\nThe name of a Secret object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-secrets-as-environment-variables-0",
+  "heading": "Secrets > Working with Secrets > Using Secrets as environment variables",
+  "text": "To use a Secret in an environment variable\nin a Pod:\n\n1. For each container in your Pod specification, add an environment variable\n   for each Secret key that you want to use to the\n   `env[].valueFrom.secretKeyRef` field.\n1. Modify your image and/or command line so that the program looks for values\n   in the specified environment variables.\n\nFor instructions, refer to\n[Define container environment variables using Secret data](/docs/tasks/inject-data-application/distribute-credentials-secure/#define-container-environment-variables-using-secret-data).\n\nIt's important to note that the range of characters allowed for environment variable\nnames in pods is [restricted](/docs/tasks/inject-data-application/define-environment-variable-container/#using-environment-variables-inside-of-your-config).\nIf any keys do not meet the rules, those keys are not made available to your container, though\nthe Pod is allowed to start."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#docker-config-secrets-0",
+  "heading": "Secrets > Types of Secret > Docker config Secrets",
+  "text": "If you are creating a Secret to store credentials for accessing a container image registry,\nyou must use one of the following `type` values for that Secret:\n\n- `kubernetes.io/dockercfg`: store a serialized `~/.dockercfg` which is the\n  legacy format for configuring Docker command line. The Secret\n  `data` field contains a `.dockercfg` key whose value is the content of a\n  base64 encoded `~/.dockercfg` file.\n- `kubernetes.io/dockerconfigjson`: store a serialized JSON that follows the\n  same format rules as the `~/.docker/config.json` file, which is a new format\n  for `~/.dockercfg`. The Secret `data` field must contain a\n  `.dockerconfigjson` key for which the value is the content of a base64\n  encoded `~/.docker/config.json` file."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#bootstrap-token-secrets-1",
+  "heading": "Secrets > Types of Secret > Bootstrap token Secrets",
+  "text": "```yaml\napiVersion: v1\nkind: Secret\nmetadata:\n  name: bootstrap-token-5emitj\n  namespace: kube-system\ntype: bootstrap.kubernetes.io/token\ndata:\n  auth-extra-groups: c3lzdGVtOmJvb3RzdHJhcHBlcnM6a3ViZWFkbTpkZWZhdWx0LW5vZGUtdG9rZW4=\n  expiration: MjAyMC0wOS0xM1QwNDozOToxMFo=\n  token-id: NWVtaXRq\n  token-secret: a3E0Z2lodnN6emduMXAwcg==\n  usage-bootstrap-authentication: dHJ1ZQ==\n  usage-bootstrap-signing: dHJ1ZQ==\n```\n\nA bootstrap token Secret has the following keys specified under `data`:"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/kustomization#generating-resources-8",
+  "heading": "Declarative Management of Kubernetes Objects Using Kustomize > Overview of Kustomize > Generating Resources",
+  "text": "To generate a Secret from a literal key-value pair, add an entry to `literals` list\nin `secretGenerator`. Here is an example of generating a Secret with a data item from a key-value pair:\n\n```shell\ncat <<EOF >./kustomization.yaml\nsecretGenerator:\n- name: example-secret-2\n  literals:\n  - username=admin\n  - password=secret\nEOF\n```\n\nThe generated Secret is as follows:\n\n```yaml\napiVersion: v1\ndata:\n  password: c2VjcmV0\n  username: YWRtaW4=\nkind: Secret\nmetadata:\n  name: example-secret-2-t52t6g96d8\ntype: Opaque\n```\n\nLike ConfigMaps, generated Secrets can be used in Deployments by referring to the name of the secretGenerator:"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Configure all key-value pairs in a Secret as container environment variables",
+  "text": "This functionality is available in Kubernetes v1.6 and later.\n\n- Create a Secret containing multiple key-value pairs\n\n  ```shell\n  kubectl create secret generic test-secret --from-literal=username='my-app' --from-literal=password='39528$vdg7Jb'\n  ```\n\n- Use envFrom to define all of the Secret's data as container environment variables.\n  The key from the Secret becomes the environment variable name in the Pod.\n\n  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: envfrom-secret\nspec:\n  containers:\n  - name: envars-test-container\n    image: nginx\n    envFrom:\n    - secretRef:\n        name: test-secret\n```\n\n- Create the Pod:\n\n  ```shell\n  kubectl create -f https://k8s.io/examples/pods/inject/pod-secret-envFrom.yaml\n  ```"
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#serviceaccount-token-secrets-3",
+  "heading": "Secrets > Types of Secret > ServiceAccount token Secrets",
+  "text": "After the Secret is created, a Kubernetes controller\nfills in some other fields such as the `kubernetes.io/service-account.uid` annotation, and the\n`token` key in the `data` field, which is populated with an authentication token.\n\nThe following example configuration declares a ServiceAccount token Secret:\n\n```yaml\napiVersion: v1\nkind: Secret\nmetadata:\n  name: secret-sa-sample\n  annotations:\n    kubernetes.io/service-account.name: \"sa-name\"\ntype: kubernetes.io/service-account-token\ndata:\n  extra: YmFyCg==\n```\n\nAfter creating the Secret, wait for Kubernetes to populate the `token` key in the `data` field."
+ }
+]

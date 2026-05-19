@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-windows-0",
+  "heading": "DNS for Services and Pods > DNS resolution on Windows nodes",
+  "text": "- `ClusterFirstWithHostNet` is not supported for Pods that run on Windows nodes.\n  Windows treats all names with a `.` as a FQDN and skips FQDN resolution.\n- On Windows, there are multiple DNS resolvers that can be used. As these come with\n  slightly different behaviors, using the\n  [`Resolve-DNSName`](https://docs.microsoft.com/powershell/module/dnsclient/resolve-dnsname)\n  powershell cmdlet for name query resolutions is recommended.\n- On Linux, you have a DNS suffix list, which is used after resolution of a name as fully\n  qualified has failed.\n  On Windows, you can only have 1 DNS suffix, which is the DNS suffix associated with that\n  Pod's namespace (example: `mydns.svc.cluster.local`). Windows can resolve FQDNs, Services,\n  or network name which can be resolved with this single suffix. For example, a Pod spawned"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#are-you-in-the-right-namespace-for-the-service-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Are you in the right namespace for the service?",
+  "text": "DNS queries that don't specify a namespace are limited to the pod's \nnamespace. \n\nIf the namespace of the pod and service differ, the DNS query must include \nthe namespace of the service.\n\nThis query is limited to the pod's namespace:\n```shell\nkubectl exec -i -t dnsutils -- nslookup <service-name>\n```\n\nThis query specifies the namespace:\n```shell\nkubectl exec -i -t dnsutils -- nslookup <service-name>.<namespace>\n```\n\nTo learn more about name resolution, see \n[DNS for Services and Pods](/docs/concepts/services-networking/dns-pod-service/#what-things-get-dns-names). "
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/namespaces#understanding-namespaces-and-dns-0",
+  "heading": "Share a Cluster with Namespaces > Understanding namespaces and DNS",
+  "text": "When you create a [Service](/docs/concepts/services-networking/service/), it creates a corresponding\n[DNS entry](/docs/concepts/services-networking/dns-pod-service/).\nThis entry is of the form `<service-name>.<namespace-name>.svc.cluster.local`, which means\nthat if a container uses `<service-name>` it will resolve to the service which\nis local to a namespace.  This is useful for using the same configuration across\nmultiple namespaces such as Development, Staging and Production.  If you want to reach\nacross namespaces, you need to use the fully qualified domain name (FQDN)."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#is-dns-service-up-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Is DNS service up?",
+  "text": "Verify that the DNS service is up by using the `kubectl get service` command.\n\n```shell\nkubectl get svc --namespace=kube-system\n```\n```\nNAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)             AGE\n...\nkube-dns     ClusterIP   10.0.0.10      <none>        53/UDP,53/TCP        1h\n...\n```\n\nThe Service for CoreDNS is named `kube-dns`, for backward compatibility with the\noriginal kube-dns.\n\nIf you have created the Service or in the case it should be created by default\nbut it does not appear, see\n[debugging Services](/docs/tasks/debug/debug-application/debug-service/) for\nmore information."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#pod-hostname-and-subdomain-field-3",
+  "heading": "DNS for Services and Pods > Pods > Pod's hostname and subdomain fields",
+  "text": "Given the above Service `\"busybox-subdomain\"` and the Pods which set `spec.subdomain`\nto `\"busybox-subdomain\"`, the first Pod will see its own FQDN as\n`\"busybox-1.busybox-subdomain.my-namespace.svc.cluster-domain.example\"`. DNS serves\nA and/or AAAA records at that name, pointing to the Pod's IP. Both Pods \"`busybox1`\" and\n\"`busybox2`\" will have their own address records.\n\nAn EndpointSlice can specify\nthe DNS hostname for any endpoint addresses, along with its IP."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-custom-nameservers#configuration-of-stub-domain-and-upstream-nameserver-using-coredns-1",
+  "heading": "Customizing DNS Service > CoreDNS > Configuration of Stub-domain and upstream nameserver using CoreDNS",
+  "text": "The final ConfigMap along with the default `Corefile` configuration looks like:\n\n```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: coredns\n  namespace: kube-system\ndata:\n  Corefile: |\n    .:53 {\n        errors\n        health\n        kubernetes cluster.local in-addr.arpa ip6.arpa {\n           pods insecure\n           fallthrough in-addr.arpa ip6.arpa\n        }\n        prometheus :9153\n        forward . 172.16.0.1\n        cache 30\n        loop\n        reload\n        loadbalance\n    }\n    consul.local:53 {\n        errors\n        cache 30\n        forward . 10.150.0.1\n    }\n```\n\nCoreDNS does not support FQDNs for stub-domains and nameservers (eg: \"ns.foo.com\").\nDuring translation, all FQDN nameservers will be omitted from the CoreDNS config."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#create-a-simple-pod-to-use-as-a-test-environment-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Create a simple Pod to use as a test environment",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: dnsutils\n  namespace: default\nspec:\n  containers:\n  - name: dnsutils\n    image: registry.k8s.io/e2e-test-images/agnhost:2.39\n    imagePullPolicy: IfNotPresent\n  restartPolicy: Always\n```\n\nThis example creates a pod in the `default` namespace. DNS name resolution for \nservices depends on the namespace of the pod. For more information, review\n[DNS for Services and Pods](/docs/concepts/services-networking/dns-pod-service/#what-things-get-dns-names). \n\nUse that manifest to create a Pod:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#pod-hostname-and-subdomain-field-1",
+  "heading": "DNS for Services and Pods > Pods > Pod's hostname and subdomain fields",
+  "text": "The Pod spec also has an optional `subdomain` field which can be used to indicate\nthat the pod is part of sub-group of the namespace. For example, a Pod with `spec.hostname`\nset to `\"foo\"`, and `spec.subdomain` set to `\"bar\"`, in namespace `\"my-namespace\"`, will\nhave its hostname set to `\"foo\"` and its fully qualified domain name (FQDN) set to\n`\"foo.bar.my-namespace.svc.cluster.local\"` (once more, as observed from within\nthe Pod).\n\nIf there exists a headless Service in the same namespace as the Pod, with\nthe same name as the subdomain, the cluster's DNS Server also returns A and/or AAAA\nrecords for the Pod's fully qualified hostname.\n\nExample:"
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/storage-capacity#rescheduling-0",
+  "heading": "Storage Capacity > Rescheduling",
+  "text": "When a node has been selected for a Pod with `WaitForFirstConsumer`\nvolumes, that decision is still tentative. The next step is that the\nCSI storage driver gets asked to create the volume with a hint that the\nvolume is supposed to be available on the selected node.\n\nBecause Kubernetes might have chosen a node based on out-dated\ncapacity information, it is possible that the volume cannot really be\ncreated. The node selection is then reset and the Kubernetes scheduler\ntries again to find a node for the Pod."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-2",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "```yaml\napiVersion: apps/v1\nkind: StatefulSet\n...\nspec:\n  persistentVolumeClaimRetentionPolicy:\n    whenDeleted: Retain\n    whenScaled: Delete\n...\n```\n\nThe StatefulSet controller adds\n[owner references](/docs/concepts/overview/working-with-objects/owners-dependents/#owner-references-in-object-specifications)\nto its PVCs, which are then deleted by the garbage collector after the Pod is terminated. This enables the Pod to\ncleanly unmount all volumes before the PVCs are deleted (and before the backing PV and\nvolume are deleted, depending on the retain policy).  When you set the `whenDeleted`\npolicy to `Delete`, an owner reference to the StatefulSet instance is placed on all PVCs\nassociated with that StatefulSet."
+ },
+ {
+  "chunk_id": "concepts/storage/volume-health-monitoring#health-reported-on-pods-0",
+  "heading": "Volume Health Monitoring > Health reported on Pods",
+  "text": "For volumes that use a CSI driver supporting the node-side `NodeGetVolumeHealth` RPC,\nthe kubelet periodically calls that\nRPC for each CSI volume it has mounted for a Pod, and writes the result to\n`pod.status.volumeHealth`, keyed by the volume name from `pod.spec.volumes`. The probe\ninterval is the kubelet's `volumeStatsAggPeriod` setting (the\n`--volume-stats-agg-period` command line flag).\n\n```yaml\napiVersion: v1\nkind: Pod\n# ...\nstatus:\n  volumeHealth:\n  - name: my-volume\n    healthConditions:\n    - status: Inaccessible\n      reason: VolumeNotFound\n      message: \"volume not found on the storage backend\"\n    lastTransitionTime: \"2026-07-20T12:00:00Z\"\n```\n\nThe kubelet only writes `pods/status`, a subresource it is already authorized to\nupdate for Pods bound to its own node, so no new authorization is required for this\nfield."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#local-1",
+  "heading": "Volumes > Types of volumes > local",
+  "text": "```yaml\napiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: example-pv\nspec:\n  capacity:\n    storage: 100Gi\n  volumeMode: Filesystem\n  accessModes:\n  - ReadWriteOnce\n  persistentVolumeReclaimPolicy: Delete\n  storageClassName: local-storage\n  local:\n    path: /mnt/disks/ssd1\n  nodeAffinity:\n    required:\n      nodeSelectorTerms:\n      - matchExpressions:\n        - key: kubernetes.io/hostname\n          operator: In\n          values:\n          - example-node\n```\n\nYou must set a PersistentVolume `nodeAffinity` when using `local` volumes.\nThe Kubernetes scheduler uses the PersistentVolume `nodeAffinity` to schedule\nthese Pods to the correct node.\n\nPersistentVolume `volumeMode` can be set to \"Block\" (instead of the default\nvalue \"Filesystem\") to expose the local volume as a raw block device."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-1",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "`Delete`\n: The PVCs created from the StatefulSet `volumeClaimTemplate` are deleted for each Pod\n  affected by the policy. With the `whenDeleted` policy all PVCs from the\n  `volumeClaimTemplate` are deleted after their Pods have been deleted. With the\n  `whenScaled` policy, only PVCs corresponding to Pod replicas being scaled down are\n  deleted, after their Pods have been deleted.\n\n`Retain` (default)\n: PVCs from the `volumeClaimTemplate` are not affected when their Pod is\n  deleted. This is the behavior before this new feature.\n\nBear in mind that these policies **only** apply when Pods are being removed due to the\nStatefulSet being deleted or scaled down. For example, if a Pod associated with a StatefulSet\nfails due to node failure, and the control plane creates a replacement Pod, the StatefulSet\nretains the existing PVC.  The existing volume is unaffected, and the cluster will attach it to\nthe node where the new Pod is about to launch.\n\nThe default for policies is `Retain`, matching the StatefulSet behavior before this new feature.\n\nHere is an example policy:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-3",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "The `whenScaled` policy must delete PVCs only when a Pod is scaled down, and not when a\nPod is deleted for another reason. When reconciling, the StatefulSet controller compares\nits desired replica count to the actual Pods present on the cluster. Any StatefulSet Pod\nwhose id greater than the replica count is condemned and marked for deletion. If the\n`whenScaled` policy is `Delete`, the condemned Pods are first set as owners to the\nassociated StatefulSet template PVCs, before the Pod is deleted. This causes the PVCs\nto be garbage collected after only the condemned Pods have terminated."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-0",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "In any situation where a pod deletion has not succeeded for 6 minutes, kubernetes will\nforce detach volumes being unmounted if the node is unhealthy at that instant. Any\nworkload still running on the node that uses a force-detached volume will cause a\nviolation of the\n[CSI specification](https://github.com/container-storage-interface/spec/blob/master/spec.md#controllerunpublishvolume),\nwhich states that `ControllerUnpublishVolume` \"**must** be called after all\n`NodeUnstageVolume` and `NodeUnpublishVolume` on the volume are called and succeed\".\nIn such circumstances, volumes on the node in question might encounter data corruption.\n\nThe forced storage detach behaviour is optional; users might opt to use the \"Non-graceful\nnode shutdown\" feature instead."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#volume-binding-mode-0",
+  "heading": "Storage Classes > Volume binding mode",
+  "text": "The `volumeBindingMode` field controls when\n[volume binding and dynamic provisioning](/docs/concepts/storage/persistent-volumes/#provisioning)\nshould occur. When unset, `Immediate` mode is used by default.\n\nThe `Immediate` mode indicates that volume binding and dynamic\nprovisioning occurs once the PersistentVolumeClaim is created. For storage\nbackends that are topology-constrained and not globally accessible from all Nodes\nin the cluster, PersistentVolumes will be bound or provisioned without knowledge of the Pod's scheduling\nrequirements. This may result in unschedulable Pods."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-pods-0",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Pods",
+  "text": "The first step in debugging a Pod is taking a look at it. Check the current\nstate of the Pod and recent events with the following command:\n\n```shell\nkubectl describe pods ${POD_NAME}\n```\n\nLook at the state of the containers in the pod. Are they all `Running`?\nHave there been recent restarts?\n\nContinue debugging depending on the state of the pods.\n\n#### My pod stays pending\n\nIf a Pod is stuck in `Pending` it means that it can not be scheduled onto a node.\nGenerally this is because there are insufficient resources of one type or another\nthat prevent scheduling. Look at the output of the `kubectl describe ...` command above.\nThere should be messages from the scheduler about why it can not schedule your pod.\nReasons include:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-scheduling-readiness#intro-0",
+  "heading": "Pod Scheduling Readiness",
+  "text": "Pods were considered ready for scheduling once created. Kubernetes scheduler\ndoes its due diligence to find nodes to place all pending Pods. However, in a\nreal-world case, some Pods may stay in a \"miss-essential-resources\" state for a long period.\nThese Pods actually churn the scheduler (and downstream integrators like Cluster AutoScaler)\nin an unnecessary manner.\n\nBy specifying/removing a Pod's `.spec.schedulingGates`, you can control when a Pod is ready\nto be considered for scheduling."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/scheduling-group#missing-group-references-0",
+  "heading": "Scheduling Group > Missing group references",
+  "text": "If a `Pod` references a `PodGroup` that does not yet exist, the `Pod` remains pending.\nSimilarly, if the referenced `PodGroup` specifies a parent `CompositePodGroup` (via\n`spec.parentCompositePodGroupName`) that has not been created yet, scheduling does not start and\nthe `Pod` remains pending until the entire group hierarchy exists in the cluster.\n\nThe scheduler automatically reconsiders the `Pod` once all required `PodGroup` and\n`CompositePodGroup` resources exist."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-scheduling-readiness#observability-0",
+  "heading": "Pod Scheduling Readiness > Observability",
+  "text": "The metric `scheduler_pending_pods` comes with a new label `\"gated\"` to distinguish whether a Pod\nhas been tried scheduling but claimed as unschedulable, or explicitly marked as not ready for\nscheduling. You can use `scheduler_pending_pods{queue=\"gated\"}` to check the metric result."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#effect-of-pod-priority-on-scheduling-order-0",
+  "heading": "Pod Priority and Preemption > Pod priority > Effect of Pod priority on scheduling order",
+  "text": "When Pod priority is enabled, the scheduler orders pending Pods by\ntheir priority and a pending Pod is placed ahead of other pending Pods\nwith lower priority in the scheduling queue. As a result, the higher\npriority Pod may be scheduled sooner than Pods with lower priority if\nits scheduling requirements are met. If such Pod cannot be scheduled, the\nscheduler will continue and try to schedule other lower priority Pods.\n\n#### PodGroups and scheduling order\n\nWhen the `GenericWorkload` feature gate is enabled, PodGroups are interleaved\nwith the standalone Pods in the scheduling queue. PodGroup object has its own\n`priority` field which is used for ordering with respect to other Pods and\nPodGroups. The details on how to set the priority of a PodGroup are available on the\n[Pod Group Disruption and Priority](/docs/concepts/workloads/workload-api/disruption-and-priority/)\npage.\n\n#### CompositePodGroups and scheduling order\n\nWhen the `CompositePodGroup` feature gate is enabled, the scheduler treats the following objects as\nunits of scheduling that can be enqueued:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#limitations-of-preemption-2",
+  "heading": "Pod Priority and Preemption > Preemption > Limitations of preemption",
+  "text": "Preemption does not necessarily remove all lower-priority\nPods. If the pending Pod can be scheduled by removing fewer than all\nlower-priority Pods, then only a portion of the lower-priority Pods are removed.\nEven so, the answer to the preceding question must be yes. If the answer is no,\nthe Node is not considered for preemption.\n\nIf a pending Pod has inter-pod affinity\nto one or more of the lower-priority Pods on the Node, the inter-Pod affinity\nrule cannot be satisfied in the absence of those lower-priority Pods. In this case,\nthe scheduler does not preempt any Pods on the Node. Instead, it looks for another\nNode. The scheduler might find a suitable Node or it might not. There is no\nguarantee that the pending Pod can be scheduled.\n\nOur recommended solution for this problem is to create inter-Pod affinity only\ntowards equal or higher priority Pods.\n\n#### Cross node preemption"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-1",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My Pods are pending with event message `FailedScheduling`",
+  "text": "In the preceding example, the Pod named \"frontend\" fails to be scheduled due to\ninsufficient CPU resource on any node. Similar error messages can also suggest\nfailure due to insufficient memory (PodExceedsFreeMemory). In general, if a Pod\nis pending with a message of this type, there are several things to try:\n\n- Add more nodes to the cluster.\n- Terminate unneeded Pods to make room for pending Pods.\n- Check that the Pod is not larger than all the nodes. For example, if all the\n  nodes have a capacity of `cpu: 1`, then a Pod with a request of `cpu: 1.1` will\n  never be scheduled.\n- Check for node taints. If most of your nodes are tainted, and the new Pod does\n  not tolerate that taint, the scheduler only considers placements onto the\n  remaining nodes that don't have that taint.\n\nYou can check node capacities and amounts allocated with the\n`kubectl describe nodes` command. For example:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#higher-priority-pods-are-preempted-before-lower-priority-pods-0",
+  "heading": "Pod Priority and Preemption > Troubleshooting > Higher priority Pods are preempted before lower priority pods",
+  "text": "The scheduler tries to find nodes that can run a pending Pod. If no node is\nfound, the scheduler tries to remove Pods with lower priority from an arbitrary\nnode in order to make room for the pending pod.\nIf a node with low priority Pods is not feasible to run the pending Pod, the scheduler\nmay choose another node with higher priority Pods (compared to the Pods on the\nother node) for preemption. The victims must still have lower priority than the\npreemptor Pod.\n\nWhen there are multiple nodes available for preemption, the scheduler tries to\nchoose the node with a set of Pods with lowest priority. However, if such Pods\nhave PodDisruptionBudget that would be violated if they are preempted then the\nscheduler may choose another node with higher priority Pods.\n\nWhen multiple nodes exist for preemption and none of the above scenarios apply,\nthe scheduler chooses a node with the lowest priority."
+ }
+]

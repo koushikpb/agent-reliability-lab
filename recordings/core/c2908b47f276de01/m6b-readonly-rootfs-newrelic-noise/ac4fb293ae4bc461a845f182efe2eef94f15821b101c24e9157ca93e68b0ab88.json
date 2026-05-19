@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The documentation mentions `readOnlyRootFilesystem` but doesn't directly address how to work around it with writable volumes. Let me search more specifically for emptyDir volumes which would be the typical solution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019NhFHHmnA1a5KHqeTv5XkV",
+   "input": {
+    "query": "emptyDir volume cache temporary writable"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4852,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 106,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for documentation about Vault agent init containers and Init:0/1 status issues:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01YVUQufAVizgaTqDHDLdEWi",
+   "input": {
+    "query": "Vault agent init containers Init:0/1 initialization failure"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2398,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 87,
+ "stop_reason": "tool_use"
+}

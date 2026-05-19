@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "This is very helpful! The key insight is in the documentation: \"if some of the Pod's containers do not have the relevant resource request set, CPU utilization for the Pod will not be defined and the autoscaler will not take any action for that metric\" [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-3].\n\nLooking back at the pod data I retrieved, I can see that the search-api containers have CPU requests defined (1 CPU for the \"api\" container), but I notice there's a \"log-forwarder\" container that has **no resource requests specified**. This is likely the issue!\n\nLet me search for more information to confirm this behavior about mixed container resource specifications.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01X749aCv9SoW25rx2EWiTwc",
+   "input": {
+    "query": "container resource requests required all containers"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7128,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 231,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I now understand the issue. The job is being terminated due to exceeding the `activeDeadlineSeconds` of 3600 seconds (1 hour). Looking at the logs, the job started at 01:00:04Z and was killed at 02:00:04Z with SIGTERM after 1 hour, when it was only at batch 69/95. The job has 95 batches to process and is taking longer than the 1-hour deadline.\n\nThe issue is clear: the `activeDeadlineSeconds` is set to 3600 seconds (1 hour), but the job is processing 95 batches and needs more than an hour to complete. The job was working fine before, which suggests either:\n1. The deadline was recently changed, or\n2. The data volume has increased significantly\n\nLet me update the ticket with my findings.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01N6vMcap84arcM3Qf91RiL7",
+   "input": {
+    "id": "T-2005",
+    "note": "**Cause**: The ledger-export cronjob is being terminated due to exceeding the `activeDeadlineSeconds` deadline of 3600 seconds (1 hour). The job logs show it was processing batches of ledger data and was terminated at 02:00:04Z (1 hour after start), while still processing batch 69/95. This results in job status \"Failed: DeadlineExceeded\".\n\n**Evidence**: Pod logs show the job started at 01:00:04Z and received SIGTERM at 02:00:04Z after 1 hour. The job specification shows `activeDeadlineSeconds: 3600` [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-1]. According to Kubernetes documentation, when a Job reaches `activeDeadlineSeconds`, all running Pods are terminated and the Job status becomes `type: Failed` with `reason: DeadlineExceeded` [cite: concepts/workloads/controllers/job#job-termination-and-cleanup-1].\n\n**Fix**: Increase the `activeDeadlineSeconds` value in the ledger-export CronJob spec to allow more time for the job to complete. Calculate the required time based on the current processing rate (69 batches in ~1 hour suggests roughly 8.3 minutes per 10 batches, so 95 batches would need ~79 minutes total). Set `activeDeadlineSeconds` to at least 5400 seconds (90 minutes) or higher to provide a safety margin. The job must be updated at the CronJob resource level, as `activeDeadlineSeconds` applies to each Job instance created by the CronJob.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4621,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 665,
+ "stop_reason": "tool_use"
+}

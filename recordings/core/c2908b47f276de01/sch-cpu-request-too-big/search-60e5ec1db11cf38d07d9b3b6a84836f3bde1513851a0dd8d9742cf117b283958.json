@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-0",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request that is too big for your Nodes",
+  "text": "CPU requests and limits are associated with Containers, but it is useful to think\nof a Pod as having a CPU request and limit. The CPU request for a Pod is the sum\nof the CPU requests for all the Containers in the Pod. Likewise, the CPU limit for\na Pod is the sum of the CPU limits for all the Containers in the Pod.\n\nPod scheduling is based on requests. A Pod is scheduled to run on a Node only if\nthe Node has enough CPU resources available to satisfy the Pod CPU request.\n\nIn this exercise, you create a Pod that has a CPU request so big that it exceeds\nthe capacity of any Node in your cluster. Here is the configuration file for a Pod\nthat has one Container. The Container requests 100 CPU, which is likely to exceed the\ncapacity of any Node in your cluster."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/_index#resource-requests-and-limits-0",
+  "heading": "Pods > Resource requests and limits",
+  "text": "When you specify a Pod, you can optionally specify how much of each resource\na container needs. The most common resources to specify are CPU and memory (RAM).\n\nWhen you specify the resource _request_ for containers in a Pod, the\nkube-scheduler uses this information to decide which node to place the Pod on.\nWhen you specify a resource _limit_ for a container, the kubelet enforces\nthose limits so that the running container is not allowed to use more of that\nresource than the limit you set.\n\nCPU limits are enforced by CPU throttling. When a container approaches its\nCPU limit, the kernel restricts its access to CPU. Memory limits are enforced\nby the kernel with out-of-memory (OOM) kills when a container exceeds its limit.\n\nSetting CPU limits involves a trade-off. CPU limits help prevent noisy neighbor\nproblems where a single workload starves others on the same node. This is\nespecially important in multi-tenant environments. However, CPU limits can cause\nthrottling even when the node has spare CPU capacity, potentially degrading\nlatency-sensitive workload performance. Whether to set CPU limits depends on\nyour environment, workload characteristics, and isolation requirements."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#motivation-for-cpu-requests-and-limits-0",
+  "heading": "Assign CPU Resources to Containers and Pods > Motivation for CPU requests and limits",
+  "text": "By configuring the CPU requests and limits of the Containers that run in your\ncluster, you can make efficient use of the CPU resources available on your cluster\nNodes. By keeping a Pod CPU request low, you give the Pod a good chance of being\nscheduled. By having a CPU limit that is greater than the CPU request, you accomplish two things:\n\n* The Pod can have bursts of activity where it makes use of CPU resources that happen to be available.\n* The amount of CPU resources a Pod can use during a burst is limited to some reasonable amount."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#how-pods-with-resource-requests-are-scheduled-0",
+  "heading": "Resource Management for Pods and Containers > How Pods with resource requests are scheduled",
+  "text": "When you create a Pod, the Kubernetes scheduler selects a node for the Pod to\nrun on. Each node has a maximum capacity for each of the resource types: the\namount of CPU and memory it can provide for Pods. The scheduler ensures that,\nfor each resource type, the sum of the resource requests of the scheduled\ncontainers is less than the capacity of the node.\nNote that although actual memory\nor CPU resource usage on nodes is very low, the scheduler still refuses to place\na Pod on a node if the capacity check fails. This protects against a resource\nshortage on a node when resource usage later increases, for example, during a\ndaily peak in request rate."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-pod-level-resources#create-a-pod-with-cpu-requests-and-limits-at-pod-level-0",
+  "heading": "Assign Pod-level CPU and memory resources > Create a pod with CPU requests and limits at pod-level",
+  "text": "To specify a CPU request for a Pod, include the `resources.requests.cpu` field\nin the Pod spec manifest. To specify a CPU limit, include `resources.limits.cpu`.\n\nIn this exercise, you create a Pod that has one container. The Pod has a request\nof 0.5 CPU and a limit of 1 CPU. Here is the configuration file for the Pod:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: cpu-demo\n  namespace: pod-resources-example\nspec:\n  resources:\n    limits:\n      cpu: \"1\"\n    requests:\n      cpu: \"0.5\"\n  containers:\n  - name: cpu-demo-ctr\n    image: vish/stress\n    args:\n    - -cpus\n    - \"2\"\n```\n\nThe `args` section of the configuration file provides arguments for the container when it starts.\nThe `-cpus \"2\"` argument tells the Container to attempt to use 2 CPUs.\n\nCreate the Pod:"
+ },
+ {
+  "chunk_id": "concepts/policy/limit-range#limitrange-and-admission-checks-for-pods-1",
+  "heading": "Limit Ranges > LimitRange and admission checks for Pods",
+  "text": "```yaml\napiVersion: v1\nkind: LimitRange\nmetadata:\n  name: cpu-resource-constraint\nspec:\n  limits:\n  - default: # this section defines default limits\n      cpu: 500m\n    defaultRequest: # this section defines default requests\n      cpu: 500m\n    max: # max and min define the limit range\n      cpu: \"1\"\n    min:\n      cpu: 100m\n    type: Container\n```\n\nalong with a Pod that declares a CPU resource request of `700m`, but not a limit:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: example-conflict-with-limitrange-cpu\nspec:\n  containers:\n  - name: demo\n    image: registry.k8s.io/pause:3.8\n    resources:\n      requests:\n        cpu: 700m\n```\n\nthen that Pod will not be scheduled, failing with an error similar to:\n```\nPod \"example-conflict-with-limitrange-cpu\" is invalid: spec.containers[0].resources.requests: Invalid value: \"700m\": must be less than or equal to cpu limit\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-pod-level-resources#create-a-pod-with-resource-requests-and-limits-at-both-pod-level-and-container-level-3",
+  "heading": "Assign Pod-level CPU and memory resources > Create a pod with resource requests and limits at both pod-level and container-level",
+  "text": "Since pod-level requests and limits are specified, the request guarantees for both\ncontainers in the pod will be equal 1 core or CPU and 100Mi of memory. Additionally,\nboth containers together won't be able to use more resources than specified in the\npod-level limits, ensuring they cannot exceed a combined total of 200 MiB of memory\nand 1 core of CPU."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#requests-and-limits-0",
+  "heading": "Resource Management for Pods and Containers > Requests and limits",
+  "text": "If the node where a Pod is running has enough of a resource available, it's possible (and\nallowed) for a container to use more resource than its `request` for that resource specifies.\n\nFor example, if you set a `memory` request of 256 MiB for a container, and that container is in\na Pod scheduled to a Node with 8GiB of memory and no other Pods, then the container can try to use\nmore RAM.\n\nLimits are a different story. Both `cpu` and `memory` limits are applied by the kubelet (and\ncontainer runtime),\nand are ultimately enforced by the kernel. On Linux nodes, the Linux kernel\nenforces limits with\ncgroups.\nThe behavior of `cpu` and `memory` limit enforcement is slightly different.\n\n`cpu` limits are enforced by CPU throttling. When a container approaches\nits `cpu` limit, the kernel will restrict access to the CPU corresponding to the\ncontainer's limit. Thus, a `cpu` limit is a hard limit the kernel enforces.\nContainers may not use more CPU than is specified in their `cpu` limit."
+ }
+]

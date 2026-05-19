@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results are about Kubernetes RBAC, but not specifically about Vault Agent. Let me search more specifically for Vault Agent troubleshooting.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019MSXQJFCV9BJ2Yy4LbhZxM",
+   "input": {
+    "query": "Vault Agent init container authentication failure permission denied"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4908,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 95,
+ "stop_reason": "tool_use"
+}

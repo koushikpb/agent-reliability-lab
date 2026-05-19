@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-0",
+  "heading": "Safely Drain a Node > Use `kubectl drain` to remove a node from service",
+  "text": "You can use `kubectl drain` to safely evict all of your pods from a\nnode before you perform maintenance on the node (e.g. kernel upgrade,\nhardware maintenance, etc.). Safe evictions allow the pod's containers\nto [gracefully terminate](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination)\nand will respect the PodDisruptionBudgets you have specified.\n\nBy default `kubectl drain` ignores certain system pods on the node\nthat cannot be killed; see\nthe [kubectl drain](/docs/reference/generated/kubectl/kubectl-commands/#drain)\ndocumentation for more details."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-1",
+  "heading": "Safely Drain a Node > Use `kubectl drain` to remove a node from service",
+  "text": "When `kubectl drain` returns successfully, that indicates that all of\nthe pods (except the ones excluded as described in the previous paragraph)\nhave been safely evicted (respecting the desired graceful termination period,\nand respecting the PodDisruptionBudget you have defined). It is then safe to\nbring down the node by powering down its physical machine or, if running on a\ncloud platform, deleting its virtual machine.\n\nIf any new Pods tolerate the `node.kubernetes.io/unschedulable` taint, then those Pods\nmight be scheduled to the node you have drained. Avoid tolerating that taint other than\nfor DaemonSets.\n\nIf you or another API user directly set the [`nodeName`](/docs/concepts/scheduling-eviction/assign-pod-node/#nodename)\nfield for a Pod (bypassing the scheduler), then the Pod is bound to the specified node\nand will run there, even though you have drained that node and marked it unschedulable."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#intro-0",
+  "heading": "API-initiated Eviction",
+  "text": " </br>\n\nYou can request eviction by calling the Eviction API directly, or programmatically\nusing a client of the API server, like the `kubectl drain` command. This\ncreates an `Eviction` object, which causes the API server to terminate the Pod.\n\nAPI-initiated evictions respect your configured [`PodDisruptionBudgets`](/docs/tasks/run-application/configure-pdb/)\nand [`terminationGracePeriodSeconds`](/docs/concepts/workloads/pods/pod-lifecycle#pod-termination).\n\nUsing the API to create an Eviction object for a Pod is like performing a\npolicy-controlled [`DELETE` operation](/docs/reference/kubernetes-api/workload-resources/pod-v1/#delete-delete-a-pod)\non the Pod."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-forced-0",
+  "heading": "Pod Lifecycle > Termination of Pods > Forced Pod termination",
+  "text": "Forced deletions can be potentially disruptive for some workloads and their Pods.\n\nBy default, all deletes are graceful within 30 seconds. The `kubectl delete` command supports\nthe `--grace-period=<seconds>` option which allows you to override the default and specify your\nown value.\n\nSetting the grace period to `0` forcibly and immediately deletes the Pod from the API\nserver. If the Pod was still running on a node, that forcible deletion triggers the kubelet to\nbegin immediate cleanup.\n\nUsing kubectl, You must specify an additional flag `--force` along with `--grace-period=0`\nin order to perform force deletions.\n\nWhen a force deletion is performed, the API server does not wait for confirmation\nfrom the kubelet that the Pod has been terminated on the node it was running on. It\nremoves the Pod in the API immediately so a new Pod can be created with the same\nname. On the node, Pods that are set to terminate immediately will still be given\na small grace period before being force killed."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#force-deletion-1",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods > Force Deletion",
+  "text": "If you're using any version of kubectl <= 1.4, you should omit the `--force` option and use:\n\n```shell\nkubectl delete pods <pod> --grace-period=0\n```\n\nIf even after these commands the pod is stuck on `Unknown` state, use the following command to\nremove the pod from the cluster:\n\n```shell\nkubectl patch pod <pod> -p '{\"metadata\":{\"finalizers\":null}}'\n```\n\nAlways perform force deletion of StatefulSet Pods carefully and with complete knowledge of the risks involved."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-3",
+  "heading": "Safely Drain a Node > Use `kubectl drain` to remove a node from service",
+  "text": "DaemonSet Pods are typically node-local services such as networking, storage, or\nlog collection that need to remain on the node for as long as the node itself is\nrunning. Because the DaemonSet controller pins each Pod to a specific node and\nignores the unschedulable taint, evicting these Pods would only cause them to be\nrecreated on the same node. `--ignore-daemonsets` skips them so that drain can\ncomplete; the Pods continue to run while you perform maintenance and are removed\nwhen the node is removed from the cluster.\n\nOnce it returns (without giving an error), you can power down the node\n(or equivalently, if on a cloud platform, delete the virtual machine backing the node).\nIf you leave the node in the cluster during the maintenance operation, you need to run\n\n```shell\nkubectl uncordon <node name>\n```\nafterwards to tell Kubernetes that it can resume scheduling new pods onto the node."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-0",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "You can perform a graceful pod deletion with the following command:\n\n```shell\nkubectl delete pods <pod>\n```\n\nFor the above to lead to graceful termination, the Pod **must not** specify a\n`pod.Spec.TerminationGracePeriodSeconds` of 0. The practice of setting a\n`pod.Spec.TerminationGracePeriodSeconds` of 0 seconds is unsafe and strongly discouraged\nfor StatefulSet Pods. Graceful deletion is safe and will ensure that the Pod\n[shuts down gracefully](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination)\nbefore the kubelet deletes the name from the apiserver."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#how-api-initiated-eviction-works-1",
+  "heading": "API-initiated Eviction > How API-initiated eviction works",
+  "text": "1. The `Pod` resource in the API server is updated with a deletion timestamp,\n   after which the API server considers the `Pod` resource to be terminated. The\n   `Pod` resource is also marked with the configured grace period.\n1. The kubelet on the node where the local Pod is running notices that the `Pod`\n   resource is marked for termination and starts to gracefully shut down the\n   local Pod.\n1. While the kubelet is shutting the Pod down, the control plane removes the Pod\n   from EndpointSlice\n   objects. As a result, controllers no longer consider the Pod as a valid object.\n1. After the grace period for the Pod expires, the kubelet forcefully terminates\n   the local Pod.\n1. The kubelet tells the API server to remove the `Pod` resource.\n1. The API server deletes the `Pod` resource."
+ }
+]

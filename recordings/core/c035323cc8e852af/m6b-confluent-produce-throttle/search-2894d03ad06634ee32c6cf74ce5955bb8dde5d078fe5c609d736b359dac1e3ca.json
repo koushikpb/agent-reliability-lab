@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/multi-tenancy#qos-1",
+  "heading": "Multi-tenancy > Additional Considerations > Quality-of-Service (QoS)",
+  "text": "Typically, all pods on a node share a network interface. Without network QoS, some pods may\nconsume an unfair share of the available bandwidth at the expense of other pods.\nThe Kubernetes [bandwidth plugin](https://www.cni.dev/plugins/current/meta/bandwidth/) creates an\n[extended resource](/docs/concepts/configuration/manage-resources-containers/#extended-resources)\nfor networking that allows you to use Kubernetes resources constructs, i.e. requests/limits, to\napply rate limits to pods by using Linux tc queues.\nBe aware that the plugin is considered experimental as per the\n[Network Plugins](/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/#support-traffic-shaping)\ndocumentation and should be thoroughly tested before use in production environments."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#example-limit-scale-down-rate-0",
+  "heading": "Horizontal Pod Autoscaling > Configurable scaling behavior > Example: limit scale down rate",
+  "text": "To limit the rate at which pods are removed by the HPA to 10% per minute, the\nfollowing behavior would be added to the HPA:\n\n```yaml\nbehavior:\n  scaleDown:\n    policies:\n    - type: Percent\n      value: 10\n      periodSeconds: 60\n```\n\nTo ensure that no more than 5 Pods are removed per minute, you can add a second scale-down\npolicy with a fixed size of 5, and set `selectPolicy` to minimum. Setting `selectPolicy` to `Min` means\nthat the autoscaler chooses the policy that affects the smallest number of Pods:\n\n```yaml\nbehavior:\n  scaleDown:\n    policies:\n    - type: Percent\n      value: 10\n      periodSeconds: 60\n    - type: Pods\n      value: 5\n      periodSeconds: 60\n    selectPolicy: Min\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#prioritylevelconfiguration-0",
+  "heading": "API Priority and Fairness > Resources > PriorityLevelConfiguration",
+  "text": "A PriorityLevelConfiguration represents a single priority level. Each\nPriorityLevelConfiguration has an independent limit on the number of outstanding\nrequests, and limitations on the number of queued requests.\n\nThe nominal concurrency limit for a PriorityLevelConfiguration is not\nspecified in an absolute number of seats, but rather in \"nominal\nconcurrency shares.\" The total concurrency limit for the API Server is\ndistributed among the existing PriorityLevelConfigurations in\nproportion to these shares, to give each level its nominal limit in\nterms of seats. This allows a cluster administrator to scale up or\ndown the total amount of traffic to a server by restarting\n`kube-apiserver` with a different value for `--max-requests-inflight`\n(or `--max-mutating-requests-inflight`), and all\nPriorityLevelConfigurations will see their maximum allowed concurrency\ngo up (or down) by the same fraction."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#prioritylevelconfiguration-1",
+  "heading": "API Priority and Fairness > Resources > PriorityLevelConfiguration",
+  "text": "In the versions before `v1beta3` the relevant\nPriorityLevelConfiguration field is named \"assured concurrency shares\"\nrather than \"nominal concurrency shares\". Also, in Kubernetes release\n1.25 and earlier there were no periodic adjustments: the\nnominal/assured limits were always applied without adjustment.\n\nThe bounds on how much concurrency a priority level may lend and how\nmuch it may borrow are expressed in the PriorityLevelConfiguration as\npercentages of the level's nominal limit. These are resolved to\nabsolute numbers of seats by multiplying with the nominal limit /\n100.0 and rounding. The dynamically adjusted concurrency limit of a\npriority level is constrained to lie between (a) a lower bound of its\nnominal limit minus its lendable seats and (b) an upper bound of its\nnominal limit plus the seats it may borrow. At each adjustment the\ndynamic limits are derived by each priority level reclaiming any lent\nseats for which demand recently appeared and then jointly fairly\nresponding to the recent seat demand on the priority levels, within\nthe bounds just described."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/vertical-pod-autoscale#limitrange-resources-0",
+  "heading": "Vertical Pod Autoscaling > LimitRange resources",
+  "text": "The admission controller and updater VPA components post-process recommendations to comply with the constraints defined in [LimitRanges](/docs/concepts/policy/limit-range/). The LimitRange resources with `type` Pod and Container are checked in the Kubernetes cluster. \n\nFor example, if the `max` field in a Container LimitRange resource is exceeded, both VPA components lower the limit to the value defined in the `max` field, and the request is proportionally decreased to maintain the request-to-limit ratio in the Pod spec."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-0",
+  "heading": "Local ephemeral storage > Ephemeral storage consumption management",
+  "text": "If the kubelet is managing local ephemeral storage as a resource, then the\nkubelet measures storage use in:\n\n- `emptyDir` volumes, except _tmpfs_ `emptyDir` volumes\n- directories holding node-level logs\n- writeable container layers\n\nIf a Pod is using more ephemeral storage than you allow it to, the kubelet\nsets an eviction signal that triggers Pod eviction.\n\nFor container-level isolation, if a container's writable layer and log\nusage exceeds its storage limit, the kubelet marks the Pod for eviction.\n\nFor pod-level isolation the kubelet works out an overall Pod storage limit by\nsumming the limits for the containers in that Pod. In this case, if the sum of\nthe local ephemeral storage usage from all containers and also the Pod's `emptyDir`\nvolumes exceeds the overall Pod storage limit, then the kubelet also marks the Pod\nfor eviction.\n\nIf the kubelet is not measuring local ephemeral storage, then a Pod\nthat exceeds its local storage limit will not be evicted for breaching\nlocal storage resource limits."
+ },
+ {
+  "chunk_id": "concepts/policy/pid-limiting#pod-pid-limits-0",
+  "heading": "Process ID Limits And Reservations > Pod PID limits",
+  "text": "Kubernetes allows you to limit the number of processes running in a Pod. You\nspecify this limit at the node level, rather than configuring it as a resource\nlimit for a particular Pod. Each Node can have a different PID limit.  \nTo configure the limit, you can specify the command line parameter `--pod-max-pids`\nto the kubelet, or set `PodPidsLimit` in the kubelet\n[configuration file](/docs/tasks/administer-cluster/kubelet-config-file/)."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#metrics-8",
+  "heading": "API Priority and Fairness > Observability > Metrics",
+  "text": "* `apiserver_flowcontrol_request_concurrency_limit` is the same as\n  `apiserver_flowcontrol_nominal_limit_seats`. Before the\n  introduction of concurrency borrowing between priority levels,\n  this was always equal to `apiserver_flowcontrol_current_limit_seats`\n  (which did not exist as a distinct metric).\n\n* `apiserver_flowcontrol_lower_limit_seats` is a gauge vector holding\n  the lower bound on each priority level's dynamic concurrency limit.\n\n* `apiserver_flowcontrol_upper_limit_seats` is a gauge vector holding\n  the upper bound on each priority level's dynamic concurrency limit."
+ }
+]

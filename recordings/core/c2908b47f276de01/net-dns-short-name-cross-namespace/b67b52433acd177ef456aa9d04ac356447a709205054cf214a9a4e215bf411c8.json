@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Let me check the logs from the notification-worker pods to see the DNS errors:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01BJz6VhKyNCaMnkaEQqwaJ1",
+   "input": {
+    "pod": "notification-worker-5b7d6c9f48-jq2vx"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0143BTSMAuD7qYK1iPXts35v",
+   "input": {
+    "pod": "notification-worker-5b7d6c9f48-wd8lm"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1646,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 147,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Excellent! I found the issue. The logs show that the ingress controller is blocking the `configuration-snippet` annotation with the message: \"Snippet directives are disabled by the Ingress administrator (allow-snippet-annotations=false)\". \n\nThe ticket mentions that the redirects use regex capture groups that require custom NGINX configuration. The ingress controller was upgraded over the weekend with `allow-snippet-annotations` set to `false`, which disables the `configuration-snippet` annotation that was likely being used for these complex redirects.\n\nLet me search the documentation to confirm this behavior and understand the implications.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01S7cmWRVtwmEzZbzKyu1Lxy",
+   "input": {
+    "query": "allow-snippet-annotations ingress nginx configuration"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01T6E1g8PomALEu3A4vD5RKR",
+   "input": {
+    "query": "configuration-snippet annotation redirect regex"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2430,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 233,
+ "stop_reason": "tool_use"
+}

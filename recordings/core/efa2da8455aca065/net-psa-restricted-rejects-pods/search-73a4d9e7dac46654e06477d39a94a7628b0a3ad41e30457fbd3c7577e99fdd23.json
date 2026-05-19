@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#eliminate-non-standard-options-2",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.b. Eliminate options not covered by the Pod Security Standards",
+  "text": "- `.spec.requiredDropCapabilities` - Required to drop `ALL` for the Restricted profile.\n- `.spec.seLinux` - (Only mutating with the `MustRunAs` rule) required to enforce the SELinux\n  requirements of the Baseline & Restricted profiles.\n- `.spec.runAsUser` - (Non-mutating with the `RunAsAny` rule) required to enforce `RunAsNonRoot` for\n  the Restricted profile.\n- `.spec.allowPrivilegeEscalation` - (Only mutating if set to `false`) required for the Restricted\n  profile."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/advanced-pod-config#container-level-security-context-0",
+  "heading": "Advanced Pod Configuration > Pod and container level security context configuration > Container-level security context",
+  "text": "You can specify the security context just for a specific container.\nHere's an example:\n\n#### Example Pod {#container-level-security-context-example}\n\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo-2\nspec:\n  containers:\n  - name: sec-ctx-demo-2\n    image: gcr.io/google-samples/node-hello:1.0\n    securityContext:\n      allowPrivilegeEscalation: false\n      runAsNonRoot: true\n      runAsUser: 1000\n      capabilities:\n        drop:\n        - ALL\n      seccompProfile:\n        type: RuntimeDefault"
+ },
+ {
+  "chunk_id": "concepts/security/linux-kernel-security-constraints#seccomp-1",
+  "heading": "Linux kernel security constraints for Pods and containers > Security features in the Linux kernel > seccomp",
+  "text": "Kubernetes also has the `allowPrivilegeEscalation` setting for Pods and\ncontainers. When set to `false`, this prevents processes from gaining new\ncapabilities and restricts unprivileged users from changing the applied seccomp\nprofile to a more permissive profile.\n\nTo learn how to implement seccomp in Kubernetes, refer to\n[Restrict a Container's Syscalls with seccomp](/docs/tutorials/security/seccomp/)\nor the [Seccomp node reference](/docs/reference/node/seccomp/)\n\nTo learn more about seccomp, see\n[Seccomp BPF](https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html)\nin the Linux kernel documentation.\n\n#### Considerations for seccomp {#seccomp-considerations}"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#psp-update-rollout-3",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.c. Rollout the updated PSPs",
+  "text": "       - `.securityContext.capabilities.drop`\n       - `.securityContext.readOnlyRootFilesystem`\n       - `.securityContext.runAsGroup`\n       - `.securityContext.runAsNonRoot`\n       - `.securityContext.runAsUser`\n       - `.securityContext.seccompProfile`\n       - `.securityContext.seLinuxOptions`\n3. Create the new PodSecurityPolicies. If any Roles or ClusterRoles are granting `use` on all PSPs\n   this could cause the new PSPs to be used instead of their mutating counter-parts.\n4. Update your authorization to grant access to the new PSPs. In RBAC this means updating any Roles\n   or ClusterRoles that grant the `use` permission on the original PSP to also grant it to the\n   updated PSP."
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-3",
+  "heading": "Pod Security Standards > Profile Details > Restricted",
+  "text": "\t\t\t\t<p>Privilege escalation (such as via set-user-ID or set-group-ID file mode) should not be allowed. <em><a href=\"#os-specific-policy-controls\">This is Linux only policy</a> in v1.25+ <code>(spec.os.name != windows)</code></em></p>\n\t\t\t\t<p><strong>Restricted Fields</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>spec.containers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t\t<li><code>spec.initContainers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t\t<li><code>spec.ephemeralContainers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<p><strong>Allowed Values</strong></p>\n\t\t\t\t<ul>"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-9",
+  "heading": "Pod Security Standards > Profile Details > Restricted",
+  "text": "\t\t\t\t\tContainers must drop <code>ALL</code> capabilities, and are only permitted to add back\n \t\t\t\t\tthe <code>NET_BIND_SERVICE</code> capability. <em><a href=\"#os-specific-policy-controls\">This is Linux only policy</a> in v1.25+ <code>(.spec.os.name != \"windows\")</code></em>\n\t\t\t\t</p>\n\t\t\t\t<p><strong>Restricted Fields</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>spec.containers[*].securityContext.capabilities.drop</code></li>\n\t\t\t\t\t<li><code>spec.initContainers[*].securityContext.capabilities.drop</code></li>\n\t\t\t\t\t<li><code>spec.ephemeralContainers[*].securityContext.capabilities.drop</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<p><strong>Allowed Values</strong></p>\n\t\t\t\t<ul>"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#eliminate-mutating-fields-1",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.a. Eliminate purely mutating fields",
+  "text": "- `.spec.defaultAllowPrivilegeEscalation`\n- `.spec.runtimeClass.defaultRuntimeClassName`\n- `.metadata.annotations['seccomp.security.alpha.kubernetes.io/defaultProfileName']`\n- `.metadata.annotations['apparmor.security.beta.kubernetes.io/defaultProfileName']`\n- `.spec.defaultAddCapabilities` - Although technically a mutating & validating field, these should\n  be merged into `.spec.allowedCapabilities` which performs the same validation without mutation.\n\nRemoving these could result in workloads missing required configuration, and cause problems. See\n[Rollout the updated policies](#psp-update-rollout) below for advice on how to roll these changes\nout safely."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#psp-update-rollout-2",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.c. Rollout the updated PSPs",
+  "text": "   you can compare the pod with the PodTemplate in the controller resource. If any changes are\n   identified, the original Pod or PodTemplate should be updated with the desired configuration.\n   The fields to review are:\n   - `.metadata.annotations['container.apparmor.security.beta.kubernetes.io/*']` (replace * with each container name)\n   - `.spec.runtimeClassName`\n   - `.spec.securityContext.fsGroup`\n   - `.spec.securityContext.seccompProfile`\n   - `.spec.securityContext.seLinuxOptions`\n   - `.spec.securityContext.supplementalGroups`\n   - On containers, under `.spec.containers[*]` and `.spec.initContainers[*]`:\n       - `.securityContext.allowPrivilegeEscalation`\n       - `.securityContext.capabilities.add`"
+ }
+]

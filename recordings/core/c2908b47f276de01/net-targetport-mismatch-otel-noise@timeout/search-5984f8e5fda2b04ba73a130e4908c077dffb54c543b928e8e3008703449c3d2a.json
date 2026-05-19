@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-windows-1",
+  "heading": "DNS for Services and Pods > DNS resolution on Windows nodes",
+  "text": "  in the `default` namespace, will have the DNS suffix `default.svc.cluster.local`.\n  Inside a Windows Pod, you can resolve both `kubernetes.default.svc.cluster.local`\n  and `kubernetes`, but not the partially qualified names (`kubernetes.default` or\n  `kubernetes.default.svc`)."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#is-dns-service-up-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Is DNS service up?",
+  "text": "Verify that the DNS service is up by using the `kubectl get service` command.\n\n```shell\nkubectl get svc --namespace=kube-system\n```\n```\nNAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)             AGE\n...\nkube-dns     ClusterIP   10.0.0.10      <none>        53/UDP,53/TCP        1h\n...\n```\n\nThe Service for CoreDNS is named `kube-dns`, for backward compatibility with the\noriginal kube-dns.\n\nIf you have created the Service or in the case it should be created by default\nbut it does not appear, see\n[debugging Services](/docs/tasks/debug/debug-application/debug-service/) for\nmore information."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-windows-0",
+  "heading": "DNS for Services and Pods > DNS resolution on Windows nodes",
+  "text": "- `ClusterFirstWithHostNet` is not supported for Pods that run on Windows nodes.\n  Windows treats all names with a `.` as a FQDN and skips FQDN resolution.\n- On Windows, there are multiple DNS resolvers that can be used. As these come with\n  slightly different behaviors, using the\n  [`Resolve-DNSName`](https://docs.microsoft.com/powershell/module/dnsclient/resolve-dnsname)\n  powershell cmdlet for name query resolutions is recommended.\n- On Linux, you have a DNS suffix list, which is used after resolution of a name as fully\n  qualified has failed.\n  On Windows, you can only have 1 DNS suffix, which is the DNS suffix associated with that\n  Pod's namespace (example: `mydns.svc.cluster.local`). Windows can resolve FQDNs, Services,\n  or network name which can be resolved with this single suffix. For example, a Pod spawned"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#check-the-local-dns-configuration-first-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Check the local DNS configuration first",
+  "text": "Take a look inside the resolv.conf file.\n(See [Customizing DNS Service](/docs/tasks/administer-cluster/dns-custom-nameservers) and\n[Known issues](#known-issues) below for more information)\n\n```shell\nkubectl exec -ti dnsutils -- cat /etc/resolv.conf\n```\n\nVerify that the search path and name server are set up like the following\n(note that search path may vary for different cloud providers):\n\n```\nsearch default.svc.cluster.local svc.cluster.local cluster.local google.internal c.gce_project_id.internal\nnameserver 10.0.0.10\noptions ndots:5\n```\n\nErrors such as the following indicate a problem with the CoreDNS\nadd-on or with associated Services:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#check-the-local-dns-configuration-first-1",
+  "heading": "Debugging DNS Resolution > Before you begin > Check the local DNS configuration first",
+  "text": "```shell\nkubectl exec -i -t dnsutils -- nslookup kubernetes.default\n```\n```\nServer:    10.0.0.10\nAddress 1: 10.0.0.10\n\nnslookup: can't resolve 'kubernetes.default'\n```\n\nor\n\n```shell\nkubectl exec -i -t dnsutils -- nslookup kubernetes.default\n```\n```\nServer:    10.0.0.10\nAddress 1: 10.0.0.10 kube-dns.kube-system.svc.cluster.local\n\nnslookup: can't resolve 'kubernetes.default'\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#a-aaaa-records-0",
+  "heading": "DNS for Services and Pods > Services > A/AAAA records",
+  "text": "\"Normal\" (not headless) Services are assigned DNS A and/or AAAA records,\ndepending on the IP family or families of the Service, with a name of the form\n`my-svc.my-namespace.svc.cluster-domain.example`. This resolves to the cluster IP\nof the Service.\n\n[Headless Services](/docs/concepts/services-networking/service/#headless-services)\n(without a cluster IP) are also assigned DNS A and/or AAAA records,\nwith a name of the form `my-svc.my-namespace.svc.cluster-domain.example`. Unlike normal\nServices, this resolves to the set of IPs of all of the Pods selected by the Service.\nClients are expected to consume the set or else use standard round-robin\nselection from the set."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#does-coredns-have-sufficient-permissions-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Does CoreDNS have sufficient permissions?",
+  "text": "CoreDNS must be able to list service and endpointslice related resources to properly resolve service names.\n\nSample error message:\n```\n2022-03-18T07:12:15.699431183Z [INFO] 10.96.144.227:52299 - 3686 \"A IN serverproxy.contoso.net.cluster.local. udp 52 false 512\" SERVFAIL qr,aa,rd 145 0.000091221s\n```\n\nFirst, get the current ClusterRole of `system:coredns`:\n\n```shell\nkubectl describe clusterrole system:coredns -n kube-system\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-any-service-exist-in-dns-0",
+  "heading": "Debug Services > Does the Service work by DNS name? > Does any Service work by DNS name?",
+  "text": "If the above still fails, DNS lookups are not working for your Service.  You\ncan take a step back and see what else is not working.  The Kubernetes master\nService should always work.  From within a Pod:\n\n```shell\nnslookup kubernetes.default\n```\n```none\nServer:    10.0.0.10\nAddress 1: 10.0.0.10 kube-dns.kube-system.svc.cluster.local\n\nName:      kubernetes.default\nAddress 1: 10.0.0.1 kubernetes.default.svc.cluster.local\n```\n\nIf this fails, please see the [kube-proxy](#is-the-kube-proxy-working) section\nof this document, or even go back to the top of this document and start over,\nbut instead of debugging your own Service, debug the DNS Service."
+ }
+]

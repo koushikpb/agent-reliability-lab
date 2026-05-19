@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/access-application-cluster/web-ui-dashboard#specifying-application-details-1",
+  "heading": "Deploy and Access the Kubernetes Dashboard > Deploying containerized applications > Specifying application details",
+  "text": "- **Number of pods** (mandatory): The target number of Pods you want your application to be deployed in.\n  The value must be a positive integer.\n\n  A [Deployment](/docs/concepts/workloads/controllers/deployment/) will be created to\n  maintain the desired number of Pods across your cluster.\n\n- **Service** (optional): For some parts of your application (e.g. frontends) you may want to expose a\n  [Service](/docs/concepts/services-networking/service/) onto an external,\n  maybe public IP address outside of your cluster (external Service).\n\n  For external Services, you may need to open up one or more ports to do so.\n\n  Other Services that are only visible from inside the cluster are called internal Services."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-1",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "In practice, a `CrashLoopBackOff` is a condition or event that might be seen as output\nfrom the `kubectl` command, while describing or listing Pods, when a container in the Pod\nfails to start properly and then continually tries and fails in a loop.\n\nIn other words, when a container enters the crash loop, Kubernetes applies the\nexponential backoff delay mentioned in the [Container restart policy](#restart-policy).\nThis mechanism prevents a faulty container from overwhelming the system with continuous\nfailed start attempts.\n\nThe `CrashLoopBackOff` can be caused by issues like the following:\n\n* Application errors that cause the container to exit.\n* Configuration errors, such as incorrect environment variables or missing\n  configuration files.\n* Resource constraints, where the container might not have enough memory or CPU\n  to start properly.\n* Health checks failing if the application doesn't start serving within the\n  expected time.\n* Container liveness probes or startup probes returning a `Failure` result\n  as mentioned in the [probes section](#container-probes).\n\nTo investigate the root cause of a `CrashLoopBackOff` issue, a user can:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#dealing-with-disruptions-0",
+  "heading": "Disruptions > Dealing with disruptions",
+  "text": "Here are some ways to mitigate involuntary disruptions:\n\n- Ensure your pod [requests the resources](/docs/tasks/configure-pod-container/assign-memory-resource) it needs.\n- Replicate your application if you need higher availability.  (Learn about running replicated\n  [stateless](/docs/tasks/run-application/run-stateless-application-deployment/)\n  and [stateful](/docs/tasks/run-application/run-replicated-stateful-application/) applications.)\n- For even higher availability when running replicated applications,\n  spread applications across racks (using\n  [anti-affinity](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity))\n  or across zones (if using a\n  [multi-zone cluster](/docs/setup/multiple-zones).)"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-in-kubernetes-0",
+  "heading": "Service > Services in Kubernetes",
+  "text": "The Service API, part of Kubernetes, is an abstraction to help you expose groups of\nPods over a network. Each Service object defines a logical set of endpoints (usually\nthese endpoints are Pods) along with a policy about how to make those pods accessible.\n\nFor example, consider a stateless image-processing backend which is running with\n3 replicas.  Those replicas are fungible&mdash;frontends do not care which backend\nthey use.  While the actual Pods that compose the backend set may change, the\nfrontend clients should not need to be aware of that, nor should they need to keep\ntrack of the set of backends themselves.\n\nThe Service abstraction enables this decoupling.\n\nCanary deployments are a common use case for Services. To learn what's involved, follow the [Deploy a Release Using a Canary Deployment](/docs/tutorials/stateless-application/canary-deployment/) tutorial.\n\nThe set of Pods targeted by a Service is usually determined\nby a selector that you\ndefine.\nTo learn about other ways to define Service endpoints,\nsee [Services _without_ selectors](#services-without-selectors)."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/service-access-application-cluster#intro-0",
+  "heading": "Use a Service to Access an Application in a Cluster",
+  "text": "This page shows how to create a Kubernetes Service object that external\nclients can use to access an application running in a cluster. The Service\nprovides load balancing for an application that has two running instances."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#external-ips-1",
+  "heading": "Service > External IPs",
+  "text": "```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - name: http\n      protocol: TCP\n      port: 80\n      targetPort: 49152\n  externalIPs:\n    - 198.51.100.32\n```\n\nKubernetes does not manage allocation of `externalIPs`; these are the responsibility\nof the cluster administrator."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#configure-poddisruptionbudget-0",
+  "heading": "Safely Drain a Node > (Optional) Configure a disruption budget",
+  "text": "To ensure that your workloads remain available during maintenance, you can\nconfigure a [PodDisruptionBudget](/docs/concepts/workloads/pods/disruptions/).\n\nIf availability is important for any applications that run or could run on the node(s)\nthat you are draining, [configure a PodDisruptionBudgets](/docs/tasks/run-application/configure-pdb/)\nfirst and then continue following this guide.\n\nIt is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)\nto your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.\nThe default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nbefore the drain can proceed."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/create-external-load-balancer#finding-your-ip-address-0",
+  "heading": "Create an External Load Balancer > Finding your IP address",
+  "text": "You can find the IP address created for your service by getting the service\ninformation through `kubectl`:\n\n```bash\nkubectl describe services example-service\n```\n\nwhich should produce output similar to:\n\n```\nName:                     example-service\nNamespace:                default\nLabels:                   app=example\nAnnotations:              <none>\nSelector:                 app=example\nType:                     LoadBalancer\nIP Families:              <none>\nIP:                       10.3.22.96\nIPs:                      10.3.22.96\nLoadBalancer Ingress:     192.0.2.89\nPort:                     <unset>  8765/TCP\nTargetPort:               9376/TCP\nNodePort:                 <unset>  30593/TCP\nEndpoints:                172.17.0.3:9376\nSession Affinity:         None\nExternal Traffic Policy:  Cluster\nEvents:                   <none>\n```\n\nThe load balancer's IP address is listed next to `LoadBalancer Ingress`.\n\nIf you are running your service on Minikube, you can find the assigned IP address and port with:\n\n```bash\nminikube service example-service --url\n```"
+ }
+]

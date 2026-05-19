@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/create-hostprocess-pod#troubleshooting-hostprocess-containers-0",
+  "heading": "Create a Windows HostProcess Pod > Troubleshooting HostProcess containers",
+  "text": "- HostProcess containers fail to start with `failed to create user process token: failed to logon user: Access is denied.: unknown`\n\n  Ensure containerd is running as `LocalSystem` or `LocalService` service accounts. User accounts (even Administrator accounts) do not have permissions to create logon tokens for any of the supported [user accounts](#choosing-a-user-account)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#detailed-behavior-0",
+  "heading": "Init Containers > Detailed behavior",
+  "text": "During Pod startup, the kubelet delays running init containers until the networking\nand storage are ready. Then the kubelet runs the Pod's init containers in the order\nthey appear in the Pod's spec.\n\nEach init container must exit successfully before\nthe next container starts. If a container fails to start due to the runtime or\nexits with failure, it is retried according to the Pod `restartPolicy`. However,\nif the Pod `restartPolicy` is set to Always, the init containers use\n`restartPolicy` OnFailure.\n\nA Pod cannot be `Ready` until all init containers have succeeded. The ports on an\ninit container are not aggregated under a Service. A Pod that is initializing\nis in the `Pending` state but should have a condition `Initialized` set to false.\n\nIf the Pod [restarts](#pod-restart-reasons), or is restarted, all init containers\nmust execute again."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-init-containers#understanding-pod-status-0",
+  "heading": "Debug Init Containers > Understanding Pod status",
+  "text": "A Pod status beginning with `Init:` summarizes the status of Init Container\nexecution. The table below describes some example status values that you might\nsee while debugging Init Containers.\n\nStatus | Meaning\n------ | -------\n`Init:N/M` | The Pod has `M` Init Containers, and `N` have completed so far.\n`Init:Error` | An Init Container has failed to execute.\n`Init:CrashLoopBackOff` | An Init Container has failed repeatedly.\n`Pending` | The Pod has not yet begun executing Init Containers.\n`PodInitializing` or `Running` | The Pod has already finished executing Init Containers."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#understanding-init-containers-0",
+  "heading": "Init Containers > Understanding init containers",
+  "text": "A Pod can have multiple containers\nrunning apps within it, but it can also have one or more init containers, which are run\nbefore the app containers are started.\n\nInit containers are exactly like regular containers, except:\n\n* Init containers always run to completion.\n* Each init container must complete successfully before the next one starts.\n\nIf a Pod's init container fails, the kubelet repeatedly restarts that init container until it succeeds.\nHowever, if the Pod has a `restartPolicy` of Never, and an init container fails during startup of that Pod, Kubernetes treats the overall Pod as failed."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-init-containers#getting-details-about-init-containers-0",
+  "heading": "Debug Init Containers > Getting details about Init Containers",
+  "text": "View more detailed information about Init Container execution:\n\n```shell\nkubectl describe pod <pod-name>\n```\n\nFor example, a Pod with two Init Containers might show the following:\n\n```\nInit Containers:\n  <init-container-1>:\n    Container ID:    ...\n    ...\n    State:           Terminated\n      Reason:        Completed\n      Exit Code:     0\n      Started:       ...\n      Finished:      ...\n    Ready:           True\n    Restart Count:   0\n    ...\n  <init-container-2>:\n    Container ID:    ...\n    ...\n    State:           Waiting\n      Reason:        CrashLoopBackOff\n    Last State:      Terminated\n      Reason:        Error\n      Exit Code:     1\n      Started:       ...\n      Finished:      ...\n    Ready:           False\n    Restart Count:   3\n    ...\n```\n\nYou can also access the Init Container statuses programmatically by reading the\n`status.initContainerStatuses` field on the Pod Spec:\n\n```shell\nkubectl get pod <pod-name> --template '{{.status.initContainerStatuses}}'\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#differences-from-regular-containers-0",
+  "heading": "Init Containers > Understanding init containers > Differences from regular containers",
+  "text": "Init containers support all the fields and features of app containers,\nincluding resource limits, [volumes](/docs/concepts/storage/volumes/), and security settings. However, the\nresource requests and limits for an init container are handled differently,\nas documented in [Resource sharing within containers](#resource-sharing-within-containers).\n\nRegular init containers (in other words: excluding sidecar containers) do not support the\n`lifecycle`, `livenessProbe`, `readinessProbe`, or `startupProbe` fields. Init containers\nmust run to completion before the Pod can be ready; sidecar containers continue running\nduring a Pod's lifetime, and _do_ support some probes. See [sidecar container](/docs/concepts/workloads/pods/sidecar-containers/)\nfor further details about sidecar containers."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#using-init-containers-0",
+  "heading": "Init Containers > Using init containers",
+  "text": "Because init containers have separate images from app containers, they\nhave some advantages for start-up related code:\n\n* Init containers can contain utilities or custom code for setup that are not present in an app\n  image. For example, there is no need to make an image `FROM` another image just to use a tool like\n  `sed`, `awk`, `python`, or `dig` during setup.\n* The application image builder and deployer roles can work independently without\n  the need to jointly build a single app image.\n* Init containers can run with a different view of the filesystem than app containers in the\n  same Pod. Consequently, they can be given access to\n  Secrets that app containers cannot access.\n* Because init containers run to completion before any app containers start, init containers offer\n  a mechanism to block or delay app container startup until a set of preconditions are met. Once\n  preconditions are met, all of the app containers in a Pod can start in parallel.\n* Init containers can securely run utilities or custom code that would otherwise make an app\n  container image less secure. By keeping unnecessary tools separate you can limit the attack\n  surface of your app container image."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#detailed-behavior-1",
+  "heading": "Init Containers > Detailed behavior",
+  "text": "Changes to the init container spec are limited to the container image field.\nDirectly altering the `image` field of  an init container does _not_ restart the\nPod or trigger its recreation. If the Pod has yet to start, that change may\nhave an effect on how the Pod boots up.\n\nFor a [pod template](/docs/concepts/workloads/pods/#pod-templates)\nyou can typically change any field for an init container; the impact of making\nthat change depends on where the pod template is used.\n\nBecause init containers can be restarted, retried, or re-executed, init container\ncode should be idempotent. In particular, code that writes into any `emptyDir` volume\nshould be prepared for the possibility that an output file already exists.\n\nInit containers have all of the fields of an app container. However, Kubernetes\nprohibits `readinessProbe` from being used because init containers cannot\ndefine readiness distinct from completion. This is enforced during validation."
+ }
+]

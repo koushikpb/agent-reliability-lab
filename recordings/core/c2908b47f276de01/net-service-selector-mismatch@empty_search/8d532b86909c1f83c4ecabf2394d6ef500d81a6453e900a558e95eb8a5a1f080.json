@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-4003 by identifying a **label mismatch between the Service selector and the new pod labels**. The cart-service 4.2 deployment uses the standard Helm chart labels (app.kubernetes.io/name, etc.) but the Service still selects on the old `app: cart-service` label. This means the Service has no endpoints, causing connection refused errors from the storefront. The fix is to update either the Service selector to match the new labels or add the old `app` label to the pod template in the Helm chart for backward compatibility.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 3897,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 131,
+ "stop_reason": "end_turn"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for deployment update and rollout information:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_013LJ1G5mcp4YsevpGNP9JBx",
+   "input": {
+    "query": "deployment update strategy rollout"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2064,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 69,
+ "stop_reason": "tool_use"
+}

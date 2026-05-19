@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-6",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  is an ingress controller driving [Kong Gateway](https://konghq.com/kong/).\n* [Kusk Gateway](https://kusk.kubeshop.io/) is an OpenAPI-driven ingress controller based on [Envoy](https://www.envoyproxy.io).\n* [N42 Gateway](https://n42-gateway.github.io/) is an Ingress and Gateway API controller for [HAProxy](https://www.haproxy.org/#desc).\n* The [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx-ingress-controller/)\n  works with the [NGINX](https://www.nginx.com/resources/glossary/nginx/) webserver (as a proxy)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-0",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "To update an existing Ingress to add a new Host, you can update it by editing the resource:\n\n```shell\nkubectl describe ingress test\n```\n\n```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     35s                loadbalancer-controller  default/test\n```\n\n```shell\nkubectl edit ingress test\n```\n\nThis pops up an editor with the existing configuration in YAML format.\nModify it to include the new Host:"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merging-changes-for-fields-of-type-list-4",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merging changes for fields of type list",
+  "text": "```yaml\n    - name: nginx-helper-b\n      image: helper:1.3\n      args: [\"run\"] # Field will be retained\n    - name: nginx-helper-d # key: nginx-helper-d; will be retained\n      image: helper:1.3\n# result after merge\n    containers:\n    - name: nginx\n      image: nginx:1.16\n      # Element nginx-helper-a was deleted\n    - name: nginx-helper-b\n      image: helper:1.3\n      args: [\"run\"] # Field was retained\n    - name: nginx-helper-c # Element was added\n      image: helper:1.3\n    - name: nginx-helper-d # Element was ignored\n      image: helper:1.3\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rolling-back-to-a-previous-revision-2",
+  "heading": "Deployments > Rolling Back a Deployment > Rolling Back to a Previous Revision",
+  "text": "   The output is similar to this:\n   ```\n   NAME               READY   UP-TO-DATE   AVAILABLE   AGE\n   nginx-deployment   3/3     3            3           30m\n   ```\n3. Get the description of the Deployment:\n   ```shell\n   kubectl describe deployment nginx-deployment\n   ```\n   The output is similar to this:\n   ```\n   Name:                   nginx-deployment\n   Namespace:              default\n   CreationTimestamp:      Sun, 02 Sep 2018 18:17:55 -0500\n   Labels:                 app=nginx\n   Annotations:            deployment.kubernetes.io/revision=4\n   Selector:               app=nginx\n   Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable\n   StrategyType:           RollingUpdate\n   MinReadySeconds:        0\n   RollingUpdateStrategy:  25% max unavailable, 25% max surge\n   Pod Template:\n     Labels:  app=nginx\n     Containers:\n      nginx:\n       Image:        nginx:1.16.1\n       Port:         80/TCP\n       Host Port:    0/TCP\n       Environment:  <none>\n       Mounts:       <none>\n     Volumes:        <none>\n   Conditions:\n     Type           Status  Reason"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#updating-a-deployment-0",
+  "heading": "Deployments > Updating a Deployment",
+  "text": "A Deployment's rollout is triggered if and only if the Deployment's Pod template (that is, `.spec.template`)\nis changed, for example if the labels or container images of the template are updated. Other updates, such as scaling the Deployment, do not trigger a rollout.\n\nFollow the steps given below to update your Deployment:\n\n1. Let's update the nginx Pods to use the `nginx:1.16.1` image instead of the `nginx:1.14.2` image.\n\n   ```shell\n   kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.16.1\n   ```\n\n   or use the following command:\n\n   ```shell\n   kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1\n   ```\n   where `deployment/nginx-deployment` indicates the Deployment,\n   `nginx` indicates the Container the update will take place and\n   `nginx:1.16.1` indicates the new image and its tag.\n\n   The output is similar to:"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merging-changes-for-fields-of-type-list-3",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merging changes for fields of type list",
+  "text": "```yaml\n# last-applied-configuration value\n    containers:\n    - name: nginx\n      image: nginx:1.16\n    - name: nginx-helper-a # key: nginx-helper-a; will be deleted in result\n      image: helper:1.3\n    - name: nginx-helper-b # key: nginx-helper-b; will be retained\n      image: helper:1.3\n# configuration file value\n    containers:\n    - name: nginx\n      image: nginx:1.16\n    - name: nginx-helper-b\n      image: helper:1.3\n    - name: nginx-helper-c # key: nginx-helper-c; will be added in result\n      image: helper:1.3\n# live configuration\n    containers:\n    - name: nginx\n      image: nginx:1.16\n    - name: nginx-helper-a\n      image: helper:1.3\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-2",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\n  bar.baz.com\n               /foo   service2:80 (10.8.0.91:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     45s                loadbalancer-controller  default/test\n```\n\nYou can achieve the same outcome by invoking `kubectl replace -f` on a modified Ingress YAML file."
+ }
+]

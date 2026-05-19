@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/containers/images#using-a-private-registry-0",
+  "heading": "Images > Using a private registry",
+  "text": "Private registries may require authentication to be able to discover and/or pull\nimages from them.\nCredentials can be provided in several ways:\n\n- [Specifying `imagePullSecrets` when you define a Pod](#specifying-imagepullsecrets-on-a-pod)\n\n  Only Pods which provide their own keys can access the private registry.\n\n- [Configuring Nodes to Authenticate to a Private Registry](#configuring-nodes-to-authenticate-to-a-private-registry)\n  - All Pods can read any configured private registries.\n  - Requires node configuration by cluster administrator.\n- Using a _kubelet credential provider_ plugin to [dynamically fetch credentials for private registries](#kubelet-credential-provider)\n\n  The kubelet can be configured to use credential provider exec plugin for the\n  respective private registry.\n\n- [Pre-pulled Images](#pre-pulled-images)\n  - All Pods can use any images cached on a node.\n  - Requires root access to all nodes to set up.\n- Vendor-specific or local extensions"
+ },
+ {
+  "chunk_id": "concepts/containers/images#ensureimagepullcredentialverification-0",
+  "heading": "Images > Using a private registry > Ensure image pull credential verification",
+  "text": "If the `KubeletEnsureSecretPulledImages` feature gate is enabled for your cluster,\nKubernetes will validate image credentials for every image that requires credentials\nto be pulled, even if that image is already present on the node. This validation\nensures that images in a Pod request which have not been successfully pulled\nwith the provided credentials must re-pull the images from the registry.\nAdditionally, image pulls that re-use the same credentials\nwhich previously resulted in a successful image pull will not need to re-pull from\nthe registry and are instead validated locally without accessing the registry\n(provided the image is available locally).\nThis is controlled by the`imagePullCredentialsVerificationPolicy` field in the\n[Kubelet configuration](/docs/reference/config-api/kubelet-config.v1beta1/#kubelet-config-k8s-io-v1beta1-ImagePullCredentialsVerificationPolicy).\n\nThis configuration controls when image pull credentials must be verified if the\nimage is already present on the node:"
+ },
+ {
+  "chunk_id": "concepts/containers/images#kubelet-credential-provider-0",
+  "heading": "Images > Using a private registry > Kubelet credential provider for authenticated image pulls",
+  "text": "You can configure the kubelet to invoke a plugin binary to dynamically fetch\nregistry credentials for a container image. This is the most robust and versatile\nway to fetch credentials for private registries, but also requires kubelet-level\nconfiguration to enable.\n\nThis technique can be especially useful for running static Pods\nthat require container images hosted in a private registry.\nUsing a service-account or a\nsecret to provide private registry credentials\nis not possible in the specification of a static Pod, because it _cannot_\nhave references to other API resources in its specification.\n\nSee [Configure a kubelet image credential provider](/docs/tasks/administer-cluster/kubelet-credential-provider/) for more details."
+ },
+ {
+  "chunk_id": "concepts/containers/images#ensureimagepullcredentialverification-1",
+  "heading": "Images > Using a private registry > Ensure image pull credential verification",
+  "text": " * `NeverVerify`: Mimics the behavior of having this feature gate disabled.\n   If the image is present locally, image pull credentials are not verified.\n * `NeverVerifyPreloadedImages`: Images pulled outside the kubelet are not verified,\n but all other images will have their credentials verified. This is the default behavior.\n * `NeverVerifyAllowListedImages`: Images pulled outside the kubelet and mentioned within the\n   `preloadedImagesVerificationAllowlist` specified in the kubelet config are not verified.\n * `AlwaysVerify`: All images will have their credentials verified\n   before they can be used.\n\nThis verification applies to [pre-pulled images](#pre-pulled-images),\nimages pulled using node-wide secrets, and images pulled using Pod-level secrets.\n\nIn the case of credential rotation, the credentials previously used to pull the image\nwill continue to verify without the need to access the registry. New or rotated credentials\nwill require the image to be re-pulled from the registry."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#using-images-from-multiple-registries-0",
+  "heading": "Pull an Image from a Private Registry > Using images from multiple registries",
+  "text": "A pod can have multiple containers, each container image can be from a different registry.\nYou can use multiple `imagePullSecrets` with one pod, and each can contain multiple credentials.\n\nThe image pull will be attempted using each credential that matches the registry.\nIf no credentials match the registry, the image pull will be attempted without authorization or using custom runtime specific configuration."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#create-a-pod-that-uses-your-secret-1",
+  "heading": "Pull an Image from a Private Registry > Create a Pod that uses your Secret",
+  "text": "To pull the image from the private registry, Kubernetes needs credentials.\nThe `imagePullSecrets` field in the configuration file specifies that\nKubernetes should get the credentials from a Secret named `regcred`.\n\nCreate a Pod that uses your Secret, and verify that the Pod is running:\n\n```shell\nkubectl apply -f my-private-reg-pod.yaml\nkubectl get pod private-reg\n```\n\nTo use image pull secrets for a Pod (or a Deployment, or other object that\nhas a pod template that you are using), you need to make sure that the appropriate\nSecret does exist in the right namespace. The namespace to use is the same\nnamespace where you defined the Pod.\n\nAlso, in case the Pod fails to start with the status `ImagePullBackOff`, view the Pod events:\n\n```shell\nkubectl describe pod private-reg\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#registry-secret-existing-credentials-0",
+  "heading": "Pull an Image from a Private Registry > Create a Secret based on existing credentials",
+  "text": "A Kubernetes cluster uses the Secret of `kubernetes.io/dockerconfigjson` type to authenticate with\na container registry to pull a private image.\n\nIf you already ran `docker login`, you can copy\nthat credential into Kubernetes:\n\n```shell\nkubectl create secret generic regcred \\\n    --from-file=.dockerconfigjson=<path/to/.docker/config.json> \\\n    --type=kubernetes.io/dockerconfigjson\n```\n\nIf you need more control (for example, to set a namespace or a label on the new\nsecret) then you can customise the Secret before storing it.\nBe sure to:"
+ },
+ {
+  "chunk_id": "concepts/containers/images#config-json-2",
+  "heading": "Images > Using a private registry > Interpretation of config.json",
+  "text": "Image pull operations pass the credentials to the CRI container runtime for every\nvalid pattern. For example, the following container image names would match\nsuccessfully:\n\n- `my-registry.example/images`\n- `my-registry.example/images/my-image`\n- `my-registry.example/images/another-image`\n- `sub.my-registry.example/images/my-image`\n\nHowever, these container image names would *not* match:\n\n- `a.sub.my-registry.example/images/my-image`\n- `a.b.sub.my-registry.example/images/my-image`\n\nThe kubelet performs image pulls sequentially for every found credential. This\nmeans that multiple entries in `config.json` for different paths are possible, too:\n\n```json\n{\n    \"auths\": {\n        \"my-registry.example/images\": {\n            \"auth\": \"\u2026\"\n        },\n        \"my-registry.example/images/subpath\": {\n            \"auth\": \"\u2026\"\n        }\n    }\n}\n```"
+ }
+]

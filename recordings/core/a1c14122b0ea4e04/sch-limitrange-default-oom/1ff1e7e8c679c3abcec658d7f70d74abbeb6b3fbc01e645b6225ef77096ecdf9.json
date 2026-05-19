@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Fu7A9P8NqQ9d28Q6z9ZmBp",
+   "input": {
+    "namespace": "data-platform"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1814,
+ "model": "claude-opus-4-7",
+ "output_tokens": 69,
+ "stop_reason": "tool_use"
+}

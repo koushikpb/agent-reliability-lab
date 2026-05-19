@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#progress-deadline-seconds-0",
+  "heading": "Deployments > Writing a Deployment Spec > Progress Deadline Seconds",
+  "text": "`.spec.progressDeadlineSeconds` is an optional field that specifies the number of seconds you want\nto wait for your Deployment to progress before the system reports back that the Deployment has\n[failed progressing](#failed-deployment) - surfaced as a condition with `type: Progressing`, `status: \"False\"`.\nand `reason: ProgressDeadlineExceeded` in the status of the resource. The Deployment controller will keep\nretrying the Deployment. This defaults to 600.\n\nIf specified, this field needs to be greater than `.spec.minReadySeconds`."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-1",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "By default, a Job will run uninterrupted unless a Pod fails (`restartPolicy=Never`)\nor a Container exits in error (`restartPolicy=OnFailure`), at which point the Job defers to the\n`.spec.backoffLimit` described above. Once `.spec.backoffLimit` has been reached the Job will\nbe marked as failed and any running Pods will be terminated.\n\nAnother way to terminate a Job is by setting an active deadline.\nDo this by setting the `.spec.activeDeadlineSeconds` field of the Job to a number of seconds.\nThe `activeDeadlineSeconds` applies to the duration of the job, no matter how many Pods are created.\nOnce a Job reaches `activeDeadlineSeconds`, all of its running Pods are terminated and the Job status\nwill become `type: Failed` with `reason: DeadlineExceeded`."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-2",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "Note that a Job's `.spec.activeDeadlineSeconds` takes precedence over its `.spec.backoffLimit`.\nTherefore, a Job that is retrying one or more failed Pods will not deploy additional Pods once\nit reaches the time limit specified by `activeDeadlineSeconds`, even if the `backoffLimit` is not yet reached.\n\nExample:\n\n```yaml\napiVersion: batch/v1\nkind: Job\nmetadata:\n  name: pi-with-timeout\nspec:\n  backoffLimit: 5\n  activeDeadlineSeconds: 100\n  template:\n    spec:\n      containers:\n      - name: pi\n        image: perl:5.34.0\n        command: [\"perl\", \"-Mbignum=bpi\", \"-wle\", \"print bpi(2000)\"]\n      restartPolicy: Never\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#detailed-behavior-2",
+  "heading": "Init Containers > Detailed behavior",
+  "text": "Use `activeDeadlineSeconds` on the Pod to prevent init containers from failing forever.\nThe active deadline includes init containers.\nHowever it is recommended to use `activeDeadlineSeconds` only if teams deploy their application\nas a Job, because `activeDeadlineSeconds` has an effect even after initContainer finished.\nThe Pod which is already running correctly would be killed by `activeDeadlineSeconds` if you set.\n\nThe name of each app and init container in a Pod must be unique; a\nvalidation error is thrown for any container sharing a name with another."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-0",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "Your Deployment may get stuck trying to deploy its newest ReplicaSet without ever completing. This can occur\ndue to some of the following factors:\n\n* Insufficient quota\n* Readiness probe failures\n* Image pull errors\n* Insufficient permissions\n* Limit ranges\n* Application runtime misconfiguration\n\nOne way you can detect this condition is to specify a deadline parameter in your Deployment spec:\n([`.spec.progressDeadlineSeconds`](#progress-deadline-seconds)). `.spec.progressDeadlineSeconds` denotes the\nnumber of seconds the Deployment controller waits before indicating (in the Deployment status) that the\nDeployment progress has stalled.\n\nThe following `kubectl` command sets the spec with `progressDeadlineSeconds` to make the controller report\nlack of progress of a rollout for a Deployment after 10 minutes:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-1",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "For every CronJob, the CronJob controller checks how many schedules it missed in the duration from its last scheduled time until now. If there are more than 100 missed schedules, then it does not start the Job and logs the error.\n\n```\ntoo many missed start times. Set or decrease .spec.startingDeadlineSeconds or check clock skew\n```\nThis behavior is applicable for catch-up scheduling and does not mean the CronJob will stop running.  \n\nFor example, when using `concurrencyPolicy: Forbid`, long-running Jobs may cause scheduled times to be skipped, but a new Job can be created once the previous Job completes.\n\nIt is important to note that if the `startingDeadlineSeconds` field is set (not `nil`), the controller counts how many missed Jobs occurred from the value of `startingDeadlineSeconds` until now rather than from the last scheduled time until now. For example, if `startingDeadlineSeconds` is `200`, the controller counts how many missed Jobs occurred in the last 200 seconds."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#terminal-job-conditions-1",
+  "heading": "Jobs > Job termination and cleanup > Terminal Job conditions",
+  "text": "Jobs fail for the following reasons:\n- The number of Pod failures exceeded the specified `.spec.backoffLimit` in the Job\n  specification. For details, see [Pod backoff failure policy](#pod-backoff-failure-policy).\n- The Job runtime exceeded the specified `.spec.activeDeadlineSeconds`\n- An indexed Job that used `.spec.backoffLimitPerIndex` has failed indexes.\n  For details, see [Backoff limit per index](#backoff-limit-per-index).\n- The number of failed indexes in the Job exceeded the specified\n  `spec.maxFailedIndexes`. For details, see [Backoff limit per index](#backoff-limit-per-index)\n- A failed Pod matches a rule in `.spec.podFailurePolicy` that has the `FailJob`\n   action. For details about how Pod failure policy rules might affect failure\n   evaluation, see [Pod failure policy](#pod-failure-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#starting-deadline-1",
+  "heading": "CronJob > Writing a CronJob spec > Deadline for delayed Job start",
+  "text": "For example, if it is set to `200`, it allows a Job to be created for up to 200\nseconds after the actual schedule."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#intro-0",
+  "heading": "Node-pressure Eviction",
+  "text": "</br>\n\nThe kubelet monitors resources\nlike memory, disk space, and filesystem inodes on your cluster's nodes.\nWhen one or more of these resources reach specific consumption levels, the\nkubelet can proactively fail one or more pods on the node to reclaim resources\nand prevent starvation.\n\nDuring a node-pressure eviction, the kubelet sets the [phase](/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase) for the\nselected pods to `Failed`, and terminates the Pod.\n\nNode-pressure eviction is not the same as\n[API-initiated eviction](/docs/concepts/scheduling-eviction/api-eviction/)."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#node-conditions-2",
+  "heading": "Node-pressure Eviction > Node conditions",
+  "text": "| `DiskPressure`    | `nodefs.available`, `nodefs.inodesFree`, `imagefs.available`, `imagefs.inodesFree`, `containerfs.available`, or `containerfs.inodesFree` | Available disk space and inodes on either the node's root filesystem, image filesystem, or container filesystem has satisfied an eviction threshold              |\n| `PIDPressure`     | `pid.available`                                                                       | Available processes identifiers on the (Linux) node has fallen below an eviction threshold |"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#reclaim-node-resources-0",
+  "heading": "Node-pressure Eviction > Node conditions > Reclaiming node level resources",
+  "text": "The kubelet tries to reclaim node-level resources before it evicts end-user pods.\n\nWhen a `DiskPressure` node condition is reported, the kubelet reclaims node-level\nresources based on the filesystems on the node.\n\n#### Without `imagefs` or `containerfs`\n\nIf the node only has a `nodefs` filesystem that meets eviction thresholds,\nthe kubelet frees up disk space in the following order:\n\n1. Garbage collect dead pods and containers.\n1. Delete unused images.\n\n#### With `imagefs`\n\nIf the node has a dedicated `imagefs` filesystem for container runtimes to use,\nthe kubelet does the following:\n\n- If the `nodefs` filesystem meets the eviction thresholds, the kubelet garbage\n  collects dead pods and containers.\n\n- If the `imagefs` filesystem meets the eviction thresholds, the kubelet\n  deletes all unused images.\n\n#### With `imagefs` and `containerfs`"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#pod-selection-for-kubelet-eviction-4",
+  "heading": "Node-pressure Eviction > Node conditions > Pod selection for kubelet eviction",
+  "text": "- If `imagefs` triggers evictions, the kubelet sorts pods based on the\n  writable layer usage of all containers.\n\n#### With `imagefs` and `containerfs` (`imagefs` and `containerfs` have been split) {#with-containersfs}\n\n- If `containerfs` triggers evictions, the kubelet sorts pods based on\n  `containerfs` usage (`local volumes + logs and a writable layer of all containers`).\n\n- If `imagefs` triggers evictions, the kubelet sorts pods based on the\n  `storage of images` rank, which represents the disk usage of a given image."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#pod-selection-for-kubelet-eviction-3",
+  "heading": "Node-pressure Eviction > Node conditions > Pod selection for kubelet eviction",
+  "text": "When the kubelet evicts pods in response to inode or process ID starvation, it uses\nthe Pods' relative priority to determine the eviction order, because inodes and PIDs have no\nrequests.\n\nThe kubelet sorts pods differently based on whether the node has a dedicated\n`imagefs` or `containerfs` filesystem:\n\n#### Without `imagefs` or `containerfs` (`nodefs` and `imagefs` use the same filesystem) {#without-imagefs}\n\n- If `nodefs` triggers evictions, the kubelet sorts pods based on their\n  total disk usage (`local volumes + logs and a writable layer of all containers`).\n\n#### With `imagefs` (`nodefs` and `imagefs` filesystems are separate) {#with-imagefs}\n\n- If `nodefs` triggers evictions, the kubelet sorts pods based on `nodefs`\n  usage (`local volumes + logs of all containers`)."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#schedulable-resources-and-eviction-policies-0",
+  "heading": "Node-pressure Eviction > Good practices > Schedulable resources and eviction policies",
+  "text": "When you configure the kubelet with an eviction policy, you should make sure that\nthe scheduler will not schedule pods if they will trigger eviction because they\nimmediately induce memory pressure.\n\nConsider the following scenario:\n\n- Node memory capacity: 10GiB\n- Operator wants to reserve 10% of memory capacity for system daemons (kernel, `kubelet`, etc.)\n- Operator wants to evict Pods at 95% memory utilization to reduce incidence of system OOM.\n\nFor this to work, the kubelet is launched as follows:\n\n```none\n--eviction-hard=memory.available<500Mi\n--system-reserved=memory=1.5Gi\n```\n\nIn this configuration, the `--system-reserved` flag reserves 1.5GiB of memory\nfor the system, which is `10% of the total memory + the eviction threshold amount`."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#eviction-signals-5",
+  "heading": "Node-pressure Eviction > Eviction signals and thresholds > Eviction signals",
+  "text": "On nodes with [hugepages](/docs/tasks/manage-hugepages/scheduling-hugepages/)\nconfigured, the kubelet subtracts the node's total hugepage capacity from\n`memory.available` used by eviction manager.\nWithout this adjustment, hugepage-reserved RAM inflates\n`AvailableBytes` because the memory cgroup controller does not track hugetlb\nallocations in its working set. This can delay eviction and lead to OOM kills.\nTo restore the previous behavior, disable the `HugepageAwareEviction`\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/)."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/reserve-compute-resources#eviction-thresholds-1",
+  "heading": "Reserve Compute Resources for System Daemons > Node Allocatable > Eviction Thresholds",
+  "text": "Memory pressure at the node level leads to System OOMs which affects the entire\nnode and all pods running on it. Nodes can go offline temporarily until memory\nhas been reclaimed. To avoid (or reduce the probability of) system OOMs kubelet\nprovides [out of resource](/docs/concepts/scheduling-eviction/node-pressure-eviction/)\nmanagement. Evictions are\nsupported for `memory` and `ephemeral-storage` only. By reserving some memory via\n`evictionHard` setting, the `kubelet` attempts to evict pods whenever memory\navailability on the node drops below the reserved value. Hypothetically, if\nsystem daemons did not exist on a node, pods cannot use more than `capacity -\neviction-hard`. For this reason, resources reserved for evictions are not\navailable for pods."
+ }
+]

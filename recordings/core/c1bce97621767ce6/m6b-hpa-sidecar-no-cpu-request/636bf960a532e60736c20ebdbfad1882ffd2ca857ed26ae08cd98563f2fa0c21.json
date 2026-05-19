@@ -1,0 +1,45 @@
+{
+ "content": [
+  {
+   "text": "The logs show the pods are under heavy load with worker pools maxed out. The ticket mentions that the HPA shows \"cpu <unknown>/60%\". Let me search the Kubernetes documentation about HPA and CPU metrics issues.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01L6QPqKV6JXWgiHs7hiWsVU",
+   "input": {
+    "query": "HPA CPU metrics unknown"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_018bbZPLTwoB99yCZmEoby15",
+   "input": {
+    "query": "HPA resource requests CPU scaling"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016AYzC8LP6KQQZr4uomy5mv",
+   "input": {
+    "query": "metrics-server resource metrics not available"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2817,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 188,
+ "stop_reason": "tool_use"
+}

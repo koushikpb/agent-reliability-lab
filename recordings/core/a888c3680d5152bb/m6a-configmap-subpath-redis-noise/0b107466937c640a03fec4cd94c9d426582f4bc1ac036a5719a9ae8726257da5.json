@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-5004 by identifying that the API gateway pods were using a subPath volume mount for the gateway-limits ConfigMap, which prevents automatic ConfigMap updates. The Kubernetes documentation explicitly states that containers using ConfigMap subPath mounts do not receive updates automatically. The fix is to remove the subPath specification from the gateway deployment's volume mount so the pods can detect and reload ConfigMap changes without requiring a restart.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9486,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 95,
+ "stop_reason": "end_turn"
+}

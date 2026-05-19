@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-0",
+  "heading": "Safely Drain a Node > Use `kubectl drain` to remove a node from service",
+  "text": "You can use `kubectl drain` to safely evict all of your pods from a\nnode before you perform maintenance on the node (e.g. kernel upgrade,\nhardware maintenance, etc.). Safe evictions allow the pod's containers\nto [gracefully terminate](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination)\nand will respect the PodDisruptionBudgets you have specified.\n\nBy default `kubectl drain` ignores certain system pods on the node\nthat cannot be killed; see\nthe [kubectl drain](/docs/reference/generated/kubectl/kubectl-commands/#drain)\ndocumentation for more details."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-1",
+  "heading": "Safely Drain a Node > Use `kubectl drain` to remove a node from service",
+  "text": "When `kubectl drain` returns successfully, that indicates that all of\nthe pods (except the ones excluded as described in the previous paragraph)\nhave been safely evicted (respecting the desired graceful termination period,\nand respecting the PodDisruptionBudget you have defined). It is then safe to\nbring down the node by powering down its physical machine or, if running on a\ncloud platform, deleting its virtual machine.\n\nIf any new Pods tolerate the `node.kubernetes.io/unschedulable` taint, then those Pods\nmight be scheduled to the node you have drained. Avoid tolerating that taint other than\nfor DaemonSets.\n\nIf you or another API user directly set the [`nodeName`](/docs/concepts/scheduling-eviction/assign-pod-node/#nodename)\nfield for a Pod (bypassing the scheduler), then the Pod is bound to the specified node\nand will run there, even though you have drained that node and marked it unschedulable."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-budgets-1",
+  "heading": "Disruptions > Pod disruption budgets",
+  "text": "For example, the `kubectl drain` subcommand lets you mark a node as going out of\nservice. When you run `kubectl drain`, the tool tries to evict all of the Pods on\nthe Node you're taking out of service. The eviction request that `kubectl` submits on\nyour behalf may be temporarily rejected, so the tool periodically retries all failed\nrequests until all Pods on the target node are terminated, or until a configurable timeout\nis reached.\n\nA PDB specifies the number of replicas that an application can tolerate having, relative to how\nmany it is intended to have.  For example, a Deployment which has a `.spec.replicas: 5` is\nsupposed to have 5 pods at any given time.  If its PDB allows for there to be 4 at a time,\nthen the Eviction API will allow voluntary disruption of one (but not two) pods at a time.\n\nThe group of pods that comprise the application is specified using a label selector, the same\nas the one used by the application's controller (deployment, stateful-set, etc)."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#eviction-api-0",
+  "heading": "Safely Drain a Node > The Eviction API",
+  "text": "If you prefer not to use [kubectl drain](/docs/reference/generated/kubectl/kubectl-commands/#drain) (such as\nto avoid calling to an external command, or to get finer control over the pod\neviction process), you can also programmatically cause evictions using the\neviction API.\n\nFor more information, see [API-initiated eviction](/docs/concepts/scheduling-eviction/api-eviction/)."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#intro-0",
+  "heading": "API-initiated Eviction",
+  "text": " </br>\n\nYou can request eviction by calling the Eviction API directly, or programmatically\nusing a client of the API server, like the `kubectl drain` command. This\ncreates an `Eviction` object, which causes the API server to terminate the Pod.\n\nAPI-initiated evictions respect your configured [`PodDisruptionBudgets`](/docs/tasks/run-application/configure-pdb/)\nand [`terminationGracePeriodSeconds`](/docs/concepts/workloads/pods/pod-lifecycle#pod-termination).\n\nUsing the API to create an Eviction object for a Pod is like performing a\npolicy-controlled [`DELETE` operation](/docs/reference/kubernetes-api/workload-resources/pod-v1/#delete-delete-a-pod)\non the Pod."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-3",
+  "heading": "Safely Drain a Node > Use `kubectl drain` to remove a node from service",
+  "text": "DaemonSet Pods are typically node-local services such as networking, storage, or\nlog collection that need to remain on the node for as long as the node itself is\nrunning. Because the DaemonSet controller pins each Pod to a specific node and\nignores the unschedulable taint, evicting these Pods would only cause them to be\nrecreated on the same node. `--ignore-daemonsets` skips them so that drain can\ncomplete; the Pods continue to run while you perform maintenance and are removed\nwhen the node is removed from the cluster.\n\nOnce it returns (without giving an error), you can power down the node\n(or equivalently, if on a cloud platform, delete the virtual machine backing the node).\nIf you leave the node in the cluster during the maintenance operation, you need to run\n\n```shell\nkubectl uncordon <node name>\n```\nafterwards to tell Kubernetes that it can resume scheduling new pods onto the node."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-2",
+  "heading": "Safely Drain a Node > Use `kubectl drain` to remove a node from service",
+  "text": "First, identify the name of the node you wish to drain. You can list all of the nodes in your cluster with\n\n```shell\nkubectl get nodes\n```\n\nNext, tell Kubernetes to drain the node:\n\n```shell\nkubectl drain --ignore-daemonsets <node name>\n```\n\nIf there are pods managed by a DaemonSet, you will need to specify\n`--ignore-daemonsets` with `kubectl` to successfully drain the node. The `kubectl drain` subcommand on its own does not actually drain\na node of its DaemonSet pods:\nthe DaemonSet controller (part of the control plane) immediately replaces missing Pods with\nnew equivalent Pods. The DaemonSet controller also creates Pods that ignore unschedulable\ntaints, which allows the new Pods to launch onto a node that you are draining."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#draining-multiple-nodes-in-parallel-1",
+  "heading": "Safely Drain a Node > Draining multiple nodes in parallel",
+  "text": "For example, if you have a StatefulSet with three replicas and have\nset a PodDisruptionBudget for that set specifying `minAvailable: 2`,\n`kubectl drain` only evicts a pod from the StatefulSet if all three\nreplicas pods are [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod);\nif then you issue multiple drain commands in parallel,\nKubernetes respects the PodDisruptionBudget and ensures that\nonly 1 (calculated as `replicas - minAvailable`) Pod is unavailable\nat any given time. Any drains that would cause the number of [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nreplicas to fall below the specified budget are blocked."
+ }
+]

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me check the Prometheus pod logs more carefully. I noticed the pod specification includes `--storage.tsdb.retention.time=30d`. Let me look at the persistent volume and storage:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01SYYXJv3j9gKR7iRE6pDD9D",
+   "input": {
+    "query": "Prometheus WAL write-ahead log scraping configuration"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5908,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 105,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "Eu0CCqQBCBMYAipAZjvsghPQqU+perplTlNrP00F6mBnPVK7yy2l/ac+X4SKAVQBYp6nYIwEBXuyEdq+sOFjWqdLwRZ+o5iK9fnyXTIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB6NLw1gYSDMM1F8KytiH1jF9pJhoM9CfpH5lP29bjUNe6IjC2jyyLxuEmeqzJu7v9n3cNCYKGW1hgbpHO/E2CFalgmOnB2Y606pD7PqUkMpm+t/cqdkUzdFdKr8jSMQ1JmjuX8jcJFj8Lf87Db67mCpThsyubec0mDvG7bbSs4uXxS7K6jaszApfCPNRniKvnmFqpL8sZsFXMLuIsSBvkTZRvc9L7dMahA/mBJQz6L9okEqFMAwLLosXS1lN/zzSsKUX3XkCzAtxbNQMYAQ==",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01TKRaZ8qpMAMCom9JbmAER4",
+   "input": {
+    "query": "imagePullSecrets namespace scope secret"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2533,
+ "model": "claude-opus-4-7",
+ "output_tokens": 137,
+ "stop_reason": "tool_use"
+}

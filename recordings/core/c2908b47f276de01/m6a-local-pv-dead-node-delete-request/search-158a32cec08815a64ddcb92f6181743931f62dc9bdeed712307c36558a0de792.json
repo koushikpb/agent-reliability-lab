@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-4",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "If expanding underlying storage fails, the cluster administrator can manually\nrecover the Persistent Volume Claim (PVC) state and cancel the resize requests.\nOtherwise, the resize requests are continuously retried by the controller without\nadministrator intervention.\n\n1. Mark the PersistentVolume(PV) that is bound to the PersistentVolumeClaim(PVC)\n   with `Retain` reclaim policy.\n2. Delete the PVC. Since PV has `Retain` reclaim policy - we will not lose any data\n   when we recreate the PVC.\n3. Delete the `claimRef` entry from PV specs, so as new PVC can bind to it.\n   This should make the PV `Available`.\n4. Re-create the PVC with smaller size than PV and set `volumeName` field of the\n   PVC to the name of the PV. This should bind new PVC to existing PV.\n5. Don't forget to restore the reclaim policy of the PV."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#local-0",
+  "heading": "Volumes > Types of volumes > local",
+  "text": "A `local` volume represents a mounted local storage device such as a disk,\npartition or directory.\n\nLocal volumes can only be used as a statically created PersistentVolume. Dynamic\nprovisioning is not supported.\n\nCompared to `hostPath` volumes, `local` volumes are used in a durable and\nportable manner without manually scheduling Pods to nodes. The system is aware\nof the volume's node constraints by looking at the node affinity on the PersistentVolume.\n\nHowever, `local` volumes are subject to the availability of the underlying\nnode and are not suitable for all applications. If a node becomes unhealthy,\nthen the `local` volume becomes inaccessible to the Pod. The Pod using this volume\nis unable to run. Applications using `local` volumes must be able to tolerate this\nreduced availability, as well as potential data loss, depending on the\ndurability characteristics of the underlying disk.\n\nThe following example shows a PersistentVolume using a `local` volume and\n`nodeAffinity`:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#mount-options-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Mount Options",
+  "text": "A Kubernetes administrator can specify additional mount options for when a\nPersistent Volume is mounted on a node.\n\nNot all Persistent Volume types support mount options.\n\nThe following volume types support mount options:\n\n* `csi` (including CSI migrated volume types)\n* `iscsi`\n* `nfs`\n\nMount options are not validated. If a mount option is invalid, the mount fails.\n\nIn the past, the annotation `volume.beta.kubernetes.io/mount-options` was used instead\nof the `mountOptions` attribute. This annotation is still working; however,\nit will become fully deprecated in a future Kubernetes release."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#types-of-persistent-volumes-0",
+  "heading": "Persistent Volumes > Types of Persistent Volumes",
+  "text": "PersistentVolume types are implemented as plugins. Kubernetes currently supports the following plugins:\n\n* [`csi`](/docs/concepts/storage/volumes/#csi) - Container Storage Interface (CSI)\n* [`fc`](/docs/concepts/storage/volumes/#fc) - Fibre Channel (FC) storage\n* [`hostPath`](/docs/concepts/storage/volumes/#hostpath) - HostPath volume\n  (for single node testing only; WILL NOT WORK in a multi-node cluster;\n  consider using `local` volume instead)\n* [`iscsi`](/docs/concepts/storage/volumes/#iscsi) - iSCSI (SCSI over IP) storage\n* [`local`](/docs/concepts/storage/volumes/#local) - local storage devices\n  mounted on nodes.\n* [`nfs`](/docs/concepts/storage/volumes/#nfs) - Network File System (NFS) storage"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#local-1",
+  "heading": "Volumes > Types of volumes > local",
+  "text": "```yaml\napiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: example-pv\nspec:\n  capacity:\n    storage: 100Gi\n  volumeMode: Filesystem\n  accessModes:\n  - ReadWriteOnce\n  persistentVolumeReclaimPolicy: Delete\n  storageClassName: local-storage\n  local:\n    path: /mnt/disks/ssd1\n  nodeAffinity:\n    required:\n      nodeSelectorTerms:\n      - matchExpressions:\n        - key: kubernetes.io/hostname\n          operator: In\n          values:\n          - example-node\n```\n\nYou must set a PersistentVolume `nodeAffinity` when using `local` volumes.\nThe Kubernetes scheduler uses the PersistentVolume `nodeAffinity` to schedule\nthese Pods to the correct node.\n\nPersistentVolume `volumeMode` can be set to \"Block\" (instead of the default\nvalue \"Filesystem\") to expose the local volume as a raw block device."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#local-2",
+  "heading": "Volumes > Types of volumes > local",
+  "text": "When using local volumes, it is recommended to create a StorageClass with\n`volumeBindingMode` set to `WaitForFirstConsumer`. For more details, see the\nlocal [StorageClass](/docs/concepts/storage/storage-classes/#local) example.\nDelaying volume binding ensures that the PersistentVolumeClaim binding decision\nwill also be evaluated with any other node constraints the Pod may have,\nsuch as node resource requirements, node selectors, Pod affinity, and Pod anti-affinity.\n\nAn external static provisioner can be run separately for improved management of\nthe local volume lifecycle. Note that this provisioner does not support dynamic\nprovisioning yet. For an example on how to run an external local provisioner, see the\n[local volume provisioner user guide](https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner).\n\nThe local PersistentVolume requires manual cleanup and deletion by the\nuser if the external static provisioner is not used to manage the volume\nlifecycle."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#node-affinity-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Node Affinity",
+  "text": "For most volume types, you do not need to set this field.\nYou need to explicitly set this for [local](/docs/concepts/storage/volumes/#local) volumes.\n\nA PV can specify node affinity to define constraints that limit what nodes this\nvolume can be accessed from. Pods that use a PV will only be scheduled to nodes\nthat are selected by the node affinity. To specify node affinity, set\n`nodeAffinity` in the `.spec` of a PV. The\n[PersistentVolume](/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1/#PersistentVolumeSpec)\nAPI reference has more details on this field.\n\n#### Updates to node affinity"
+ },
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-2",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "Kubernetes volumes enable complex\napplications, with data persistence and Pod volume sharing requirements, to be deployed\non Kubernetes. Management of persistent volumes associated with a specific storage\nback-end or protocol includes actions such as provisioning/de-provisioning/resizing\nof volumes, attaching/detaching a volume to/from a Kubernetes node and\nmounting/dismounting a volume to/from individual containers in a pod that needs to\npersist data.\n\nVolume management components are shipped as Kubernetes volume\n[plugin](/docs/concepts/storage/volumes/#volume-types).\nThe following broad classes of Kubernetes volume plugins are supported on Windows:\n\n* [`FlexVolume plugins`](/docs/concepts/storage/volumes/#flexvolume)\n  * Please note that FlexVolumes have been deprecated as of 1.23\n* [`CSI Plugins`](/docs/concepts/storage/volumes/#csi)\n\n##### In-tree volume plugins\n\nThe following in-tree plugins support persistent storage on Windows nodes:"
+ }
+]

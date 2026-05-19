@@ -1,0 +1,45 @@
+{
+ "content": [
+  {
+   "text": "Let me search the documentation about ConfigMap reloading and rate limiting in API gateways:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011NgJXEtzjANjvhP69LPuDT",
+   "input": {
+    "query": "ConfigMap reload hot reload without restart"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01VFgZNxT2yAP8cXdD2soWkK",
+   "input": {
+    "query": "api gateway rate limiting configuration"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01FPCxUJQXtxUR72p5sF7bv3",
+   "input": {
+    "query": "gateway limits edge namespace"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2326,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 159,
+ "stop_reason": "tool_use"
+}

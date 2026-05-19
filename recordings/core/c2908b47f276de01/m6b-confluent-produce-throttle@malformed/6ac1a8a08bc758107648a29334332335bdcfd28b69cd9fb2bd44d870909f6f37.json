@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I'll help you resolve ticket T-6005. Let me start by reading the ticket.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Xmaq6eXH1FKb3xGM5B1Fsr",
+   "input": {
+    "id": "T-6005"
+   },
+   "name": "get_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1160,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 76,
+ "stop_reason": "tool_use"
+}

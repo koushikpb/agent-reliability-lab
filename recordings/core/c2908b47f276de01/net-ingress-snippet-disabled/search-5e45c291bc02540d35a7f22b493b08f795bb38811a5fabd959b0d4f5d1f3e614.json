@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#deprecated-annotation-0",
+  "heading": "Ingress > Ingress class > Deprecated annotation",
+  "text": "Before the IngressClass resource and `ingressClassName` field were added in\nKubernetes 1.18, Ingress classes were specified with a\n`kubernetes.io/ingress.class` annotation on the Ingress. This annotation was\nnever formally defined, but was widely supported by Ingress controllers.\n\nThe newer `ingressClassName` field on Ingresses is a replacement for that\nannotation, but is not a direct equivalent. While the annotation was generally\nused to reference the name of the Ingress controller that should implement the\nIngress, the field is a reference to an IngressClass resource that contains\nadditional Ingress configuration, including the name of the Ingress controller."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#default-ingress-class-0",
+  "heading": "Ingress > Ingress class > Default IngressClass",
+  "text": "You can mark a particular IngressClass as default for your cluster. Setting the\n`ingressclass.kubernetes.io/is-default-class` annotation to `true` on an\nIngressClass resource will ensure that new Ingresses without an\n`ingressClassName` field specified will be assigned this default IngressClass.\n\nIf you have more than one IngressClass marked as the default for your cluster,\nthe admission controller prevents creating new Ingress objects that don't have\nan `ingressClassName` specified. You can resolve this by ensuring that at most 1\nIngressClass is marked as default in your cluster.\n\nStart by defining a\ndefault IngressClass. It is recommended though, to specify the default\nIngressClass:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: IngressClass\nmetadata:\n  labels:\n    app.kubernetes.io/component: controller\n  name: example-class\n  annotations:\n    ingressclass.kubernetes.io/is-default-class: \"true\"\nspec:\n  controller: k8s.io/example-class\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#using-multiple-ingress-controllers-1",
+  "heading": "Ingress Controllers > Using multiple Ingress controllers",
+  "text": "If you do not specify an IngressClass for an Ingress, and your cluster has exactly one IngressClass marked as default, then Kubernetes [applies](/docs/concepts/services-networking/ingress/#default-ingress-class) the cluster's default IngressClass to the Ingress.\nYou mark an IngressClass as default by setting the [`ingressclass.kubernetes.io/is-default-class` annotation](/docs/reference/labels-annotations-taints/#ingressclass-kubernetes-io-is-default-class) on that IngressClass, with the string value `\"true\"`.\n\nIdeally, all ingress controllers should fulfill this specification, but the various ingress\ncontrollers operate slightly differently.\n\nMake sure you review your ingress controller's documentation to understand the caveats of choosing it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-6",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  is an ingress controller driving [Kong Gateway](https://konghq.com/kong/).\n* [Kusk Gateway](https://kusk.kubeshop.io/) is an OpenAPI-driven ingress controller based on [Envoy](https://www.envoyproxy.io).\n* [N42 Gateway](https://n42-gateway.github.io/) is an Ingress and Gateway API controller for [HAProxy](https://www.haproxy.org/#desc).\n* The [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx-ingress-controller/)\n  works with the [NGINX](https://www.nginx.com/resources/glossary/nginx/) webserver (as a proxy)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#intro-0",
+  "heading": "Ingress",
+  "text": "The Kubernetes project recommends using [Gateway](https://gateway-api.sigs.k8s.io/) instead of\n[Ingress](/docs/concepts/services-networking/ingress/).\nThe Ingress API has been frozen.\n\nThis means that:\n* The Ingress API is generally available, and is subject to the [stability guarantees](/docs/reference/using-api/deprecation-policy/#deprecating-parts-of-the-api) for generally available APIs.\n  The Kubernetes project has no plans to remove Ingress from Kubernetes.\n* The Ingress API is no longer being developed, and will have no further changes\n  or updates made to it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#intro-0",
+  "heading": "Ingress Controllers",
+  "text": "The Kubernetes project recommends using [Gateway](https://gateway-api.sigs.k8s.io/) instead of\n[Ingress](/docs/concepts/services-networking/ingress/).\nThe Ingress API has been frozen.\n\nThis means that:\n* The Ingress API is generally available, and is subject to the [stability guarantees](/docs/reference/using-api/deprecation-policy/#deprecating-parts-of-the-api) for generally available APIs.\n  The Kubernetes project has no plans to remove Ingress from Kubernetes.\n* The Ingress API is no longer being developed, and will have no further changes\n  or updates made to it."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#single-service-ingress-0",
+  "heading": "Ingress > Types of Ingress > Ingress backed by a single Service",
+  "text": "There are existing Kubernetes concepts that allow you to expose a single Service\n(see [alternatives](#alternatives)). You can also do this with an Ingress by specifying a\n*default backend* with no rules.\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: test-ingress\nspec:\n  defaultBackend:\n    service:\n      name: test\n      port:\n        number: 80\n```\n\nIf you create it using `kubectl apply -f` you should be able to view the state\nof the Ingress you added:\n\n```bash\nkubectl get ingress test-ingress\n```\n\n```\nNAME           CLASS         HOSTS   ADDRESS         PORTS   AGE\ntest-ingress   external-lb   *       203.0.113.123   80      59s\n```\n\nWhere `203.0.113.123` is the IP allocated by the Ingress controller to satisfy\nthis Ingress.\n\nIngress controllers and load balancers may take a minute or two to allocate an IP address.\nUntil that time, you often see the address listed as `<pending>`."
+ }
+]

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me look more specifically at what the documentation says about HPA requiring container CPU requests:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Aaz6cCd6UJ3YKeNtgMn3hZ",
+   "input": {
+    "query": "if some pod containers do not have resource request CPU utilization undefined autoscaler"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 11179,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 87,
+ "stop_reason": "tool_use"
+}

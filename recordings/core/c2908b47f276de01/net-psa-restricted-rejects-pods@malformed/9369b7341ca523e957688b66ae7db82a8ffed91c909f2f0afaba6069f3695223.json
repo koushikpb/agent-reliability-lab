@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Good! I found information about failed deployments. The documentation mentions that one of the common causes is \"Image pull errors\" [cite: concepts/workloads/controllers/deployment#failed-deployment-0]. Let me search more specifically for image pull errors:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01HWaQGePwuZ69jMfdtQpN9F",
+   "input": {
+    "query": "image pull backoff error"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3860,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 112,
+ "stop_reason": "tool_use"
+}

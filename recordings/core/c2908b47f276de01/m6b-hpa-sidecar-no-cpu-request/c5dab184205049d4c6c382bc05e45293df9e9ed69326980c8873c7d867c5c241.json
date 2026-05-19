@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The documentation mentions that the Metrics API is needed for HPA to function. The \"cpu <unknown>/60%\" error indicates the metrics aren't being collected. Let me search for more specific information about what causes unknown metrics and how metrics are collected.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_015wYd1mMihQYqhrjSb7yCD4",
+   "input": {
+    "query": "metrics API pod CPU unknown resource requests"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4733,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 111,
+ "stop_reason": "tool_use"
+}

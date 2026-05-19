@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I can see the issue. The notification-worker is configured to connect to `smtp-relay` (without a namespace), but the logs show it's trying to look up `smtp-relay` in the current context. The configuration is: `SMTP_HOST=smtp-relay` with no namespace qualifier.\n\nSince the smtp-relay was moved from the `notify` namespace to the `shared-infra` namespace on Sunday night, the hostname `smtp-relay` no longer resolves in the notify namespace. The worker needs to use the fully qualified domain name to reach the smtp-relay in the shared-infra namespace.\n\nLet me search the Kubernetes documentation to confirm the proper DNS naming scheme for cross-namespace service discovery.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019LhCuZaZ54rkDM1PuLy16z",
+   "input": {
+    "query": "DNS service discovery cross namespace FQDN"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2359,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 217,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/podgroup-api/lifecycle#deletion-protection-0",
+  "heading": "PodGroup Lifecycle > Deletion protection",
+  "text": "A `PodGroup` cannot be fully deleted while any of its Pods are still running.\nA dedicated finalizer ensures that deletion is blocked until all `Pods` referencing the\n`PodGroup` have reached a terminal phase (`Succeeded` or `Failed`)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-1",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "`Delete`\n: The PVCs created from the StatefulSet `volumeClaimTemplate` are deleted for each Pod\n  affected by the policy. With the `whenDeleted` policy all PVCs from the\n  `volumeClaimTemplate` are deleted after their Pods have been deleted. With the\n  `whenScaled` policy, only PVCs corresponding to Pod replicas being scaled down are\n  deleted, after their Pods have been deleted.\n\n`Retain` (default)\n: PVCs from the `volumeClaimTemplate` are not affected when their Pod is\n  deleted. This is the behavior before this new feature.\n\nBear in mind that these policies **only** apply when Pods are being removed due to the\nStatefulSet being deleted or scaled down. For example, if a Pod associated with a StatefulSet\nfails due to node failure, and the control plane creates a replacement Pod, the StatefulSet\nretains the existing PVC.  The existing volume is unaffected, and the cluster will attach it to\nthe node where the new Pod is about to launch.\n\nThe default for policies is `Retain`, matching the StatefulSet behavior before this new feature.\n\nHere is an example policy:"
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#force-deletion-1",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods > Force Deletion",
+  "text": "If you're using any version of kubectl <= 1.4, you should omit the `--force` option and use:\n\n```shell\nkubectl delete pods <pod> --grace-period=0\n```\n\nIf even after these commands the pod is stuck on `Unknown` state, use the following command to\nremove the pod from the cluster:\n\n```shell\nkubectl patch pod <pod> -p '{\"metadata\":{\"finalizers\":null}}'\n```\n\nAlways perform force deletion of StatefulSet Pods carefully and with complete knowledge of the risks involved."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-fault-recovery-0",
+  "heading": "Pod Lifecycle > Pod lifetime > Pods and fault recovery",
+  "text": "If one of the containers in the Pod fails, then Kubernetes may try to restart that\nspecific container.\nRead [How Pods handle problems with containers](#container-restarts) to learn more.\n\nPods can however fail in a way that the cluster cannot recover from, and in that case\nKubernetes does not attempt to heal the Pod further; instead, Kubernetes deletes the\nPod and relies on other components to provide automatic healing.\n\nIf a Pod is scheduled to a node and that\nnode then fails, the Pod is treated as unhealthy and Kubernetes eventually deletes the Pod.\nA Pod won't survive an eviction due to\na lack of resources or Node maintenance.\n\nKubernetes uses a higher-level abstraction, called a\ncontroller, that handles the work of\nmanaging the relatively disposable Pod instances."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicaset#pod-deletion-cost-0",
+  "heading": "ReplicaSet > Working with ReplicaSets > Pod deletion cost",
+  "text": "Using the [`controller.kubernetes.io/pod-deletion-cost`](/docs/reference/labels-annotations-taints/#pod-deletion-cost)\nannotation, users can set a preference regarding which pods to remove first when downscaling a ReplicaSet.\n\nThe annotation should be set on the pod, the range is [-2147483648, 2147483647]. It represents the cost of\ndeleting a pod compared to other pods belonging to the same ReplicaSet. Pods with lower deletion\ncost are preferred to be deleted before pods with higher deletion cost.\n\nThe implicit value for this annotation for pods that don't set it is 0; negative values are permitted.\nInvalid values will be rejected by the API server.\n\nThis feature is beta and enabled by default. You can disable it using the\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/)\n`PodDeletionCost` in both kube-apiserver and kube-controller-manager."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-garbage-collection-0",
+  "heading": "Pod Lifecycle > Termination of Pods > Garbage collection of Pods",
+  "text": "For failed Pods, the API objects remain in the cluster's API until a human or\ncontroller process\nexplicitly removes them.\n\nThe Pod garbage collector (PodGC), which is a controller in the control plane, cleans up\nterminated Pods (with a phase of `Succeeded` or `Failed`), when the number of Pods exceeds the\nconfigured threshold (determined by `terminated-pod-gc-threshold` in the kube-controller-manager).\nThis avoids a resource leak as Pods are created and terminated over time.\n\nAdditionally, PodGC cleans up any Pods which satisfy any of the following conditions:\n\n1. are orphan Pods - bound to a node which no longer exists,\n1. are unscheduled terminating Pods,\n1. are terminating Pods, bound to a non-ready node tainted with\n   [`node.kubernetes.io/out-of-service`](/docs/reference/labels-annotations-taints/#node-kubernetes-io-out-of-service)."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-2",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "The recommended best practice is to use the first or second approach. If a Node is confirmed\nto be dead (e.g. permanently disconnected from the network, powered down, etc), then delete\nthe Node object. If the Node is suffering from a network partition, then try to resolve this\nor wait for it to resolve. When the partition heals, the kubelet will complete the deletion\nof the Pod and free up its name in the apiserver.\n\nNormally, the system completes the deletion once the Pod is no longer running on a Node, or\nthe Node is deleted by an administrator. You may override this by force deleting the Pod."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-1",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "A Pod is not deleted automatically when a node is unreachable.\nThe Pods running on an unreachable Node enter the 'Terminating' or 'Unknown' state after a\n[timeout](/docs/concepts/architecture/nodes/#condition).\nPods may also enter these states when the user attempts graceful deletion of a Pod\non an unreachable Node.\nThe only ways in which a Pod in such a state can be removed from the apiserver are as follows:\n\n- The Node object is deleted (either by you, or by the\n  [Node Controller](/docs/concepts/architecture/nodes/#node-controller)).\n- The kubelet on the unresponsive Node starts responding, kills the Pod and removes the entry\n   from the apiserver.\n- Force deletion of the Pod by the user."
+ }
+]

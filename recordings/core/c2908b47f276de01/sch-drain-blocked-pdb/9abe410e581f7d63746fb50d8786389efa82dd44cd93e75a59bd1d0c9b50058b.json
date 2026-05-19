@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me get the logs from the zk-0 pod to understand its health status:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KbSDCUoWo78BSw5nmc4JXi",
+   "input": {
+    "pod": "kafka/zk-0"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 8550,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 80,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Good! I can see the issue. The two most recent ledger-export jobs failed with \"DeadlineExceeded\" status. Let me check the logs from one of these failed pods to understand what caused them to exceed the deadline.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01FtrUbrDZw5CY5Asdk9xh8i",
+   "input": {
+    "pod": "ledger-export-29637420-k4x9d"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2030,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 119,
+ "stop_reason": "tool_use"
+}

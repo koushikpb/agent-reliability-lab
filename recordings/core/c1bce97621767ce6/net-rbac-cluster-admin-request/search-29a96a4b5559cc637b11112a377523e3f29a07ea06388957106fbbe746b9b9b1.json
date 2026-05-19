@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-1",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "- Assign permissions at the namespace level where possible. Use RoleBindings as opposed to\n  ClusterRoleBindings to give users rights only within a specific namespace.\n- Avoid providing wildcard permissions when possible, especially to all resources.\n  As Kubernetes is an extensible system, providing wildcard access gives rights\n  not just to all object types that currently exist in the cluster, but also to all object types\n  which are created in the future.\n- Administrators should not use `cluster-admin` accounts except where specifically needed.\n  Providing a low privileged account with\n  [impersonation rights](/docs/reference/access-authn-authz/authentication/#user-impersonation)\n  can avoid accidental modification of cluster resources.\n- Avoid adding users to the `system:masters` group. Any user who is a member of this group\n  bypasses all RBAC rights checks and will always have unrestricted superuser access, which cannot be\n  revoked by removing RoleBindings or ClusterRoleBindings. As an aside, if a cluster is"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/hardening-dra#grant-scheduler-and-allocation-controller-permissions-0",
+  "heading": "Harden Dynamic Resource Allocation in Your Cluster > Grant least-privilege permissions for synthetic subresources > Grant scheduler and allocation-controller permissions",
+  "text": "Apply a role that allows binding-related updates:\n\n```yaml\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: dra-binding-updater\nrules:\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/status\"]\n    verbs: [\"get\", \"patch\", \"update\"]\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/binding\"]\n    verbs: [\"patch\", \"update\"]\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/hardening-dra#grant-multi-node-controller-permissions-only-when-needed-0",
+  "heading": "Harden Dynamic Resource Allocation in Your Cluster > Grant least-privilege permissions for synthetic subresources > Grant multi-node controller permissions only when needed",
+  "text": "Use `arbitrary-node:*` only for components that must update from any node:\n\n```yaml\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: dra-multinode-status-updater\nrules:\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/status\"]\n    verbs: [\"get\", \"patch\", \"update\"]\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/driver\"]\n    verbs: [\"arbitrary-node:patch\", \"arbitrary-node:update\"]\n    resourceNames: [\"dra.example.com\"]\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/hardening-dra#grant-node-local-driver-permissions-0",
+  "heading": "Harden Dynamic Resource Allocation in Your Cluster > Grant least-privilege permissions for synthetic subresources > Grant node-local driver permissions",
+  "text": "Use node-aware verbs for node-local drivers:\n\n```yaml\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\nmetadata:\n  name: dra-node-driver-status-updater\nrules:\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/status\"]\n    verbs: [\"get\", \"patch\", \"update\"]\n  - apiGroups: [\"resource.k8s.io\"]\n    resources: [\"resourceclaims/driver\"]\n    verbs: [\"associated-node:patch\", \"associated-node:update\"]\n    resourceNames: [\"dra.example.com\"]\n```"
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/dynamic-resource-allocation#harden-dra-status-update-permissions-0",
+  "heading": "Hardening Guide - Dynamic Resource Allocation > Harden DRA status update permissions",
+  "text": "For DRA status updates,In addition to granting `update` permissions on the\n`resourceclaims/status` subresource, cluster administrators must grant permissions on\nspecific \"synthetic\" subresources based on the exact fields a component needs to modify.\nThis enforces the principle of least privilege between the scheduler, custom controllers,\nand DRA drivers.\n\nThe DRA authorization checks are divided into two synthetic subresources:\n\n- **`resourceclaims/binding`**\n  - Required to modify `status.allocation` and `status.reservedFor`.\n  - Typically granted to the kube-scheduler and custom allocation controllers.\n  - Uses standard `update` and `patch` verbs.\n- **`resourceclaims/driver`**\n  - Required to modify `status.devices`.\n  - This check is performed per-driver to drivers from tampering with devices on different\n  nodes and/or from other drivers.\n  - Uses node-aware verbs for stricter scope."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-0",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "Ideally, minimal RBAC rights should be assigned to users and service accounts. Only permissions\nexplicitly required for their operation should be used. While each cluster will be different,\nsome general rules that can be applied are :"
+ },
+ {
+  "chunk_id": "concepts/security/secrets-good-practices#least-privilege-secrets-0",
+  "heading": "Good practices for Kubernetes Secrets > Cluster administrators > Configure least-privilege access to Secrets",
+  "text": "When planning your access control mechanism, such as Kubernetes\nRole-based Access Control [(RBAC)](/docs/reference/access-authn-authz/rbac/),\nconsider the following guidelines for access to `Secret` objects. You should\nalso follow the other guidelines in\n[RBAC good practices](/docs/concepts/security/rbac-good-practices).\n\n- **Components**: Restrict `watch` or `list` access to only the most\n  privileged, system-level components. Only grant `get` access for Secrets if\n  the component's normal behavior requires it.\n- **Humans**: Restrict `get`, `watch`, or `list` access to Secrets. Only allow\n  cluster administrators to access `etcd`. This includes read-only access. For\n  more complex access control, such as restricting access to Secrets with\n  specific annotations, consider using third-party authorization mechanisms.\n\nGranting `list` access to Secrets implicitly lets the subject fetch the\ncontents of the Secrets."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/hardening-dra#intro-0",
+  "heading": "Harden Dynamic Resource Allocation in Your Cluster",
+  "text": "This page shows cluster administrators how to harden authorization for\nDynamic Resource Allocation (DRA), with a focus on least-privilege access for\n`ResourceClaim` status updates."
+ }
+]

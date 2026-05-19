@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "This is very helpful! The key insight is from the documentation: [cite: concepts/workloads/pods/probes#when-should-you-use-a-readiness-probe-0] \"When your app has a strict dependency on back-end services, you can implement both a liveness and a readiness probe. The liveness probe passes when the app itself is healthy, but the readiness probe additionally checks that each required back-end service is available. This helps you avoid directing traffic to Pods that can only respond with error messages.\"\n\nThe issue appears to be that storefront-web 3.0 has a dependency on the pricing-api (which was mentioned in the ticket as carrying a pricing fix), but the readiness probe may not be checking if the pricing-api is available. Let me search for information about inter-service dependencies.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01RRyRzDs8arWToTUB7S3r48",
+   "input": {
+    "query": "dependency on external service readiness probe backend"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 10742,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 243,
+ "stop_reason": "tool_use"
+}

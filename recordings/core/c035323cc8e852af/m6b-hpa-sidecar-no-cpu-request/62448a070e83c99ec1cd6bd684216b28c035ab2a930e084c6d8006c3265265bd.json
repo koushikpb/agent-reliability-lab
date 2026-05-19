@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the key information. Now let me search for the specific passage from the HPA documentation:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01BWG9DfZFM5x8FjZyFtrWAs",
+   "input": {
+    "query": "how does HorizontalPodAutoscaler work per-pod resource metrics not have relevant resource request"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 18247,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 96,
+ "stop_reason": "tool_use"
+}

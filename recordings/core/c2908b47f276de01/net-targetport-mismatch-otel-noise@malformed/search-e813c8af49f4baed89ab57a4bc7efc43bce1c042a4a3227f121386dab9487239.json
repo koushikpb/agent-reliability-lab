@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/access-application-cluster/create-external-load-balancer#preserving-the-client-source-ip-1",
+  "heading": "Create an External Load Balancer > Preserving the client source IP",
+  "text": "* `.spec.externalTrafficPolicy` - denotes if this Service desires to route\n  external traffic to node-local or cluster-wide endpoints. There are two available\n  options: `Cluster` (default) and `Local`. `Cluster` obscures the client source\n  IP and may cause a second hop to another node, but should have good overall\n  load-spreading. `Local` preserves the client source IP and avoids a second hop\n  for LoadBalancer and NodePort type Services, but risks potentially imbalanced\n  traffic spreading.\n* `.spec.healthCheckNodePort` - specifies the health check node port\n  (numeric port number) for the service. If you don't specify\n  `healthCheckNodePort`, the service controller allocates a port from your\n  cluster's NodePort range.  \n  You can configure that range by setting an API server command line option,\n  `--service-node-port-range`. The Service will use the user-specified\n  `healthCheckNodePort` value if you specify it, provided that the"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-4",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "#### Accessing a Service without a selector {#service-no-selector-access}\n\nAccessing a Service without a selector works the same as if it had a selector.\nIn the [example](#services-without-selectors) for a Service without a selector,\ntraffic is routed to one of the two endpoints defined in\nthe EndpointSlice manifest: a TCP connection to 10.1.2.3 or 10.4.5.6, on port 9376.\n\nThe Kubernetes API server does not allow proxying to endpoints that are not mapped to\npods. Actions such as `kubectl port-forward service/<service-name> forwardedPort:servicePort` where the service has no\nselector will fail due to this constraint. This prevents the Kubernetes API server\nfrom being used as a proxy to endpoints the caller may not be authorized to access.\n\nAn `ExternalName` Service is a special case of Service that does not have\nselectors and uses DNS names instead. For more information, see the\n[ExternalName](#externalname) section."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#type-nodeport-7",
+  "heading": "Service > Service type > `type: NodePort`",
+  "text": "  - When using `iptables` mode, with a `--nodeport-addresses` value that includes\n    `127.0.0.1`, NodePort services will be available on `127.0.0.1`. However, this\n    requires enabling a kernel sysctl (`route_localnet`) that may have insecure side\n    effects in some clusters. IPTables localhost NodePorts can be disabled by passing\n    `--iptables-localhost-nodeports false` to kube-proxy, or by setting\n    `--nodeport-addresses` to a range that does not include `127.0.0.1`.\n\n  - When using `ipvs` mode, or `iptables` mode in a single-stack IPv6 clusters, NodePorts\n    Services are not available on localhost."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#type-nodeport-3",
+  "heading": "Service > Service type > `type: NodePort`",
+  "text": "To avoid this problem, the port range for NodePort services is divided into two bands.\nDynamic port assignment uses the upper band by default, and it may use the lower band once the\nupper band has been exhausted. Users can then allocate from the lower band with a lower risk of port collision.\n\nWhen using the default NodePort range 30000-32767, the bands are partitioned as follows: \n\n- Static band: 30000-30085\n- Dynamic band: 30086-32767\n\nSee [Avoid Collisions Assigning Ports to NodePort Services](/blog/2023/05/11/nodeport-dynamic-and-static-allocation/)\nfor more details on how the static and dynamic bands are calculated.\n\n#### IP address configuration for `type: NodePort` Services {#service-nodeport-custom-listen-address}"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#type-nodeport-1",
+  "heading": "Service > Service type > `type: NodePort`",
+  "text": "For a node port Service, Kubernetes additionally allocates a port (TCP, UDP or\nSCTP to match the protocol of the Service). Every node in the cluster configures\nitself to listen on that assigned port and to forward traffic to one of the ready\nendpoints associated with that Service. You'll be able to contact the `type: NodePort`\nService, from outside the cluster, by connecting to any node using the appropriate\nprotocol (for example: TCP), and the appropriate port (as assigned to that Service).\n\n#### Choosing your own port {#nodeport-custom-port}\n\nIf you want a specific port number, you can specify a value in the `nodePort`\nfield. The control plane will either allocate you that port or report that\nthe API transaction failed.\nThis means that you need to take care of possible port collisions yourself.\nYou also have to use a valid port number, one that's inside the range configured\nfor NodePort use.\n\nHere is an example manifest for a Service of `type: NodePort` that specifies\na NodePort value (30007, in this example):"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#type-nodeport-8",
+  "heading": "Service > Service type > `type: NodePort`",
+  "text": "  - When using `nftables` mode, NodePort Services will be available on localhost when the\n    `KubeProxyNFTablesLocalhostNodePorts` feature gate is enabled, and\n    `--nodeport-addresses` is set to a value that explicitly includes `localhost`.\n    (Setting it to just `all` will _not_ enable localhost NodePort Services.) This is\n    implemented by redirecting localhost NodePort connections through a userspace proxy,\n    so it is not as efficient as ordinary service proxying.\n\nThird-party network plugins that have their own service proxy implementations may or may\nnot support localhost NodePorts; consult the documentation for those plugins."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#type-nodeport-0",
+  "heading": "Service > Service type > `type: NodePort`",
+  "text": "If you set the `type` field to `NodePort`, the Kubernetes control plane\nallocates a port from a range specified by `--service-node-port-range` flag (default: 30000-32767).\nEach node proxies that port (the same port number on every Node) into your Service.\nYour Service reports the allocated port in its `.spec.ports[*].nodePort` field.\n\nUsing a NodePort gives you the freedom to set up your own load balancing solution,\nto configure environments that are not fully supported by Kubernetes, or even\nto expose one or more nodes' IP addresses directly."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#loadbalancer-4",
+  "heading": "Service > Service type > `type: LoadBalancer`",
+  "text": "The set of protocols that can be used for load balanced Services is defined by your\ncloud provider; they may impose restrictions beyond what the Kubernetes API enforces.\n\n#### Disabling load balancer NodePort allocation {#load-balancer-nodeport-allocation}\n\nYou can optionally disable node port allocation for a Service of `type: LoadBalancer`, by setting\nthe field `spec.allocateLoadBalancerNodePorts` to `false`. This should only be used for load balancer implementations\nthat route traffic directly to pods as opposed to using node ports. By default, `spec.allocateLoadBalancerNodePorts`\nis `true` and type LoadBalancer Services will continue to allocate node ports. If `spec.allocateLoadBalancerNodePorts`\nis set to `false` on an existing Service with allocated node ports, those node ports will **not** be de-allocated automatically.\nYou must explicitly remove the `nodePorts` entry in every Service port to de-allocate those node ports."
+ }
+]

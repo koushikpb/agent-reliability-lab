@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "ConfigMaps consumed as environment variables are not updated automatically and require a pod restart. \n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes#using-subpath) volume mount will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#configmap-2",
+  "heading": "Volumes > Types of volumes > configMap",
+  "text": "* You must [create a ConfigMap](/docs/tasks/configure-pod-container/configure-pod-configmap/#create-a-configmap)\n  before you can use it.\n\n* A ConfigMap is always mounted as `readOnly`.\n\n* A container using a ConfigMap as a [`subPath`](#using-subpath) volume mount will not\n  receive updates when the ConfigMap changes.\n\n* Text data is exposed as files using the UTF-8 character encoding.\n  For other character encodings, use `binaryData`."
+ },
+ {
+  "chunk_id": "concepts/storage/projected-volumes#serviceaccounttoken-2",
+  "heading": "Projected Volumes > serviceAccountToken projected volumes",
+  "text": "A container using a projected volume source as a [`subPath`](/docs/concepts/storage/volumes/#using-subpath)\nvolume mount will not receive updates for those volume sources."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#mounted-configmaps-are-updated-automatically-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Mounted ConfigMaps are updated automatically",
+  "text": "When a mounted ConfigMap is updated, the projected content is eventually updated too.\nThis applies in the case where an optionally referenced ConfigMap comes into\nexistence after a pod has started.\n\nKubelet checks whether the mounted ConfigMap is fresh on every periodic sync. However,\nit uses its local TTL-based cache for getting the current value of the ConfigMap. As a\nresult, the total delay from the moment when the ConfigMap is updated to the moment\nwhen new keys are projected to the pod can be as long as kubelet sync period (1\nminute by default) + TTL of ConfigMaps cache (1 minute by default) in kubelet. You\ncan trigger an immediate refresh by updating one of the pod's annotations.\n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes/#using-subpath)\nvolume will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-1",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "This is an example of a Pod that mounts a ConfigMap in a volume:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: mypod\n    image: redis\n    volumeMounts:\n    - name: foo\n      mountPath: \"/etc/foo\"\n      readOnly: true\n  volumes:\n  - name: foo\n    configMap:\n      name: myconfigmap\n```\n\nEach ConfigMap you want to use needs to be referred to in `.spec.volumes`.\n\nIf there are multiple containers in the Pod, then each container needs its\nown `volumeMounts` block, but only one `.spec.volumes` is needed per ConfigMap.\n\n#### Mounted ConfigMaps are updated automatically"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#downwardapi-0",
+  "heading": "Volumes > Types of volumes > downwardAPI",
+  "text": "A `downwardAPI` volume makes downward API\ndata available to applications. Within the volume, you can find the exposed\ndata as read-only files in plain text format.\n\nA container using the downward API as a [`subPath`](#using-subpath) volume mount does not\nreceive updates when field values change.\n\nSee [Expose Pod Information to Containers Through Files](/docs/tasks/inject-data-application/downward-api-volume-expose-pod-information/)\nto learn more."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#populate-a-volume-with-data-stored-in-a-configmap-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Populate a Volume with data stored in a ConfigMap",
+  "text": "Add the ConfigMap name under the `volumes` section of the Pod specification.\nThis adds the ConfigMap data to the directory specified as `volumeMounts.mountPath` (in this\ncase, `/etc/config`). The `command` section lists directory files with names that match the\nkeys in ConfigMap."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#secret-0",
+  "heading": "Volumes > Types of volumes > secret",
+  "text": "A `secret` volume is used to pass sensitive information, such as passwords, to\nPods. You can store secrets in the Kubernetes API and mount them as files for\nuse by Pods without coupling to Kubernetes directly. `secret` volumes are\nbacked by tmpfs (a RAM-backed filesystem), so they are never written to\nnon-volatile storage.\n\n* You must create a Secret in the Kubernetes API before you can use it.\n\n* A Secret is always mounted as `readOnly`.\n\n* A container using a Secret as a [`subPath`](#using-subpath) volume mount will not\n  receive Secret updates.\n\nFor more details, see [Configuring Secrets](/docs/concepts/configuration/secret/)."
+ }
+]

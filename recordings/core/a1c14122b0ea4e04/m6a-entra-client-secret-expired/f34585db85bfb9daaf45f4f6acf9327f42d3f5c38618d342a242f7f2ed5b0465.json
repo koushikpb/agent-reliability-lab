@@ -1,0 +1,26 @@
+{
+ "content": [
+  {
+   "signature": "EswFCqQBCBMYAipA9+mo0nVzuXLf0JjLp3kah0rx//TQ/kTlT55Jhu+qM9QuOdLiXP+r57uxdN9Tc8xCWzaopxpH4TmR1S9TVFO/0zIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB0u7w1gYSDAZlbUetUIA+stQzbhoMkSgyV8hlzRW11bSRIjCPha2OqiHgFm4Woeqy0HpWqWN+JgiFhXMUspSdlW1OEowkE7wddDn5nGQmTfEIudEq1AMxts9PtjBuku7RFgHSb0hvpKH9BuzTlofhjB/ONpK5QuYR3T0evutpwUBwtTgZqfZ9iBbJqW2BDo1lgFouC123rhoMKhaQC/sKRCckwaJtN28IgRKEB7C8LUD6q1QNvTliO5h4PvMNEDf+gQgOAIIKksnCZVXnB81PnMAHodaILkbObyeMTwTnDr087AYwPm1UreJKUOE0cQE45NXn7zeHZj+27k/U1zL0KuJ8Gj+qAVesFH98F2josrqb6sqlTjhCkB2ksaSs2fPllCfGiiX/YHNGFFsStmXHoVxY1QaP8wCzmcK+WH1i0f8bkQwtIwH+V6jX+I/mV4lIlIbIwpS2vawRPs8a7xLaZngt6XnXdOtw4cOdCX8Jcbq/Tp6TNPGlI4KS41SdKA9zVpoLFHY1VQYKPJGdUtSeXEASih4/j5+ymMOlFcQ0kOPz0MJWVXeqS3IsNZl1UqCGQSbBljMdvpBGA0WG9QMCxN0cbIQm1ngssBfPGOpSqo49r0Tr2U0lQINZ/dpb1SUE4M7UKKAATnBkp6N4q2CsRhqWY5m5W7V9LMr2F9n9m9y9JD5077X1IQn/VYQHGIKJ8GAiOjzLlh6d5eVONRSAh/aoAvsga6S22IsYAQ==",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01SKqvH2bnJJRkCwP2VJADj3",
+   "input": {
+    "id": "T-5002",
+    "note": "Cause: The Azure AD client secret for the ops portal's app registration (client id 6c2e9a41-58d3-4b7f-a0e2-91d4f3c87b15) has expired. This is not a Kubernetes problem \u2014 the cluster side is healthy.\n\nEvidence: In pod ops-portal-oauth2-proxy-7f9c5d8b6-wl4zr, every /oauth2/callback since 2026-05-21 08:01:37Z returns HTTP 500 with:\n  \"Error redeeming code during OAuth2 callback: token exchange failed: oauth2: \\\"invalid_client\\\" AADSTS7000222: The provided client secret keys for app '6c2e9a41-...' are expired. Visit the Azure portal to create new keys...\"\nAll three pods in internal-tools (oauth2-proxy and both ops-portal replicas) are Running/Ready with 0 restarts, and the upstream ops-portal pods only show healthy /healthz 200s \u2014 so sign-in works at Microsoft, then the proxy fails to exchange the authorization code because Azure AD rejects the expired secret.\n\nFix (owner actions):\n1. Ask the IT identity team (owners of the app registration) to generate a new client secret in the Azure portal for app 6c2e9a41-58d3-4b7f-a0e2-91d4f3c87b15 (per the AADSTS7000222 message in the log).\n2. Update the Kubernetes Secret in the internal-tools namespace that provides /etc/oauth2-proxy/client-secret to oauth2-proxy with the new value (e.g. `kubectl -n internal-tools create secret generic <name> --from-literal=client-secret=<NEW> --dry-run=client -o yaml | kubectl apply -f -`). Mounted Secret volumes are propagated to running Pods automatically on an eventually-consistent basis [cite: concepts/configuration/secret#using-secrets-as-files-from-a-pod-0][cite: concepts/configuration/secret#editing-a-secret-1].\n3. Because oauth2-proxy reads --client-secret-file at startup and will not necessarily re-read the file, trigger a rollout so the new value is picked up immediately: `kubectl -n internal-tools rollout restart deployment/ops-portal-oauth2-proxy`. Any change to a Deployment's pod template triggers a rolling update that replaces pods with no downtime [cite: tasks/run-application/update-deployment-rolling#performing-a-rolling-update-0][cite: concepts/workloads/controllers/deployment#updating-a-deployment-0].\n\nRecommendation: ask IT identity to also set a calendar reminder before the next expiry, or move the app registration to certificate credentials (also suggested in the Azure error message).",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 10320,
+ "model": "claude-opus-4-7",
+ "output_tokens": 1212,
+ "stop_reason": "tool_use"
+}

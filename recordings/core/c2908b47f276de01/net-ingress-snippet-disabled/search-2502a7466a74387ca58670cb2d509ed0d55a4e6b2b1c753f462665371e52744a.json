@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/hardening-guide/scheduler#key-considerations-1",
+  "heading": "Hardening Guide - Scheduler Configuration > Scheduling configurations for custom schedulers > Key considerations",
+  "text": "```yaml\napiVersion: kubescheduler.config.k8s.io/v1\nkind: KubeSchedulerConfiguration\nprofiles:\n  - schedulerName: my-scheduler\n    plugins:\n      # Disable specific plugins for different extension points\n      # You can disable all plugins for an extension point using \"*\"\n      queueSort:\n        disabled:\n        - name: \"*\"             # Disable all queueSort plugins\n      # - name: \"PrioritySort\"  # Disable specific queueSort plugin\n      filter:\n        disabled:\n        - name: \"*\"                 # Disable all filter plugins\n      # - name: \"NodeResourcesFit\"  # Disable specific filter plugin\n      permit:\n        disabled:\n        - name: \"*\"               # Disables all permit plugins\n      # - name: \"TaintToleration\" # Disable specific permit plugin\n```\nThis creates a scheduler profile ` my-scheduler`."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merge-patch-calculation-0",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merge patch calculation",
+  "text": "The `kubectl apply` command writes the contents of the configuration file to the\n`kubectl.kubernetes.io/last-applied-configuration` annotation. This\nis used to identify fields that have been removed from the configuration\nfile and need to be cleared from the live configuration. Here are the steps used\nto calculate which fields should be deleted or set:\n\n1. Calculate the fields to delete. These are the fields present in\n   `last-applied-configuration` and missing from the configuration file.\n2. Calculate the fields to add or set. These are the fields present in\n   the configuration file whose values don't match the live configuration.\n\nHere's an example. Suppose this is the configuration file for a Deployment object:"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merge-patch-calculation-5",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merge patch calculation",
+  "text": "1. Calculate the fields to delete by reading values from\n   `last-applied-configuration` and comparing them to values in the\n   configuration file.\n   Clear fields explicitly set to null in the local object configuration file\n   regardless of whether they appear in the `last-applied-configuration`.\n   In this example, `minReadySeconds` appears in the\n   `last-applied-configuration` annotation, but does not appear in the configuration file.\n   **Action:** Clear `minReadySeconds` from the live configuration.\n2. Calculate the fields to set by reading values from the configuration\n   file and comparing them to values in the live configuration. In this example,\n   the value of `image` in the configuration file does not match\n   the value in the live configuration. **Action:** Set the value of `image` in the live configuration.\n3. Set the `last-applied-configuration` annotation to match the value\n   of the configuration file.\n4. Merge the results from 1, 2, 3 into a single patch request to the API server."
+ },
+ {
+  "chunk_id": "concepts/workloads/management#updating-annotations-0",
+  "heading": "Managing Workloads > Updating annotations",
+  "text": "Sometimes you would want to attach annotations to resources. Annotations are arbitrary\nnon-identifying metadata for retrieval by API clients such as tools or libraries.\nThis can be done with `kubectl annotate`. For example:\n\n```shell\nkubectl annotate pods my-nginx-v4-9gw19 description='my frontend running nginx'\nkubectl get pods my-nginx-v4-9gw19 -o yaml\n```\n\n```shell\napiVersion: v1\nkind: pod\nmetadata:\n  annotations:\n    description: my frontend running nginx\n...\n```\n\nFor more information, see [annotations](/docs/concepts/overview/working-with-objects/annotations/)\nand [kubectl annotate](/docs/reference/kubectl/generated/kubectl_annotate/)."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-apply-calculates-differences-and-merges-changes-0",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes",
+  "text": "A *patch* is an update operation that is scoped to specific fields of an object\ninstead of the entire object. This enables updating only a specific set of fields\non an object without reading the object first.\n\nWhen `kubectl apply` updates the live configuration for an object,\nit does so by sending a patch request to the API server. The\npatch defines updates scoped to specific fields of the live object\nconfiguration. The `kubectl apply` command calculates this patch request\nusing the configuration file, the live configuration, and the\n`last-applied-configuration` annotation stored in the live configuration."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-metrics#metric-cardinality-enforcement-1",
+  "heading": "Metrics For Kubernetes System Components > Metric cardinality enforcement",
+  "text": "```none\n--allow-metric-labels number_count_metric,odd_number='1,3,5', number_count_metric,even_number='2,4,6', date_gauge_metric,weekend='Saturday,Sunday'\n```\n\nIn addition to specifying this from the CLI, this can also be done within a configuration file. You\ncan specify the path to that configuration file using the `--allow-metric-labels-manifest` command\nline argument to a component. Here's an example of the contents of that configuration file:\n\n```yaml\n\"metric1,label2\": \"v1,v2,v3\"\n\"metric2,label1\": \"v1,v2,v3\"\n```\n\nAdditionally, the `cardinality_enforcement_unexpected_categorizations_total` meta-metric records the\ncount of unexpected categorizations during cardinality enforcement, that is, whenever a label value\nis encountered that is not allowed with respect to the allow-list constraints."
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/scheduler#scheduler-authentication-authorization-command-line-options-1",
+  "heading": "Hardening Guide - Scheduler Configuration > kube-scheduler configuration > Scheduler authentication & authorization command line options",
+  "text": "- `authentication-kubeconfig`: Make sure to provide a proper kubeconfig so that\n  the scheduler can retrieve authentication configuration options from the API Server.\n  This kubeconfig file should be protected with strict file permissions.\n- `authentication-tolerate-lookup-failure`: Set this to `false` to make sure\n  the scheduler _always_ looks up its authentication configuration from the API server.\n- `authentication-skip-lookup`: Set this to `false` to make sure\n  the scheduler _always_ looks up its authentication configuration from the API server.\n- `authorization-always-allow-paths`: These paths should respond with data that is appropriate\n  for anonymous authorization. Defaults to `/healthz,/readyz,/livez`.\n- `profiling`: Set to `false` to disable the profiling endpoints which are provide debugging information\n  but which should not be enabled on production clusters as they present a risk of denial of service"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/configure-feature-gates#understand-feature-gate-maturity-0",
+  "heading": "Enable Or Disable Feature Gates > Understand feature gate maturity",
+  "text": "Before enabling a feature gate, check the [Feature Gates reference](/docs/reference/command-line-tools-reference/feature-gates/) \nfor the feature's maturity level:\n\n- **Alpha**: Disabled by default, may be buggy. Use only in test clusters.\n- **Beta**: Usually enabled by default, well-tested.\n- **GA**: Always enabled by default; can sometimes be disabled for one release after GA."
+ }
+]

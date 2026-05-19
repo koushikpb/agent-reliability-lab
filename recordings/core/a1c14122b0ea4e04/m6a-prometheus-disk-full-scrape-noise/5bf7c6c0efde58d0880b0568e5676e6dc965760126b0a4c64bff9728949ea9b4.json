@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011DLUTTcMH5Jbdw4rzQgcrx",
+   "input": {
+    "pod": "prometheus-k8s-0"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2506,
+ "model": "claude-opus-4-7",
+ "output_tokens": 77,
+ "stop_reason": "tool_use"
+}

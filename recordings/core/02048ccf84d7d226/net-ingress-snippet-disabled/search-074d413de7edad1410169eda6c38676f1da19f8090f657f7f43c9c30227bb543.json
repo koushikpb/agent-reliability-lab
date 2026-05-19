@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-2",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\n  bar.baz.com\n               /foo   service2:80 (10.8.0.91:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     45s                loadbalancer-controller  default/test\n```\n\nYou can achieve the same outcome by invoking `kubectl replace -f` on a modified Ingress YAML file."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-0",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "To update an existing Ingress to add a new Host, you can update it by editing the resource:\n\n```shell\nkubectl describe ingress test\n```\n\n```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     35s                loadbalancer-controller  default/test\n```\n\n```shell\nkubectl edit ingress test\n```\n\nThis pops up an editor with the existing configuration in YAML format.\nModify it to include the new Host:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-1",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "```yaml\nspec:\n  rules:\n  - host: foo.bar.com\n    http:\n      paths:\n      - backend:\n          service:\n            name: service1\n            port:\n              number: 80\n        path: /foo\n        pathType: Prefix\n  - host: bar.baz.com\n    http:\n      paths:\n      - backend:\n          service:\n            name: service2\n            port:\n              number: 80\n        path: /foo\n        pathType: Prefix\n..\n```\n\nAfter you save your changes, kubectl updates the resource in the API server, which tells the\nIngress controller to reconfigure the load balancer.\n\nVerify this:\n\n```shell\nkubectl describe ingress test\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merge-patch-calculation-7",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merge patch calculation",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # The annotation contains the updated image to nginx 1.16.1,\n    # but does not contain the updated replicas to 2\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.16.1\",\"name\":\"nginx\",\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#path-types-1",
+  "heading": "Ingress > The Ingress resource > Path types",
+  "text": "  If the last element of the path is a substring of the last\n  element in request path, it is not a match (for example: `/foo/bar`\n  matches `/foo/bar/baz`, but does not match `/foo/barbaz`)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#resource-backend-1",
+  "heading": "Ingress > The Ingress resource > Resource backends",
+  "text": "```\nName:             ingress-resource-backend\nNamespace:        default\nAddress:\nDefault backend:  APIGroup: k8s.example.com, Kind: StorageBucket, Name: static-assets\nRules:\n  Host        Path  Backends\n  ----        ----  --------\n  *\n              /icons   APIGroup: k8s.example.com, Kind: StorageBucket, Name: icon-assets\nAnnotations:  <none>\nEvents:       <none>\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-update-objects-9",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to update objects",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # The annotation contains the updated image to nginx 1.16.1,\n    # but does not contain the updated replicas to 2\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.16.1\",\"name\":\"nginx\",\n```"
+ }
+]

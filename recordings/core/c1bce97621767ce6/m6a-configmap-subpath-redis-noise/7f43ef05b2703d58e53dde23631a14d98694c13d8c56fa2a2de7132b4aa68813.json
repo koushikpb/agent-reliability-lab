@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found the issue. The logs clearly show that:\n\n1. At startup (06:02), the gateway loaded limits with `sha256=9c1e4b07` showing `limit_rps=100` for acme-logistics\n2. At 09:00:30 and later, the logs show \"limits watcher: /etc/gateway/limits.yaml unchanged (sha256=9c1e4b07)\" - meaning the ConfigMap hash hasn't changed\n3. The latest log at 11:29:30 still shows the same unchanged hash\n\nThe problem is clear: **the ConfigMap file content hash hasn't changed even though the limit was updated**. This means the ConfigMap update was not properly applied or the file wasn't actually modified. The gateway's 30-second polling mechanism would detect the change, but only if the file's hash changes.\n\nLet me search the documentation to understand ConfigMap behavior better:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01YbZXUpgFvVUwEmozyG5jBp",
+   "input": {
+    "query": "ConfigMap mount volume subPath update propagation"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4794,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 266,
+ "stop_reason": "tool_use"
+}

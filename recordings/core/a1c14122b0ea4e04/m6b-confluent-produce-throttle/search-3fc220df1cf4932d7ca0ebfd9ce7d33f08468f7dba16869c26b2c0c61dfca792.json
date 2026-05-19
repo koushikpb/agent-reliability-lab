@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/service#external-ips-0",
+  "heading": "Service > External IPs",
+  "text": "All users should begin migrating away from `externalIPs`.\nConsider using an external load balancer controller or a Gateway API\nimplementation instead.\n\nIf there are external IPs that route to one or more cluster nodes, Kubernetes Services\ncan be exposed on those `externalIPs`. When network traffic arrives into the cluster, with\nthe external IP (as destination IP) and the port matching that Service, rules and routes\nthat Kubernetes has configured ensure that the traffic is routed to one of the endpoints\nfor that Service.\n\nWhen you define a Service, you can specify `externalIPs` for any\n[service type](#publishing-services-service-types).\nIn the example below, the Service named `\"my-service\"` can be accessed by clients using TCP,\non `\"198.51.100.32:80\"` (calculated from `.spec.externalIPs[]` and `.spec.ports[].port`)."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/create-external-load-balancer#preserving-the-client-source-ip-1",
+  "heading": "Create an External Load Balancer > Preserving the client source IP",
+  "text": "* `.spec.externalTrafficPolicy` - denotes if this Service desires to route\n  external traffic to node-local or cluster-wide endpoints. There are two available\n  options: `Cluster` (default) and `Local`. `Cluster` obscures the client source\n  IP and may cause a second hop to another node, but should have good overall\n  load-spreading. `Local` preserves the client source IP and avoids a second hop\n  for LoadBalancer and NodePort type Services, but risks potentially imbalanced\n  traffic spreading.\n* `.spec.healthCheckNodePort` - specifies the health check node port\n  (numeric port number) for the service. If you don't specify\n  `healthCheckNodePort`, the service controller allocates a port from your\n  cluster's NodePort range.  \n  You can configure that range by setting an API server command line option,\n  `--service-node-port-range`. The Service will use the user-specified\n  `healthCheckNodePort` value if you specify it, provided that the"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#notes-1",
+  "heading": "Configure Quotas for API Objects > Notes",
+  "text": "<table>\n<tr><th>String</th><th>API Object</th></tr>\n<tr><td>\"pods\"</td><td>Pod</td></tr>\n<tr><td>\"services\"</td><td>Service</td></tr>\n<tr><td>\"replicationcontrollers\"</td><td>ReplicationController</td></tr>\n<tr><td>\"resourcequotas\"</td><td>ResourceQuota</td></tr>\n<tr><td>\"secrets\"</td><td>Secret</td></tr>\n<tr><td>\"configmaps\"</td><td>ConfigMap</td></tr>\n<tr><td>\"persistentvolumeclaims\"</td><td>PersistentVolumeClaim</td></tr>"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#notes-2",
+  "heading": "Configure Quotas for API Objects > Notes",
+  "text": "<tr><td>\"services.nodeports\"</td><td>Service of type NodePort</td></tr>\n<tr><td>\"services.loadbalancers\"</td><td>Service of type LoadBalancer</td></tr>\n</table>"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#enabling-resource-quota-0",
+  "heading": "Resource Quotas > Enabling Resource Quota",
+  "text": "ResourceQuota support is enabled by default for many Kubernetes distributions. It is\nenabled when the API server\n`--enable-admission-plugins=` flag has `ResourceQuota` as\none of its arguments.\n\nA resource quota is enforced in a particular namespace when there is a\nResourceQuota in that namespace."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-on-object-count-1",
+  "heading": "Resource Quotas > Types of resource quota > Quota on object count",
+  "text": "If you define a quota this way, it applies to Kubernetes' APIs that are part of the API server, and\nto any custom resources backed by a CustomResourceDefinition.\nFor example, to create a quota on a `widgets` custom resource in the `example.com` API group,\nuse `count/widgets.example.com`.\nIf you use [API aggregation](/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/) to\nadd additional, custom APIs that are not defined as CustomResourceDefinitions, the core Kubernetes\ncontrol plane does not enforce quota for the aggregated API. The extension API server is expected to\nprovide quota enforcement if that's appropriate for the custom API.\n\n##### Generic syntax {#resource-quota-object-count-generic}\n\nThis is a list of common examples of object kinds that you may want to put under object count quota,\nlisted by the configuration string that you would use."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#intro-0",
+  "heading": "Configure Quotas for API Objects",
+  "text": "This page shows how to configure quotas for API objects, including\nPersistentVolumeClaims and Services. A quota restricts the number of\nobjects, of a particular type, that can be created in a namespace.\nYou specify quotas in a\n[ResourceQuota](/docs/reference/generated/kubernetes-api//#resourcequota-v1-core)\nobject."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#how-kubernetes-resourcequotas-work-3",
+  "heading": "Resource Quotas > How Kubernetes ResourceQuotas work",
+  "text": "- For `cpu` and `memory` resources, ResourceQuotas enforce that **every**\n  (new) pod in that namespace sets a limit for that resource.\n  If you enforce a resource quota in a namespace for either `cpu` or `memory`,\n  you and other clients, **must** specify either `requests` or `limits` for that resource,\n  for every new Pod you submit. If you don't, the control plane may reject admission\n  for that Pod.\n- For other resources: ResourceQuota works and will ignore pods in the namespace without\n  setting a limit or request for that resource. It means that you can create a new pod\n  without limit/request for ephemeral storage if the resource quota limits the ephemeral\n  storage of this namespace.\n\nYou can use a [LimitRange](/docs/concepts/policy/limit-range/) to automatically set\na default request for these resources."
+ }
+]

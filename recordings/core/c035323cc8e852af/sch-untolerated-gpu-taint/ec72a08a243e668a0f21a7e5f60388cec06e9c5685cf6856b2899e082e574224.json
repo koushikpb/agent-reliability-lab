@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me check the pods in the vision namespace to see the current state:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01PdyZtz6EpJyAdEKqC5i733",
+   "input": {
+    "namespace": "vision"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1339,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 69,
+ "stop_reason": "tool_use"
+}

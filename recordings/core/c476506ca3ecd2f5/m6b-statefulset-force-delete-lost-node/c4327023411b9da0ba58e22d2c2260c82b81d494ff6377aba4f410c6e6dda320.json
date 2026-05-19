@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Ticket **T-6004** has been escalated. Here's a summary of what I found and why:\n\n---\n\n### Investigation findings\n\n| | Detail |\n|---|---|\n| **Pod** | `rabbitmq-1` \u2014 `Terminating`, `NodeLost`, not ready |\n| **Dead node** | `ip-10-0-52-17.ec2.internal` \u2014 last kubelet heartbeat ~6 min before deletion timestamp; fully unresponsive |\n| **PVC** | `data-rabbitmq-1`, `ReadWriteOnce` (gp3), **still attached to the dead node** |\n\n### Why a simple force-delete is not safe here\n\n1. **Force-deleting the pod alone is not enough.** The pod object would disappear from the API server [cite: `concepts/workloads/pods/pod-lifecycle#pod-termination-forced-0`], but the `VolumeAttachment` for `data-rabbitmq-1` would remain bound to the dead node. The StatefulSet would reschedule `rabbitmq-1` on a healthy node, but the new pod could not mount the `ReadWriteOnce` EBS volume \u2014 it is still \"owned\" by `ip-10-0-52-17.ec2.internal`.\n\n2. **Data corruption risk.** The docs explicitly warn that forcing a volume detach on an unhealthy node violates the CSI spec (`ControllerUnpublishVolume` must only be called after all node-side unpublish calls succeed) and can lead to data corruption [cite: `concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-0`].\n\n3. **Two platform-team actions are required first:**\n   - **Terminate the dead EC2 instance** in AWS so there is no chance it returns and mounts the volume concurrently (split-brain).\n   - **Delete the `VolumeAttachment` object** for `data-rabbitmq-1` so Kubernetes can re-attach the EBS volume to the new node.\n   - Only *then* is it safe to force-delete the pod with `kubectl delete pod rabbitmq-1 -n messaging --grace-period=0 --force`.\n\nThe ticket owner acknowledged that the node pools belong to the platform team, so this is correctly in their hands to resolve.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8368,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 547,
+ "stop_reason": "end_turn"
+}

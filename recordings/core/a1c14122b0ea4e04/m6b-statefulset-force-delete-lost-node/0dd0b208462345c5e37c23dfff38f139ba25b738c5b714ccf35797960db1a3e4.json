@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "ErcFCqQBCBMYAipASC4PyzaKDazPP9ObfxuR4vE5bXpMFvMEm4Zei7g2Cpk7XYDERJjM2z9xyWADQAwVPDm7kQmX4wlgiY5vjco3LzIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB8vDw1gYSDLoyWfBQ09zKS8IEORoMwqcweUXO085uefQxIjCc5q1VZUB0EhMnfxINE34c52R12hbluDL0MtyE87EDAjMNH4ufym+is6qCeP6QEScqvwOVfo7hSphIT3EI3clUrVEC8VGSdOQHbC+q9z3Jd7X2y3p9HubDljBiY9c74xUjg8vF6Oeb6kOPbbKrt6bDzaHSQnx/ctK2X1rcM7qpr4xl46Vu97OcvP2/yuFwRnuthMAc2zNl1FfPi+uELA98+HhoiZV28fzpFqFUVgyo3Zq3dUFJ6bNSpCxQIQ9Nd2huwUiHVqNgkaVR/cSCG2mS+PZu0OGM8h0ZN3nEDM/JF2q8tm7+5x33B4o6DnmNxarfujDNLG8boZA1iIQHYlJyZ5kUZsjPeWbwYkk5oh7427oIkxhyx5AeWoc7VAqXWUu25mPG70+2r0tuAdYu9b1Sqh2cxdIQEb8faJ1lcbv8k8rf65fQr/XPS0mEwCe7ApuL2NLpnswXsrGlTxZBb3wQAo4sYj3P1Nv2Qs1wyLRLmINJejAkCLcnTi0Tj1BG+DOk5VU3ohNo0A/eBn7uQF8pvUKnMGRFo01WWA7FGxGBCVp7l7tHuBzmXASzQhamdHQjhrLUfr3ZMByzl05X/d8QBeLZ5NbBgTk94av0xnDiliPiS4HUe8uGVnBejed7ABm1kQ+phRn656/uwt+47pFdqyEYAQ==",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01V8M5GPL5WpYfzCBEysDCJy",
+   "input": {
+    "query": "non-graceful node shutdown out-of-service taint volume detach"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5409,
+ "model": "claude-opus-4-7",
+ "output_tokens": 256,
+ "stop_reason": "tool_use"
+}

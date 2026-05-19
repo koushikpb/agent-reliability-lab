@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#starting-deadline-0",
+  "heading": "CronJob > Writing a CronJob spec > Deadline for delayed Job start",
+  "text": "The `.spec.startingDeadlineSeconds` field is optional.\nThis field defines a deadline (in whole seconds) for starting the Job, if that Job misses its scheduled time\nfor any reason.\n\nAfter missing the deadline, the CronJob skips that instance of the Job (future occurrences are still scheduled).\nFor example, if you have a backup Job that runs twice a day, you might allow it to start up to 8 hours late,\nbut no later, because a backup taken any later wouldn't be useful: you would instead prefer to wait for\nthe next scheduled run.\n\nFor Jobs that miss their configured deadline, Kubernetes treats them as failed Jobs.\nIf you don't specify `startingDeadlineSeconds` for a CronJob, the Job occurrences have no deadline.\n\nIf the `.spec.startingDeadlineSeconds` field is set (not null), the CronJob\ncontroller measures the time between when a Job is expected to be created and\nnow. If the difference is higher than that limit, it will skip this execution."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-2",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "A CronJob is counted as missed if it has failed to be created at its scheduled time. For example, if `concurrencyPolicy` is set to `Forbid` and a CronJob was attempted to be scheduled when there was a previous schedule still running, then it would count as missed.\n\nFor example, suppose a CronJob is set to schedule a new Job every one minute beginning at `08:30:00`, and its\n`startingDeadlineSeconds` field is not set. If the CronJob controller happens to\nbe down from `08:29:00` to `10:21:00`, the Job will not start as the number of missed Jobs which missed their schedule is greater than 100."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-3",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "To illustrate this concept further, suppose a CronJob is set to schedule a new Job every one minute beginning at `08:30:00`, and its\n`startingDeadlineSeconds` is set to 200 seconds. If the CronJob controller happens to\nbe down for the same period as the previous example (`08:29:00` to `10:21:00`,) the Job will still start at 10:22:00. This happens as the controller now checks how many missed schedules happened in the last 200 seconds (i.e., 3 missed schedules), rather than from the last scheduled time until now.\n\nThe CronJob is only responsible for creating Jobs that match its schedule, and\nthe Job in turn is responsible for the management of the Pods it represents."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-conditions-2",
+  "heading": "Disruptions > Pod disruption conditions",
+  "text": "A Pod disruption might be interrupted. The control plane might re-attempt to\ncontinue the disruption of the same Pod, but it is not guaranteed. As a result,\nthe `DisruptionTarget` condition might be added to a Pod, but that Pod might then not actually be\ndeleted. In such a situation, after some time, the\nPod disruption condition will be cleared.\n\nAlong with cleaning up the pods, the Pod garbage collector (PodGC) will also mark them as failed if they are in a non-terminal\nphase (see also [Pod garbage collection](/docs/concepts/workloads/pods/pod-lifecycle/#pod-garbage-collection)).\n\nWhen using a Job (or CronJob), you may want to use these Pod disruption conditions as part of your Job's\n[Pod failure policy](/docs/concepts/workloads/controllers/job#pod-failure-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-condition#disruption-target-2",
+  "heading": "Pod Conditions > Other Pod conditions > DisruptionTarget",
+  "text": "A Pod disruption might be interrupted. The control plane might re-attempt to\ncontinue the disruption of the same Pod, but it is not guaranteed. As a result,\nthe `DisruptionTarget` condition might be added to a Pod, but that Pod might then not actually be\ndeleted. In such a situation, after some time, the\nPod disruption condition will be cleared.\n\nAlong with cleaning up the pods, the Pod garbage collector (PodGC) will also mark them as failed if they are in a non-terminal\nphase (see also [Pod garbage collection](/docs/concepts/workloads/pods/pod-lifecycle/#pod-garbage-collection)).\n\nWhen using a Job (or CronJob), you may want to use these Pod disruption conditions as part of your Job's\n[Pod failure policy](/docs/concepts/workloads/controllers/job#pod-failure-policy).\n\nFor more details, see [Disruptions](/docs/concepts/workloads/pods/disruptions/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-6",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "When you use the `podFailurePolicy`, and the Job fails due to the pod\nmatching the rule with the `FailJob` action, then the Job controller triggers\nthe Job termination process by adding the `FailureTarget` condition.\nFor more details, see [Job termination and cleanup](#job-termination-and-cleanup)."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-1",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My Pods are pending with event message `FailedScheduling`",
+  "text": "In the preceding example, the Pod named \"frontend\" fails to be scheduled due to\ninsufficient CPU resource on any node. Similar error messages can also suggest\nfailure due to insufficient memory (PodExceedsFreeMemory). In general, if a Pod\nis pending with a message of this type, there are several things to try:\n\n- Add more nodes to the cluster.\n- Terminate unneeded Pods to make room for pending Pods.\n- Check that the Pod is not larger than all the nodes. For example, if all the\n  nodes have a capacity of `cpu: 1`, then a Pod with a request of `cpu: 1.1` will\n  never be scheduled.\n- Check for node taints. If most of your nodes are tainted, and the new Pod does\n  not tolerate that taint, the scheduler only considers placements onto the\n  remaining nodes that don't have that taint.\n\nYou can check node capacities and amounts allocated with the\n`kubectl describe nodes` command. For example:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-backoff-failure-policy-0",
+  "heading": "Jobs > Handling Pod and container failures > Pod backoff failure policy",
+  "text": "There are situations where you want to fail a Job after some amount of retries\ndue to a logical error in configuration etc.\nTo do so, set `.spec.backoffLimit` to specify the number of retries before\nconsidering a Job as failed.\n\nThe `.spec.backoffLimit` is set by default to 6, unless the\n[backoff limit per index](#backoff-limit-per-index) (only Indexed Job) is specified.\nWhen `.spec.backoffLimitPerIndex` is specified, then `.spec.backoffLimit` defaults\nto 2147483647 (MaxInt32).\n\nFailed Pods associated with the Job are recreated by the Job controller with an\nexponential back-off delay (10s, 20s, 40s ...) capped at ten minutes.\n\nThe number of retries is calculated in two ways:"
+ }
+]

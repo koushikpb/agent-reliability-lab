@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "The Kubernetes documentation doesn't have specific information about nginx-ingress redirect annotation changes. Let me search more specifically for nginx ingress redirect behavior:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WDZkgqJWt4UTwm5eALAQiS",
+   "input": {
+    "query": "nginx ingress rewrite-target regex"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01SKQcouSdEbAUfG6YjRh7n1",
+   "input": {
+    "query": "ingress annotation redirect-to permanent-redirect"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 8269,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 135,
+ "stop_reason": "tool_use"
+}

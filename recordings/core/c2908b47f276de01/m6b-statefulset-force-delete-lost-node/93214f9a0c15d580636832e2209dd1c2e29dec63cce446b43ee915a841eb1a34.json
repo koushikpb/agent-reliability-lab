@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the current state of the messaging namespace to see the status of the rabbitmq-1 pod.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01BkAvchtHMLDN5LyQx7LRJP",
+   "input": {
+    "namespace": "messaging"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1384,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 79,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more broadly:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01En1EZjzjBrvWJx6cweu2Bd",
+   "input": {
+    "query": "nginx ingress annotations redirect"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2703,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 64,
+ "stop_reason": "tool_use"
+}

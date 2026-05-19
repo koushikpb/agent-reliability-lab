@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/change-pv-reclaim-policy#why-change-reclaim-policy-of-a-persistentvolume-0",
+  "heading": "Change the Reclaim Policy of a PersistentVolume > Why change reclaim policy of a PersistentVolume",
+  "text": "PersistentVolumes can have various reclaim policies, including \"Retain\",\n\"Recycle\", and \"Delete\". For dynamically provisioned PersistentVolumes,\nthe default reclaim policy is \"Delete\". This means that a dynamically provisioned\nvolume is automatically deleted when a user deletes the corresponding\nPersistentVolumeClaim. This automatic behavior might be inappropriate if the volume\ncontains precious data. In that case, it is more appropriate to use the \"Retain\"\npolicy. With the \"Retain\" policy, if a user deletes a PersistentVolumeClaim,\nthe corresponding PersistentVolume will not be deleted. Instead, it is moved to the\nReleased phase, where all of its data can be manually recovered."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reclaiming-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reclaiming",
+  "text": "When a user is done with their volume, they can delete the PVC objects from the\nAPI that allows reclamation of the resource. The reclaim policy for a PersistentVolume\ntells the cluster what to do with the volume after it has been released of its claim.\nCurrently, volumes can either be Retained, Recycled, or Deleted.\n\n#### Retain\n\nThe `Retain` reclaim policy allows for manual reclamation of the resource.\nWhen the PersistentVolumeClaim is deleted, the PersistentVolume still exists\nand the volume is considered \"released\". But it is not yet available for\nanother claim because the previous claimant's data remains on the volume.\nAn administrator can manually reclaim the volume with the following steps.\n\n1. Delete the PersistentVolume. The associated storage asset in external infrastructure\n   still exists after the PV is deleted.\n1. Manually clean up the data on the associated storage asset accordingly.\n1. Manually delete the associated storage asset.\n\nIf you want to reuse the same storage asset, create a new PersistentVolume with\nthe same storage asset definition.\n\n#### Delete"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#reclaim-policy-0",
+  "heading": "Storage Classes > Reclaim policy",
+  "text": "PersistentVolumes that are dynamically created by a StorageClass will have the\n[reclaim policy](/docs/concepts/storage/persistent-volumes/#reclaiming)\nspecified in the `reclaimPolicy` field of the class, which can be\neither `Delete` or `Retain`. If no `reclaimPolicy` is specified when a\nStorageClass object is created, it will default to `Delete`.\n\nPersistentVolumes that are created manually and managed via a StorageClass will have\nwhatever reclaim policy they were assigned at creation."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-4",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "If expanding underlying storage fails, the cluster administrator can manually\nrecover the Persistent Volume Claim (PVC) state and cancel the resize requests.\nOtherwise, the resize requests are continuously retried by the controller without\nadministrator intervention.\n\n1. Mark the PersistentVolume(PV) that is bound to the PersistentVolumeClaim(PVC)\n   with `Retain` reclaim policy.\n2. Delete the PVC. Since PV has `Retain` reclaim policy - we will not lose any data\n   when we recreate the PVC.\n3. Delete the `claimRef` entry from PV specs, so as new PVC can bind to it.\n   This should make the PV `Available`.\n4. Re-create the PVC with smaller size than PV and set `volumeName` field of the\n   PVC to the name of the PV. This should bind new PVC to existing PV.\n5. Don't forget to restore the reclaim policy of the PV."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reclaiming-1",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reclaiming",
+  "text": "For volume plugins that support the `Delete` reclaim policy, deletion removes\nboth the PersistentVolume object from Kubernetes, as well as the associated\nstorage asset in the external infrastructure. Volumes that were dynamically provisioned\ninherit the [reclaim policy of their StorageClass](#reclaim-policy), which\ndefaults to `Delete`. The administrator should configure the StorageClass\naccording to users' expectations; otherwise, the PV must be edited or\npatched after it is created. See\n[Change the Reclaim Policy of a PersistentVolume](/docs/tasks/administer-cluster/change-pv-reclaim-policy/).\n\n#### Recycle\n\nThe `Recycle` reclaim policy is deprecated. Instead, the recommended approach\nis to use dynamic provisioning.\n\nIf supported by the underlying volume plugin, the `Recycle` reclaim policy performs\na basic scrub (`rm -rf /thevolume/*`) on the volume and makes it available again for a new claim."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/change-pv-reclaim-policy#changing-the-reclaim-policy-of-a-persistentvolume-2",
+  "heading": "Change the Reclaim Policy of a PersistentVolume > Changing the reclaim policy of a PersistentVolume",
+  "text": "   ```none\n   NAME                                       CAPACITY   ACCESSMODES   RECLAIMPOLICY   STATUS    CLAIM             STORAGECLASS     REASON    AGE\n   pvc-b6efd8da-b7b5-11e6-9d58-0ed433a7dd94   4Gi        RWO           Delete          Bound     default/claim1    manual                     40s\n   pvc-b95650f8-b7b5-11e6-9d58-0ed433a7dd94   4Gi        RWO           Delete          Bound     default/claim2    manual                     36s\n   pvc-bb3ca71d-b7b5-11e6-9d58-0ed433a7dd94   4Gi        RWO           Retain          Bound     default/claim3    manual                     33s\n   ```\n\n   In the preceding output, you can see that the volume bound to claim\n   `default/claim3` has reclaim policy `Retain`. It will not be automatically\n   deleted when a user deletes claim `default/claim3`."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#storage-object-in-use-protection-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Storage Object in Use Protection",
+  "text": "The purpose of the Storage Object in Use Protection feature is to ensure that\nPersistentVolumeClaims (PVCs) in active use by a Pod and PersistentVolume (PVs)\nthat are bound to PVCs are not removed from the system, as this may result in data loss.\n\nPVC is in active use by a Pod when a Pod object exists that is using the PVC.\n\nIf a user deletes a PVC in active use by a Pod, the PVC is not removed immediately.\nPVC removal is postponed until the PVC is no longer actively used by any Pods. Also,\nif an admin deletes a PV that is bound to a PVC, the PV is not removed immediately.\nPV removal is postponed until the PV is no longer bound to a PVC.\n\nYou can see that a PVC is protected when the PVC's status is `Terminating` and the\n`Finalizers` list includes `kubernetes.io/pvc-protection`:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "Finalizers can be added on a PersistentVolume to ensure that PersistentVolumes\nhaving `Delete` reclaim policy are deleted only after the backing storage are deleted.\n\nThe finalizer `external-provisioner.volume.kubernetes.io/finalizer`(introduced\nin  v1.31) is added to both dynamically provisioned and statically provisioned\nCSI volumes.\n\nThe finalizer `kubernetes.io/pv-controller`(introduced in v1.31) is added to \ndynamically provisioned in-tree plugin volumes and skipped for statically \nprovisioned in-tree plugin volumes.\n\nThe following is an example of dynamically provisioned in-tree plugin volume:"
+ }
+]

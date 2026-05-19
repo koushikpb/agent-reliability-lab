@@ -1,0 +1,26 @@
+{
+ "content": [
+  {
+   "signature": "EqQDCqQBCBMYAipAA8038mWvfLszGIJIAdnazzVrWQn1qjFWP/CVpeH8uxxjIyN6Gw4WmN8au79DXlfm0wLmx3k3OdNlDfx/yJ0qYTIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBvNDw1gYSDJ2KUiI20YwaMczo3xoMvNqMhHLUVN9Kq109IjBGdtnA8UwKUXC1LZaCUOCvrvHiOtZFKVSZtEcdS8R5et5X+sQ1uQx8tGvwZOlI3nYqrAHbMWaxez5B30VuZl2GagFBiWDQeC/qgu7UkCDoVFdhsVyYlqt9KMV0cULAFpeAAnCmtIaZL/IGdYgLmDy6GD59VXYpy6IhI+yCYp19GVdSSY1Eyq17Jy8pjHM9RmBlmy3cyOVihZX6QYZ4pOWCh5/qbpMmxArv5qtTZQf9lGc4trUYg94jMa1AgrjypoyoAkBIXhBbFqA0Ovy+i0lGI/hCwbPIjyHTe/0rsHVUGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01C6jbacLFbj7mqrenb65Xf3",
+   "input": {
+    "id": "T-3005",
+    "note": "Cause: The report-generator pods in the `reporting` namespace are being evicted by the kubelet due to node-level ephemeral-storage pressure, not crashing. Two prior pods (`report-generator-7d9b6c5f8-4hqzt` and `-m2v8k`) are in Failed/Evicted state with messages like: \"The node was low on resource: ephemeral-storage ... Container report-generator was using 39845888Ki (~38 GiB), request is 0\". The pod spec sets CPU/memory requests and limits but no `ephemeral-storage` request or limit, so writes to the container's writable layer / emptyDir accumulate until the kubelet's eviction signal fires and kills the pod mid-run; the Deployment then starts a fresh pod that begins the report over.\n\nEvidence:\n- `kubectl get pods -n reporting` shows two Evicted pods with reason \"The node was low on resource: ephemeral-storage\" and usage ~38-39 GiB with `request is 0`.\n- Current running pod has the same spec (no ephemeral-storage request/limit), so it will hit the same threshold on the next large run.\n\nWhy this matches the docs:\n- The kubelet measures ephemeral storage from writeable container layers, emptyDir volumes, and container logs, and triggers eviction when a pod exceeds its allowance or the node is under disk pressure [cite: concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-0].\n- QoS class does not protect pods against DiskPressure eviction, so adding memory requests alone will not help [cite: concepts/scheduling-eviction/node-pressure-eviction#pod-selection-for-kubelet-eviction-1].\n- You can declare `spec.containers[].resources.requests.ephemeral-storage` and `.limits.ephemeral-storage` on the container to reserve and cap local storage [cite: concepts/storage/ephemeral-storage#requests-limits-0].\n\nFix (for the ticket owner to apply to the report-generator Deployment):\n1. Add an `ephemeral-storage` request and limit to the report-generator container that covers the real nightly working-set, e.g.:\n   ```yaml\n   resources:\n     requests:\n       cpu: \"2\"\n       memory: 6Gi\n       ephemeral-storage: \"50Gi\"\n     limits:\n       memory: 6Gi\n       ephemeral-storage: \"60Gi\"\n   ```\n   Pick values above the ~38\u201340 GiB observed usage with headroom. See the example spec in the docs [cite: concepts/storage/ephemeral-storage#requests-limits-2]. Note the suffix pitfall: use `Gi`/`G`, not lowercase `m` [cite: concepts/storage/ephemeral-storage#requests-limits-1].\n2. Better still, write intermediate report data to a PersistentVolume (or a sized emptyDir mounted at the scratch path) instead of the container writable layer, so the data is not counted purely against ephemeral storage and does not grow unbounded.\n3. Ensure nodes in the pool have enough free disk for that request; otherwise schedule the job on a node pool with larger local disks.\n\nAfter redeploying with these settings, nightly runs should no longer be evicted mid-way.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5480,
+ "model": "claude-opus-4-7",
+ "output_tokens": 1284,
+ "stop_reason": "tool_use"
+}

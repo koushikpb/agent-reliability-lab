@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/gateway#api-kind-gateway-0",
+  "heading": "Gateway API > Resource model > Gateway",
+  "text": "A Gateway describes an instance of traffic handling infrastructure. It defines a network endpoint\nthat can be used for processing traffic, i.e. filtering, balancing, splitting, etc. for backends\nsuch as a Service. For example, a Gateway may represent a cloud load balancer or an in-cluster proxy\nserver that is configured to accept HTTP traffic.\n\nA typical Gateway resource example:\n\n```yaml\napiVersion: gateway.networking.k8s.io/v1\nkind: Gateway\nmetadata:\n  name: example-gateway\n  namespace: example-namespace\nspec:\n  gatewayClassName: example-class\n  listeners:\n  - name: http\n    protocol: HTTP\n    port: 80\n    hostname: \"www.example.com\"\n    allowedRoutes:\n      namespaces:\n        from: Same\n```\n\nIn this example, an instance of traffic handling infrastructure is programmed to listen for HTTP\ntraffic on port 80. Since the `addresses` field is unspecified, an address or hostname is assigned\nto the Gateway by the implementation's controller. This address is used as a network endpoint for\nprocessing traffic of backend network endpoints defined in routes."
+ },
+ {
+  "chunk_id": "concepts/services-networking/gateway#api-kind-gateway-1",
+  "heading": "Gateway API > Resource model > Gateway",
+  "text": "See the [Gateway](https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io/v1.Gateway)\nreference for a full definition of this API kind. For guidance on configuring HTTPS/TLS listeners, see the\n[Gateway API TLS Guide](https://gateway-api.sigs.k8s.io/guides/tls/).\n\nBy default, a Gateway only accepts Routes from the same namespace. Cross-namespace Routes require configuring `allowedRoutes`."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-default-namespace#motivation-for-default-cpu-limits-and-requests-0",
+  "heading": "Configure Default CPU Requests and Limits for a Namespace > Motivation for default CPU limits and requests",
+  "text": "If your namespace has a CPU resource quota\nconfigured,\nit is helpful to have a default value in place for CPU limit.\nHere are two of the restrictions that a CPU resource quota imposes on a namespace:\n\n* For every Pod that runs in the namespace, each of its containers must have a CPU limit.\n* CPU limits apply a resource reservation on the node where the Pod in question is scheduled.\n  The total amount of CPU that is reserved for use by all Pods in the namespace must not\n  exceed a specified limit.\n\nWhen you add a LimitRange:\n\nIf any Pod in that namespace that includes a container does not specify its own CPU limit,\nthe control plane applies the default CPU limit to that container, and the Pod can be\nallowed to run in a namespace that is restricted by a CPU ResourceQuota."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-default-namespace#motivation-for-default-memory-limits-and-requests-0",
+  "heading": "Configure Default Memory Requests and Limits for a Namespace > Motivation for default memory limits and requests",
+  "text": "If your namespace has a memory resource quota\nconfigured,\nit is helpful to have a default value in place for memory limit.\nHere are three of the restrictions that a resource quota imposes on a namespace:\n\n* For every Pod that runs in the namespace, the Pod and each of its containers must have a memory limit.\n  (If you specify a memory limit for every container in a Pod, Kubernetes can infer the Pod-level memory\n  limit by adding up the limits for its containers).\n* Memory limits apply a resource reservation on the node where the Pod in question is scheduled.\n  The total amount of memory reserved for all Pods in the namespace must not exceed a specified limit.\n* The total amount of memory actually used by all Pods in the namespace must also not exceed a specified limit.\n\nWhen you add a LimitRange:\n\nIf any Pod in that namespace that includes a container does not specify its own memory limit,\nthe control plane applies the default memory limit to that container, and the Pod can be\nallowed to run in a namespace that is restricted by a memory ResourceQuota."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-default-namespace#what-if-you-specify-a-container-s-request-but-not-its-limit-1",
+  "heading": "Configure Default Memory Requests and Limits for a Namespace > What if you specify a container's request, but not its limit?",
+  "text": "The output shows that the container's memory request is set to the value specified in the\ncontainer's manifest. The container is limited to use no more than 512MiB of\nmemory, which matches the default memory limit for the namespace.\n\n```\nresources:\n  limits:\n    memory: 512Mi\n  requests:\n    memory: 128Mi\n```\n\nA `LimitRange` does **not** check the consistency of the default values it applies. This means that a default value for the _limit_ that is set by `LimitRange` may be less than the _request_ value specified for the container in the spec that a client submits to the API server. If that happens, the final Pod will not be scheduleable.\nSee [Constraints on resource limits and requests](/docs/concepts/policy/limit-range/#constraints-on-resource-limits-and-requests) for more details."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/memory-default-namespace#intro-0",
+  "heading": "Configure Default Memory Requests and Limits for a Namespace",
+  "text": "This page shows how to configure default memory requests and limits for a\nnamespace.\n\nA Kubernetes cluster can be divided into namespaces. Once you have a namespace that\nhas a default memory\n[limit](/docs/concepts/configuration/manage-resources-containers/#requests-and-limits),\nand you then try to create a Pod with a container that does not specify its own memory\nlimit, then the\ncontrol plane assigns the default\nmemory limit to that container.\n\nKubernetes assigns a default memory request under certain conditions that are explained later in this topic."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-default-namespace#intro-0",
+  "heading": "Configure Default CPU Requests and Limits for a Namespace",
+  "text": "This page shows how to configure default CPU requests and limits for a\nnamespace.\n\nA Kubernetes cluster can be divided into namespaces. If you create a Pod within a\nnamespace that has a default CPU\n[limit](/docs/concepts/configuration/manage-resources-containers/#requests-and-limits), and any container in that Pod does not specify\nits own CPU limit, then the\ncontrol plane assigns the default\nCPU limit to that container.\n\nKubernetes assigns a default CPU\n[request](/docs/concepts/configuration/manage-resources-containers/#requests-and-limits),\nbut only under certain conditions that are explained later in this page."
+ },
+ {
+  "chunk_id": "concepts/policy/limit-range#constraints-on-resource-limits-and-requests-0",
+  "heading": "Limit Ranges > Constraints on resource limits and requests",
+  "text": "- The administrator creates a LimitRange in a namespace.\n- Users create (or try to create) objects in that namespace, such as Pods or\n  PersistentVolumeClaims.\n- First, the LimitRange admission controller applies default request and limit values\n  for all Pods (and their containers) that do not set compute resource requirements.\n- Second, the LimitRange tracks usage to ensure it does not exceed resource minimum,\n  maximum and ratio defined in any LimitRange present in the namespace.\n- If you attempt to create or update an object (Pod or PersistentVolumeClaim) that violates\n  a LimitRange constraint, your request to the API server will fail with an HTTP status\n  code `403 Forbidden` and a message explaining the constraint that has been violated.\n- If you add a LimitRange in a namespace that applies to compute-related resources\n  such as `cpu` and `memory`, you must specify requests or limits for those values.\n  Otherwise, the system may reject Pod creation.\n- LimitRange validations occur only at Pod admission stage, not on running Pods.\n  If you add or modify a LimitRange, the Pods that already exist in that namespace"
+ }
+]

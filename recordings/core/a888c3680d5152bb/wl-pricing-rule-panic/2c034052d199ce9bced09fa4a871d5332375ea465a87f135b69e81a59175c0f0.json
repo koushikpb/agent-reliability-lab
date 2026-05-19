@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Let me search for information about crash loops and exit code 2 in Kubernetes:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LtydHn7cvWqwBYBAZN8ZNw",
+   "input": {
+    "query": "CrashLoopBackOff exit code 2 troubleshooting"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019hX9oPKrs16wBZM3dXGT1R",
+   "input": {
+    "query": "pod crash loop debugging logs"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1995,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 128,
+ "stop_reason": "tool_use"
+}

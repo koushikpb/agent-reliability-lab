@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "The documentation is clear that the HPA relies on the Metrics API, which is provided by the metrics-server. The issue shows that CPU metrics are showing `<unknown>`, which suggests the metrics-server cannot collect metrics. Let me search for more information about why metrics might be unavailable.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01NkJLCKaYcPq981cTv77o31",
+   "input": {
+    "query": "metrics API not available resource metrics pipeline troubleshooting"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01HNjkXCq4yx31r8rc3KTx7v",
+   "input": {
+    "query": "container resource metrics CPU not defined no resource request"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 9297,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 169,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I can see the issue! The pod is receiving SIGTERM during startup while it's still loading the index. The liveness probe is failing because the HTTP listener hasn't been opened yet. Let me search the Kubernetes documentation for information about startup probes and liveness probes:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01BsfmTs7WDiB2sfqYMenZM5",
+   "input": {
+    "query": "startup probe liveness probe application startup time"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2318,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 119,
+ "stop_reason": "tool_use"
+}

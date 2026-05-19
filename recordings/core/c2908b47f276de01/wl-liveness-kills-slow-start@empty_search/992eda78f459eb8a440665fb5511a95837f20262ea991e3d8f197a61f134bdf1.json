@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more broadly:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01K8vVVD3yqYuzm33gSCfr36",
+   "input": {
+    "query": "pod readiness probe configuration startup time"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2531,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 66,
+ "stop_reason": "tool_use"
+}

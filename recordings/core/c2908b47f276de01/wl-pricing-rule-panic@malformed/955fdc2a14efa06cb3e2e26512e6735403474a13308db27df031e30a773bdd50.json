@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try the other pod:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01HE2fp5h4uvpv56aAt1WYaS",
+   "input": {
+    "pod": "pricing-engine-74d9c6b8f-jq7lc"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1904,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 80,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#set-the-security-context-for-a-pod-1",
+  "heading": "Configure a Security Context for a Pod or Container > Set the security context for a Pod",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo\nspec:\n  securityContext:\n    runAsUser: 1000\n    runAsGroup: 3000\n    fsGroup: 2000\n    supplementalGroups: [4000]\n  volumes:\n  - name: sec-ctx-vol\n    emptyDir: {}\n  containers:\n  - name: sec-ctx-demo\n    image: busybox:1.28\n    command: [ \"sh\", \"-c\", \"sleep 1h\" ]\n    volumeMounts:\n    - name: sec-ctx-vol\n      mountPath: /data/demo\n    securityContext:\n      allowPrivilegeEscalation: false\n```"
+ },
+ {
+  "chunk_id": "concepts/security/application-security-checklist#security-context-container-0",
+  "heading": "Application Security Checklist > Base security hardening > Container-level `securityContext` recommendations",
+  "text": "- [ ] Disable privilege escalations using `allowPrivilegeEscalation: false`.\n- [ ] Configure the root filesystem to be read-only with `readOnlyRootFilesystem: true`.\n- [ ] Avoid running privileged containers (set `privileged: false`).\n- [ ] Drop all capabilities from the containers and add back only specific ones\n  that are needed for operation of the container."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#configure-volume-permission-and-ownership-change-policy-for-pods-1",
+  "heading": "Configure a Security Context for a Pod or Container > Configure volume permission and ownership change policy for Pods",
+  "text": "* _OnRootMismatch_: Only change permissions and ownership if the permission and the ownership of\n  root directory does not match with expected permissions of the volume.\n  This could help shorten the time it takes to change ownership and permission of a volume.\n* _Always_: Always change permission and ownership of the volume when volume is mounted.\n\nFor example:\n\n```yaml\nsecurityContext:\n  runAsUser: 1000\n  runAsGroup: 3000\n  fsGroup: 2000\n  fsGroupChangePolicy: \"OnRootMismatch\"\n```\n\nThis field has no effect on ephemeral volume types such as\n[`secret`](/docs/concepts/storage/volumes/#secret),\n[`configMap`](/docs/concepts/storage/volumes/#configmap),\nand [`emptyDir`](/docs/concepts/storage/volumes/#emptydir)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#set-capabilities-for-a-container-0",
+  "heading": "Configure a Security Context for a Pod or Container > Set capabilities for a Container",
+  "text": "With [Linux capabilities](https://man7.org/linux/man-pages/man7/capabilities.7.html),\nyou can grant certain privileges to a process without granting all the privileges\nof the root user. To add or drop Linux capabilities for a Container, include the\n`capabilities` field in the `securityContext` section of the Container manifest.\n\nFirst, see what happens when you don't include a `capabilities` field.\nHere is configuration file that does not add or drop any Container capabilities:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo-3\nspec:\n  containers:\n  - name: sec-ctx-3\n    image: gcr.io/google-samples/hello-app:2.0\n```\n\nCreate the Pod:\n\n```shell\nkubectl apply -f https://k8s.io/examples/pods/security/security-context-3.yaml\n```\n\nVerify that the Pod's Container is running:"
+ },
+ {
+  "chunk_id": "concepts/security/security-checklist#authentication-authorization-0",
+  "heading": "Security Checklist > Authentication & Authorization",
+  "text": "- [ ] `system:masters` group is not used for user or component authentication after bootstrapping.\n- [ ] The kube-controller-manager is running with `--use-service-account-credentials`\n  enabled.\n- [ ] The root certificate is protected (either an offline CA, or a managed\n  online CA with effective access controls).\n- [ ] Intermediate and leaf certificates have an expiry date no more than 3\n  years in the future.\n- [ ] A process exists for periodic access review, and reviews occur no more\n  than 24 months apart.\n- [ ] The [Role Based Access Control Good Practices](/docs/concepts/security/rbac-good-practices/)\n  are followed for guidance related to authentication and authorization.\n\nAfter bootstrapping, neither users nor components should authenticate to the\nKubernetes API as `system:masters`. Similarly, running all of\nkube-controller-manager as `system:masters` should be avoided. In fact,\n`system:masters` should only be used as a break-glass mechanism, as opposed to\nan admin user."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#provide-prod-test-creds-2",
+  "heading": "Distribute Credentials Securely Using Secrets > Example: Provide prod/test credentials to Pods using Secrets",
+  "text": "   ```shell\n   cat <<EOF > pod.yaml\n   apiVersion: v1\n   kind: List\n   items:\n   - kind: Pod\n     apiVersion: v1\n     metadata:\n       name: prod-db-client-pod\n       labels:\n         name: prod-db-client\n     spec:\n       volumes:\n       - name: secret-volume\n         secret:\n           secretName: prod-db-secret\n       containers:\n       - name: db-client-container\n         image: myClientImage\n         volumeMounts:\n         - name: secret-volume\n           readOnly: true\n           mountPath: \"/etc/secret-volume\"\n   - kind: Pod\n     apiVersion: v1\n     metadata:\n       name: test-db-client-pod\n       labels:\n         name: test-db-client\n     spec:\n       volumes:\n       - name: secret-volume\n         secret:\n           secretName: test-db-secret\n       containers:\n       - name: db-client-container\n         image: myClientImage\n         volumeMounts:\n         - name: secret-volume\n           readOnly: true\n           mountPath: \"/etc/secret-volume\"\n   EOF\n   ```"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#azure-file-2",
+  "heading": "Storage Classes > Parameters > Azure File (deprecated)",
+  "text": "During storage provisioning, a secret named by `secretName` is created for the\nmounting credentials. If the cluster has enabled both\n[RBAC](/docs/reference/access-authn-authz/rbac/) and\n[Controller Roles](/docs/reference/access-authn-authz/rbac/#controller-roles),\nadd the `create` permission of resource `secret` for clusterrole\n`system:controller:persistent-volume-binder`.\n\nIn a multi-tenancy context, it is strongly recommended to set the value for\n`secretNamespace` explicitly, otherwise the storage account credentials may\nbe read by other users."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/pull-image-private-registry#registry-secret-existing-credentials-2",
+  "heading": "Pull an Image from a Private Registry > Create a Secret based on existing credentials",
+  "text": "If you get the error message `error: no objects passed to create`, it may mean the base64 encoded string is invalid.\nIf you get an error message like `Secret \"myregistrykey\" is invalid: data[.dockerconfigjson]: invalid value ...`, it means\nthe base64 encoded string in the data was successfully decoded, but could not be parsed as a `.docker/config.json` file."
+ }
+]

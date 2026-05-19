@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-1",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "This is an example of a Pod that mounts a ConfigMap in a volume:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: mypod\nspec:\n  containers:\n  - name: mypod\n    image: redis\n    volumeMounts:\n    - name: foo\n      mountPath: \"/etc/foo\"\n      readOnly: true\n  volumes:\n  - name: foo\n    configMap:\n      name: myconfigmap\n```\n\nEach ConfigMap you want to use needs to be referred to in `.spec.volumes`.\n\nIf there are multiple containers in the Pod, then each container needs its\nown `volumeMounts` block, but only one `.spec.volumes` is needed per ConfigMap.\n\n#### Mounted ConfigMaps are updated automatically"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#optional-references-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Optional references",
+  "text": "A ConfigMap reference may be marked _optional_. If the ConfigMap is non-existent, the mounted\nvolume will be empty. If the ConfigMap exists, but the referenced key is non-existent, the path\nwill be absent beneath the mount point. See [Optional ConfigMaps](#optional-configmaps) for more\ndetails."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#optional-configmaps-1",
+  "heading": "Configure a Pod to Use a ConfigMap > Optional ConfigMaps",
+  "text": "If you run this pod, and there is no ConfigMap named `a-config`, the output is empty.\nIf you run this pod, and there is a ConfigMap named `a-config` but that ConfigMap doesn't have\na key named `akey`, the output is also empty. If you do set a value for `akey` in the `a-config`\nConfigMap, this pod prints that value and then terminates.\n\nYou can also mark the volumes and files provided by a ConfigMap as optional. Kubernetes always\ncreates the mount paths for the volume, even if the referenced ConfigMap or key doesn't exist. For\nexample, the following Pod specification marks a volume that references a ConfigMap as optional:"
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-4",
+  "heading": "ConfigMaps > Using ConfigMaps > Using ConfigMaps as files from a Pod",
+  "text": "ConfigMaps consumed as environment variables are not updated automatically and require a pod restart. \n\nA container using a ConfigMap as a [subPath](/docs/concepts/storage/volumes#using-subpath) volume mount will not receive ConfigMap updates."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#add-configmap-data-to-a-specific-path-in-the-volume-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Add ConfigMap data to a Volume > Add ConfigMap data to a specific path in the Volume",
+  "text": "Use the `path` field to specify the desired file path for specific ConfigMap items.\nIn this case, the `SPECIAL_LEVEL` item will be mounted in the `config-volume` volume at `/etc/config/keys`.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: dapi-test-pod\nspec:\n  containers:\n    - name: test-container\n      image: registry.k8s.io/busybox:1.27.2\n      command: [ \"/bin/sh\",\"-c\",\"cat /etc/config/keys\" ]\n      volumeMounts:\n      - name: config-volume\n        mountPath: /etc/config\n  volumes:\n    - name: config-volume\n      configMap:\n        name: special-config\n        items:\n        - key: SPECIAL_LEVEL\n          path: keys\n  restartPolicy: Never\n```\n\nCreate the Pod:"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#configmap-0",
+  "heading": "Volumes > Types of volumes > configMap",
+  "text": "A [ConfigMap](/docs/tasks/configure-pod-container/configure-pod-configmap/)\nprovides a way to inject configuration data into Pods.\nThe data stored in a ConfigMap can be referenced in a volume of type\n`configMap` and then consumed by containerized applications running in a Pod.\n\nWhen referencing a ConfigMap, you provide the name of the ConfigMap in the\nvolume. You can customize the path to use for a specific\nentry in the ConfigMap. The following configuration shows how to mount\nthe `log-config` ConfigMap onto a Pod called `configmap-pod`:"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#configmap-1",
+  "heading": "Volumes > Types of volumes > configMap",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: configmap-pod\nspec:\n  containers:\n    - name: test\n      image: busybox:1.28\n      command: ['sh', '-c', 'echo \"The app is running!\" && tail -f /dev/null']\n      volumeMounts:\n        - name: config-vol\n          mountPath: /etc/config\n  volumes:\n    - name: config-vol\n      configMap:\n        name: log-config\n        items:\n          - key: log_level\n            path: log_level.conf\n```\n\nThe `log-config` ConfigMap is mounted as a volume, and all contents stored in\nits `log_level` entry are mounted into the Pod at path `/etc/config/log_level.conf`.\nNote that this path is derived from the volume's `mountPath` and the `path`\nkeyed with `log_level`."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#optional-configmaps-2",
+  "heading": "Configure a Pod to Use a ConfigMap > Optional ConfigMaps",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: dapi-test-pod\nspec:\n  containers:\n    - name: test-container\n      image: gcr.io/google_containers/busybox\n      command: [\"/bin/sh\", \"-c\", \"ls /etc/config\"]\n      volumeMounts:\n      - name: config-volume\n        mountPath: /etc/config\n  volumes:\n    - name: config-volume\n      configMap:\n        name: no-config\n        optional: true # mark the source ConfigMap as optional\n  restartPolicy: Never\n```"
+ }
+]

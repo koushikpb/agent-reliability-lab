@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The ticket reports that the Horizontal Pod Autoscaler (HPA) for search-api in the catalog namespace is not scaling up, showing CPU as `<unknown>` instead of an actual percentage. This started after a 4.8.0 release. Let me check the current state of the pods and HPA in the catalog namespace.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01AWQAKmAQmvv4Mf1bAEGz9i",
+   "input": {
+    "namespace": "catalog"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1375,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 127,
+ "stop_reason": "tool_use"
+}

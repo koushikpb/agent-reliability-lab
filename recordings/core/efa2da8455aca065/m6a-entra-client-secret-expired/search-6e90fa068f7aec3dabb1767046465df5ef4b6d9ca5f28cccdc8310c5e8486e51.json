@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/access-application-cluster/access-cluster#requesting-redirects-0",
+  "heading": "Accessing Clusters > Requesting redirects",
+  "text": "The redirect capabilities have been deprecated and removed. Please use a proxy (see below) instead."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/access-cluster#without-kubectl-proxy-2",
+  "heading": "Accessing Clusters > Directly accessing the REST API > Without kubectl proxy",
+  "text": "```shell\nAPISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')\nTOKEN=$(kubectl get secret default-token -o jsonpath='{.data.token}' | base64 --decode)\n\ncurl $APISERVER/api --header \"Authorization: Bearer $TOKEN\" --insecure\n```\n\nThe output is similar to this:\n\n```json\n{\n  \"kind\": \"APIVersions\",\n  \"versions\": [\n    \"v1\"\n  ],\n  \"serverAddressByClientCIDRs\": [\n    {\n      \"clientCIDR\": \"0.0.0.0/0\",\n      \"serverAddress\": \"10.0.1.149:443\"\n    }\n  ]\n}\n```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/access-cluster#without-kubectl-proxy-1",
+  "heading": "Accessing Clusters > Directly accessing the REST API > Without kubectl proxy",
+  "text": "```shell\nAPISERVER=$(kubectl config view --minify | grep server | cut -f 2- -d \":\" | tr -d \" \")\nTOKEN=$(kubectl describe secret default-token | grep -E '^token' | cut -f2 -d':' | tr -d \" \")\n\ncurl $APISERVER/api --header \"Authorization: Bearer $TOKEN\" --insecure\n```\n\nThe output is similar to this:\n\n```json\n{\n  \"kind\": \"APIVersions\",\n  \"versions\": [\n    \"v1\"\n  ],\n  \"serverAddressByClientCIDRs\": [\n    {\n      \"clientCIDR\": \"0.0.0.0/0\",\n      \"serverAddress\": \"10.0.1.149:443\"\n    }\n  ]\n}\n```\n\nUsing `jsonpath`:"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#azure-file-2",
+  "heading": "Storage Classes > Parameters > Azure File (deprecated)",
+  "text": "During storage provisioning, a secret named by `secretName` is created for the\nmounting credentials. If the cluster has enabled both\n[RBAC](/docs/reference/access-authn-authz/rbac/) and\n[Controller Roles](/docs/reference/access-authn-authz/rbac/#controller-roles),\nadd the `create` permission of resource `secret` for clusterrole\n`system:controller:persistent-volume-binder`.\n\nIn a multi-tenancy context, it is strongly recommended to set the value for\n`secretNamespace` explicitly, otherwise the storage account credentials may\nbe read by other users."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/proxies#requesting-redirects-0",
+  "heading": "Proxies in Kubernetes > Requesting redirects",
+  "text": "Proxies have replaced redirect capabilities.  Redirects have been deprecated."
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/authentication-mechanisms#authenticating-proxy-0",
+  "heading": "Hardening Guide - Authentication Mechanisms > Authenticating proxy",
+  "text": "Another option for integrating external authentication systems into Kubernetes is to use an\n[authenticating proxy](/docs/reference/access-authn-authz/authentication/#authenticating-proxy).\nWith this mechanism, Kubernetes expects to receive requests from the proxy with specific header\nvalues set, indicating the username and group memberships to assign for authorization purposes.\nIt is important to note that there are specific considerations to take into account when using\nthis mechanism.\n\nFirstly, securely configured TLS must be used between the proxy and Kubernetes API server to\nmitigate the risk of traffic interception or sniffing attacks. This ensures that the communication\nbetween the proxy and Kubernetes API server is secure.\n\nSecondly, it is important to be aware that an attacker who is able to modify the headers of the\nrequest may be able to gain unauthorized access to Kubernetes resources. As such, it is important\nto ensure that the headers are properly secured and cannot be tampered with."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#azure-file-1",
+  "heading": "Storage Classes > Parameters > Azure File (deprecated)",
+  "text": "- `skuName`: Azure storage account SKU tier. Default is empty.\n- `location`: Azure storage account location. Default is empty.\n- `storageAccount`: Azure storage account name. Default is empty. If a storage\n  account is not provided, all storage accounts associated with the resource\n  group are searched to find one that matches `skuName` and `location`. If a\n  storage account is provided, it must reside in the same resource group as the\n  cluster, and `skuName` and `location` are ignored.\n- `secretNamespace`: the namespace of the secret that contains the Azure Storage\n  Account Name and Key. Default is the same as the Pod.\n- `secretName`: the name of the secret that contains the Azure Storage Account Name and\n  Key. Default is `azure-storage-account-<accountName>-secret`\n- `readOnly`: a flag indicating whether the storage will be mounted as read only.\n  Defaults to false which means a read/write mount. This setting will impact the\n  `ReadOnly` setting in VolumeMounts as well."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/encrypt-data#understanding-the-encryption-at-rest-configuration-0",
+  "heading": "Encrypting Confidential Data at Rest > Understanding the encryption at rest configuration",
+  "text": "---\n#\n# CAUTION: this is an example configuration.\n#          Do not use this for your own cluster!\n#\napiVersion: apiserver.config.k8s.io/v1\nkind: EncryptionConfiguration\nresources:\n  - resources:\n      - secrets\n      - configmaps\n      - pandas.awesome.bears.example # a custom resource API\n    providers:\n      # This configuration does not provide data confidentiality. The first\n      # configured provider is specifying the \"identity\" mechanism, which\n      # stores resources as plain text.\n      #\n      - identity: {} # plain text, in other words NO encryption\n      - aesgcm:\n          keys:\n            - name: key1\n              secret: c2VjcmV0IGlzIHNlY3VyZQ==\n            - name: key2\n              secret: dGhpcyBpcyBwYXNzd29yZA==\n      - aescbc:\n          keys:\n            - name: key1\n              secret: c2VjcmV0IGlzIHNlY3VyZQ==\n            - name: key2\n              secret: dGhpcyBpcyBwYXNzd29yZA=="
+ }
+]

@@ -1,0 +1,26 @@
+{
+ "content": [
+  {
+   "signature": "ErgDCqQBCBMYAipAcPqNIaKgUz7nOreV1BO6075DUf7xk+Om9MIhbq5sFkBwHl3XFs96eGIdsQw+ksc0EdrtbKKuogzLHnYJSP4bPzIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBqtHw1gYSDPsyGDvzcX2o9Wz8QhoMnp2Id3fLJQEcET4nIjCzN6aTaANY5oIUD5tlWNPtFc3PFLtaJ9q7rmVPa7+NosuKiNKGT/OBdhAhzYqdEAYqwAESfxtbVF2IA1mQiOOUbhd/hMP+flK3KuUhvMKBlrh2IZHeKBj7+QXw9BN4v7wdhc0/zWlECD7dvyDmGzZHKbkji5HhUUML443+x1SxpI6q4l1WKIpCJrn1tdcLjffTM8ncsdXlgr/IbWuqBNtBfZvNU7I+TFV+Ns1TBhSCweBahQ8wIl4n5QhNeGeO6RfQJvI0ZxMnvmaYNQPUz0OsDgAEp8gJK7IqHCPs8TcUp4YgZUZhrsMu3aq+cZcP+Pj9gCsYAQ==",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_014B1d9Gp9tUVmNuxGyqKoNq",
+   "input": {
+    "id": "T-3002",
+    "note": "Cause: the doc-embedder pod is Unschedulable because the GPU node pool carries the taint `dedicated=gpu:NoSchedule` and the pod does not tolerate it. The scheduler reports: \"0/9 nodes are available: 3 node(s) had untolerated taint {dedicated: gpu}, 6 node(s) didn't match Pod's node affinity/selector.\" The pod spec only tolerates `nvidia.com/gpu` (plus the default not-ready/unreachable tolerations); its nodeSelector `pool=gpu` correctly targets the 3 GPU nodes, but without a matching toleration those nodes repel it. A taint marks that a node should not accept pods that do not tolerate it [cite: concepts/scheduling-eviction/taint-and-toleration#intro-0], and a toleration for that key/effect must be added to the pod to allow scheduling [cite: concepts/scheduling-eviction/taint-and-toleration#concepts-0]. The ml-serving pods already include this toleration, which is why they schedule fine.\n\nFix: add the following toleration to the doc-embedder Deployment pod spec and re-apply:\n\ntolerations:\n- key: \"dedicated\"\n  operator: \"Equal\"\n  value: \"gpu\"\n  effect: \"NoSchedule\"\n\n(keep the existing `nvidia.com/gpu` toleration as well). Once rolled out, the pending pod should schedule onto a `pool=gpu` node.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5684,
+ "model": "claude-opus-4-7",
+ "output_tokens": 696,
+ "stop_reason": "tool_use"
+}

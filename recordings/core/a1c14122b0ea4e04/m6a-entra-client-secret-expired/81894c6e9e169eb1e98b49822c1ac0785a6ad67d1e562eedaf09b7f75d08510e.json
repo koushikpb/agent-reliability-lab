@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Migpegxv2pS7bUeTuTahCr",
+   "input": {
+    "query": "secret mounted as file updated automatically projected"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7545,
+ "model": "claude-opus-4-7",
+ "output_tokens": 77,
+ "stop_reason": "tool_use"
+}

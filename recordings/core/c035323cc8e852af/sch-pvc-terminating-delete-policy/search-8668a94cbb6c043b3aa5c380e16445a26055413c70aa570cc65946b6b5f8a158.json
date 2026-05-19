@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/change-pv-access-mode-readwriteoncepod#migrating-existing-persistentvolumes-3",
+  "heading": "Change the Access Mode of a PersistentVolume to ReadWriteOncePod > Migrating existing PersistentVolumes",
+  "text": "```shell\nkubectl patch pv cat-pictures-pv -p '{\"spec\":{\"persistentVolumeReclaimPolicy\":\"Retain\"}}'\n```\n\nNext you need to stop any workloads that are using the PersistentVolumeClaim\nbound to the PersistentVolume you want to migrate, and then delete the\nPersistentVolumeClaim. Avoid making any other changes to the\nPersistentVolumeClaim, such as volume resizes, until after the migration is\ncomplete.\n\nOnce that is done, you need to clear your PersistentVolume's `spec.claimRef.uid`\nto ensure PersistentVolumeClaims can bind to it upon recreation:\n\n```shell\nkubectl scale --replicas=0 deployment cat-pictures-writer\nkubectl delete pvc cat-pictures-pvc\nkubectl patch pv cat-pictures-pv -p '{\"spec\":{\"claimRef\":{\"uid\":\"\"}}}'\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/delete-stateful-set#persistent-volumes-0",
+  "heading": "Delete a StatefulSet > Deleting a StatefulSet > Persistent Volumes",
+  "text": "Deleting the Pods in a StatefulSet will not delete the associated volumes.\nThis is to ensure that you have the chance to copy data off the volume before\ndeleting it. Deleting the PVC after the pods have terminated might trigger\ndeletion of the backing Persistent Volumes depending on the storage class\nand reclaim policy. You should never assume ability to access a volume\nafter claim deletion.\n\nUse caution when deleting a PVC, as it may lead to data loss."
+ },
+ {
+  "chunk_id": "concepts/workloads/podgroup-api/lifecycle#deletion-protection-0",
+  "heading": "PodGroup Lifecycle > Deletion protection",
+  "text": "A `PodGroup` cannot be fully deleted while any of its Pods are still running.\nA dedicated finalizer ensures that deletion is blocked until all `Pods` referencing the\n`PodGroup` have reached a terminal phase (`Succeeded` or `Failed`)."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#non-graceful-node-shutdown-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling",
+  "text": "When a node is shutdown but not detected by kubelet's Node Shutdown Manager, the pods\nthat are part of a StatefulSet\nwill be stuck in terminating status on the shutdown node and cannot move to a new running node.\nThis is because kubelet on the shutdown node is not available to delete the pods so\nthe StatefulSet cannot create a new pod with the same name. If there are volumes used by the pods,\nthe VolumeAttachments will not be deleted from the original shutdown node so the volumes\nused by these pods cannot be attached to a new running node. As a result, the\napplication running on the StatefulSet cannot function properly. If the original\nshutdown node comes up, the pods will be deleted by kubelet and new pods will be\ncreated on a different running node. If the original shutdown node does not come up,\nthese pods will be stuck in terminating status on the shutdown node forever."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-1",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "A Pod is not deleted automatically when a node is unreachable.\nThe Pods running on an unreachable Node enter the 'Terminating' or 'Unknown' state after a\n[timeout](/docs/concepts/architecture/nodes/#condition).\nPods may also enter these states when the user attempts graceful deletion of a Pod\non an unreachable Node.\nThe only ways in which a Pod in such a state can be removed from the apiserver are as follows:\n\n- The Node object is deleted (either by you, or by the\n  [Node Controller](/docs/concepts/architecture/nodes/#node-controller)).\n- The kubelet on the unresponsive Node starts responding, kills the Pod and removes the entry\n   from the apiserver.\n- Force deletion of the Pod by the user."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-conditions-2",
+  "heading": "Disruptions > Pod disruption conditions",
+  "text": "A Pod disruption might be interrupted. The control plane might re-attempt to\ncontinue the disruption of the same Pod, but it is not guaranteed. As a result,\nthe `DisruptionTarget` condition might be added to a Pod, but that Pod might then not actually be\ndeleted. In such a situation, after some time, the\nPod disruption condition will be cleared.\n\nAlong with cleaning up the pods, the Pod garbage collector (PodGC) will also mark them as failed if they are in a non-terminal\nphase (see also [Pod garbage collection](/docs/concepts/workloads/pods/pod-lifecycle/#pod-garbage-collection)).\n\nWhen using a Job (or CronJob), you may want to use these Pod disruption conditions as part of your Job's\n[Pod failure policy](/docs/concepts/workloads/controllers/job#pod-failure-policy)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#use-the-default-service-account-to-access-the-api-server-1",
+  "heading": "Configure Service Accounts for Pods > Use the default service account to access the API server",
+  "text": "When a Pod authenticates as a ServiceAccount, its level of access depends on the\n[authorization plugin and policy](/docs/reference/access-authn-authz/authorization/#authorization-modules)\nin use.\n\nThe API credentials are automatically revoked when the Pod is deleted, even if\nfinalizers are in place. In particular, the API credentials are revoked 60 seconds\nbeyond the `.metadata.deletionTimestamp` set on the Pod (the deletion timestamp\nis typically the time that the **delete** request was accepted plus the Pod's\ntermination grace period)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-condition#disruption-target-2",
+  "heading": "Pod Conditions > Other Pod conditions > DisruptionTarget",
+  "text": "A Pod disruption might be interrupted. The control plane might re-attempt to\ncontinue the disruption of the same Pod, but it is not guaranteed. As a result,\nthe `DisruptionTarget` condition might be added to a Pod, but that Pod might then not actually be\ndeleted. In such a situation, after some time, the\nPod disruption condition will be cleared.\n\nAlong with cleaning up the pods, the Pod garbage collector (PodGC) will also mark them as failed if they are in a non-terminal\nphase (see also [Pod garbage collection](/docs/concepts/workloads/pods/pod-lifecycle/#pod-garbage-collection)).\n\nWhen using a Job (or CronJob), you may want to use these Pod disruption conditions as part of your Job's\n[Pod failure policy](/docs/concepts/workloads/controllers/job#pod-failure-policy).\n\nFor more details, see [Disruptions](/docs/concepts/workloads/pods/disruptions/)."
+ }
+]

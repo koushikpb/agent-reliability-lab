@@ -1,0 +1,39 @@
+{
+ "content": [
+  {
+   "signature": "EvECCqgBCBMYAipAUKGsZmKBc/WN/sv3rXJNW6qa7ayH2mLm72UMPDOV7/0CG6Enz1X28SCwa8b/b0tXPjnpxNlK8wMEaWLM0KtfPDIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAb/28NYGEgxZUghiDlP+ecMQMQAaDGuYcf6xZs63oo+kwyIwpaHS/mhe2T0G8C733jwITER1dggGbc5DR8khbutSgV6ciUUnpGp1kyNP5ovqVrWWKnbP+MmG/GWcIX8nlg06pzTOi7q2LJFO2R4pvhQZTfAPPK7EPZHUPicfzGWyNNmFWKsTXyE4wfwDHd/8fxptezecNqAJvAukUa8xhCQUlUjrWQIQnJaeI45Py9+LvBXs70bBHFmxXooYXB7XfBPOHsbq2JXVhzzRGAE=",
+   "thinking": "Let me look at the pods in the orders namespace and search for relevant documentation simultaneously.",
+   "type": "thinking"
+  },
+  {
+   "text": "Let me now look at the pods in the `orders` namespace and search the docs in parallel.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01W8jVMcFT5wcxKN1wLrcx1S",
+   "input": {
+    "namespace": "orders"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CHLaH9oZGKDY2Y9umQBr3q",
+   "input": {
+    "query": "log verbosity debug logging performance overhead"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1404,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 148,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Both pricing-engine pods are crashing with exit code 2. Let me check the logs to understand what's happening:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MoFA1TCWKCJEnPqpvYgkJy",
+   "input": {
+    "pod": "pricing-engine-74d9c6b8f-5tnwh"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01PwfvCctXEZne8D9a3bL2Vw",
+   "input": {
+    "pod": "pricing-engine-74d9c6b8f-jq7lc"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1865,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 153,
+ "stop_reason": "tool_use"
+}

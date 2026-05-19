@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-budgets-3",
+  "heading": "Disruptions > Pod disruption budgets",
+  "text": "It is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)\nto your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.\nThe default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nbefore the drain can proceed.\n\nWhen a pod is evicted using the eviction API, it is gracefully\n[terminated](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination), honoring the\n`terminationGracePeriodSeconds` setting in its [PodSpec](/docs/reference/generated/kubernetes-api//#podspec-v1-core)."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#configure-poddisruptionbudget-0",
+  "heading": "Safely Drain a Node > (Optional) Configure a disruption budget",
+  "text": "To ensure that your workloads remain available during maintenance, you can\nconfigure a [PodDisruptionBudget](/docs/concepts/workloads/pods/disruptions/).\n\nIf availability is important for any applications that run or could run on the node(s)\nthat you are draining, [configure a PodDisruptionBudgets](/docs/tasks/run-application/configure-pdb/)\nfirst and then continue following this guide.\n\nIt is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)\nto your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.\nThe default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nbefore the drain can proceed."
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#specifying-a-poddisruptionbudget-3",
+  "heading": "Specifying a Disruption Budget for your Application > Specifying a PodDisruptionBudget",
+  "text": "If you set `maxUnavailable` to 0% or 0, or you set `minAvailable` to 100% or the number of replicas,\nyou are requiring zero voluntary evictions. When you set zero voluntary evictions for a workload\nobject such as ReplicaSet, then you cannot successfully drain a Node running one of those Pods.\nIf you try to drain a Node where an unevictable Pod is running, the drain never completes.\nThis is permitted as per the semantics of `PodDisruptionBudget`.\n\nYou can find examples of pod disruption budgets defined below. They match pods with the label\n`app: zookeeper`.\n\nExample PDB Using minAvailable:\n\n```yaml\napiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: zk-pdb\nspec:\n  minAvailable: 2\n  selector:\n    matchLabels:\n      app: zookeeper\n```\n\nExample PDB Using maxUnavailable:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-0",
+  "heading": "Safely Drain a Node > Use `kubectl drain` to remove a node from service",
+  "text": "You can use `kubectl drain` to safely evict all of your pods from a\nnode before you perform maintenance on the node (e.g. kernel upgrade,\nhardware maintenance, etc.). Safe evictions allow the pod's containers\nto [gracefully terminate](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination)\nand will respect the PodDisruptionBudgets you have specified.\n\nBy default `kubectl drain` ignores certain system pods on the node\nthat cannot be killed; see\nthe [kubectl drain](/docs/reference/generated/kubectl/kubectl-commands/#drain)\ndocumentation for more details."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pdb-example-4",
+  "heading": "Disruptions > PodDisruptionBudget example",
+  "text": "|    node-1 *drained*  |       node-2        |       node-3       |\n|:--------------------:|:-------------------:|:------------------:|\n|                      | pod-b *available*   | pod-c *available*  |\n|                      | pod-d *starting*    | pod-y              |\n\nAt this point, if an impatient cluster administrator tries to drain `node-2` or\n`node-3`, the drain command will block, because there are only 2 available\npods for the deployment, and its PDB requires at least 2.  After some time passes, `pod-d` becomes available.\n\nThe cluster state now looks like this:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/safely-drain-node#use-kubectl-drain-to-remove-a-node-from-service-1",
+  "heading": "Safely Drain a Node > Use `kubectl drain` to remove a node from service",
+  "text": "When `kubectl drain` returns successfully, that indicates that all of\nthe pods (except the ones excluded as described in the previous paragraph)\nhave been safely evicted (respecting the desired graceful termination period,\nand respecting the PodDisruptionBudget you have defined). It is then safe to\nbring down the node by powering down its physical machine or, if running on a\ncloud platform, deleting its virtual machine.\n\nIf any new Pods tolerate the `node.kubernetes.io/unschedulable` taint, then those Pods\nmight be scheduled to the node you have drained. Avoid tolerating that taint other than\nfor DaemonSets.\n\nIf you or another API user directly set the [`nodeName`](/docs/concepts/scheduling-eviction/assign-pod-node/#nodename)\nfield for a Pod (bypassing the scheduler), then the Pod is bound to the specified node\nand will run there, even though you have drained that node and marked it unschedulable."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#intro-0",
+  "heading": "API-initiated Eviction",
+  "text": " </br>\n\nYou can request eviction by calling the Eviction API directly, or programmatically\nusing a client of the API server, like the `kubectl drain` command. This\ncreates an `Eviction` object, which causes the API server to terminate the Pod.\n\nAPI-initiated evictions respect your configured [`PodDisruptionBudgets`](/docs/tasks/run-application/configure-pdb/)\nand [`terminationGracePeriodSeconds`](/docs/concepts/workloads/pods/pod-lifecycle#pod-termination).\n\nUsing the API to create an Eviction object for a Pod is like performing a\npolicy-controlled [`DELETE` operation](/docs/reference/kubernetes-api/workload-resources/pod-v1/#delete-delete-a-pod)\non the Pod."
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#unhealthy-pod-eviction-policy-1",
+  "heading": "Specifying a Disruption Budget for your Application > Unhealthy Pod Eviction Policy",
+  "text": ": This policy ensures that running pods of an already disrupted application have\n  the best chance to become healthy. This has negative implications for draining\n  nodes, which can be blocked by misbehaving applications that are guarded by a PDB.\n  More specifically applications with pods in `CrashLoopBackOff` state\n  (due to a bug or misconfiguration), or pods that are just failing to report the\n  `Ready` condition.\n\n`AlwaysAllow`\n: Running pods (`.status.phase=\"Running\"`), but not yet healthy are considered\n  disrupted and can be evicted regardless of whether the criteria in a PDB is met.\n\n: This means prospective running pods of a disrupted application might not get a\n  chance to become healthy. By using this policy, cluster managers can easily evict\n  misbehaving applications that are guarded by a PDB. More specifically applications\n  with pods in `CrashLoopBackOff` state (due to a bug or misconfiguration), or pods\n  that are just failing to report the `Ready` condition.\n\nPods in `Pending`, `Succeeded` or `Failed` phase are always considered for eviction."
+ }
+]

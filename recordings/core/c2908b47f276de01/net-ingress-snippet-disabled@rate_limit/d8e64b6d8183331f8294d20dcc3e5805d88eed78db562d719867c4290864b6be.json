@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Good, the legacy-portal pods are running. Let me retry the ingress-nginx pods:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011nrtmHiADigbk7452ooS7x",
+   "input": {
+    "namespace": "ingress-nginx"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1715,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 77,
+ "stop_reason": "tool_use"
+}

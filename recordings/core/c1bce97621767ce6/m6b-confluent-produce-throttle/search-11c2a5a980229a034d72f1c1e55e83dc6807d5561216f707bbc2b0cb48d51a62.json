@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#metrics-1",
+  "heading": "API Priority and Fairness > Observability > Metrics",
+  "text": "  * `queue-full`, indicating that too many requests were already\n    queued.\n  * `concurrency-limit`, indicating that the\n    PriorityLevelConfiguration is configured to reject rather than\n    queue excess requests.\n  * `time-out`, indicating that the request was still in the queue\n    when its queuing time limit expired.\n  * `cancelled`, indicating that the request is not purge locked\n    and has been ejected from the queue.\n\n* `apiserver_flowcontrol_dispatched_requests_total` is a counter\n  vector (cumulative since server start) of requests that began\n  executing, broken down by `flow_schema` and `priority_level`.\n\n* `apiserver_flowcontrol_current_inqueue_requests` is a gauge vector\n  holding the instantaneous number of queued (not executing) requests,\n  broken down by `priority_level` and `flow_schema`."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduling-framework#queueinghint-0",
+  "heading": "Scheduling Framework > Interfaces > QueueingHint",
+  "text": "QueueingHint is a callback function for deciding whether a Pod can be requeued to the active queue or backoff queue.\nIt's executed every time a certain kind of event or change happens in the cluster.\nWhen the QueueingHint finds that the event might make the Pod schedulable,\nthe Pod is put into the active queue or the backoff queue\nso that the scheduler will retry the scheduling of the Pod."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/scheduling-framework#pre-enqueue-0",
+  "heading": "Scheduling Framework > Interfaces > PreEnqueue",
+  "text": "These plugins are called prior to adding Pods to the internal active queue, where Pods are marked as\nready for scheduling.\n\nOnly when all PreEnqueue plugins return `Success`, the Pod is allowed to enter the active queue.\nOtherwise, it's placed in the internal unschedulable Pods list, and doesn't get an `Unschedulable` condition.\n\nFor more details about how internal scheduler queues work, read\n[Scheduling queue in kube-scheduler](https://github.com/kubernetes/community/blob/f03b6d5692bd979f07dd472e7b6836b2dad0fd9b/contributors/devel/sig-scheduling/scheduler_queues.md)."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#metrics-7",
+  "heading": "API Priority and Fairness > Observability > Metrics",
+  "text": "* `apiserver_flowcontrol_request_queue_length_after_enqueue` is a\n  histogram vector of queue lengths for the queues, broken down by\n  `priority_level` and `flow_schema`, as sampled by the enqueued requests.\n  Each request that gets queued contributes one sample to its histogram,\n  reporting the length of the queue immediately after the request was added.\n  Note that this produces different statistics than an unbiased survey would.\n\n  An outlier value in a histogram here means it is likely that a single flow\n  (i.e., requests by one user or for one namespace, depending on\n  configuration) is flooding the API server, and being throttled. By contrast,\n  if one priority level's histogram shows that all queues for that priority\n  level are longer than those for other priority levels, it may be appropriate\n  to increase that PriorityLevelConfiguration's concurrency shares."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#prioritylevelconfiguration-3",
+  "heading": "API Priority and Fairness > Resources > PriorityLevelConfiguration",
+  "text": "The queuing configuration allows tuning the fair queuing algorithm for a\npriority level. Details of the algorithm can be read in the\n[enhancement proposal](https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/1040-priority-and-fairness), but in short:\n\n* Increasing `queues` reduces the rate of collisions between different flows, at\n  the cost of increased memory usage. A value of 1 here effectively disables the\n  fair-queuing logic, but still allows requests to be queued.\n\n* Increasing `queueLengthLimit` allows larger bursts of traffic to be\n  sustained without dropping any requests, at the cost of increased\n  latency and memory usage.\n\n* Changing `handSize` allows you to adjust the probability of collisions between\n  different flows and the overall concurrency available to a single flow in an\n  overload situation."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#prioritylevelconfiguration-5",
+  "heading": "API Priority and Fairness > Resources > PriorityLevelConfiguration",
+  "text": "HandSize | Queues | 1 elephant | 4 elephants | 16 elephants\n|----------|-----------|------------|----------------|--------------------|\n| 12 | 32 | 4.428838398950118e-09 | 0.11431348830099144 | 0.9935089607656024 |\n| 10 | 32 | 1.550093439632541e-08 | 0.0626479840223545 | 0.9753101519027554 |\n| 10 | 64 | 6.601827268370426e-12 | 0.00045571320990370776 | 0.49999929150089345 |"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/podgroup-scheduling#hierarchical-scheduling-cycle-execution-0",
+  "heading": "PodGroup Scheduling > Hierarchical scheduling with CompositePodGroups > Hierarchical scheduling cycle execution",
+  "text": "After observing a root `CompositePodGroup`, the scheduler places it in the scheduling queue as long\nas there is at least one pending Pod that belongs to that root's group hierarchy.\n\nOnce the root `CompositePodGroup` satisfies the\n[hierarchical quorum](/docs/concepts/scheduling-eviction/gang-scheduling/#Hierarchical-quorum), it\nenters the active scheduling queue from which it can be popped by the scheduling cycle. The flow of\nthe scheduling cycle for `CompositePodGroups` is as follows:\n\n1. **Unified cluster snapshot and validation**: The scheduler takes a snapshot of cluster resources\n   to mirror the latest observed cluster state. It verifies that the shape of the group hierarchy\n   popped from the queue matches the snapshotted hierarchy and validates the configuration\n   consistency of the hierarchy (such as identical `.spec.schedulerName` and priority across member\n   Pods).\n\n   If the hierarchy shape changed concurrently or fails the validation, the cycle halts and requeues\n   the root `CompositePodGroup`."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#non-preempting-priority-class-0",
+  "heading": "Pod Priority and Preemption > Non-preempting PriorityClass",
+  "text": "Pods with `preemptionPolicy: Never` will be placed in the scheduling queue\nahead of lower-priority pods,\nbut they cannot preempt other pods.\nA non-preempting pod waiting to be scheduled will stay in the scheduling queue,\nuntil sufficient resources are free,\nand it can be scheduled.\nNon-preempting pods,\nlike other pods,\nare subject to scheduler back-off.\nThis means that if the scheduler tries these pods and they cannot be scheduled,\nthey will be retried with lower frequency,\nallowing other pods with lower priority to be scheduled before them.\n\nNon-preempting pods may still be preempted by other,\nhigh-priority pods.\n\n`preemptionPolicy` defaults to `PreemptLowerPriority`,\nwhich will allow pods of that PriorityClass to preempt lower-priority pods\n(as is existing default behavior).\nIf `preemptionPolicy` is set to `Never`,\npods in that PriorityClass will be non-preempting."
+ }
+]

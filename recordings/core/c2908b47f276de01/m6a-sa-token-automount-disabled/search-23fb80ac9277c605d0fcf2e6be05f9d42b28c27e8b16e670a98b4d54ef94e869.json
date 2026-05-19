@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#hardening-0",
+  "heading": "Role Based Access Control Good Practices > General good practice > Hardening",
+  "text": "Kubernetes defaults to providing access which may not be required in every cluster. Reviewing\nthe RBAC rights provided by default can provide opportunities for security hardening.\nIn general, changes should not be made to rights provided to `system:` accounts some options\nto harden cluster rights exist:\n\n- Review bindings for the `system:unauthenticated` group and remove them where possible, as this gives \n  access to anyone who can contact the API server at a network level.\n- Avoid the default auto-mounting of service account tokens by setting\n  `automountServiceAccountToken: false`. For more details, see\n  [using default service account token](/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server).\n  Setting this value for a Pod will overwrite the service account setting, workloads\n  which require service account tokens can still mount them."
+ },
+ {
+  "chunk_id": "concepts/security/security-checklist#secrets-2",
+  "heading": "Security Checklist > Secrets",
+  "text": "Service account tokens should not be mounted into pods that do not require them. This can be configured by setting\n[`automountServiceAccountToken`](/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server)\nto `false` either within the service account to apply throughout the namespace\nor specifically for a pod. For Kubernetes v1.22 and above, use\n[Bound Service Accounts](/docs/reference/access-authn-authz/service-accounts-admin/#bound-service-account-token-volume)\nfor time-bound service account credentials."
+ },
+ {
+  "chunk_id": "concepts/security/application-security-checklist#service-account-0",
+  "heading": "Application Security Checklist > Base security hardening > Service account",
+  "text": "- [ ] Avoid using the `default` ServiceAccount. Instead, create ServiceAccounts for\n  each workload or microservice.\n- [ ] `automountServiceAccountToken` should be set to `false` unless the pod\n  specifically requires access to the Kubernetes API to operate."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#opt-out-of-api-credential-automounting-1",
+  "heading": "Configure Service Accounts for Pods > Use the default service account to access the API server > Opt out of API credential automounting",
+  "text": "If both the ServiceAccount and the Pod's `.spec` specify a value for\n`automountServiceAccountToken`, the Pod spec takes precedence."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#opt-out-of-api-credential-automounting-0",
+  "heading": "Configure Service Accounts for Pods > Use the default service account to access the API server > Opt out of API credential automounting",
+  "text": "If you don't want the kubelet\nto automatically mount a ServiceAccount's API credentials, you can opt out of\nthe default behavior.\nYou can opt out of automounting API credentials on `/var/run/secrets/kubernetes.io/serviceaccount/token`\nfor a service account by setting `automountServiceAccountToken: false` on the ServiceAccount:\n\nFor example:\n\n```yaml\napiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: build-robot\nautomountServiceAccountToken: false\n...\n```\n\nYou can also opt out of automounting API credentials for a particular Pod:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: my-pod\nspec:\n  serviceAccountName: build-robot\n  automountServiceAccountToken: false\n  ...\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#serviceaccount-token-secrets-4",
+  "heading": "Secrets > Types of Secret > ServiceAccount token Secrets",
+  "text": "See the [ServiceAccount](/docs/concepts/security/service-accounts/)\ndocumentation for more information on how ServiceAccounts work.\nYou can also check the `automountServiceAccountToken` field and the\n`serviceAccountName` field of the\n[`Pod`](/docs/reference/generated/kubernetes-api//#pod-v1-core)\nfor information on referencing ServiceAccount credentials from within Pods."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#cluster-configuration-0",
+  "heading": "Configuration > Cluster configuration",
+  "text": "This section of the documentation is about configuration. However,\nif you are doing platform-level or cluster-level configuration, read\nthe [cluster administration](/docs/concepts/cluster-administration/) pages\nand look through the list of [cluster administration tasks](/docs/tasks/administer-cluster/)."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-autoscaling#autoscaler-implementations-1",
+  "heading": "Node Autoscaling > Autoscalers > Autoscaler implementations",
+  "text": "Cluster Autoscaler adds or removes Nodes to pre-configured _Node groups_. Node groups generally map\nto some sort of cloud provider resource group (most commonly a Virtual Machine group). A single\ninstance of Cluster Autoscaler can simultaneously manage multiple Node groups. When provisioning,\nCluster Autoscaler will add Nodes to the group that best fits the requests of pending Pods. When\nconsolidating, Cluster Autoscaler always selects specific Nodes to remove, as opposed to just\nresizing the underlying cloud provider resource group.\n\nAdditional context:"
+ }
+]

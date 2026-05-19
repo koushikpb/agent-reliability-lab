@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.3-pg16
+        env:
+          POSTGRES_DB: arlab
+          POSTGRES_USER: arlab
+          POSTGRES_PASSWORD: arlab
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U arlab"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://arlab:arlab@localhost:5433/arlab
+      # No model is downloaded and no model API is called: a test or replay that needs either fails.
+      HF_HUB_OFFLINE: "1"
+      ANTHROPIC_API_KEY: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked
+      - run: uv run ruff check src tests
+      - run: uv run ruff format --check src tests
+      - run: uv run mypy src
+      - run: uv run pytest -q
+      # Replay the recorded baseline and gate it against the committed result. A change to the
+      # prompt, tools or agent loop changes the requests and fails the replay with a missing
+      # recording; a change to the checks or scoring changes the rows and fails the gate.
+      - run: >-
+          uv run arlab run --suite scenarios/core --config configs/baseline.yaml
+          --mode replay --no-save --out candidate.json
+      - run: >-
+          uv run arlab gate --baseline ci/baseline-replay.json --candidate candidate.json
+          --suite scenarios/core --strict

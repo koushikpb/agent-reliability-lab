@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#opt-out-of-api-credential-automounting-1",
+  "heading": "Configure Service Accounts for Pods > Use the default service account to access the API server > Opt out of API credential automounting",
+  "text": "If both the ServiceAccount and the Pod's `.spec` specify a value for\n`automountServiceAccountToken`, the Pod spec takes precedence."
+ },
+ {
+  "chunk_id": "concepts/security/security-checklist#secrets-2",
+  "heading": "Security Checklist > Secrets",
+  "text": "Service account tokens should not be mounted into pods that do not require them. This can be configured by setting\n[`automountServiceAccountToken`](/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server)\nto `false` either within the service account to apply throughout the namespace\nor specifically for a pod. For Kubernetes v1.22 and above, use\n[Bound Service Accounts](/docs/reference/access-authn-authz/service-accounts-admin/#bound-service-account-token-volume)\nfor time-bound service account credentials."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#opt-out-of-api-credential-automounting-0",
+  "heading": "Configure Service Accounts for Pods > Use the default service account to access the API server > Opt out of API credential automounting",
+  "text": "If you don't want the kubelet\nto automatically mount a ServiceAccount's API credentials, you can opt out of\nthe default behavior.\nYou can opt out of automounting API credentials on `/var/run/secrets/kubernetes.io/serviceaccount/token`\nfor a service account by setting `automountServiceAccountToken: false` on the ServiceAccount:\n\nFor example:\n\n```yaml\napiVersion: v1\nkind: ServiceAccount\nmetadata:\n  name: build-robot\nautomountServiceAccountToken: false\n...\n```\n\nYou can also opt out of automounting API credentials for a particular Pod:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: my-pod\nspec:\n  serviceAccountName: build-robot\n  automountServiceAccountToken: false\n  ...\n```"
+ },
+ {
+  "chunk_id": "concepts/security/application-security-checklist#service-account-0",
+  "heading": "Application Security Checklist > Base security hardening > Service account",
+  "text": "- [ ] Avoid using the `default` ServiceAccount. Instead, create ServiceAccounts for\n  each workload or microservice.\n- [ ] `automountServiceAccountToken` should be set to `false` unless the pod\n  specifically requires access to the Kubernetes API to operate."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#assign-to-pod-1",
+  "heading": "Service Accounts > How to use service accounts > Assign a ServiceAccount to a Pod",
+  "text": "#### Manually retrieve ServiceAccount credentials {#get-a-token}\n\nIf you need the credentials for a ServiceAccount to mount in a non-standard\nlocation, or for an audience that isn't the API server, use one of the\nfollowing methods:"
+ },
+ {
+  "chunk_id": "concepts/storage/projected-volumes#serviceaccounttoken-2",
+  "heading": "Projected Volumes > serviceAccountToken projected volumes",
+  "text": "A container using a projected volume source as a [`subPath`](/docs/concepts/storage/volumes/#using-subpath)\nvolume mount will not receive updates for those volume sources."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#assign-to-pod-3",
+  "heading": "Service Accounts > How to use service accounts > Assign a ServiceAccount to a Pod",
+  "text": "* [Service Account Token Secrets](/docs/tasks/configure-pod-container/configure-service-account/#manually-create-an-api-token-for-a-serviceaccount)\n  (not recommended): You can mount service account tokens as Kubernetes\n  Secrets in Pods. These tokens don't expire and don't rotate. In versions prior to v1.24, a permanent token was automatically created for each service account.\n  This method is not recommended anymore, especially at scale, because of the risks associated\n  with static, long-lived credentials. The [LegacyServiceAccountTokenNoAutoGeneration feature gate](/docs/reference/command-line-tools-reference/feature-gates-removed)\n  (which was enabled by default from Kubernetes v1.24 to v1.26),  prevented Kubernetes from automatically creating these tokens for"
+ },
+ {
+  "chunk_id": "concepts/storage/projected-volumes#serviceaccounttoken-0",
+  "heading": "Projected Volumes > serviceAccountToken projected volumes",
+  "text": "You can inject the token for the current [service account](/docs/reference/access-authn-authz/authentication/#service-account-tokens)\ninto a Pod at a specified path. For example:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: sa-token-test\nspec:\n  containers:\n  - name: container-test\n    image: busybox:1.28\n    command: [\"sleep\", \"3600\"]\n    volumeMounts:\n    - name: token-vol\n      mountPath: \"/service-account\"\n      readOnly: true\n  serviceAccountName: default\n  volumes:\n  - name: token-vol\n    projected:\n      sources:\n      - serviceAccountToken:\n          audience: api\n          expirationSeconds: 3600\n          path: token\n```"
+ }
+]

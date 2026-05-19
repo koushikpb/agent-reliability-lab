@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "EqsICqgBCBMYAipAzV+1nV7JWX1c+MfisuR4zcBqYmdNksBEZIwzKL0StgLig2t4A8WpeVTvsA+pB61Mr2zOF+p1Yz1dJ9jUlwpSUjIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAav/8dYGEgzWYgkUXR4ZlyuAIx0aDHgKatuih+uMU9sJhyIwciCEfaDW7i/0LRs14zfqiTCkrYDfeeI86m3zEYJZxOLpAqdCrYfSvqkm64uJu5b+Kq8Gn5DzVW3g/t+4yjfakUUDjlodoVRQQSaoHx/wvXiQ6FPyCF/UeZeMlhiJTtxx9HmEdlpAdtA1Bc/0drD5KBVEzbZ/Qepy1BjF9v7W7/KOkIAGz/UTUqj22fmNFlOs/Lr0Clht9JVnctLyV6Gcd1J/PCZyTv+epQx5/eWH8d9Jdvl6RKXGT9iL7ioEVLKY42jyfWxHPtGDK+1BwvxHWGkau1mHKRnK/IjOktvnkdW3RS/wj+XHOb+p3GfWXbncDneFfynqlWdd9K6/8h23GXZA6CSUgAPkw8B6ZcubGVP52HrdFElLUCWB8LEUlych01a0D9RB/QwAwgt/do6sy25u7TFzYSdtXIG9wXNlnGCA4/WwtMeG8z4pTG5ydxhNDSMjZWNRwb3GwEucbz14cYinhVThcbfg2WSK5Z91p8g4Bz6b5uFP+1rO2L0XD1zJMXz86URXbGTOpJddv2v58Jaq7MB34qaa7RvHNeaxVrp55SqQvmuph0fJPxSzGJuzmxGaHb9cgEPxNCuN2PTyG386eLTl2wdWqmEpRzenUsqzt/zK97iRkXkwbWu9XPfWbwbu1LpZAtxm+naIC7zipWEVqmi9hReLPN+s/upiodMnQ01dgCQODiwUcMRnTbgTVQMyz5u4948QbluGhH1dZqzPenvIUag02nfUpUI5UCr30r4OXOzLeLsU83or5OMZSm3fr8Lc9qH2g00JnJzDqCeDHgjwL9XuG4WvyQuQHtNb8CWJxdlZU+FKNSrbBYXiDaQq9IoUtt2n+Jf3jYrnbzHMh3dLPaazD7zuTU/9UctilrQi4zLXNon3GPF5s03BoeEgxFqxmFkufIQZbnOiA9DN2VcZU7en/2pUgEJEgiaN7LarNwnaUsolTi6TDBXgoHZJiSQ/aKnrK0fT37ztUSDVOL7qTKU411N+ZSdlGIQwCBc18AzYLe0qgQpbfDFj2ER707nMjZ8z1axOgEQkc/8769uOjOwwUx80Wa528t45kshOGesbdJ/J3cBQ3pCceoPCHPgYLeqkuWU+0AzJcjLOEYpiPHS9oZ4q6Basf+AZWy6hUctAHgs0AaO2n8ev5j0YAQ==",
+   "thinking": "The issue is clear. The new 1.5.0 image is being rejected by a PodSecurity admission policy set to \"restricted:latest\" on the `documents` namespace. The new pod template (presumably changed in 1.5.0) violates several PodSecurity requirements:\n\n1. `allowPrivilegeEscalation != false` \u2014 must set `securityContext.allowPrivilegeEscalation=false`\n2. Unrestricted capabilities \u2014 must set `securityContext.capabilities.drop=[\"ALL\"]`\n3. `runAsNonRoot != true` \u2014 must set `securityContext.runAsNonRoot=true`\n4. Missing `seccompProfile` \u2014 needs to be set to `RuntimeDefault` or `Localhost`\n\nThe 1.4.2 pods are still running simply because Kubernetes never evicted them; the rollout just couldn't spin up new ones. I should look into the PodSecurity admission docs so I can cite this accurately.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "The root cause is clear \u2014 a PodSecurity admission violation. Let me search the docs to back this up with citations.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01SfAvg2Y3gLteXm85FjvhmD",
+   "input": {
+    "query": "PodSecurity admission restricted policy securityContext"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2641,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 334,
+ "stop_reason": "tool_use"
+}

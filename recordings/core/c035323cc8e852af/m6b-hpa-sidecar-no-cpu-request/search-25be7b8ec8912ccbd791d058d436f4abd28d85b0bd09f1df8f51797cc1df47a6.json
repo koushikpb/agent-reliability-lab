@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-default-namespace#what-if-you-specify-a-container-s-limit-but-not-its-request-0",
+  "heading": "Configure Default CPU Requests and Limits for a Namespace > What if you specify a container's limit, but not its request?",
+  "text": "Here's a manifest for a Pod that has one container. The container\nspecifies a CPU limit, but not a request:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: default-cpu-demo-2\nspec:\n  containers:\n  - name: default-cpu-demo-2-ctr\n    image: nginx\n    resources:\n      limits:\n        cpu: \"1\"\n```\n\nCreate the Pod:\n\n```shell\nkubectl apply -f https://k8s.io/examples/admin/resource/cpu-defaults-pod-2.yaml --namespace=default-cpu-example\n```\n\nView the [specification](/docs/concepts/overview/working-with-objects/#object-spec-and-status)\nof the Pod that you created:\n\n```\nkubectl get pod default-cpu-demo-2 --output=yaml --namespace=default-cpu-example\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-constraint-namespace#attempt-to-create-a-pod-that-does-not-meet-the-minimum-cpu-request-0",
+  "heading": "Configure Minimum and Maximum CPU Constraints for a Namespace > Attempt to create a Pod that does not meet the minimum CPU request",
+  "text": "Here's a manifest for a Pod that has one container. The container specifies a\nCPU request of 100 millicpu and a CPU limit of 800 millicpu.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: constraints-cpu-demo-3\nspec:\n  containers:\n  - name: constraints-cpu-demo-3-ctr\n    image: nginx\n    resources:\n      limits:\n        cpu: \"800m\"\n      requests:\n        cpu: \"100m\"\n```\n\nAttempt to create the Pod:\n\n```shell\nkubectl apply -f https://k8s.io/examples/admin/resource/cpu-constraints-pod-3.yaml --namespace=constraints-cpu-example\n```\n\nThe output shows that the Pod does not get created, because it defines an unacceptable container.\nThat container is not acceptable because it specifies a CPU request that is lower than the\nenforced minimum:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-0",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request that is too big for your Nodes",
+  "text": "CPU requests and limits are associated with Containers, but it is useful to think\nof a Pod as having a CPU request and limit. The CPU request for a Pod is the sum\nof the CPU requests for all the Containers in the Pod. Likewise, the CPU limit for\na Pod is the sum of the CPU limits for all the Containers in the Pod.\n\nPod scheduling is based on requests. A Pod is scheduled to run on a Node only if\nthe Node has enough CPU resources available to satisfy the Pod CPU request.\n\nIn this exercise, you create a Pod that has a CPU request so big that it exceeds\nthe capacity of any Node in your cluster. Here is the configuration file for a Pod\nthat has one Container. The Container requests 100 CPU, which is likely to exceed the\ncapacity of any Node in your cluster."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/resize-pod-resources#example-resizing-pod-level-resources-4",
+  "heading": "Resize CPU and Memory Resources assigned to Pods > Example: Resizing Pod-Level Resources",
+  "text": "  container was restarted to apply the CPU change. The restart occurred in Container 1 despite the resize being applied at the Pod level, due to the intricate relationship between Pod-level limits and container-level policies. Because Container 1 did not specify an explicit CPU limit, its underlying resource configuration (For example, cgroups) implicitly adopted the Pod's overall CPU limit as its effective maximum consumption boundary. When the Pod-level CPU limit was patched from 200m to 300m, this action consequently changed the implicit limit enforced on Container 1. Since Container 1 had its resizePolicy explicitly set to RestartContainer for CPU, the `kubelet` was obligated to restart the container to correctly apply this change in the underlying resource enforcement mechanism, thus confirming that altering Pod-level limits can trigger container restart policies even when container limits are not directly defined."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-default-namespace#what-if-you-specify-a-container-s-request-but-not-its-limit-0",
+  "heading": "Configure Default CPU Requests and Limits for a Namespace > What if you specify a container's request, but not its limit?",
+  "text": "Here's an example manifest for a Pod that has one container. The container\nspecifies a CPU request, but not a limit:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: default-cpu-demo-3\nspec:\n  containers:\n  - name: default-cpu-demo-3-ctr\n    image: nginx\n    resources:\n      requests:\n        cpu: \"0.75\"\n```\n\nCreate the Pod:\n\n```shell\nkubectl apply -f https://k8s.io/examples/admin/resource/cpu-defaults-pod-3.yaml --namespace=default-cpu-example\n```\n\nView the specification of the Pod that you created:\n\n```\nkubectl get pod default-cpu-demo-3 --output=yaml --namespace=default-cpu-example\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics",
+  "text": "Any HPA target can be scaled based on the resource usage of the pods in the scaling target.\nWhen defining the pod specification the resource requests like `cpu` and `memory` should\nbe specified. This is used to determine the resource utilization and used by the HPA controller\nto scale the target up or down. To use resource utilization based scaling specify a metric source\nlike this:\n\n```yaml\ntype: Resource\nresource:\n  name: cpu\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nWith this metric the HPA controller will keep the average utilization of the pods in the scaling\ntarget at 60%. Utilization is the ratio between the current usage of resource to the requested\nresources of the pod. See [Algorithm](#algorithm-details) for more details about how the utilization\nis calculated and averaged.\n\nSince the resource usages of all the containers are summed up the total pod utilization may not\naccurately represent the individual container resource usage. This could lead to situations where\na single container might be running with high usage and the HPA will not scale out because the overall\npod usage is still within acceptable limits."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#intro-0",
+  "heading": "Assign CPU Resources to Containers and Pods",
+  "text": "This page shows how to assign a CPU *request* and a CPU *limit* to\na container. Containers cannot use more CPU than the configured limit.\nProvided the system has CPU time free, a container is guaranteed to be\nallocated as much CPU as it requests."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#example-1-0",
+  "heading": "Resource Management for Pods and Containers > Container resources example",
+  "text": "The following Pod has two containers. Both containers are defined with a request for\n0.25 CPU\nand 64MiB (2<sup>26</sup> bytes) of memory. Each container has a limit of 0.5\nCPU and 128MiB of memory. You can say the Pod has a request of 0.5 CPU and 128\nMiB of memory, and a limit of 1 CPU and 256MiB of memory.\n\n```yaml\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: frontend\nspec:\n  containers:\n  - name: app\n    image: images.my-company.example/app:v4\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n  - name: log-aggregator\n    image: images.my-company.example/log-aggregator:v6\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n```"
+ }
+]

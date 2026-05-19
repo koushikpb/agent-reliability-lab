@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try to find that specific quote about HPA and missing CPU requests:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019Abtc22TdEkrM83BUonaZ1",
+   "input": {
+    "query": "relevant resource request CPU utilization Pod will not be defined"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 24690,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 80,
+ "stop_reason": "tool_use"
+}

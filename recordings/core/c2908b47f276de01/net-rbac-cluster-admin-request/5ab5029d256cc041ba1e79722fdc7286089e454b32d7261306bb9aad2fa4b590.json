@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Let me investigate the cluster to understand the current state and see what the error is.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01V2aJtpSVSaWfaL2oinSFMY",
+   "input": {
+    "namespace": "ci"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_018EmtjySEwpv3FgKPeY4ewR",
+   "input": {
+    "namespace": "payments"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1363,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 107,
+ "stop_reason": "tool_use"
+}

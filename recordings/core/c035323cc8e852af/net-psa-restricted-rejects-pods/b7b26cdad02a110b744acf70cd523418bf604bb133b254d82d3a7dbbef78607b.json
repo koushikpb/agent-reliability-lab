@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me search for information about Kubernetes rollout behavior and how deployments handle image updates:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01NGRcqb6Hj3nw3NNpHUZtso",
+   "input": {
+    "query": "deployment rollout strategy image update pods not updating"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3910,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 82,
+ "stop_reason": "tool_use"
+}

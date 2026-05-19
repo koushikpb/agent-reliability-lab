@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/advanced-pod-config#container-level-security-context-0",
+  "heading": "Advanced Pod Configuration > Pod and container level security context configuration > Container-level security context",
+  "text": "You can specify the security context just for a specific container.\nHere's an example:\n\n#### Example Pod {#container-level-security-context-example}\n\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo-2\nspec:\n  containers:\n  - name: sec-ctx-demo-2\n    image: gcr.io/google-samples/node-hello:1.0\n    securityContext:\n      allowPrivilegeEscalation: false\n      runAsNonRoot: true\n      runAsUser: 1000\n      capabilities:\n        drop:\n        - ALL\n      seccompProfile:\n        type: RuntimeDefault"
+ },
+ {
+  "chunk_id": "concepts/security/application-security-checklist#security-context-container-0",
+  "heading": "Application Security Checklist > Base security hardening > Container-level `securityContext` recommendations",
+  "text": "- [ ] Disable privilege escalations using `allowPrivilegeEscalation: false`.\n- [ ] Configure the root filesystem to be read-only with `readOnlyRootFilesystem: true`.\n- [ ] Avoid running privileged containers (set `privileged: false`).\n- [ ] Drop all capabilities from the containers and add back only specific ones\n  that are needed for operation of the container."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#psp-update-rollout-3",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.c. Rollout the updated PSPs",
+  "text": "       - `.securityContext.capabilities.drop`\n       - `.securityContext.readOnlyRootFilesystem`\n       - `.securityContext.runAsGroup`\n       - `.securityContext.runAsNonRoot`\n       - `.securityContext.runAsUser`\n       - `.securityContext.seccompProfile`\n       - `.securityContext.seLinuxOptions`\n3. Create the new PodSecurityPolicies. If any Roles or ClusterRoles are granting `use` on all PSPs\n   this could cause the new PSPs to be used instead of their mutating counter-parts.\n4. Update your authorization to grant access to the new PSPs. In RBAC this means updating any Roles\n   or ClusterRoles that grant the `use` permission on the original PSP to also grant it to the\n   updated PSP."
+ },
+ {
+  "chunk_id": "concepts/security/linux-kernel-security-constraints#seccomp-1",
+  "heading": "Linux kernel security constraints for Pods and containers > Security features in the Linux kernel > seccomp",
+  "text": "Kubernetes also has the `allowPrivilegeEscalation` setting for Pods and\ncontainers. When set to `false`, this prevents processes from gaining new\ncapabilities and restricts unprivileged users from changing the applied seccomp\nprofile to a more permissive profile.\n\nTo learn how to implement seccomp in Kubernetes, refer to\n[Restrict a Container's Syscalls with seccomp](/docs/tutorials/security/seccomp/)\nor the [Seccomp node reference](/docs/reference/node/seccomp/)\n\nTo learn more about seccomp, see\n[Seccomp BPF](https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html)\nin the Linux kernel documentation.\n\n#### Considerations for seccomp {#seccomp-considerations}"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#set-the-security-context-for-a-pod-1",
+  "heading": "Configure a Security Context for a Pod or Container > Set the security context for a Pod",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo\nspec:\n  securityContext:\n    runAsUser: 1000\n    runAsGroup: 3000\n    fsGroup: 2000\n    supplementalGroups: [4000]\n  volumes:\n  - name: sec-ctx-vol\n    emptyDir: {}\n  containers:\n  - name: sec-ctx-demo\n    image: busybox:1.28\n    command: [ \"sh\", \"-c\", \"sleep 1h\" ]\n    volumeMounts:\n    - name: sec-ctx-vol\n      mountPath: /data/demo\n    securityContext:\n      allowPrivilegeEscalation: false\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#intro-1",
+  "heading": "Configure a Security Context for a Pod or Container",
+  "text": "* [Seccomp](/docs/tutorials/security/seccomp/): Filter a process's system calls.\n\n* `allowPrivilegeEscalation`: Controls whether a process can gain more privileges than\n  its parent process, for example, by executing a [setuid binary](https://en.wikipedia.org/wiki/Setuid).\n  This boolean value directly controls whether the\n  [`no_new_privs`](https://www.kernel.org/doc/Documentation/prctl/no_new_privs.txt)\n  flag gets set on the container process, though note that the value is\n  inverted: if `allowPrivilegeEscalation` is true, then `no_new_privs` will be\n  set to false.\n\n  If `allowPrivilegeEscalation` is not defined in the `securityContext` field of a container specification, then it will default to true.\n\n  `allowPrivilegeEscalation: false` is inconsistent, and therefore cannot be set in combination, with a container that:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#eliminate-non-standard-options-2",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.b. Eliminate options not covered by the Pod Security Standards",
+  "text": "- `.spec.requiredDropCapabilities` - Required to drop `ALL` for the Restricted profile.\n- `.spec.seLinux` - (Only mutating with the `MustRunAs` rule) required to enforce the SELinux\n  requirements of the Baseline & Restricted profiles.\n- `.spec.runAsUser` - (Non-mutating with the `RunAsAny` rule) required to enforce `RunAsNonRoot` for\n  the Restricted profile.\n- `.spec.allowPrivilegeEscalation` - (Only mutating if set to `false`) required for the Restricted\n  profile."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#implicit-group-memberships-defined-in-etc-group-in-the-container-image-0",
+  "heading": "Configure a Security Context for a Pod or Container > Set the security context for a Pod > Implicit group memberships defined in `/etc/group` in the container image",
+  "text": "By default, kubernetes merges group information from the Pod with information defined in `/etc/group` in the container image.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo\nspec:\n  securityContext:\n    runAsUser: 1000\n    runAsGroup: 3000\n    supplementalGroups: [4000]\n  containers:\n  - name: sec-ctx-demo\n    image: registry.k8s.io/e2e-test-images/agnhost:2.45\n    command: [ \"sh\", \"-c\", \"sleep 1h\" ]\n    securityContext:\n      allowPrivilegeEscalation: false\n```\n\nThis Pod security context contains `runAsUser`, `runAsGroup` and `supplementalGroups`.\nHowever, you can see that the actual supplementary groups attached to the container process\nwill include group IDs which come from `/etc/group` in the container image.\n\nCreate the Pod:"
+ }
+]

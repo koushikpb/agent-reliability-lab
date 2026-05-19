@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-4",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "#### Accessing a Service without a selector {#service-no-selector-access}\n\nAccessing a Service without a selector works the same as if it had a selector.\nIn the [example](#services-without-selectors) for a Service without a selector,\ntraffic is routed to one of the two endpoints defined in\nthe EndpointSlice manifest: a TCP connection to 10.1.2.3 or 10.4.5.6, on port 9376.\n\nThe Kubernetes API server does not allow proxying to endpoints that are not mapped to\npods. Actions such as `kubectl port-forward service/<service-name> forwardedPort:servicePort` where the service has no\nselector will fail due to this constraint. This prevents the Kubernetes API server\nfrom being used as a proxy to endpoints the caller may not be authorized to access.\n\nAn `ExternalName` Service is a special case of Service that does not have\nselectors and uses DNS names instead. For more information, see the\n[ExternalName](#externalname) section."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-services-1",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Services",
+  "text": "You can use:\n\n```shell\nkubectl get pods --selector=name=nginx,type=frontend\n```\n\nto list pods that match this selector. Verify that the list matches the Pods that you expect to provide your Service.\nVerify that the pod's `containerPort` matches the Service's `targetPort`\n\n#### Network traffic is not forwarded\n\nPlease see [debugging service](/docs/tasks/debug/debug-application/debug-service/) for more information."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service-traffic-policy#using-service-internal-traffic-policy-0",
+  "heading": "Service Internal Traffic Policy > Using Service Internal Traffic Policy",
+  "text": "You can enable the internal-only traffic policy for a\nService, by setting its\n`.spec.internalTrafficPolicy` to `Local`. This tells kube-proxy to only use node local\nendpoints for cluster internal traffic.\n\nFor pods on nodes with no endpoints for a given Service, the Service\nbehaves as if it has zero endpoints (for Pods on this node) even if the service\ndoes have endpoints on other nodes.\n\nThe following example shows what a Service looks like when you set\n`.spec.internalTrafficPolicy` to `Local`:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n      targetPort: 9376\n  internalTrafficPolicy: Local\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#field-spec-ports-0",
+  "heading": "Service > Defining a Service > Port definitions",
+  "text": "Port definitions in Pods have names, and you can reference these names in the\n`targetPort` attribute of a Service. For example, we can bind the `targetPort`\nof the Service to the Pod port in the following way:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx-service\nspec:\n  selector:\n    app.kubernetes.io/name: proxy\n  ports:\n  - name: name-of-service-port\n    protocol: TCP\n    port: 80\n    targetPort: http-web-svc\n\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx\n  labels:\n    app.kubernetes.io/name: proxy\nspec:\n  containers:\n  - name: nginx\n    image: nginx:stable\n    ports:\n      - containerPort: 80\n        name: http-web-svc\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#a-pod-fails-to-reach-itself-via-the-service-ip-0",
+  "heading": "Debug Services > Is the kube-proxy working? > Edge case: A Pod fails to reach itself via the Service IP",
+  "text": "This might sound unlikely, but it does happen and it is supposed to work.\n\nThis can happen when the network is not properly configured for \"hairpin\"\ntraffic, usually when `kube-proxy` is running in `iptables` mode and Pods\nare connected with bridge network. The `Kubelet` exposes a `hairpin-mode`\n[flag](/docs/reference/command-line-tools-reference/kubelet/) that allows endpoints of a Service to loadbalance\nback to themselves if they try to access their own Service VIP. The\n`hairpin-mode` flag must either be set to `hairpin-veth` or\n`promiscuous-bridge`.\n\nThe common steps to trouble shoot this are as follows:\n\n* Confirm `hairpin-mode` is set to `hairpin-veth` or `promiscuous-bridge`.\nYou should see something like the below. `hairpin-mode` is set to\n`promiscuous-bridge` in the following example."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/web-ui-dashboard#specifying-application-details-2",
+  "heading": "Deploy and Access the Kubernetes Dashboard > Deploying containerized applications > Specifying application details",
+  "text": "  Irrespective of the Service type, if you choose to create a Service and your container listens\n  on a port (incoming), you need to specify two ports.\n  The Service will be created mapping the port (incoming) to the target port seen by the container.\n  This Service will route to your deployed Pods. Supported protocols are TCP and UDP.\n  The internal DNS name for this Service will be the value you specified as application name above.\n\nIf needed, you can expand the **Advanced options** section where you can specify more settings:\n\n- **Description**: The text you enter here will be added as an\n  [annotation](/docs/concepts/overview/working-with-objects/annotations/)\n  to the Deployment and displayed in the application's details."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#pod-hostname-and-subdomain-field-2",
+  "heading": "DNS for Services and Pods > Pods > Pod's hostname and subdomain fields",
+  "text": "```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: busybox-subdomain\nspec:\n  selector:\n    name: busybox\n  clusterIP: None\n  ports:\n  - name: foo # name is not required for single-port Services\n    port: 1234\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: busybox1\n  labels:\n    name: busybox\nspec:\n  hostname: busybox-1\n  subdomain: busybox-subdomain\n  containers:\n  - image: busybox:1.28\n    command:\n      - sleep\n      - \"3600\"\n    name: busybox\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: busybox2\n  labels:\n    name: busybox\nspec:\n  hostname: busybox-2\n  subdomain: busybox-subdomain\n  containers:\n  - image: busybox:1.28\n    command:\n      - sleep\n      - \"3600\"\n    name: busybox\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/daemonset#communicating-with-daemon-pods-0",
+  "heading": "DaemonSet > Communicating with Daemon Pods",
+  "text": "Some possible patterns for communicating with Pods in a DaemonSet are:\n\n- **Push**: Pods in the DaemonSet are configured to send updates to another service, such\n  as a stats database.  They do not have clients.\n- **NodeIP and Known Port**: Pods in the DaemonSet can use a `hostPort`, so that the pods\n  are reachable via the node IPs.\n  Clients know the list of node IPs somehow, and know the port by convention.\n- **DNS**: Create a [headless service](/docs/concepts/services-networking/service/#headless-services)\n  with the same pod selector, and then discover DaemonSets using the `endpoints`\n  resource or retrieve multiple A records from DNS.\n- **Service**: Create a service with the same Pod selector, and use the service to reach a\n  daemon on a random node. Use [Service Internal Traffic Policy](/docs/concepts/services-networking/service-traffic-policy/)\n  to limit to pods on the same node."
+ }
+]

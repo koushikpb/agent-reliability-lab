@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me get the logs from one of the crashing pods:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01GSDfAcLa8HtnC6NDTnf4T9",
+   "input": {
+    "pod_name": "pricing-engine-74d9c6b8f-5tnwh"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1877,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 88,
+ "stop_reason": "tool_use"
+}

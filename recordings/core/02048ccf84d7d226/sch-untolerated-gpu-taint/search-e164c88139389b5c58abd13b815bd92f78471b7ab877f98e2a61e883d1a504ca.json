@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-5",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "* if there is at least one un-ignored taint with effect `NoSchedule` then Kubernetes will not schedule\nthe pod onto that node\n* if there is no un-ignored taint with effect `NoSchedule` but there is at least one un-ignored taint with\neffect `PreferNoSchedule` then Kubernetes will *try* to not schedule the pod onto the node\n* if there is at least one un-ignored taint with effect `NoExecute` then the pod will be evicted from\nthe node (if it is already running on the node), and will not be\nscheduled onto the node (if it is not yet running on the node).\n\nFor example, imagine you taint a node like this\n\n```shell\nkubectl taint nodes node1 key1=value1:NoSchedule\nkubectl taint nodes node1 key1=value1:NoExecute\nkubectl taint nodes node1 key2=value2:NoSchedule\n```\n\nAnd a pod has two tolerations:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-6",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "```yaml\ntolerations:\n- key: \"key1\"\n  operator: \"Equal\"\n  value: \"value1\"\n  effect: \"NoSchedule\"\n- key: \"key1\"\n  operator: \"Equal\"\n  value: \"value1\"\n  effect: \"NoExecute\"\n```\n\nIn this case, the pod will not be able to schedule onto the node, because there is no\ntoleration matching the third taint. But it will be able to continue running if it is\nalready running on the node when the taint is added, because the third taint is the only\none of the three that is not tolerated by the pod.\n\nNormally, if a taint with effect `NoExecute` is added to a node, then any pods that do\nnot tolerate the taint will be evicted immediately, and pods that do tolerate the\ntaint will never be evicted. However, a toleration with `NoExecute` effect can specify\nan optional `tolerationSeconds` field that dictates how long the pod will stay bound\nto the node after the taint is added. For example,"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-0",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "You add a taint to a node using [kubectl taint](/docs/reference/generated/kubectl/kubectl-commands#taint).\nFor example,\n\n```shell\nkubectl taint nodes node1 key1=value1:NoSchedule\n```\n\nplaces a taint on node `node1`. The taint has key `key1`, value `value1`, and taint effect `NoSchedule`.\nThis means that no pod will be able to schedule onto `node1` unless it has a matching toleration.\n\nTo remove the taint added by the command above, you can run:\n\n```shell\nkubectl taint nodes node1 key1=value1:NoSchedule-\n```\n\nYou specify a toleration for a pod in the PodSpec. Both of the following tolerations \"match\" the\ntaint created by the `kubectl taint` line above, and thus a pod with either toleration would be able\nto schedule onto `node1`:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-3",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "The above example used the `effect` of `NoSchedule`. Alternatively, you can use the `effect` of `PreferNoSchedule`.\n\nThe allowed values for the `effect` field are:\n\n`NoExecute`\n: This affects pods that are already running on the node as follows:\n\n  * Pods that do not tolerate the taint are evicted immediately\n  * Pods that tolerate the taint without specifying `tolerationSeconds` in\n    their toleration specification remain bound forever\n  * Pods that tolerate the taint with a specified `tolerationSeconds` remain\n    bound for the specified amount of time. After that time elapses, the node\n    lifecycle controller evicts the Pods from the node.\n\n`NoSchedule`\n: No new Pods will be scheduled on the tainted node unless they have a matching\n  toleration. Pods currently running on the node are **not** evicted."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#taint-nodes-by-condition-1",
+  "heading": "Taints and Tolerations > Taint Nodes by Condition",
+  "text": "You can ignore node conditions for newly created pods by adding the corresponding\nPod tolerations. The control plane also adds the `node.kubernetes.io/memory-pressure`\ntoleration on pods that have a QoS class\nother than `BestEffort`. This is because Kubernetes treats pods in the `Guaranteed`\nor `Burstable` QoS classes (even pods with no memory request set) as if they are\nable to cope with memory pressure, while new `BestEffort` pods are not scheduled\nonto the affected node.\n\nThe DaemonSet controller automatically adds the following `NoSchedule`\ntolerations to all daemons, to prevent DaemonSets from breaking."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#concepts-1",
+  "heading": "Taints and Tolerations > Concepts",
+  "text": "```yaml\ntolerations:\n- key: \"key1\"\n  operator: \"Equal\"\n  value: \"value1\"\n  effect: \"NoSchedule\"\n```\n\n```yaml\ntolerations:\n- key: \"key1\"\n  operator: \"Exists\"\n  effect: \"NoSchedule\"\n```\n\nThe default Kubernetes scheduler takes taints and tolerations into account when\nselecting a node to run a particular Pod. However, if you manually specify the\n`.spec.nodeName` for a Pod, that action bypasses the scheduler; the Pod is then\nbound onto the node where you assigned it, even if there are `NoSchedule`\ntaints on that node that you selected.\nIf this happens and the node also has a `NoExecute` taint set, the kubelet will\neject the Pod unless there is an appropriate tolerance set.\n\nHere's an example of a pod that has some tolerations defined:"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#intro-0",
+  "heading": "Taints and Tolerations",
+  "text": "[_Node affinity_](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)\nis a property of Pods that *attracts* them to\na set of nodes (either as a preference or a\nhard requirement). _Taints_ are the opposite -- they allow a node to repel a set of pods.\n\n_Tolerations_ are applied to pods. Tolerations allow the scheduler to schedule pods with matching\ntaints. Tolerations allow scheduling but don't guarantee scheduling: the scheduler also\n[evaluates other parameters](/docs/concepts/scheduling-eviction/pod-priority-preemption/)\nas part of its function.\n\nTaints and tolerations work together to ensure that pods are not scheduled\nonto inappropriate nodes. One or more taints are applied to a node; this\nmarks that the node should not accept any pods that do not tolerate the taints."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/taint-and-toleration#numeric-comparison-operators-0",
+  "heading": "Taints and Tolerations > Numeric comparison operators",
+  "text": "In addition to `Equal` and `Exists`, you can use numeric comparison operators\n(`Gt` and `Lt`) to match taints with integer values. This is useful for threshold-based\nscheduling, such as matching nodes by reliability level or SLA tier.\n\n* `Gt` matches when the taint value is greater than the toleration value.\n* `Lt` matches when the taint value is less than the toleration value.\n\nFor numeric operators, both the toleration and taint values must be valid integers.\nIf either value cannot be parsed as an integer, the toleration does not match.\n\nWhen you create a Pod that uses `Gt` or `Lt` tolerations operators, the API server validates that\nthe toleration values are valid integers. Taint values on nodes are not validated at node\nregistration time. If a node has a non-numeric taint value (for example,\n`servicelevel.organization.example/agreed-service-level=high:NoSchedule`),\npods with numeric comparison operators will not match that taint and cannot schedule on that node."
+ }
+]

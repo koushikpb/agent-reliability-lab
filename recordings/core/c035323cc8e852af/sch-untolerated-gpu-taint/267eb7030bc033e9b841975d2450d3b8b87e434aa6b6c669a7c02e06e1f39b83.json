@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Great! I have all the information I need. The pod has a toleration for `nvidia.com/gpu` but the GPU nodes have a taint `dedicated: gpu` that the pod doesn't tolerate. According to the documentation, Kubernetes processes multiple taints by filtering - it ignores taints for which the pod has matching tolerations, and the remaining untolerated taints prevent scheduling [cite: concepts/scheduling-eviction/taint-and-toleration#concepts-4].\n\nThe pod's tolerations currently only match `nvidia.com/gpu`, but the node scheduler message shows the GPU nodes have the taint `dedicated: gpu` which isn't tolerated.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01FE4t7VzRJf2W5aXATtknF1",
+   "input": {
+    "id": "T-3002",
+    "note": "**Cause:** The doc-embedder pod cannot schedule on the GPU nodes because it's missing a toleration for the `dedicated: gpu` taint. The pod was stuck in Pending with reason \"Unschedulable\" and the scheduler reported \"3 node(s) had untolerated taint {dedicated: gpu}\".\n\n**Evidence:** Pod conditions show:\n- Status: Pending\n- Reason: Unschedulable  \n- Message: \"3 node(s) had untolerated taint {dedicated: gpu}\"\n- Current tolerations: only for `nvidia.com/gpu`, `node.kubernetes.io/not-ready`, and `node.kubernetes.io/unreachable`\n\n**Fix:** Add a toleration for the `dedicated: gpu` taint to the doc-embedder deployment. Update the deployment spec to include:\n```yaml\ntolerations:\n- key: \"dedicated\"\n  operator: \"Equal\"\n  value: \"gpu\"\n  effect: \"NoSchedule\"\n```\n\nPer Kubernetes scheduling rules [cite: concepts/scheduling-eviction/taint-and-toleration#concepts-4], taints are processed as a filter - Kubernetes ignores taints that the pod has matching tolerations for, and pods cannot schedule if any remaining taints are untolerated. The ml-serving pods likely have this toleration already, which is why they run successfully.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3801,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 546,
+ "stop_reason": "tool_use"
+}

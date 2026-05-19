@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Summary: Inspected pods in `batch`, compared the crashing new pod (chart 2.0.3) to the running old pod (chart 1.8.0), and found the new pod spec has `automountServiceAccountToken: false`. Logs confirmed in-cluster config failed due to the missing token file. Resolved T-5007 with instructions to override that value to `true` in the chart's values.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 6926,
+ "model": "claude-opus-4-7",
+ "output_tokens": 130,
+ "stop_reason": "end_turn"
+}

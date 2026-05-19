@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try with one of the newer pods (ones that were just scaled up):",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01VXvj4VVsMjYFCeTx5zoU9Y",
+   "input": {
+    "pod_name": "clickstream-ingest-6f9d8c7b4-k9vzs"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2647,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 94,
+ "stop_reason": "tool_use"
+}

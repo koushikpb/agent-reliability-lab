@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-2",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "A CronJob is counted as missed if it has failed to be created at its scheduled time. For example, if `concurrencyPolicy` is set to `Forbid` and a CronJob was attempted to be scheduled when there was a previous schedule still running, then it would count as missed.\n\nFor example, suppose a CronJob is set to schedule a new Job every one minute beginning at `08:30:00`, and its\n`startingDeadlineSeconds` field is not set. If the CronJob controller happens to\nbe down from `08:29:00` to `10:21:00`, the Job will not start as the number of missed Jobs which missed their schedule is greater than 100."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-1",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "For every CronJob, the CronJob controller checks how many schedules it missed in the duration from its last scheduled time until now. If there are more than 100 missed schedules, then it does not start the Job and logs the error.\n\n```\ntoo many missed start times. Set or decrease .spec.startingDeadlineSeconds or check clock skew\n```\nThis behavior is applicable for catch-up scheduling and does not mean the CronJob will stop running.  \n\nFor example, when using `concurrencyPolicy: Forbid`, long-running Jobs may cause scheduled times to be skipped, but a new Job can be created once the previous Job completes.\n\nIt is important to note that if the `startingDeadlineSeconds` field is set (not `nil`), the controller counts how many missed Jobs occurred from the value of `startingDeadlineSeconds` until now rather than from the last scheduled time until now. For example, if `startingDeadlineSeconds` is `200`, the controller counts how many missed Jobs occurred in the last 200 seconds."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#schedule-suspension-0",
+  "heading": "CronJob > Writing a CronJob spec > Schedule suspension",
+  "text": "You can suspend execution of Jobs for a CronJob, by setting the optional `.spec.suspend` field\nto true. The field defaults to false.\n\nThis setting does _not_ affect Jobs that the CronJob has already started.\n\nIf you do set that field to true, all subsequent executions are suspended (they remain\nscheduled, but the CronJob controller does not start the Jobs to run the tasks) until\nyou unsuspend the CronJob.\n\nExecutions that are suspended during their scheduled time count as missed Jobs.\nWhen `.spec.suspend` changes from `true` to `false` on an existing CronJob without a\n[starting deadline](#starting-deadline), the missed Jobs are scheduled immediately."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#starting-deadline-0",
+  "heading": "CronJob > Writing a CronJob spec > Deadline for delayed Job start",
+  "text": "The `.spec.startingDeadlineSeconds` field is optional.\nThis field defines a deadline (in whole seconds) for starting the Job, if that Job misses its scheduled time\nfor any reason.\n\nAfter missing the deadline, the CronJob skips that instance of the Job (future occurrences are still scheduled).\nFor example, if you have a backup Job that runs twice a day, you might allow it to start up to 8 hours late,\nbut no later, because a backup taken any later wouldn't be useful: you would instead prefer to wait for\nthe next scheduled run.\n\nFor Jobs that miss their configured deadline, Kubernetes treats them as failed Jobs.\nIf you don't specify `startingDeadlineSeconds` for a CronJob, the Job occurrences have no deadline.\n\nIf the `.spec.startingDeadlineSeconds` field is set (not null), the CronJob\ncontroller measures the time between when a Job is expected to be created and\nnow. If the difference is higher than that limit, it will skip this execution."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-3",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "To illustrate this concept further, suppose a CronJob is set to schedule a new Job every one minute beginning at `08:30:00`, and its\n`startingDeadlineSeconds` is set to 200 seconds. If the CronJob controller happens to\nbe down for the same period as the previous example (`08:29:00` to `10:21:00`,) the Job will still start at 10:22:00. This happens as the controller now checks how many missed schedules happened in the last 200 seconds (i.e., 3 missed schedules), rather than from the last scheduled time until now.\n\nThe CronJob is only responsible for creating Jobs that match its schedule, and\nthe Job in turn is responsible for the management of the Pods it represents."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#unsupported-timezone-specification-0",
+  "heading": "CronJob > CronJob limitations > Unsupported TimeZone specification",
+  "text": "Specifying a timezone using `CRON_TZ` or `TZ` variables inside `.spec.schedule`\nis **not officially supported** (and never has been). If you try to set a schedule\nthat includes `TZ` or `CRON_TZ` timezone specification, Kubernetes will fail to\ncreate or update the resource with a validation error. You should specify time zones\nusing the [time zone field](#time-zones), instead."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-0",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "A CronJob creates a Job object approximately once per execution time of its schedule.\nThe scheduling is approximate because there\nare certain circumstances where two Jobs might be created, or no Job might be created.\nKubernetes tries to avoid those situations, but does not completely prevent them. Therefore,\nthe Jobs that you define should be _idempotent_.\n\nStarting with Kubernetes v1.32, CronJobs apply an annotation\n`batch.kubernetes.io/cronjob-scheduled-timestamp` to their created Jobs. This annotation\nindicates the originally scheduled creation time for the Job and is formatted in RFC3339.\n\nIf `startingDeadlineSeconds` is set to a large value or left unset (the default)\nand if `concurrencyPolicy` is set to `Allow`, the Jobs will always run\nat least once.\n\nIf `startingDeadlineSeconds` is set to a value less than 10 seconds, the CronJob may not be scheduled. This is because the CronJob controller checks things every 10 seconds."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#concurrency-policy-0",
+  "heading": "CronJob > Writing a CronJob spec > Concurrency policy",
+  "text": "The `.spec.concurrencyPolicy` field is also optional.\nIt specifies how to treat concurrent executions of a Job that is created by this CronJob.\nThe spec may specify only one of the following concurrency policies:\n\n* `Allow` (default): The CronJob allows concurrently running Jobs\n* `Forbid`: The CronJob does not allow concurrent runs; if it is time for a new Job run and the\n  previous Job run hasn't finished yet, the CronJob skips the new Job run. Also note that when the\n  previous Job run finishes, `.spec.startingDeadlineSeconds` is still taken into account and may\n  result in a new Job run.\n* `Replace`: If it is time for a new Job run and the previous Job run hasn't finished yet, the\n  CronJob replaces the currently running Job run with a new Job run\n\nNote that concurrency policy only applies to the Jobs created by the same CronJob.\nIf there are multiple CronJobs, their respective Jobs are always allowed to run concurrently."
+ }
+]

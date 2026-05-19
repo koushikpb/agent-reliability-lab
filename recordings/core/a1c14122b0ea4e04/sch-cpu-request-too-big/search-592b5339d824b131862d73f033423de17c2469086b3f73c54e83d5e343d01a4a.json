@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-1",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My Pods are pending with event message `FailedScheduling`",
+  "text": "In the preceding example, the Pod named \"frontend\" fails to be scheduled due to\ninsufficient CPU resource on any node. Similar error messages can also suggest\nfailure due to insufficient memory (PodExceedsFreeMemory). In general, if a Pod\nis pending with a message of this type, there are several things to try:\n\n- Add more nodes to the cluster.\n- Terminate unneeded Pods to make room for pending Pods.\n- Check that the Pod is not larger than all the nodes. For example, if all the\n  nodes have a capacity of `cpu: 1`, then a Pod with a request of `cpu: 1.1` will\n  never be scheduled.\n- Check for node taints. If most of your nodes are tainted, and the new Pod does\n  not tolerate that taint, the scheduler only considers placements onto the\n  remaining nodes that don't have that taint.\n\nYou can check node capacities and amounts allocated with the\n`kubectl describe nodes` command. For example:"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-5",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My Pods are pending with event message `FailedScheduling`",
+  "text": "In the preceding output, you can see that if a Pod requests more than 1.120 CPUs\nor more than 6.23Gi of memory, that Pod will not fit on the node.\n\nBy looking at the \u201cPods\u201d section, you can see which Pods are taking up space on\nthe node.\n\nThe amount of resources available to Pods is less than the node capacity because\nsystem daemons use a portion of the available resources. Within the Kubernetes API,\neach Node has a `.status.allocatable` field\n(see [NodeStatus](/docs/reference/kubernetes-api/cluster-resources/node-v1/#NodeStatus)\nfor details).\n\nThe `.status.allocatable` field describes the amount of resources that are available\nto Pods on that node (for example: 15 virtual CPUs and 7538 MiB of memory).\nFor more information on node allocatable resources in Kubernetes, see\n[Reserve Compute Resources for System Daemons](/docs/tasks/administer-cluster/reserve-compute-resources/)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-2",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request that is too big for your Nodes",
+  "text": "```shell\nkubectl describe pod cpu-demo-2 --namespace=cpu-example\n```\n\nThe output shows that the Container cannot be scheduled because of insufficient\nCPU resources on the Nodes:\n\n```\nEvents:\n  Reason                        Message\n  ------                        -------\n  FailedScheduling      No nodes are available that match all of the following predicates:: Insufficient cpu (3).\n```\n\nDelete your Pod:\n\n```shell\nkubectl delete pod cpu-demo-2 --namespace=cpu-example\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-2",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My Pods are pending with event message `FailedScheduling`",
+  "text": "```shell\nkubectl describe nodes e2e-test-node-pool-4lw4\n```\n```\nName:            e2e-test-node-pool-4lw4\n[ ... lines removed for clarity ...]\nCapacity:\n cpu:                               2\n memory:                            7679792Ki\n pods:                              110\nAllocatable:\n cpu:                               1800m\n memory:                            7474992Ki\n pods:                              110\n[ ... lines removed for clarity ...]\nNon-terminated Pods:        (5 in total)\n  Namespace    Name                                  CPU Requests  CPU Limits  Memory Requests  Memory Limits\n  ---------    ----                                  ------------  ----------  ---------------  -------------\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/resize-container-resources#troubleshooting-infeasible-resize-request-1",
+  "heading": "Resize CPU and Memory Resources assigned to Containers > Troubleshooting: Infeasible resize request",
+  "text": "* The `spec.containers[0].resources` reflects the *desired* state (`cpu: \"1000\"`).\n* A condition with `type: PodResizePending` and `reason: Infeasible` was added to the Pod.\n* The condition's `message` will explain why (`Node didn't have enough capacity: cpu, requested: 800000, capacity: ...`)\n* Crucially, `status.containerStatuses[0].resources` will *still show the previous values* (`cpu: 800m`, `memory: 300Mi`),\n  because the infeasible resize was not applied by the Kubelet.\n* The `restartCount` will not have changed due to this failed attempt.\n\nTo fix this, you would need to patch the pod again with feasible resource values."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#specify-a-memory-request-that-is-too-big-for-your-nodes-2",
+  "heading": "Assign Memory Resources to Containers and Pods > Specify a memory request that is too big for your Nodes",
+  "text": "The output shows that the Pod status is PENDING. That is, the Pod is not scheduled to run on any Node, and it will remain in the PENDING state indefinitely:\n\n```\nkubectl get pod memory-demo-3 --namespace=mem-example\nNAME            READY     STATUS    RESTARTS   AGE\nmemory-demo-3   0/1       Pending   0          25s\n```\n\nView detailed information about the Pod, including events:\n\n```shell\nkubectl describe pod memory-demo-3 --namespace=mem-example\n```\n\nThe output shows that the Container cannot be scheduled because of insufficient memory on the Nodes:\n\n```\nEvents:\n  ...  Reason            Message\n       ------            -------\n  ...  FailedScheduling  No nodes are available that match all of the following predicates:: Insufficient memory (3).\n```"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-priority-preemption#limitations-of-preemption-3",
+  "heading": "Pod Priority and Preemption > Preemption > Limitations of preemption",
+  "text": "Suppose a Node N is being considered for preemption so that a pending Pod P can\nbe scheduled on N. P might become feasible on N only if a Pod on another Node is\npreempted. Here's an example:\n\n*   Pod P is being considered for Node N.\n*   Pod Q is running on another Node in the same Zone as Node N.\n*   Pod P has Zone-wide anti-affinity with Pod Q (`topologyKey:\n    topology.kubernetes.io/zone`).\n*   There are no other cases of anti-affinity between Pod P and other Pods in\n    the Zone.\n*   In order to schedule Pod P on Node N, Pod Q can be preempted, but scheduler\n    does not perform cross-node preemption. So, Pod P will be deemed\n    unschedulable on Node N.\n\nIf Pod Q were removed from its Node, the Pod anti-affinity violation would be\ngone, and Pod P could possibly be scheduled on Node N.\n\nWe may consider adding cross Node preemption in future versions if there is\nenough demand and if we find an algorithm with reasonable performance."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-4",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My Pods are pending with event message `FailedScheduling`",
+  "text": "```shell\n  (Total limits may be over 100 percent, i.e., overcommitted.)\n  CPU Requests    CPU Limits    Memory Requests    Memory Limits\n  ------------    ----------    ---------------    -------------\n  680m (34%)      400m (20%)    920Mi (11%)        1070Mi (13%)\n```"
+ }
+]

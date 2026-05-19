@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace#create-a-pod-1",
+  "heading": "Configure Memory and CPU Quotas for a Namespace > Create a Pod",
+  "text": "```shell\nkubectl get resourcequota mem-cpu-demo --namespace=quota-mem-cpu-example --output=yaml\n```\n\nThe output shows the quota along with how much of the quota has been used.\nYou can see that the memory and CPU requests and limits for your Pod do not\nexceed the quota.\n\n```\nstatus:\n  hard:\n    limits.cpu: \"2\"\n    limits.memory: 2Gi\n    requests.cpu: \"1\"\n    requests.memory: 1Gi\n  used:\n    limits.cpu: 800m\n    limits.memory: 800Mi\n    requests.cpu: 400m\n    requests.memory: 600Mi\n```\n\nIf you have the `jq` tool, you can also query (using [JSONPath](/docs/reference/kubectl/jsonpath/))\nfor just the `used` values, **and** pretty-print that that of the output. For example:"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#compute-resource-quota-1",
+  "heading": "Resource Quotas > Types of resource quota > Quota for infrastructure resources",
+  "text": "| Resource Name | Description |\n| ------------- | ----------- |\n| `limits.cpu` | Across all pods in a non-terminal state, the sum of CPU limits cannot exceed this value. |\n| `limits.memory` | Across all pods in a non-terminal state, the sum of memory limits cannot exceed this value. |\n| `requests.cpu` | Across all pods in a non-terminal state, the sum of CPU requests cannot exceed this value. |\n| `requests.memory` | Across all pods in a non-terminal state, the sum of memory requests cannot exceed this value. |\n| `hugepages-<size>` | Across all pods in a non-terminal state, the number of huge page requests of the specified size cannot exceed this value. |\n| `cpu` | Same as `requests.cpu` |\n| `memory` | Same as `requests.memory` |"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#how-kubernetes-resourcequotas-work-3",
+  "heading": "Resource Quotas > How Kubernetes ResourceQuotas work",
+  "text": "- For `cpu` and `memory` resources, ResourceQuotas enforce that **every**\n  (new) pod in that namespace sets a limit for that resource.\n  If you enforce a resource quota in a namespace for either `cpu` or `memory`,\n  you and other clients, **must** specify either `requests` or `limits` for that resource,\n  for every new Pod you submit. If you don't, the control plane may reject admission\n  for that Pod.\n- For other resources: ResourceQuota works and will ignore pods in the namespace without\n  setting a limit or request for that resource. It means that you can create a new pod\n  without limit/request for ephemeral storage if the resource quota limits the ephemeral\n  storage of this namespace.\n\nYou can use a [LimitRange](/docs/concepts/policy/limit-range/) to automatically set\na default request for these resources."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-default-namespace#motivation-for-default-cpu-limits-and-requests-0",
+  "heading": "Configure Default CPU Requests and Limits for a Namespace > Motivation for default CPU limits and requests",
+  "text": "If your namespace has a CPU resource quota\nconfigured,\nit is helpful to have a default value in place for CPU limit.\nHere are two of the restrictions that a CPU resource quota imposes on a namespace:\n\n* For every Pod that runs in the namespace, each of its containers must have a CPU limit.\n* CPU limits apply a resource reservation on the node where the Pod in question is scheduled.\n  The total amount of CPU that is reserved for use by all Pods in the namespace must not\n  exceed a specified limit.\n\nWhen you add a LimitRange:\n\nIf any Pod in that namespace that includes a container does not specify its own CPU limit,\nthe control plane applies the default CPU limit to that container, and the Pod can be\nallowed to run in a namespace that is restricted by a CPU ResourceQuota."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#how-kubernetes-resourcequotas-work-1",
+  "heading": "Resource Quotas > How Kubernetes ResourceQuotas work",
+  "text": "- If creating or updating a resource violates a quota constraint, the control plane rejects that request with HTTP\n  status code `403 Forbidden`. The error includes a message explaining the constraint that would have been violated.\n\n- If quotas are enabled in a namespace for resource\n  such as `cpu` and `memory`, users must specify requests or limits for those values when they define a Pod; otherwise,\n  the quota system may reject pod creation.\n\n  The resource quota [walkthrough](/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/)\n  shows an example of how to avoid this problem.\n\n* You can define a [LimitRange](/docs/concepts/policy/limit-range/)\n  to force defaults on pods that make no compute resource requirements (so that users don't have to remember to do that)."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#quotas-2",
+  "heading": "Multi-tenancy > Control plane isolation > Quotas",
+  "text": "When you apply a quota to namespace, Kubernetes requires you to also specify resource requests and\nlimits for each container. Limits are the upper bound for the amount of resources that a container\ncan consume. Containers that attempt to consume resources that exceed the configured limits will\neither be throttled or killed, based on the resource type. When resource requests are set lower\nthan limits, each container is guaranteed the requested amount but there may still be some\npotential for impact across workloads.\n\nQuotas cannot protect against all kinds of resource sharing, such as network traffic.\nNode isolation (described below) may be a better solution for this problem."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/namespaces#viewing-namespaces-2",
+  "heading": "Share a Cluster with Namespaces > Viewing namespaces",
+  "text": "```shell\nkubectl describe namespaces <name>\n```\n```console\nName:           default\nLabels:         <none>\nAnnotations:    <none>\nStatus:         Active\n\nNo resource quota.\n\nResource Limits\n Type       Resource    Min Max Default\n ----               --------    --- --- ---\n Container          cpu         -   -   100m\n```\n\nNote that these details show both resource quota (if present) as well as resource limit ranges.\n\nResource quota tracks aggregate usage of resources in the Namespace and allows cluster operators\nto define *Hard* resource usage limits that a Namespace may consume.\n\nA limit range defines min/max constraints on the amount of resources a single entity can consume in\na Namespace.\n\nSee [Admission control: Limit Range](https://git.k8s.io/design-proposals-archive/resource-management/admission_control_limit_range.md)\n\nA namespace can be in one of two phases:\n\n* `Active` the namespace is in use\n* `Terminating` the namespace is being deleted, and cannot be used for new objects"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#intro-0",
+  "heading": "Resource Quotas",
+  "text": "When several users or teams share a cluster with a fixed number of nodes,\nthere is a concern that one team could use more than its fair share of resources.\n\n_Resource quotas_ are a tool for administrators to address this concern.\n\nA resource quota, defined by a ResourceQuota object, provides constraints that limit\naggregate resource consumption per namespace. A ResourceQuota can also\nlimit the [quantity of objects that can be created in a namespace](#quota-on-object-count) by API kind, as well as the total\namount of infrastructure resources that may be consumed by\nAPI objects found in that namespace.\n\nNeither contention nor changes to quota will affect already created resources."
+ }
+]

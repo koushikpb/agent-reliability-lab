@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-5",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "If expansion has failed for a PVC, you can retry expansion with a\nsmaller size than the previously requested value. To request a new expansion attempt with a\nsmaller proposed size, edit `.spec.resources` for that PVC and choose a value that is less than the\nvalue you previously tried.\nThis is useful if expansion to a higher value did not succeed because of capacity constraint.\nIf that has happened, or you suspect that it might have, you can retry expansion by specifying a\nsize that is within the capacity limits of underlying storage provider. You can monitor status of\nresize operation by watching `.status.allocatedResourceStatuses` and events on the PVC.\n\nNote that,\nalthough you can specify a lower amount of storage than what was requested previously,\nthe new value must still be higher than `.status.capacity`.\nKubernetes does not support shrinking a PVC to less than its current size."
+ },
+ {
+  "chunk_id": "concepts/storage/dynamic-provisioning#using-dynamic-provisioning-0",
+  "heading": "Dynamic Volume Provisioning > Using Dynamic Provisioning",
+  "text": "Users request dynamically provisioned storage by including a storage class in\ntheir `PersistentVolumeClaim`. Before Kubernetes v1.6, this was done via the\n`volume.beta.kubernetes.io/storage-class` annotation. However, this annotation\nis deprecated since v1.9. Users now can and should instead use the\n`storageClassName` field of the `PersistentVolumeClaim` object. The value of\nthis field must match the name of a `StorageClass` configured by the\nadministrator (see [Enabling Dynamic Provisioning](#enabling-dynamic-provisioning)).\n\nTo select the \"fast\" storage class, for example, a user would create the\nfollowing PersistentVolumeClaim:\n\n```yaml\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: claim1\nspec:\n  accessModes:\n    - ReadWriteOnce\n  storageClassName: fast\n  resources:\n    requests:\n      storage: 30Gi\n```\n\nThis claim results in an SSD-like Persistent Disk being automatically\nprovisioned. When the claim is deleted, the volume is destroyed."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#persistentvolumeclaim-0",
+  "heading": "Volumes > Types of volumes > persistentVolumeClaim",
+  "text": "A `persistentVolumeClaim` volume is used to mount a\n[PersistentVolume](/docs/concepts/storage/persistent-volumes/) into a Pod. PersistentVolumeClaims\nare a way for users to \"claim\" durable storage (such as an iSCSI volume)\nwithout knowing the details of the particular cloud environment.\n\nSee the information about [PersistentVolumes](/docs/concepts/storage/persistent-volumes/) for more\ndetails."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#binding-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Binding",
+  "text": "A user creates, or in the case of dynamic provisioning, has already created,\na PersistentVolumeClaim with a specific amount of storage requested and with\ncertain access modes. A control loop in the control plane watches for new PVCs, finds\na matching PV (if possible), and binds them together. If a PV was dynamically\nprovisioned for a new PVC, the loop will always bind that PV to the PVC. Otherwise,\nthe user will always get at least what they asked for, but the volume may be in\nexcess of what was requested. Once bound, PersistentVolumeClaim binds are exclusive,\nregardless of how they were bound. A PVC to PV binding is a one-to-one mapping,\nusing a ClaimRef which is a bi-directional binding between the PersistentVolume\nand the PersistentVolumeClaim.\n\nClaims will remain unbound indefinitely if a matching volume does not exist.\nClaims will be bound as matching volumes become available. For example, a\ncluster provisioned with many 50Gi PVs would not match a PVC requesting 100Gi.\nThe PVC can be bound when a 100Gi PV is added to the cluster."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-for-storage-1",
+  "heading": "Resource Quotas > Types of resource quota > Quota for storage",
+  "text": "| Resource Name | Description |\n| ------------- | ----------- |\n| `requests.storage` | Across all persistent volume claims, the sum of storage requests cannot exceed this value. |\n| `persistentvolumeclaims` | The total number of [PersistentVolumeClaims](/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims) that can exist in the namespace. |\n| `<storage-class-name>.storageclass.storage.k8s.io/requests.storage` | Across all persistent volume claims associated with the `<storage-class-name>`, the sum of storage requests cannot exceed this value. |"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#introduction-0",
+  "heading": "Persistent Volumes > Introduction",
+  "text": "Managing storage is a distinct problem from managing compute instances.\nThe PersistentVolume subsystem provides an API for users and administrators\nthat abstracts details of how storage is provided from how it is consumed.\nTo do this, we introduce two new API resources: PersistentVolume and PersistentVolumeClaim.\n\nA _PersistentVolume_ (PV) is a piece of storage in the cluster that has been\nprovisioned by an administrator or dynamically provisioned using\n[Storage Classes](/docs/concepts/storage/storage-classes/). It is a resource in\nthe cluster just like a node is a cluster resource. PVs are volume plugins like\nVolumes, but have a lifecycle independent of any individual Pod that uses the PV.\nThis API object captures the details of the implementation of the storage, be that\nNFS, iSCSI, or a cloud-provider-specific storage system."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#volume-claim-templates-0",
+  "heading": "StatefulSets > Components > Volume Claim Templates",
+  "text": "You can set the `.spec.volumeClaimTemplates` field to create a\n[PersistentVolumeClaim](/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims). \nThis will provide stable storage to the StatefulSet if either:\n\n* The StorageClass specified for the volume claim is set up to use [dynamic\n  provisioning](/docs/concepts/storage/dynamic-provisioning/).\n* The cluster already contains a PersistentVolume with the correct StorageClass\n  and sufficient available storage space."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-3",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "In this case, you don't need to delete and recreate a Pod or deployment that is using an existing PVC.\nAny in-use PVC automatically becomes available to its Pod as soon as its file system has been expanded.\nThis feature has no effect on PVCs that are not in use by a Pod or deployment. You must create a Pod that\nuses the PVC before the expansion can complete.\n\nSimilar to other volume types - FlexVolume volumes can also be expanded when in-use by a Pod.\n\nFlexVolume resize is possible only when the underlying driver supports resize.\n\n#### Recovering from Failure when Expanding Volumes\n\nIf a user specifies a new size that is too big to be satisfied by underlying\nstorage system, expansion of PVC will be continuously retried until user or\ncluster administrator takes some action. This can be undesirable and hence\nKubernetes provides following methods of recovering from such failures."
+ }
+]

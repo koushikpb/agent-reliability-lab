@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#self-healing-for-static-pods-0",
+  "heading": "Node-pressure Eviction > Self healing behavior > Self healing for static pods",
+  "text": "If you are running a [static pod](/docs/concepts/workloads/pods/#static-pods)\non a node that is under resource pressure, the kubelet may evict that static\nPod. The kubelet then tries to create a replacement, because static Pods always\nrepresent an intent to run a Pod on that node.\n\nThe kubelet takes the _priority_ of the static pod into account when creating\na replacement. If the static pod manifest specifies a low priority, and there\nare higher-priority Pods defined within the cluster's control plane, and the\nnode is under resource pressure, the kubelet may not be able to make room for\nthat static pod. The kubelet continues to attempt to run all static pods even\nwhen there is resource pressure on a node."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#pod-selection-for-kubelet-eviction-0",
+  "heading": "Node-pressure Eviction > Node conditions > Pod selection for kubelet eviction",
+  "text": "If the kubelet's attempts to reclaim node-level resources don't bring the eviction\nsignal below the threshold, the kubelet begins to evict end-user pods.\n\nThe kubelet uses the following parameters to determine the pod eviction order:\n\n1. Whether the pod's resource usage exceeds requests\n1. [Pod Priority](/docs/concepts/scheduling-eviction/pod-priority-preemption/)\n1. The pod's resource usage relative to requests\n\nAs a result, kubelet ranks and evicts pods in the following order:\n\n1. `BestEffort` or `Burstable` pods where the usage exceeds requests. These pods\n   are evicted based on their Priority and then by how much their usage level\n   exceeds the request.\n\n1. `Guaranteed` pods and `Burstable` pods where the usage is less than requests\n   are evicted last, based on their Priority."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#intro-0",
+  "heading": "Node-pressure Eviction",
+  "text": "</br>\n\nThe kubelet monitors resources\nlike memory, disk space, and filesystem inodes on your cluster's nodes.\nWhen one or more of these resources reach specific consumption levels, the\nkubelet can proactively fail one or more pods on the node to reclaim resources\nand prevent starvation.\n\nDuring a node-pressure eviction, the kubelet sets the [phase](/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase) for the\nselected pods to `Failed`, and terminates the Pod.\n\nNode-pressure eviction is not the same as\n[API-initiated eviction](/docs/concepts/scheduling-eviction/api-eviction/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-qos#class-independent-behavior-0",
+  "heading": "Pod Quality of Service Classes > Some behavior is independent of QoS class",
+  "text": "Certain behavior is independent of the QoS class assigned by Kubernetes. For example:\n\n* Any Container exceeding a resource limit will be killed and restarted by the kubelet without\n  affecting other Containers in that Pod.\n\n* If a Container exceeds its resource request and the node it runs on faces\n  resource pressure, the Pod it is in becomes a candidate for [eviction](/docs/concepts/scheduling-eviction/node-pressure-eviction/).\n  If this occurs, all Containers in the Pod will be terminated. Kubernetes may create a\n  replacement Pod, usually on a different node.\n\n* The resource request of a Pod is equal to the sum of the resource requests of\n  its component Containers, and the resource limit of a Pod is equal to the sum of\n  the resource limits of its component Containers.\n\n* The kube-scheduler does not consider QoS class when selecting which Pods to\n  [preempt](/docs/concepts/scheduling-eviction/pod-priority-preemption/#preemption).\n  Preemption can occur when a cluster does not have enough resources to run all the Pods\n  you defined."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#self-healing-behavior-0",
+  "heading": "Node-pressure Eviction > Self healing behavior",
+  "text": "The kubelet attempts to [reclaim node-level resources](#reclaim-node-resources)\nbefore it terminates end-user pods. For example, it removes unused container\nimages when disk resources are starved.\n\nIf the pods are managed by a workload\nmanagement object (such as StatefulSet\nor Deployment) that\nreplaces failed pods, the control plane (`kube-controller-manager`) creates new\npods in place of the evicted pods."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#reclaim-node-resources-0",
+  "heading": "Node-pressure Eviction > Node conditions > Reclaiming node level resources",
+  "text": "The kubelet tries to reclaim node-level resources before it evicts end-user pods.\n\nWhen a `DiskPressure` node condition is reported, the kubelet reclaims node-level\nresources based on the filesystems on the node.\n\n#### Without `imagefs` or `containerfs`\n\nIf the node only has a `nodefs` filesystem that meets eviction thresholds,\nthe kubelet frees up disk space in the following order:\n\n1. Garbage collect dead pods and containers.\n1. Delete unused images.\n\n#### With `imagefs`\n\nIf the node has a dedicated `imagefs` filesystem for container runtimes to use,\nthe kubelet does the following:\n\n- If the `nodefs` filesystem meets the eviction thresholds, the kubelet garbage\n  collects dead pods and containers.\n\n- If the `imagefs` filesystem meets the eviction thresholds, the kubelet\n  deletes all unused images.\n\n#### With `imagefs` and `containerfs`"
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/node-pressure-eviction#schedulable-resources-and-eviction-policies-0",
+  "heading": "Node-pressure Eviction > Good practices > Schedulable resources and eviction policies",
+  "text": "When you configure the kubelet with an eviction policy, you should make sure that\nthe scheduler will not schedule pods if they will trigger eviction because they\nimmediately induce memory pressure.\n\nConsider the following scenario:\n\n- Node memory capacity: 10GiB\n- Operator wants to reserve 10% of memory capacity for system daemons (kernel, `kubelet`, etc.)\n- Operator wants to evict Pods at 95% memory utilization to reduce incidence of system OOM.\n\nFor this to work, the kubelet is launched as follows:\n\n```none\n--eviction-hard=memory.available<500Mi\n--system-reserved=memory=1.5Gi\n```\n\nIn this configuration, the `--system-reserved` flag reserves 1.5GiB of memory\nfor the system, which is `10% of the total memory + the eviction threshold amount`."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/reserve-compute-resources#eviction-thresholds-1",
+  "heading": "Reserve Compute Resources for System Daemons > Node Allocatable > Eviction Thresholds",
+  "text": "Memory pressure at the node level leads to System OOMs which affects the entire\nnode and all pods running on it. Nodes can go offline temporarily until memory\nhas been reclaimed. To avoid (or reduce the probability of) system OOMs kubelet\nprovides [out of resource](/docs/concepts/scheduling-eviction/node-pressure-eviction/)\nmanagement. Evictions are\nsupported for `memory` and `ephemeral-storage` only. By reserving some memory via\n`evictionHard` setting, the `kubelet` attempts to evict pods whenever memory\navailability on the node drops below the reserved value. Hypothetically, if\nsystem daemons did not exist on a node, pods cannot use more than `capacity -\neviction-hard`. For this reason, resources reserved for evictions are not\navailable for pods."
+ }
+]

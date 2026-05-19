@@ -1,0 +1,35 @@
+{
+ "content": [
+  {
+   "signature": "EtwICqQBCBMYAipAOfV66kXUL3yQiMslR4CjBwrEDsakf2diLDBd0f4zdtQvCotGLDi49nrZcJly7u5y8rUoFar8pf8fEMGF7QTkjjIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBgPDw1gYSDL88F6habOY8hcxsmRoMNxm4RLjP2XSssJDCIjA4vwwm6DqFAabcOnWSoMh5mqIrPD3TbPaCac14NP5yXZp+ajUNPhNXBhhJWGjptxUq5AbzPK90Zbsf22XwdbXLFsxDWX3M4a6Wh9FRXEOdYrIXQ0Ql0mf5UcHVxT1UkUa7lMC2SuxpOHBv7bYexe69r80r940YmSHbg6PQZjzsE69NA6yPD59laCMuE8hfpZaMvX5iNe8bSp/hLDC0Ogo76A1F77Odr+YB718xXTlZX789efoxHpDAGiMAYS/Dmi9UxOdUmpOWraBSsIWQMViTQjjyxcxSCLA5u8euRtkYUAKnZj99XYe5pbAXxeug9CCkktP6ikxJk08NdkV2wOa8qEviZg7ZVV6N4P4F/o5PcmcNWUmutgGj7sclnTmuFZHXsKJjIzb00DOa0bzg78n7GurpYq7bSyGy92rV1/9BYiCbxZp4yR5ntcAk4Qf+ocWwxCD9vQ0WhuwY2S9CAooRHIrevL1ZjV8D6FPosLVlnvO0gCS2DiVmIa7I9ijemYESPAWdDULmZe8nb8twlN4ZvW/FeWJkBAVpb+o/KTVHn8ghm/KP/Io8+BBSzfuKN9eSrZk3fNTcH+reyKWTViP153BzFRONrvTfRWTXVR1PQKAUG7IPfqqcAkStHAsOAKg3o8f4FoxM99M8U9C6eH2wI8dnxTPc+aJHIGX/yxHGSPskJyQ9BwbQnRFTxQu58xxrQ91GW0LOIQrlORb6Sj/O5YhExhiBL9nwp3mm+R62gyNduwKy3EfeDpfjk/h6QOFk8HvhB1CcP7behQVA3VkKOLMRyW/SWAz61S9dLHsEkedcjJlHar06hn1kjlAPKMEP525MOEg6YfYbBaGgKGgRWKssp9h7FfyJ4veqWXy7lBJ4pSD8f32yHbbRBJ7lPnRI1nHvOCjyw65DcJYjBKazf5af+EJkrgfgGxCU3mwiofTIKgccf6rcljKjwVAKqThMksLb0LsHxbuF6ULMdHNSLB2GUiLc5vafvoj18ln7rxex9CqqbC0N2KJC9/DhniSDSNIkVyShyR8N0F9L7RwJi6yar+1zrMTfhB27mUJFn86CRO8mXTy06CxdCxIxtNlm1p9ic8SOyP8RsiXzDE8gS7h5ZlMgYnVsEd0ZQWKMGDbKoL2ndkZjkhuE+alSnAqR2bq3/+ZQz0HPdPk/EgBIsY/AObKnVhs5qfrIFFuYCWQaY9zLQCvSdrNcOixmudsqEF+EXV8OGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0146DcYCGAgUdfWdfwwSmEkW",
+   "input": {
+    "query": "scaling deployment replicas beyond Kafka partitions consumer group"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011g1cKeidddPwZFNugpNf1M",
+   "input": {
+    "query": "external service quota throttling client"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4086,
+ "model": "claude-opus-4-7",
+ "output_tokens": 449,
+ "stop_reason": "tool_use"
+}

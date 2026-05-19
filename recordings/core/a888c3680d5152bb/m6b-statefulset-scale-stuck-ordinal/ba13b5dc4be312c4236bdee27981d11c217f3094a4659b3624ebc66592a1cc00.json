@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Let me search the Kubernetes documentation to understand why a StatefulSet scale-up might only partially complete, particularly regarding readiness probes and pod startup.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01HRzsE8hvu4H6B9ckjZy8tE",
+   "input": {
+    "query": "StatefulSet scale readiness probe failed pod not ready"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DsqLYoEfBUZLwpUY6w4Hrn",
+   "input": {
+    "query": "StatefulSet ordinal pod startup sequence scale up"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2224,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 141,
+ "stop_reason": "tool_use"
+}

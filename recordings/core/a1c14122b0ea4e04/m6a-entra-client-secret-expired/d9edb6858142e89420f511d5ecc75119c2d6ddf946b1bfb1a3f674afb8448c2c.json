@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "ErsECqQBCBMYAipAzn+1pKLbeaXEnLtp4jmV1DGhbjqCNxczDap4vuEysxEjoNCr718drM0BOjDo2v8MdAmGphk3lkaPakBl+UEGEDIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBy+7w1gYSDARfBRZh5Aoa3wijBxoMKuEQqKBqCnEGvkQsIjBBCUqFFbTqBMTBHw324qz1VYEq0Dh6oAAei8P/yngZt6Zw4NDdinKowL6RSfIyIV4qwwLzOpbx+wi9TpZn6VrQtijR4lCwZ4uS1B5shW+jL5WN/ONkMa8C5YXKy2aB24N7wi8dYjvefhNuYBZZJZIvqUnk4OnbiT3SqAt0ejAsn5qE4cfXmMg50Sm2oK+IWZ782226+YnsYYMmuRcl9hQMB+KFXe0EkXZWLtBx0kBShJaQngiZ1rHn3GjslSEs6lAddNPkk4XzLPIl2u2ZDY45aXRq6vICxqos9LcMkYbWZI1j1Oglds56A55N2RJnRK7ulcs4+4qC99H97Avkj4u7sCT4Vw0eR1hIuOJXNZKlLJeFAx8Bk10aAWcwRjiBuEkqMO7KeyluzDQIS5NZp/Mpr31xjqKPKr3v5EnMYAvJ6U28peZLl9EclALZuF3n65hCV5Vc3PZ4tZ5poI5n8lrlfnc2kPXHThnNqg4JpdoYmNQIec2A2hgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01T3g4mwToCoANwAi2tBsdfM",
+   "input": {
+    "query": "update secret rollout restart deployment pods pick up new value"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4433,
+ "model": "claude-opus-4-7",
+ "output_tokens": 199,
+ "stop_reason": "tool_use"
+}

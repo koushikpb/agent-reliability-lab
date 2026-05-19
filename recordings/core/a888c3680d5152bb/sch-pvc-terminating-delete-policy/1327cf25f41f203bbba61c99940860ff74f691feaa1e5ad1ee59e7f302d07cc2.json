@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the state of the pods in the ledger namespace to understand the situation better.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LHhvSCVU1P9uRU2Xt3LcsV",
+   "input": {
+    "namespace": "ledger"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1384,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 75,
+ "stop_reason": "tool_use"
+}

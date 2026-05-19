@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#non-graceful-node-shutdown-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling",
+  "text": "When a node is shutdown but not detected by kubelet's Node Shutdown Manager, the pods\nthat are part of a StatefulSet\nwill be stuck in terminating status on the shutdown node and cannot move to a new running node.\nThis is because kubelet on the shutdown node is not available to delete the pods so\nthe StatefulSet cannot create a new pod with the same name. If there are volumes used by the pods,\nthe VolumeAttachments will not be deleted from the original shutdown node so the volumes\nused by these pods cannot be attached to a new running node. As a result, the\napplication running on the StatefulSet cannot function properly. If the original\nshutdown node comes up, the pods will be deleted by kubelet and new pods will be\ncreated on a different running node. If the original shutdown node does not come up,\nthese pods will be stuck in terminating status on the shutdown node forever."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-1",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "A Pod is not deleted automatically when a node is unreachable.\nThe Pods running on an unreachable Node enter the 'Terminating' or 'Unknown' state after a\n[timeout](/docs/concepts/architecture/nodes/#condition).\nPods may also enter these states when the user attempts graceful deletion of a Pod\non an unreachable Node.\nThe only ways in which a Pod in such a state can be removed from the apiserver are as follows:\n\n- The Node object is deleted (either by you, or by the\n  [Node Controller](/docs/concepts/architecture/nodes/#node-controller)).\n- The kubelet on the unresponsive Node starts responding, kills the Pod and removes the entry\n   from the apiserver.\n- Force deletion of the Pod by the user."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-2",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "```yaml\napiVersion: apps/v1\nkind: StatefulSet\n...\nspec:\n  persistentVolumeClaimRetentionPolicy:\n    whenDeleted: Retain\n    whenScaled: Delete\n...\n```\n\nThe StatefulSet controller adds\n[owner references](/docs/concepts/overview/working-with-objects/owners-dependents/#owner-references-in-object-specifications)\nto its PVCs, which are then deleted by the garbage collector after the Pod is terminated. This enables the Pod to\ncleanly unmount all volumes before the PVCs are deleted (and before the backing PV and\nvolume are deleted, depending on the retain policy).  When you set the `whenDeleted`\npolicy to `Delete`, an owner reference to the StatefulSet instance is placed on all PVCs\nassociated with that StatefulSet."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-0",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "In any situation where a pod deletion has not succeeded for 6 minutes, kubernetes will\nforce detach volumes being unmounted if the node is unhealthy at that instant. Any\nworkload still running on the node that uses a force-detached volume will cause a\nviolation of the\n[CSI specification](https://github.com/container-storage-interface/spec/blob/master/spec.md#controllerunpublishvolume),\nwhich states that `ControllerUnpublishVolume` \"**must** be called after all\n`NodeUnstageVolume` and `NodeUnpublishVolume` on the volume are called and succeed\".\nIn such circumstances, volumes on the node in question might encounter data corruption.\n\nThe forced storage detach behaviour is optional; users might opt to use the \"Non-graceful\nnode shutdown\" feature instead."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#storage-force-detach-on-timeout-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling > Forced storage detach on timeout",
+  "text": "Force storage detach on timeout can be disabled by setting the `disable-force-detach-on-timeout`\nconfig field in `kube-controller-manager`. Disabling the force detach on timeout feature means\nthat a volume that is hosted on a node that is unhealthy for more than 6 minutes will not have\nits associated\n[VolumeAttachment](/docs/reference/kubernetes-api/config-and-storage-resources/volume-attachment-v1/)\ndeleted.\n\nAfter this setting has been applied, unhealthy pods still attached to volumes must be recovered\nvia the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure mentioned above.\n\n- Caution must be taken while using the [Non-Graceful Node Shutdown](#non-graceful-node-shutdown) procedure.\n- Deviation from the steps documented above can result in data corruption."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#non-graceful-node-shutdown-2",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling",
+  "text": "To mitigate the above situation, a user can manually add the taint `node.kubernetes.io/out-of-service`\nwith either `NoExecute` or `NoSchedule` effect to a Node marking it out-of-service.\nIf a Node is marked out-of-service with this taint, the pods on the node will be forcefully deleted\nif there are no matching tolerations on it and volume detach operations for the pods terminating on\nthe node will happen immediately. This allows the Pods on the out-of-service node to recover quickly\non a different node.\n\nDuring a non-graceful shutdown, Pods are terminated in the two phases:\n\n1. Force delete the Pods that do not have matching `out-of-service` tolerations.\n1. Immediately perform detach volume operation for such pods."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-limits#mutable-csi-node-allocatable-count-1",
+  "heading": "Node-specific Volume Limits > Dynamic volume limits > Mutable CSI Node Allocatable Count",
+  "text": "Kubelet will periodically call the corresponding CSI driver\u2019s `NodeGetInfo` endpoint to refresh the maximum number of attachable volumes, using the interval specified in `nodeAllocatableUpdatePeriodSeconds`. The minimum allowed value for this field is 10 seconds.\n\nIf a volume attachment operation fails with a `ResourceExhausted` error (gRPC code 8), Kubernetes triggers an immediate update to the allocatable volume count for that Node. Additionally, kubelet marks affected pods as Failed, allowing their controllers to handle recreation. This prevents pods from getting stuck indefinitely in the `ContainerCreating` state."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0",
+  "heading": "StatefulSets > Deployment and Scaling Guarantees",
+  "text": "* For a StatefulSet with N replicas, when Pods are being deployed, they are created sequentially, in order from {0..N-1}.\n* When Pods are being deleted, they are terminated in reverse order, from {N-1..0}.\n* Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready. If [`.spec.minReadySeconds`](#minimum-ready-seconds) is set, predecessors must be available (Ready for at least `minReadySeconds`).\n* Before a Pod is terminated, all of its successors must be completely shutdown.\n\nThe StatefulSet should not specify a `pod.Spec.TerminationGracePeriodSeconds` of 0. This practice\nis unsafe and strongly discouraged. For further explanation, please refer to\n[force deleting StatefulSet Pods](/docs/tasks/run-application/force-delete-stateful-set-pod/)."
+ }
+]

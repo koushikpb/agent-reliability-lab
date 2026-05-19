@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/service-accounts#authenticating-credentials-0",
+  "heading": "Service Accounts > Authenticating service account credentials",
+  "text": "ServiceAccounts use signed\nJSON Web Tokens  (JWTs)\nto authenticate to the Kubernetes API server, and to any other system where a\ntrust relationship exists. Depending on how the token was issued\n(either time-limited using a `TokenRequest` or using a legacy mechanism with\na Secret), a ServiceAccount token might also have an expiry time, an audience,\nand a time after which the token *starts* being valid. When a client that is\nacting as a ServiceAccount tries to communicate with the Kubernetes API server,\nthe client includes an `Authorization: Bearer <token>` header with the HTTP\nrequest. The API server checks the validity of that bearer token as follows:\n\n1. Checks the token signature.\n1. Checks whether the token has expired.\n1. Checks whether object references in the token claims are currently valid.\n1. Checks whether the token is currently valid.\n1. Checks the audience claims."
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/authentication-mechanisms#serviceaccount-secret-tokens-0",
+  "heading": "Hardening Guide - Authentication Mechanisms > ServiceAccount secret tokens",
+  "text": "[Service account secrets](/docs/reference/access-authn-authz/service-accounts-admin/#manual-secret-management-for-serviceaccounts)\nare available as an option to allow workloads running in the cluster to authenticate to the\nAPI server. In Kubernetes < 1.23, these were the default option, however, they are being replaced\nwith TokenRequest API tokens. While these secrets could be used for user authentication, they are\ngenerally unsuitable for a number of reasons:\n\n- They cannot be set with an expiry and will remain valid until the associated service account is deleted.\n- The authentication tokens are visible to any cluster user who can read secrets in the namespace\n  that they are defined in.\n- Service accounts cannot be added to arbitrary groups complicating RBAC management where they are used."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#authenticating-in-code-0",
+  "heading": "Service Accounts > Authenticating service account credentials > Authenticating service account credentials in your own code",
+  "text": "If you have services of your own that need to validate Kubernetes service\naccount credentials, you can use the following methods:\n\n* [TokenReview API](/docs/reference/kubernetes-api/authentication-resources/token-review-v1/)\n  (recommended)\n* OIDC discovery\n\nThe Kubernetes project recommends that you use the TokenReview API, because\nthis method invalidates tokens that are bound to API objects such as Secrets,\nServiceAccounts, Pods or Nodes when those objects are deleted. For example, if you\ndelete the Pod that contains a projected ServiceAccount token, the cluster\ninvalidates that token immediately and a TokenReview immediately fails.\nIf you use OIDC validation instead, your clients continue to treat the token\nas valid until the token reaches its expiration timestamp.\n\nYour application should always define the audience that it accepts, and should\ncheck that the token's audiences match the audiences that the application\nexpects. This helps to minimize the scope of the token so that it can only be\nused in your application and nowhere else."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#serviceaccount-token-secrets-0",
+  "heading": "Secrets > Types of Secret > ServiceAccount token Secrets",
+  "text": "A `kubernetes.io/service-account-token` type of Secret is used to store a\ntoken credential that identifies a\nServiceAccount. This\nis a legacy mechanism that provides long-lived ServiceAccount credentials to\nPods.\n\nIn Kubernetes v1.22 and later, the recommended approach is to obtain a\nshort-lived, automatically rotating ServiceAccount token by using the\n[`TokenRequest`](/docs/reference/kubernetes-api/authentication-resources/token-request-v1/)\nAPI instead. You can get these short-lived tokens using the following methods:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#serviceaccount-token-volume-projection-2",
+  "heading": "Configure Service Accounts for Pods > ServiceAccount token volume projection",
+  "text": "`--api-audiences` (can be omitted)\n: defines audiences for ServiceAccount tokens. The service account token authenticator\n  validates that tokens used against the API are bound to at least one of these audiences.\n  If `api-audiences` is specified multiple times, tokens for any of the specified audiences\n  are considered valid by the Kubernetes API server. If you specify the `--service-account-issuer`\n  command line argument but you don't set `--api-audiences`, the control plane defaults to\n  a single element audience list that contains only the issuer URL.\n\nThe kubelet can also project a ServiceAccount token into a Pod. You can\nspecify desired properties of the token, such as the audience and the validity\nduration. These properties are _not_ configurable on the default ServiceAccount\ntoken. The token will also become invalid against the API when either the Pod\nor the ServiceAccount is deleted."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#assign-to-pod-6",
+  "heading": "Service Accounts > How to use service accounts > Assign a ServiceAccount to a Pod",
+  "text": "This restriction applies only to kubelets (node identities) and does not affect other\ncallers of the `TokenRequest` API. For details and RBAC examples,\nsee [Service account token audience restriction](/docs/reference/access-authn-authz/node/#service-account-token-audience-restriction).\n\nFor applications running outside your Kubernetes cluster, you might be considering\ncreating a long-lived ServiceAccount token that is stored in a Secret. This allows authentication, but the Kubernetes project recommends you avoid this approach.\nLong-lived bearer tokens represent a security risk as, once disclosed, the token\ncan be misused. Instead, consider using an alternative. For example, your external\napplication can authenticate using a well-protected private key `and` a certificate,\nor using a custom mechanism such as an [authentication webhook](/docs/reference/access-authn-authz/authentication/#webhook-token-authentication) that you implement yourself."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#assign-to-pod-2",
+  "heading": "Service Accounts > How to use service accounts > Assign a ServiceAccount to a Pod",
+  "text": "* [TokenRequest API](/docs/reference/kubernetes-api/authentication-resources/token-request-v1/)\n  (recommended): Request a short-lived service account token from within\n  your own *application code*. The token expires automatically and can rotate\n  upon expiration.\n  If you have a legacy application that is not aware of Kubernetes, you\n  could use a sidecar container within the same pod to fetch these tokens\n  and make them available to the application workload.\n* [Token Volume Projection](/docs/tasks/configure-pod-container/configure-service-account/#serviceaccount-token-volume-projection)\n  (also recommended): In Kubernetes v1.20 and later, use the Pod specification to\n  tell the kubelet to add the service account token to the Pod as a\n  *projected volume*. Projected tokens expire automatically, and the kubelet\n  rotates the token before it expires."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#manually-create-an-api-token-for-a-serviceaccount-1",
+  "heading": "Configure Service Accounts for Pods > Manually create an API token for a ServiceAccount",
+  "text": "Versions of Kubernetes before v1.22 automatically created long term credentials for\naccessing the Kubernetes API. This older mechanism was based on creating token Secrets\nthat could then be mounted into running Pods. In more recent versions, including\nKubernetes v, API credentials are obtained directly by using the\n[TokenRequest](/docs/reference/kubernetes-api/authentication-resources/token-request-v1/) API,\nand are mounted into Pods using a\n[projected volume](/docs/reference/access-authn-authz/service-accounts-admin/#bound-service-account-token-volume).\nThe tokens obtained using this method have bounded lifetimes, and are automatically\ninvalidated when the Pod they are mounted into is deleted."
+ }
+]

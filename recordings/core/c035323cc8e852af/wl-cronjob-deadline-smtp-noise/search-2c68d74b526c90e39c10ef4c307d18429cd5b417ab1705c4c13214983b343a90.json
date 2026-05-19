@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-3",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "Note that both the Job spec and the [Pod template spec](/docs/concepts/workloads/pods/init-containers/#detailed-behavior)\nwithin the Job have an `activeDeadlineSeconds` field. Ensure that you set this field at the proper level.\n\nKeep in mind that the `restartPolicy` applies to the Pod, and not to the Job itself:\nthere is no automatic Job restart once the Job status is `type: Failed`.\nThat is, the Job termination mechanisms activated with `.spec.activeDeadlineSeconds`\nand `.spec.backoffLimit` result in a permanent Job failure that requires manual intervention to resolve."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#terminal-job-conditions-1",
+  "heading": "Jobs > Job termination and cleanup > Terminal Job conditions",
+  "text": "Jobs fail for the following reasons:\n- The number of Pod failures exceeded the specified `.spec.backoffLimit` in the Job\n  specification. For details, see [Pod backoff failure policy](#pod-backoff-failure-policy).\n- The Job runtime exceeded the specified `.spec.activeDeadlineSeconds`\n- An indexed Job that used `.spec.backoffLimitPerIndex` has failed indexes.\n  For details, see [Backoff limit per index](#backoff-limit-per-index).\n- The number of failed indexes in the Job exceeded the specified\n  `spec.maxFailedIndexes`. For details, see [Backoff limit per index](#backoff-limit-per-index)\n- A failed Pod matches a rule in `.spec.podFailurePolicy` that has the `FailJob`\n   action. For details about how Pod failure policy rules might affect failure\n   evaluation, see [Pod failure policy](#pod-failure-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-2",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "A CronJob is counted as missed if it has failed to be created at its scheduled time. For example, if `concurrencyPolicy` is set to `Forbid` and a CronJob was attempted to be scheduled when there was a previous schedule still running, then it would count as missed.\n\nFor example, suppose a CronJob is set to schedule a new Job every one minute beginning at `08:30:00`, and its\n`startingDeadlineSeconds` field is not set. If the CronJob controller happens to\nbe down from `08:29:00` to `10:21:00`, the Job will not start as the number of missed Jobs which missed their schedule is greater than 100."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-1",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "```shell\nkubectl patch deployment/nginx-deployment -p '{\"spec\":{\"progressDeadlineSeconds\":600}}'\n```\nThe output is similar to this:\n```\ndeployment.apps/nginx-deployment patched\n```\nOnce the deadline has been exceeded, the Deployment controller adds a DeploymentCondition with the following\nattributes to the Deployment's `.status.conditions`:\n\n* `type: Progressing`\n* `status: \"False\"`\n* `reason: ProgressDeadlineExceeded`\n\nThis condition can also fail early and is then set to status value of `\"False\"` due to reasons as `ReplicaSetCreateError`.\nAlso, the deadline is not taken into account anymore once the Deployment rollout completes.\n\nSee the [Kubernetes API conventions](https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties) for more information on status conditions."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-1",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "For every CronJob, the CronJob controller checks how many schedules it missed in the duration from its last scheduled time until now. If there are more than 100 missed schedules, then it does not start the Job and logs the error.\n\n```\ntoo many missed start times. Set or decrease .spec.startingDeadlineSeconds or check clock skew\n```\nThis behavior is applicable for catch-up scheduling and does not mean the CronJob will stop running.  \n\nFor example, when using `concurrencyPolicy: Forbid`, long-running Jobs may cause scheduled times to be skipped, but a new Job can be created once the previous Job completes.\n\nIt is important to note that if the `startingDeadlineSeconds` field is set (not `nil`), the controller counts how many missed Jobs occurred from the value of `startingDeadlineSeconds` until now rather than from the last scheduled time until now. For example, if `startingDeadlineSeconds` is `200`, the controller counts how many missed Jobs occurred in the last 200 seconds."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/cron-jobs#job-creation-0",
+  "heading": "CronJob > CronJob limitations > Job creation",
+  "text": "A CronJob creates a Job object approximately once per execution time of its schedule.\nThe scheduling is approximate because there\nare certain circumstances where two Jobs might be created, or no Job might be created.\nKubernetes tries to avoid those situations, but does not completely prevent them. Therefore,\nthe Jobs that you define should be _idempotent_.\n\nStarting with Kubernetes v1.32, CronJobs apply an annotation\n`batch.kubernetes.io/cronjob-scheduled-timestamp` to their created Jobs. This annotation\nindicates the originally scheduled creation time for the Job and is formatted in RFC3339.\n\nIf `startingDeadlineSeconds` is set to a large value or left unset (the default)\nand if `concurrencyPolicy` is set to `Allow`, the Jobs will always run\nat least once.\n\nIf `startingDeadlineSeconds` is set to a value less than 10 seconds, the CronJob may not be scheduled. This is because the CronJob controller checks things every 10 seconds."
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#detecting-a-stalled-rollout-0",
+  "heading": "Update a Deployment Without Downtime > Configuring rolling update strategy > Detecting a stalled rollout",
+  "text": "If a rollout does not make progress within the time specified by\n`.spec.progressDeadlineSeconds` (default: 600 seconds), Kubernetes marks the Deployment condition `Progressing` as `False`. You can check for this condition by describing the Deployment:\n\n```shell\nkubectl describe deployment nginx-deployment\n```\n\nLook for the `Progressing` condition in the `Conditions` section of the output. A stalled rollout usually indicates that new Pods are failing to start. The `Events` section of the output can help diagnose the issue."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#failed-deployment-2",
+  "heading": "Deployments > Deployment status > Failed Deployment",
+  "text": "Kubernetes takes no action on a stalled Deployment other than to report a status condition with\n`reason: ProgressDeadlineExceeded`. Higher level orchestrators can take advantage of it and act accordingly, for\nexample, rollback the Deployment to its previous version.\n\nIf you pause a Deployment rollout, Kubernetes does not check progress against your specified deadline.\nYou can safely pause a Deployment rollout in the middle of a rollout and resume without triggering\nthe condition for exceeding the deadline.\n\nYou may experience transient errors with your Deployments, either due to a low timeout that you have set or\ndue to any other kind of error that can be treated as transient. For example, let's suppose you have\ninsufficient quota. If you describe the Deployment you will notice the following section:"
+ }
+]

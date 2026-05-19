@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the billing namespace to see the current pod status:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Kw7nbLt7HCwxtuJxLtXsn8",
+   "input": {
+    "namespace": "billing"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1350,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 68,
+ "stop_reason": "tool_use"
+}

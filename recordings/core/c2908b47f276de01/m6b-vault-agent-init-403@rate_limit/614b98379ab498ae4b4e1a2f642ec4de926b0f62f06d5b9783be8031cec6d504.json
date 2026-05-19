@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results are about Kubernetes authorization in general, but don't directly address the Vault Agent issue. Let me search more specifically for Vault Agent configuration and the service account behavior:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01EVgR1tpUDEsYiSS2wwACqJ",
+   "input": {
+    "query": "service account token authentication Kubernetes"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5191,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 97,
+ "stop_reason": "tool_use"
+}

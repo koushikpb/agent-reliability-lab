@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-condition#disruption-target-2",
+  "heading": "Pod Conditions > Other Pod conditions > DisruptionTarget",
+  "text": "A Pod disruption might be interrupted. The control plane might re-attempt to\ncontinue the disruption of the same Pod, but it is not guaranteed. As a result,\nthe `DisruptionTarget` condition might be added to a Pod, but that Pod might then not actually be\ndeleted. In such a situation, after some time, the\nPod disruption condition will be cleared.\n\nAlong with cleaning up the pods, the Pod garbage collector (PodGC) will also mark them as failed if they are in a non-terminal\nphase (see also [Pod garbage collection](/docs/concepts/workloads/pods/pod-lifecycle/#pod-garbage-collection)).\n\nWhen using a Job (or CronJob), you may want to use these Pod disruption conditions as part of your Job's\n[Pod failure policy](/docs/concepts/workloads/controllers/job#pod-failure-policy).\n\nFor more details, see [Disruptions](/docs/concepts/workloads/pods/disruptions/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-conditions-2",
+  "heading": "Disruptions > Pod disruption conditions",
+  "text": "A Pod disruption might be interrupted. The control plane might re-attempt to\ncontinue the disruption of the same Pod, but it is not guaranteed. As a result,\nthe `DisruptionTarget` condition might be added to a Pod, but that Pod might then not actually be\ndeleted. In such a situation, after some time, the\nPod disruption condition will be cleared.\n\nAlong with cleaning up the pods, the Pod garbage collector (PodGC) will also mark them as failed if they are in a non-terminal\nphase (see also [Pod garbage collection](/docs/concepts/workloads/pods/pod-lifecycle/#pod-garbage-collection)).\n\nWhen using a Job (or CronJob), you may want to use these Pod disruption conditions as part of your Job's\n[Pod failure policy](/docs/concepts/workloads/controllers/job#pod-failure-policy)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/static-pod#behavior-of-static-pods-3",
+  "heading": "Create static Pods > Observe static pod behavior",
+  "text": "```console\n10.240.0.48 - - [16/Nov/2022:12:45:49 +0000] \"GET / HTTP/1.1\" 200 612 \"-\" \"curl/7.47.0\" \"-\"\n10.240.0.48 - - [16/Nov/2022:12:45:50 +0000] \"GET / HTTP/1.1\" 200 612 \"-\" \"curl/7.47.0\" \"-\"\n10.240.0.48 - - [16/Nove/2022:12:45:51 +0000] \"GET / HTTP/1.1\" 200 612 \"-\" \"curl/7.47.0\" \"-\"\n```\n\nTo find more about how to debug using `crictl`, please visit\n[_Debugging Kubernetes nodes with crictl_](/docs/tasks/debug/debug-cluster/crictl/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-backoff-failure-policy-1",
+  "heading": "Jobs > Handling Pod and container failures > Pod backoff failure policy",
+  "text": "- The number of Pods with `.status.phase = \"Failed\"`.\n- When using `restartPolicy = \"OnFailure\"`, the number of retries in all the\n  containers of Pods with `.status.phase` equal to `Pending` or `Running`.\n\nIf either of the calculations reaches the `.spec.backoffLimit`, the Job is\nconsidered failed.\n\nIf your Job has `restartPolicy = \"OnFailure\"`, keep in mind that your Pod running the job\nwill be terminated once the job backoff limit has been reached. This can make debugging\nthe Job's executable more difficult. We suggest setting\n`restartPolicy = \"Never\"` when debugging the Job or using a logging system to ensure output\nfrom failed Jobs is not lost inadvertently."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-6",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "When you use the `podFailurePolicy`, and the Job fails due to the pod\nmatching the rule with the `FailJob` action, then the Job controller triggers\nthe Job termination process by adding the `FailureTarget` condition.\nFor more details, see [Job termination and cleanup](#job-termination-and-cleanup)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#pod-failure-policy-4",
+  "heading": "Jobs > Handling Pod and container failures > Pod failure policy",
+  "text": "     all running Pods should be terminated.\n  - `Ignore`: use to indicate that the counter towards the `.spec.backoffLimit`\n     should not be incremented and a replacement Pod should be created.\n  - `Count`: use to indicate that the Pod should be handled in the default way.\n     The counter towards the `.spec.backoffLimit` should be incremented.\n  - `FailIndex`: use this action along with [backoff limit per index](#backoff-limit-per-index)\n     to avoid unnecessary retries within the index of a failed pod."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-pods-0",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Pods",
+  "text": "The first step in debugging a Pod is taking a look at it. Check the current\nstate of the Pod and recent events with the following command:\n\n```shell\nkubectl describe pods ${POD_NAME}\n```\n\nLook at the state of the containers in the pod. Are they all `Running`?\nHave there been recent restarts?\n\nContinue debugging depending on the state of the pods.\n\n#### My pod stays pending\n\nIf a Pod is stuck in `Pending` it means that it can not be scheduled onto a node.\nGenerally this is because there are insufficient resources of one type or another\nthat prevent scheduling. Look at the output of the `kubectl describe ...` command above.\nThere should be messages from the scheduler about why it can not schedule your pod.\nReasons include:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#handling-pod-and-container-failures-0",
+  "heading": "Jobs > Handling Pod and container failures",
+  "text": "A container in a Pod may fail for a number of reasons, such as because the process in it exited with\na non-zero exit code, or the container was killed for exceeding a memory limit, etc. If this\nhappens, and the `.spec.template.spec.restartPolicy = \"OnFailure\"`, then the Pod stays\non the node, but the container is re-run. Therefore, your program needs to handle the case when it is\nrestarted locally, or else specify `.spec.template.spec.restartPolicy = \"Never\"`.\nSee [pod lifecycle](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) for more information on `restartPolicy`."
+ }
+]

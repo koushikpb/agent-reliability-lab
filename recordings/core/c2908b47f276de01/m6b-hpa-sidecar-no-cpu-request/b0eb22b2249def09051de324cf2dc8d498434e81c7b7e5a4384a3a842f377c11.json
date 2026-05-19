@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I found critical information. The documentation states that if you have a sidecar container (like the log-forwarder in this case), and the HPA is tracking the wrong container or if the container specification changed in the 4.8.0 release, the HPA can fail. Let me look at the specific issue:\n\nThe key points are:\n1. The pods have CPU requests defined (1 CPU for the `api` container)\n2. The pods have a sidecar container (`log-forwarder`) that does NOT have CPU requests defined\n3. According to the documentation: \"If you revise the target resource to have a new Pod specification with a different set of containers, you should revise the HPA spec if that newly added container should also be used for scaling.\" [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-1]\n\nThe 4.8.0 release likely changed the pod specification - possibly adding or modifying the log-forwarder sidecar. This could cause the HPA to fail if:\n- The HPA is now looking at a container name that doesn't match what's in the deployment\n- The sidecar container was added/changed and the HPA definition wasn't updated\n- The HPA switched to tracking Container resource metrics instead of Pod resource metrics\n\nLet me search for more information about what happens when container specs change:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016P5g2qFJPVhQ2YpMr442Qb",
+   "input": {
+    "query": "HPA change container spec metric source not found"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 9300,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 374,
+ "stop_reason": "tool_use"
+}

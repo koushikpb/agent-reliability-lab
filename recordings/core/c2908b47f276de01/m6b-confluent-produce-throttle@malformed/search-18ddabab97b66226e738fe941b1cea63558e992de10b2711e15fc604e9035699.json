@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-pod-level-resources#create-a-pod-with-memory-requests-and-limits-at-pod-level-2",
+  "heading": "Assign Pod-level CPU and memory resources > Create a pod with memory requests and limits at pod-level",
+  "text": "```yaml\n...\nspec:\n  containers:\n  ...\n  resources:\n    requests:\n      memory: 100Mi\n    limits:\n      memory: 200Mi\n...\n```\n\nRun `kubectl top` to fetch the metrics for the pod:\n\n```shell\nkubectl top pod memory-demo --namespace=pod-resources-example\n```\n\nThe output shows that the Pod is using about 162,900,000 bytes of memory, which\nis about 150 MiB. This is greater than the Pod's 100 MiB request, but within the\nPod's 200 MiB limit.\n\n```\nNAME                        CPU(cores)   MEMORY(bytes)\nmemory-demo                 <something>  162856960\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace#create-a-pod-1",
+  "heading": "Configure Memory and CPU Quotas for a Namespace > Create a Pod",
+  "text": "```shell\nkubectl get resourcequota mem-cpu-demo --namespace=quota-mem-cpu-example --output=yaml\n```\n\nThe output shows the quota along with how much of the quota has been used.\nYou can see that the memory and CPU requests and limits for your Pod do not\nexceed the quota.\n\n```\nstatus:\n  hard:\n    limits.cpu: \"2\"\n    limits.memory: 2Gi\n    requests.cpu: \"1\"\n    requests.memory: 1Gi\n  used:\n    limits.cpu: 800m\n    limits.memory: 800Mi\n    requests.cpu: 400m\n    requests.memory: 600Mi\n```\n\nIf you have the `jq` tool, you can also query (using [JSONPath](/docs/reference/kubectl/jsonpath/))\nfor just the `used` values, **and** pretty-print that that of the output. For example:"
+ },
+ {
+  "chunk_id": "concepts/policy/limit-range#example-resource-constraints-0",
+  "heading": "Limit Ranges > Example resource constraints",
+  "text": "Examples of policies that could be created using LimitRange are:\n\n- In a 2 node cluster with a capacity of 8 GiB RAM and 16 cores, constrain Pods in a\n  namespace to request 100m of CPU with a max limit of 500m for CPU and request 200Mi\n  for Memory with a max limit of 600Mi for Memory.\n- Define default CPU limit and request to 150m and memory default request to 300Mi for\n  Containers started with no cpu and memory requests in their specs.\n\nIn the case where the total limits of the namespace is less than the sum of the limits\nof the Pods/Containers, there may be contention for resources. In this case, the\nContainers or Pods will not be created.\n\nNeither contention nor changes to a LimitRange will affect already created resources."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace#attempt-to-create-a-second-pod-0",
+  "heading": "Configure Memory and CPU Quotas for a Namespace > Attempt to create a second Pod",
+  "text": "Here is a manifest for a second Pod:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: quota-mem-cpu-demo-2\nspec:\n  containers:\n  - name: quota-mem-cpu-demo-2-ctr\n    image: redis\n    resources:\n      limits:\n        memory: \"1Gi\"\n        cpu: \"800m\"\n      requests:\n        memory: \"700Mi\"\n        cpu: \"400m\"\n```\n\nIn the manifest, you can see that the Pod has a memory request of 700 MiB.\nNotice that the sum of the used memory request and this new memory\nrequest exceeds the memory request quota: 600 MiB + 700 MiB > 1 GiB.\n\nAttempt to create the Pod:\n\n```shell\nkubectl apply -f https://k8s.io/examples/admin/resource/quota-mem-cpu-pod-2.yaml --namespace=quota-mem-cpu-example\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-pod-level-resources#create-a-pod-with-resource-requests-and-limits-at-both-pod-level-and-container-level-2",
+  "heading": "Assign Pod-level CPU and memory resources > Create a pod with resource requests and limits at both pod-level and container-level",
+  "text": "View detailed information about the Pod:\n\n```shell\nkubectl get pod pod-resources-demo --output=yaml --namespace=pod-resources-example\n```\n\nThe output shows that one container in the Pod has a memory request of 50 MiB and a\nCPU request of 0.5 cores, with a memory limit of 100 MiB and a CPU limit of 0.5\ncores. The Pod itself has a memory request of 100 MiB and a CPU request of\n1 core, and a memory limit of 200 MiB and a CPU limit of 1 core.\n\n```yaml\n...\n  containers:\n  -\n    name: pod-resources-demo-ctr-1\n    resources:\n      limits:\n        cpu: 500m\n        memory: 100Mi\n      requests:\n        cpu: 500m\n        memory: 50Mi\n...\n  -\n    name: pod-resources-demo-ctr-2\n    resources: {}\n...\n  resources:\n    limits:\n      cpu: \"1\"\n      memory: 200Mi\n    requests:\n      cpu: \"1\"\n      memory: 100Mi\n...\n```"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#example-1-0",
+  "heading": "Resource Management for Pods and Containers > Container resources example",
+  "text": "The following Pod has two containers. Both containers are defined with a request for\n0.25 CPU\nand 64MiB (2<sup>26</sup> bytes) of memory. Each container has a limit of 0.5\nCPU and 128MiB of memory. You can say the Pod has a request of 0.5 CPU and 128\nMiB of memory, and a limit of 1 CPU and 256MiB of memory.\n\n```yaml\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: frontend\nspec:\n  containers:\n  - name: app\n    image: images.my-company.example/app:v4\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n  - name: log-aggregator\n    image: images.my-company.example/log-aggregator:v6\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-pod-level-resources#create-a-pod-with-cpu-requests-and-limits-at-pod-level-2",
+  "heading": "Assign Pod-level CPU and memory resources > Create a pod with CPU requests and limits at pod-level",
+  "text": "This example output shows that the Pod is using 974 milliCPU, which is\nslightly less than the limit of 1 CPU specified in the Pod configuration.\n\n```\nNAME                        CPU(cores)   MEMORY(bytes)\ncpu-demo                    974m         <something>\n```\n\nRecall that by setting `-cpu \"2\"`, you configured the Container to attempt to use 2\nCPUs, but the Container is only being allowed to use about 1 CPU. The container's\nCPU use is being throttled, because the container is attempting to use more CPU\nresources than the Pod CPU limit."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#how-pods-with-resource-limits-are-run-1",
+  "heading": "Resource Management for Pods and Containers > How Kubernetes applies resource requests and limits",
+  "text": "- The CPU limit defines a hard ceiling on how much CPU time the container can use.\n  During each scheduling interval (time slice), the Linux kernel checks to see if this\n  limit is exceeded; if so, the kernel waits before allowing that cgroup to resume execution.\n- The CPU request typically defines a weighting. If several different containers (cgroups)\n  want to run on a contended system, workloads with larger CPU requests are allocated more\n  CPU time than workloads with small requests.\n- The memory request is mainly used during (Kubernetes) Pod scheduling. On a node that uses\n  cgroups v2, the container runtime might use the memory request as a hint to set\n  `memory.min` and `memory.low`.\n- The memory limit defines a memory limit for that cgroup. If the container tries to\n  allocate more memory than this limit, the Linux kernel out-of-memory subsystem activates\n  and, typically, intervenes by stopping one of the processes in the container that tried\n  to allocate memory. If that process is the container's PID 1, and the container is marked"
+ }
+]

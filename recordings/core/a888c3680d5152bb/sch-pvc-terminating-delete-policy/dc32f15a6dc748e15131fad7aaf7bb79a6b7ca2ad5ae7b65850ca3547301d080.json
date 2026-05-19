@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search for more information about how to resolve PVC protection when a pod is still using it:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01PhcyegajiEFUNeCkPxCAvq",
+   "input": {
+    "query": "PVC stuck Terminating pod using volume storage object in use protection"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4389,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 88,
+ "stop_reason": "tool_use"
+}

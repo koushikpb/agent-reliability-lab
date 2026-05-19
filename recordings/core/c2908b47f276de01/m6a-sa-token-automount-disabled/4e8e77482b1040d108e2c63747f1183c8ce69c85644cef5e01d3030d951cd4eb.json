@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I can see the issue! The new pod is crashing with exit code 1. Let me check the logs from the crashing pod:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_018Muh8WSP7SEWFranazXoqN",
+   "input": {
+    "pod": "job-dispatcher-7b6f9c4d8-zk5np"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1928,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 102,
+ "stop_reason": "tool_use"
+}

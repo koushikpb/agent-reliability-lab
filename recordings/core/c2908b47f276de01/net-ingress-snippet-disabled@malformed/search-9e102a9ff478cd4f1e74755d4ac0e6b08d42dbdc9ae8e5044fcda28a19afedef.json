@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-update-objects-7",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to update objects",
+  "text": "Update the `simple_deployment.yaml` configuration file to change the image from\n`nginx:1.14.2` to `nginx:1.16.1`, and delete the `minReadySeconds` field:\n\n```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx-deployment\nspec:\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.16.1 # update the image\n        ports:\n        - containerPort: 80\n```\n\nApply the changes made to the configuration file:\n\n```shell\nkubectl diff -f https://k8s.io/examples/application/update_deployment.yaml\nkubectl apply -f https://k8s.io/examples/application/update_deployment.yaml\n```\n\nPrint the live configuration using `kubectl get`:"
+ },
+ {
+  "chunk_id": "concepts/workloads/management#disruptive-updates-0",
+  "heading": "Managing Workloads > Disruptive updates",
+  "text": "In some cases, you may need to update resource fields that cannot be updated once initialized, or\nyou may want to make a recursive change immediately, such as to fix broken pods created by a\nDeployment. To change such fields, use `replace --force`, which deletes and re-creates the\nresource. In this case, you can modify your original configuration file:\n\n```shell\nkubectl replace -f https://k8s.io/examples/application/nginx/nginx-deployment.yaml --force\n```\n\n```none\ndeployment.apps/my-nginx deleted\ndeployment.apps/my-nginx replaced\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#what-is-ingress-0",
+  "heading": "Ingress > What is Ingress?",
+  "text": "[Ingress](/docs/reference/generated/kubernetes-api//#ingress-v1-networking-k8s-io)\nexposes HTTP and HTTPS routes from outside the cluster to\n within the cluster.\nTraffic routing is controlled by rules defined on the Ingress resource.\n\nHere is a simple example where an Ingress sends all its traffic to one Service:\n\nAn Ingress may be configured to give Services externally-reachable URLs,\nload balance traffic, terminate SSL / TLS, and offer name-based virtual hosting.\nAn [Ingress controller](/docs/concepts/services-networking/ingress-controllers)\nis responsible for fulfilling the Ingress, usually with a load balancer, though\nit may also configure your edge router or additional frontends to help handle the traffic."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-6",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  is an ingress controller driving [Kong Gateway](https://konghq.com/kong/).\n* [Kusk Gateway](https://kusk.kubeshop.io/) is an OpenAPI-driven ingress controller based on [Envoy](https://www.envoyproxy.io).\n* [N42 Gateway](https://n42-gateway.github.io/) is an Ingress and Gateway API controller for [HAProxy](https://www.haproxy.org/#desc).\n* The [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx-ingress-controller/)\n  works with the [NGINX](https://www.nginx.com/resources/glossary/nginx/) webserver (as a proxy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#components-1",
+  "heading": "StatefulSets > Components",
+  "text": "```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx\n  labels:\n    app: nginx\nspec:\n  ports:\n  - port: 80\n    name: web\n  clusterIP: None\n  selector:\n    app: nginx\n---\napiVersion: apps/v1\nkind: StatefulSet\nmetadata:\n  name: web\nspec:\n  selector:\n    matchLabels:\n      app: nginx # has to match .spec.template.metadata.labels\n  serviceName: \"nginx\"\n  replicas: 3 # by default is 1\n  minReadySeconds: 10 # by default is 0\n  template:\n    metadata:\n      labels:\n        app: nginx # has to match .spec.selector.matchLabels\n    spec:\n      terminationGracePeriodSeconds: 10\n      containers:\n      - name: nginx\n        image: registry.k8s.io/nginx-slim:0.24\n        ports:\n        - containerPort: 80\n          name: web\n        volumeMounts:\n        - name: www\n          mountPath: /usr/share/nginx/html\n  volumeClaimTemplates:\n  - metadata:\n      name: www\n    spec:\n      accessModes: [ \"ReadWriteOnce\" ]\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#updating-a-deployment-0",
+  "heading": "Deployments > Updating a Deployment",
+  "text": "A Deployment's rollout is triggered if and only if the Deployment's Pod template (that is, `.spec.template`)\nis changed, for example if the labels or container images of the template are updated. Other updates, such as scaling the Deployment, do not trigger a rollout.\n\nFollow the steps given below to update your Deployment:\n\n1. Let's update the nginx Pods to use the `nginx:1.16.1` image instead of the `nginx:1.14.2` image.\n\n   ```shell\n   kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.16.1\n   ```\n\n   or use the following command:\n\n   ```shell\n   kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1\n   ```\n   where `deployment/nginx-deployment` indicates the Deployment,\n   `nginx` indicates the Container the update will take place and\n   `nginx:1.16.1` indicates the new image and its tag.\n\n   The output is similar to:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-2",
+  "heading": "Ingress > The Ingress resource",
+  "text": "The [Ingress spec](/docs/reference/kubernetes-api/service-resources/ingress-v1/#IngressSpec)\nhas all the information needed to configure a load balancer or proxy server. Most importantly, it\ncontains a list of rules matched against all incoming requests. Ingress resource only supports rules\nfor directing HTTP(S) traffic.\n\nIf the `ingressClassName` is omitted, a [default Ingress class](#default-ingress-class)\nshould be defined.\n\nSome ingress controllers work even without the definition of a\ndefault IngressClass. Even if you use an ingress controller that is able\nto operate without any IngressClass, the Kubernetes project still recommends\nthat you define a default IngressClass."
+ }
+]

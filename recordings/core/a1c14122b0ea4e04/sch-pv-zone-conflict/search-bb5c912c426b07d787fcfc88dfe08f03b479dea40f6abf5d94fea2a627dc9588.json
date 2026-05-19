@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/storage-classes#volume-binding-mode-2",
+  "heading": "Storage Classes > Volume binding mode",
+  "text": "The following plugins support `WaitForFirstConsumer` with pre-created PersistentVolume binding:\n\n- CSI volumes, provided that the specific CSI driver supports this\n- [`local`](#local)\n\nIf you choose to use `WaitForFirstConsumer`, do not use `nodeName` in the Pod spec\nto specify node affinity.\nIf `nodeName` is used in this case, the scheduler will be bypassed and PVC will remain in `pending` state.\n\nInstead, you can use node selector for `kubernetes.io/hostname`:"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#volume-binding-mode-1",
+  "heading": "Storage Classes > Volume binding mode",
+  "text": "A cluster administrator can address this issue by specifying the `WaitForFirstConsumer` mode which\nwill delay the binding and provisioning of a PersistentVolume until a Pod using the PersistentVolumeClaim is created.\nPersistentVolumes will be selected or provisioned conforming to the topology that is\nspecified by the Pod's scheduling constraints. These include, but are not limited to, [resource\nrequirements](/docs/concepts/configuration/manage-resources-containers/),\n[node selectors](/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector),\n[pod affinity and\nanti-affinity](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity),\nand [taints and tolerations](/docs/concepts/scheduling-eviction/taint-and-toleration).\n\nThe following plugins support `WaitForFirstConsumer` with dynamic provisioning:\n\n- CSI volumes, provided that the specific CSI driver supports this"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#local-2",
+  "heading": "Volumes > Types of volumes > local",
+  "text": "When using local volumes, it is recommended to create a StorageClass with\n`volumeBindingMode` set to `WaitForFirstConsumer`. For more details, see the\nlocal [StorageClass](/docs/concepts/storage/storage-classes/#local) example.\nDelaying volume binding ensures that the PersistentVolumeClaim binding decision\nwill also be evaluated with any other node constraints the Pod may have,\nsuch as node resource requirements, node selectors, Pod affinity, and Pod anti-affinity.\n\nAn external static provisioner can be run separately for improved management of\nthe local volume lifecycle. Note that this provisioner does not support dynamic\nprovisioning yet. For an example on how to run an external local provisioner, see the\n[local volume provisioner user guide](https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner).\n\nThe local PersistentVolume requires manual cleanup and deletion by the\nuser if the external static provisioner is not used to manage the volume\nlifecycle."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#allowed-topologies-0",
+  "heading": "Storage Classes > Allowed topologies",
+  "text": "When a cluster operator specifies the `WaitForFirstConsumer` volume binding mode, it is no longer necessary\nto restrict provisioning to specific topologies in most situations. However,\nif still required, `allowedTopologies` can be specified.\n\nThis example demonstrates how to restrict the topology of provisioned volumes to specific\nzones and should be used as a replacement for the `zone` and `zones` parameters for the\nsupported plugins.\n\n```yaml\napiVersion: storage.k8s.io/v1\nkind: StorageClass\nmetadata:\n  name: standard\nprovisioner:  example.com/example\nparameters:\n  type: pd-standard\nvolumeBindingMode: WaitForFirstConsumer\nallowedTopologies:\n- matchLabelExpressions:\n  - key: topology.kubernetes.io/zone\n    values:\n    - us-central-1a\n    - us-central-1b\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#local-0",
+  "heading": "Storage Classes > Parameters > Local",
+  "text": "```yaml\napiVersion: storage.k8s.io/v1\nkind: StorageClass\nmetadata:\n  name: local-storage\nprovisioner: kubernetes.io/no-provisioner # indicates that this StorageClass does not support automatic provisioning\nvolumeBindingMode: WaitForFirstConsumer\n```\n\nLocal volumes do not support dynamic provisioning in Kubernetes ;\nhowever a StorageClass should still be created to delay volume binding until a Pod is actually\nscheduled to the appropriate node. This is specified by the `WaitForFirstConsumer` volume\nbinding mode.\n\nDelaying volume binding allows the scheduler to consider all of a Pod's\nscheduling constraints when choosing an appropriate PersistentVolume for a\nPersistentVolumeClaim."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-capacity#rescheduling-0",
+  "heading": "Storage Capacity > Rescheduling",
+  "text": "When a node has been selected for a Pod with `WaitForFirstConsumer`\nvolumes, that decision is still tentative. The next step is that the\nCSI storage driver gets asked to create the volume with a hint that the\nvolume is supposed to be available on the selected node.\n\nBecause Kubernetes might have chosen a node based on out-dated\ncapacity information, it is possible that the volume cannot really be\ncreated. The node selection is then reset and the Kubernetes scheduler\ntries again to find a node for the Pod."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#node-affinity-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Node Affinity",
+  "text": "For most volume types, you do not need to set this field.\nYou need to explicitly set this for [local](/docs/concepts/storage/volumes/#local) volumes.\n\nA PV can specify node affinity to define constraints that limit what nodes this\nvolume can be accessed from. Pods that use a PV will only be scheduled to nodes\nthat are selected by the node affinity. To specify node affinity, set\n`nodeAffinity` in the `.spec` of a PV. The\n[PersistentVolume](/docs/reference/kubernetes-api/config-and-storage-resources/persistent-volume-v1/#PersistentVolumeSpec)\nAPI reference has more details on this field.\n\n#### Updates to node affinity"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-1",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "`Delete`\n: The PVCs created from the StatefulSet `volumeClaimTemplate` are deleted for each Pod\n  affected by the policy. With the `whenDeleted` policy all PVCs from the\n  `volumeClaimTemplate` are deleted after their Pods have been deleted. With the\n  `whenScaled` policy, only PVCs corresponding to Pod replicas being scaled down are\n  deleted, after their Pods have been deleted.\n\n`Retain` (default)\n: PVCs from the `volumeClaimTemplate` are not affected when their Pod is\n  deleted. This is the behavior before this new feature.\n\nBear in mind that these policies **only** apply when Pods are being removed due to the\nStatefulSet being deleted or scaled down. For example, if a Pod associated with a StatefulSet\nfails due to node failure, and the control plane creates a replacement Pod, the StatefulSet\nretains the existing PVC.  The existing volume is unaffected, and the cluster will attach it to\nthe node where the new Pod is about to launch.\n\nThe default for policies is `Retain`, matching the StatefulSet behavior before this new feature.\n\nHere is an example policy:"
+ }
+]

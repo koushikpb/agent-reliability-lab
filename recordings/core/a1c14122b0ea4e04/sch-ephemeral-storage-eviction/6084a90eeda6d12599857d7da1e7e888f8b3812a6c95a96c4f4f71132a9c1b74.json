@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01FvFMiFB4k9AVSsaJUyiteM",
+   "input": {
+    "namespace": "reporting"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1824,
+ "model": "claude-opus-4-7",
+ "output_tokens": 68,
+ "stop_reason": "tool_use"
+}

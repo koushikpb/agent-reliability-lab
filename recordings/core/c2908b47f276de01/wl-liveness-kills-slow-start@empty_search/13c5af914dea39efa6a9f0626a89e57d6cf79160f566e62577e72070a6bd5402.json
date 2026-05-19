@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary**: I've resolved ticket T-2003. The catalog-search pods are stuck in a CrashLoopBackOff because the readiness probe is configured with a 0-second delay but the application needs 9-15+ seconds to load its 12.4 GiB index into memory before starting the HTTP listener. The probe fails before the app is ready, triggering termination and restart cycles. The fix is to update the readiness probe's `initialDelaySeconds` to at least 30-60 seconds to allow proper startup time.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 3478,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 124,
+ "stop_reason": "end_turn"
+}

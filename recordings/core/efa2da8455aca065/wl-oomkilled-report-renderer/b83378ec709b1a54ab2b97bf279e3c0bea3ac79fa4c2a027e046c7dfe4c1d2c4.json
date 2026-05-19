@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary of what I did:**\n\n1. **Read ticket T-2001** \u2014 report-renderer pods restart only on large quarterly statements.\n2. **Listed pods in the `reports` namespace** \u2014 found both `report-renderer` pods with `OOMKilled` / exit code 137 as their last termination reason, one in `CrashLoopBackOff` with 9 restarts. Memory limit is 512Mi.\n3. **Checked pod logs** \u2014 confirmed the crashing pod was mid-way through rendering a 1,846-page quarterly statement with 3,920 chart images and had already consumed **431MiB of heap** (out of a 512Mi limit) before being killed.\n4. **Searched documentation** \u2014 confirmed that containers exceeding their memory limit are OOM-killed by the kernel and restarted by the kubelet in a loop.\n5. **Resolved the ticket** with the root cause (memory limit too tight for large reports) and a concrete fix: raise the memory `request` to `1Gi` and `limit` to `2Gi` in the Deployment spec.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5962,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 256,
+ "stop_reason": "end_turn"
+}

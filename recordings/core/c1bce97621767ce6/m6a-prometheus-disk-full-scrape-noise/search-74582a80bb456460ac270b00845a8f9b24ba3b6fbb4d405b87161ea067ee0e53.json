@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-tools-0",
+  "heading": "Observability > Common observability tools > Metrics tools",
+  "text": "- [Cortex](https://cortexmetrics.io/) offers horizontally scalable, long-term Prometheus storage.\n- [Grafana Mimir](https://grafana.com/oss/mimir/) is a Grafana Labs project that provides multi-tenant, horizontally scalable Prometheus-compatible storage.\n- [Prometheus](https://prometheus.io/) is the monitoring system that scrapes and stores metrics from Kubernetes components.\n- [Thanos](https://thanos.io/) extends Prometheus with global querying, downsampling, and object storage support."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/check-if-dockershim-removal-affects-you#some-filesystem-metrics-are-missing-and-the-metrics-format-is-different-2",
+  "heading": "Check whether dockershim removal affects you > Known issues > Some filesystem metrics are missing and the metrics format is different",
+  "text": "You can mitigate this issue by using [cAdvisor](https://github.com/google/cadvisor) as a standalone daemonset.\n\n1. Find the latest [cAdvisor release](https://github.com/google/cadvisor/releases)\n   with the name pattern `vX.Y.Z-containerd-cri` (for example, `v0.42.0-containerd-cri`).\n2. Follow the steps in [cAdvisor Kubernetes Daemonset](https://github.com/google/cadvisor/tree/master/deploy/kubernetes) to create the daemonset.\n3. Point the installed metrics collector to use the cAdvisor `/metrics` endpoint\n   which provides the full set of\n   [Prometheus container metrics](https://github.com/google/cadvisor/blob/master/docs/storage/prometheus.md).\n\nAlternatives:"
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#intro-0",
+  "heading": "Local ephemeral storage",
+  "text": "Nodes have local ephemeral storage, backed by\nlocally-attached writeable devices or, sometimes, by RAM.\n\"Ephemeral\" means that there is no long-term guarantee about durability.\n\nPods use ephemeral local storage for scratch space, caching, and for logs.\nThe kubelet can provide scratch space to Pods using local ephemeral storage to\nmount [`emptyDir`](/docs/concepts/storage/volumes/#emptydir)\n volumes into containers.\n\nThe kubelet also uses this kind of storage to hold\n[node-level container logs](/docs/concepts/cluster-administration/logging/#logging-at-the-node-level),\ncontainer images, and the writable layers of running containers.\n\nIf a node fails, the data in its ephemeral storage can be lost.\nYour applications cannot expect any performance SLAs (disk IOPS for example)\nfrom local ephemeral storage.\n\nTo make the resource quota work on ephemeral-storage, two things need to be done:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/check-if-dockershim-removal-affects-you#some-filesystem-metrics-are-missing-and-the-metrics-format-is-different-0",
+  "heading": "Check whether dockershim removal affects you > Known issues > Some filesystem metrics are missing and the metrics format is different",
+  "text": "The Kubelet `/metrics/cadvisor` endpoint provides Prometheus metrics,\nas documented in [Metrics for Kubernetes system components](/docs/concepts/cluster-administration/system-metrics/).\nIf you install a metrics collector that depends on that endpoint, you might see the following issues:"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#resources-0",
+  "heading": "Volumes > Resources",
+  "text": "The storage medium (such as Disk or SSD) of an `emptyDir` volume is determined by the\nmedium of the filesystem holding the kubelet root dir (typically\n`/var/lib/kubelet`). There is no limit on how much space an `emptyDir` or\n`hostPath` volume can consume, and no isolation between containers or\nPods.\n\nTo learn about requesting space using a resource specification, see\n[how to manage resources](/docs/concepts/configuration/manage-resources-containers/)."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-1",
+  "heading": "Local ephemeral storage > Ephemeral storage consumption management",
+  "text": "However, if the filesystem space for writeable container layers, node-level logs,\nor `emptyDir` volumes falls low, the node\ntaints itself as short on local storage\nand this taint triggers eviction for any Pods that don't specifically tolerate the taint.\n\nSee the supported [configurations](#configurations) for ephemeral local storage.\n\nThe kubelet supports different ways to measure Pod storage use:\n\nThe kubelet performs regular, scheduled checks that scan each `emptyDir` volume,\ncontainer log directory, and writeable container layer.\n\nThe scan measures how much space is used.\n\nIn this mode, the kubelet does not track open file descriptors\nfor deleted files.\n\nIf you (or a container) create a file inside an `emptyDir` volume,\nsomething then opens that file, and you delete the file while it is still open,\nthen the inode for the deleted file stays until you close that file\nbut the kubelet does not categorize the space as in use."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-volumes#lifecycle-and-persistentvolumeclaim-1",
+  "heading": "Ephemeral Volumes > Types of ephemeral volumes > Lifecycle and PersistentVolumeClaim",
+  "text": "In terms of [resource ownership](/docs/concepts/architecture/garbage-collection/#owners-dependents),\na Pod that has generic ephemeral storage is the owner of the PersistentVolumeClaim(s)\nthat provide that ephemeral storage. When the Pod is deleted,\nthe Kubernetes garbage collector deletes the PVC, which then usually\ntriggers deletion of the volume because the default reclaim policy of\nstorage classes is to delete volumes. You can create quasi-ephemeral local storage\nusing a StorageClass with a reclaim policy of `retain`: the storage outlives the Pod, \nand in this case you need to ensure that volume clean up happens separately.\n\nWhile these PVCs exist, they can be used like any other PVC. In\nparticular, they can be referenced as data source in volume cloning or\nsnapshotting. The PVC object also holds the current status of the\nvolume."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#storage-isolation-0",
+  "heading": "Multi-tenancy > Data Plane Isolation > Storage isolation",
+  "text": "Kubernetes offers several types of volumes that can be used as persistent storage for workloads.\nFor security and data-isolation, [dynamic volume provisioning](/docs/concepts/storage/dynamic-provisioning/)\nis recommended and volume types that use node resources should be avoided.\n\n[StorageClasses](/docs/concepts/storage/storage-classes/) allow you to describe custom \"classes\"\nof storage offered by your cluster, based on quality-of-service levels, backup policies, or custom\npolicies determined by the cluster administrators.\n\nPods can request storage using a [PersistentVolumeClaim](/docs/concepts/storage/persistent-volumes/).\nA PersistentVolumeClaim is a namespaced resource, which enables isolating portions of the storage\nsystem and dedicating it to tenants within the shared Kubernetes cluster.\nHowever, it is important to note that a PersistentVolume is a cluster-wide resource and has a\nlifecycle independent of workloads and namespaces."
+ }
+]

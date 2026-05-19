@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EokDCqQBCBMYAipAuZAAL9ziybBnsfDCpBj2N0wpc/3jc1c3HwfnNy5xR9+z4WCSlxriqebQpZst2N3wJxKi/qFkGyY81aDOGvLW6jIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBg9Lw1gYSDGCeS4eRVSGP/tAaYhoMfYCuvkG2j06cPlxnIjAbCX3SJ1ebdkPkQ80wgy0sG7e4QjvESda9PqgLkZgfxJvGYLZ1h6VpH7++BYGY6nEqkQHqqPXaYpdUEiMq9/7GrGsx4Oq+zh8QWjxjclmSGdqxExcQqt8wt/iv0nohNxC7X530cZvOmh3HCMbXeNXBTbep9/D08ZumlyZGjbwxsDiKr/0rhv9qzg5Y5+6lF/3oiWWrONZVQAB7d5rs6quSfgTFbnUPoQ0Nex7PkM8SsXa0zrrVdEEGk5U1CRv4pSZP34O4GAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CRPXnYtk5WwwY46KvQBWpj",
+   "input": {
+    "query": "liveness probe http port mismatch restart"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3270,
+ "model": "claude-opus-4-7",
+ "output_tokens": 142,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/run-replicated-stateful-application#break-the-readiness-probe-0",
+  "heading": "Run a Replicated Stateful Application > Simulate Pod and Node failure > Break the Readiness probe",
+  "text": "The [readiness probe](/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes)\nfor the `mysql` container runs the command `mysql -h 127.0.0.1 -e 'SELECT 1'`\nto make sure the server is up and able to execute queries.\n\nOne way to force this readiness probe to fail is to break that command:\n\n```shell\nkubectl exec mysql-2 -c mysql -- mv /usr/bin/mysql /usr/bin/mysql.off\n```\n\nThis reaches into the actual container's filesystem for Pod `mysql-2` and\nrenames the `mysql` command so the readiness probe can't find it.\nAfter a few seconds, the Pod should report one of its containers as not Ready,\nwhich you can check by running:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0",
+  "heading": "StatefulSets > Deployment and Scaling Guarantees",
+  "text": "* For a StatefulSet with N replicas, when Pods are being deployed, they are created sequentially, in order from {0..N-1}.\n* When Pods are being deleted, they are terminated in reverse order, from {N-1..0}.\n* Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready. If [`.spec.minReadySeconds`](#minimum-ready-seconds) is set, predecessors must be available (Ready for at least `minReadySeconds`).\n* Before a Pod is terminated, all of its successors must be completely shutdown.\n\nThe StatefulSet should not specify a `pod.Spec.TerminationGracePeriodSeconds` of 0. This practice\nis unsafe and strongly discouraged. For further explanation, please refer to\n[force deleting StatefulSet Pods](/docs/tasks/run-application/force-delete-stateful-set-pod/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-2",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "`successThreshold`\n: Minimum consecutive successes for the probe to be considered successful after having failed. Defaults to 1. Must be 1 for liveness and startup Probes. Minimum value is 1.\n\n`failureThreshold`\n: After a probe fails `failureThreshold` times in a row, Kubernetes considers that the overall check has failed: the container is _not_ ready/healthy/live. Defaults to 3. Minimum value is 1. For the case of a startup or liveness probe, if at least `failureThreshold` probes have failed, Kubernetes treats the container as unhealthy and triggers a restart for that specific container. The kubelet honors the setting of `terminationGracePeriodSeconds` for that container. For a failed readiness probe, the kubelet continues running the container that failed checks, and also continues to run more probes; because the check failed, the kubelet sets the `Ready` [condition](/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions) on the Pod to `false`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-results-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe results",
+  "text": "The kubelet evaluates the result of each probe execution and takes action\naccordingly. Each probe has one of three results:\n\n`Success`\n: The container passed the diagnostic.\n\n`Failure`\n: The container failed the diagnostic. For liveness and startup probes, the\n  kubelet kills the container, and the container is subjected to its\n  [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy).\n  For readiness probes, the kubelet marks the container as not ready, and the\n  Pod stops receiving traffic from matching Services.\n\n`Unknown`\n: The diagnostic failed (no action should be taken, and the kubelet will make\n  further checks).\n\nIf a container does not provide a particular probe, the kubelet always\nconsiders the result as `Success`. For readiness probes specifically,\nthe result is considered `Failure` before the initial delay."
+ },
+ {
+  "chunk_id": "tasks/run-application/scale-stateful-set#scaling-down-does-not-work-right-0",
+  "heading": "Scale a StatefulSet > Troubleshooting > Scaling down does not work right",
+  "text": "You cannot scale down a StatefulSet when any of the stateful Pods it manages is\nunhealthy. Scaling down only takes place after those stateful Pods become running and ready.\n\nIf spec.replicas > 1, Kubernetes cannot determine the reason for an unhealthy Pod.\nIt might be the result of a permanent fault or of a transient fault. A transient\nfault can be caused by a restart required by upgrading or maintenance.\n\nIf the Pod is unhealthy due to a permanent fault, scaling\nwithout correcting the fault may lead to a state where the StatefulSet membership\ndrops below a certain minimum number of replicas that are needed to function\ncorrectly. This may cause your StatefulSet to become unavailable.\n\nIf the Pod is unhealthy due to a transient fault and the Pod might become available again,\nthe transient error may interfere with your scale-up or scale-down operation. Some distributed\ndatabases have issues when nodes join and leave at the same time. It is better\nto reason about scaling operations at the application level in these cases, and\nperform scaling only when you are sure that your stateful application cluster is\ncompletely healthy."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#minimum-ready-seconds-0",
+  "heading": "StatefulSets > Components > Minimum ready seconds",
+  "text": "`.spec.minReadySeconds` is an optional field that specifies the minimum number of seconds for which a newly\ncreated Pod should be running and ready without any of its containers crashing, for it to be considered available.\nThis is used to check progression of a rollout when using a [Rolling Update](#rolling-updates) strategy.\nThis field defaults to 0 (the Pod will be considered available as soon as it is ready). To learn more about when\na Pod is considered ready, see [Container Probes](/docs/concepts/workloads/pods/pod-lifecycle/#container-probes)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#pod-management-policies-0",
+  "heading": "StatefulSets > Deployment and Scaling Guarantees > Pod Management Policies",
+  "text": "StatefulSet allows you to relax its ordering guarantees while\npreserving its uniqueness and identity guarantees via its `.spec.podManagementPolicy` field.\n\n#### OrderedReady Pod Management\n\n`OrderedReady` pod management is the default for StatefulSets. It implements the behavior\ndescribed in [Deployment and Scaling Guarantees](#deployment-and-scaling-guarantees).\n\n#### Parallel Pod Management\n\n`Parallel` pod management tells the StatefulSet controller to launch or\nterminate all Pods in parallel, and to not wait for Pods to become Running\nand Ready or completely terminated prior to launching or terminating another\nPod.\n\nFor scaling operations, this means all Pods are created or terminated simultaneously.\n\nFor rolling updates when [`.spec.updateStrategy.rollingUpdate.maxUnavailable`](#maximum-unavailable-pods)\nis greater than 1, the StatefulSet controller terminates and creates up to `maxUnavailable` Pods\nsimultaneously (also known as \"bursting\"). This can speed up updates but may result in Pods becoming ready out of order, which might not be suitable for applications requiring strict ordering."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#readiness-probe-0",
+  "heading": "Pod Lifecycle > Container probes > Readiness probe",
+  "text": "Readiness probes determine when a container is ready to accept traffic.\nThis is useful when waiting for an application to perform time-consuming initial\ntasks, such as establishing network connections, loading files, and warming\ncaches.\nReadiness probes can also be useful later in the container's lifecycle,\nfor example, when recovering from temporary faults or overloads.\n\nIf the readiness probe returns a failed state, the\nEndpointSlice\ncontroller removes the Pod's IP address from the EndpointSlices of all Services\nthat match the Pod.\n\nReadiness probes run on the container during its whole lifecycle."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-work-by-dns-name-1",
+  "heading": "Debug Services > Does the Service work by DNS name?",
+  "text": "If this works, you'll need to adjust your app to use a cross-namespace name, or\nrun your app and Service in the same Namespace.  If this still fails, try a\nfully-qualified name:\n\n```shell\nnslookup hostnames.default.svc.cluster.local\n```\n```none\nAddress 1: 10.0.0.10 kube-dns.kube-system.svc.cluster.local\n\nName:      hostnames.default.svc.cluster.local\nAddress 1: 10.0.1.175 hostnames.default.svc.cluster.local\n```\n\nNote the suffix here: \"default.svc.cluster.local\".  The \"default\" is the\nNamespace you're operating in.  The \"svc\" denotes that this is a Service.\nThe \"cluster.local\" is your cluster domain, which COULD be different in your\nown cluster.\n\nYou can also try this from a Node in the cluster:\n\n10.0.0.10 is the cluster's DNS Service IP, yours might be different."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-work-by-dns-name-3",
+  "heading": "Debug Services > Does the Service work by DNS name?",
+  "text": "The `search` line must include an appropriate suffix for you to find the\nService name.  In this case it is looking for Services in the local\nNamespace (\"default.svc.cluster.local\"), Services in all Namespaces\n(\"svc.cluster.local\"), and lastly for names in the cluster (\"cluster.local\").\nDepending on your own install you might have additional records after that (up\nto 6 total).  The cluster suffix is passed into `kubelet` with the\n`--cluster-domain` flag.  Throughout this document, the cluster suffix is\nassumed to be \"cluster.local\".  Your own clusters might be configured\ndifferently, in which case you should change that in all of the previous\ncommands.\n\nThe `options` line must set `ndots` high enough that your DNS client library\nconsiders search paths at all.  Kubernetes sets this to 5 by default, which is\nhigh enough to cover all of the DNS names it generates."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/namespaces#understanding-namespaces-and-dns-0",
+  "heading": "Share a Cluster with Namespaces > Understanding namespaces and DNS",
+  "text": "When you create a [Service](/docs/concepts/services-networking/service/), it creates a corresponding\n[DNS entry](/docs/concepts/services-networking/dns-pod-service/).\nThis entry is of the form `<service-name>.<namespace-name>.svc.cluster.local`, which means\nthat if a container uses `<service-name>` it will resolve to the service which\nis local to a namespace.  This is useful for using the same configuration across\nmultiple namespaces such as Development, Staging and Production.  If you want to reach\nacross namespaces, you need to use the fully qualified domain name (FQDN)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-work-by-dns-name-0",
+  "heading": "Debug Services > Does the Service work by DNS name?",
+  "text": "One of the most common ways that clients consume a Service is through a DNS\nname.\n\nFrom a Pod in the same Namespace:\n\n```shell\nnslookup hostnames\n```\n```none\nAddress 1: 10.0.0.10 kube-dns.kube-system.svc.cluster.local\n\nName:      hostnames\nAddress 1: 10.0.1.175 hostnames.default.svc.cluster.local\n```\n\nIf this fails, perhaps your Pod and Service are in different\nNamespaces, try a namespace-qualified name (again, from within a Pod):\n\n```shell\nnslookup hostnames.default\n```\n```none\nAddress 1: 10.0.0.10 kube-dns.kube-system.svc.cluster.local\n\nName:      hostnames.default\nAddress 1: 10.0.1.175 hostnames.default.svc.cluster.local\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-windows-1",
+  "heading": "DNS for Services and Pods > DNS resolution on Windows nodes",
+  "text": "  in the `default` namespace, will have the DNS suffix `default.svc.cluster.local`.\n  Inside a Windows Pod, you can resolve both `kubernetes.default.svc.cluster.local`\n  and `kubernetes`, but not the partially qualified names (`kubernetes.default` or\n  `kubernetes.default.svc`)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-work-by-dns-name-2",
+  "heading": "Debug Services > Does the Service work by DNS name?",
+  "text": "```shell\nnslookup hostnames.default.svc.cluster.local 10.0.0.10\n```\n```none\nServer:         10.0.0.10\nAddress:        10.0.0.10#53\n\nName:   hostnames.default.svc.cluster.local\nAddress: 10.0.1.175\n```\n\nIf you are able to do a fully-qualified name lookup but not a relative one, you\nneed to check that your `/etc/resolv.conf` file in your Pod is correct.  From\nwithin a Pod:\n\n```shell\ncat /etc/resolv.conf\n```\n\nYou should see something like:\n\n```\nnameserver 10.0.0.10\nsearch default.svc.cluster.local svc.cluster.local cluster.local example.com\noptions ndots:5\n```\n\nThe `nameserver` line must indicate your cluster's DNS Service.  This is\npassed into `kubelet` with the `--cluster-dns` flag."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#namespaces-of-services-1",
+  "heading": "DNS for Services and Pods > Namespaces of Services",
+  "text": "DNS queries may be expanded using the Pod's `/etc/resolv.conf`. kubelet\nconfigures this file for each Pod. For example, a query for just `data` may be\nexpanded to `data.test.svc.cluster.local`. The values of the `search` option\nare used to expand queries. To learn more about DNS queries, see\n[the `resolv.conf` manual page](https://www.man7.org/linux/man-pages/man5/resolv.conf.5.html).\n\n```\nnameserver 10.32.0.10\nsearch <namespace>.svc.cluster.local svc.cluster.local cluster.local\noptions ndots:5\n```\n\nIn summary, a Pod in the _test_ namespace can successfully resolve either\n`data.prod` or `data.prod.svc.cluster.local`."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#a-aaaa-records-1-1",
+  "heading": "DNS for Services and Pods > Pods > A/AAAA records",
+  "text": "For example, if a Pod in the `cafe` namespace has the IP address 172.17.0.3,\nis an endpoint of a Service named `barista`, and the domain name for your cluster is\n`cluster.local`, then the Pod would have this service-scoped DNS `A` record.\n\n```\n172-17-0-3.barista.cafe.svc.cluster.local\n```"
+ }
+]

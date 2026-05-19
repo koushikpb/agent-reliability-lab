@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01N1y8SjhueP127niUtR8c4j",
+   "input": {
+    "namespace": "payments"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1802,
+ "model": "claude-opus-4-7",
+ "output_tokens": 67,
+ "stop_reason": "tool_use"
+}

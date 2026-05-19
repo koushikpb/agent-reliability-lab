@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI successfully resolved ticket T-6001 by identifying that the search-api HPA failure was caused by the log-forwarder sidecar container lacking CPU resource requests. When the 4.8.0 deployment was released with the fluent-bit log-forwarder container added, it was configured without any resource requests. This breaks HPA's ability to calculate CPU utilization metrics for the entire pod, causing the \"cpu <unknown>\" error.\n\nThe fix is to add appropriate CPU and memory resource requests to the log-forwarder container in the Deployment specification, after which the HPA will resume normal scaling behavior.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 10858,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 140,
+ "stop_reason": "end_turn"
+}

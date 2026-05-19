@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "ErIECqQBCBMYAipAo03mdplhiwz0k/LEWJ4hs/mV6cSA5d9vP15CIFg4qGcgkmjesOha5uKk2DSckVLnTFwYxZrQsvp/QPyUZabY5jIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBzdHw1gYSDI06Yp5tqIxSWGFoBhoMB+E2FGrapNQoJO+FIjAegzROLcGQ3hGhEHP1qnXiAnZr6Bu4U971fboEbhEfE6BM0U1bNsORxanp+dGvdLgqugJKb9opdcBUc/Kj1NL7xZou656gSXXHAwYrehvcozbhXt5yQWeDJd10vl2qSVUg1s6zKo7+hchm/OwsMpc5YDkYF2r4TvF+Pwwlc7qs9ZiXbX9YA5GwPdSe4biPPn5LA7XcAZdkMOHBLJVKYaHAL07bqd/2kQTvIEfXcuxomi5xo4UV8X0WeRwUxhEvpY1J5zMmv+XqTcxJTXcyj/+CrKqp3KFtObO3APJ0JTJxX2vGY7QI3LUVmEve+hjLgAsBzXXuuVVhp3u4kTbzDJYMb0mR0j2+QkpIyXqEYo8ya5S2fQjmcKGibyxIGecYLioEKB91mTWR3Y57W7FOjeCrFclPqkHnkigjpJbqlMNUIyFvCPm6Ygq8TcqwPHRtaheyi30JVq6mMcDMlk9v0rC1J9yXwRlB8mhDLlbypRgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_015LmnZ9BFZa6VeEvYP6d9XJ",
+   "input": {
+    "query": "Job activeDeadlineSeconds DeadlineExceeded terminate"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4192,
+ "model": "claude-opus-4-7",
+ "output_tokens": 248,
+ "stop_reason": "tool_use"
+}

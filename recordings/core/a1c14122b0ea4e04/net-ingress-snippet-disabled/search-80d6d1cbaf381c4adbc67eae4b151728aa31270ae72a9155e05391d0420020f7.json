@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-update-objects-9",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to update objects",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # The annotation contains the updated image to nginx 1.16.1,\n    # but does not contain the updated replicas to 2\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.16.1\",\"name\":\"nginx\",\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#default-ingress-class-0",
+  "heading": "Ingress > Ingress class > Default IngressClass",
+  "text": "You can mark a particular IngressClass as default for your cluster. Setting the\n`ingressclass.kubernetes.io/is-default-class` annotation to `true` on an\nIngressClass resource will ensure that new Ingresses without an\n`ingressClassName` field specified will be assigned this default IngressClass.\n\nIf you have more than one IngressClass marked as the default for your cluster,\nthe admission controller prevents creating new Ingress objects that don't have\nan `ingressClassName` specified. You can resolve this by ensuring that at most 1\nIngressClass is marked as default in your cluster.\n\nStart by defining a\ndefault IngressClass. It is recommended though, to specify the default\nIngressClass:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: IngressClass\nmetadata:\n  labels:\n    app.kubernetes.io/component: controller\n  name: example-class\n  annotations:\n    ingressclass.kubernetes.io/is-default-class: \"true\"\nspec:\n  controller: k8s.io/example-class\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#using-multiple-ingress-controllers-1",
+  "heading": "Ingress Controllers > Using multiple Ingress controllers",
+  "text": "If you do not specify an IngressClass for an Ingress, and your cluster has exactly one IngressClass marked as default, then Kubernetes [applies](/docs/concepts/services-networking/ingress/#default-ingress-class) the cluster's default IngressClass to the Ingress.\nYou mark an IngressClass as default by setting the [`ingressclass.kubernetes.io/is-default-class` annotation](/docs/reference/labels-annotations-taints/#ingressclass-kubernetes-io-is-default-class) on that IngressClass, with the string value `\"true\"`.\n\nIdeally, all ingress controllers should fulfill this specification, but the various ingress\ncontrollers operate slightly differently.\n\nMake sure you review your ingress controller's documentation to understand the caveats of choosing it."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merge-patch-calculation-7",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merge patch calculation",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # The annotation contains the updated image to nginx 1.16.1,\n    # but does not contain the updated replicas to 2\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.16.1\",\"name\":\"nginx\",\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-update-objects-5",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to update objects",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # note that the annotation does not contain replicas\n    # because it was not updated through apply\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"minReadySeconds\":5,\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.14.2\",\"name\":\"nginx\",\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#default-backend-0",
+  "heading": "Ingress > The Ingress resource > DefaultBackend",
+  "text": "An Ingress with no rules sends all traffic to a single default backend and `.spec.defaultBackend`\nis the backend that should handle requests in that case.\nThe `defaultBackend` is conventionally a configuration option of the\n[Ingress controller](/docs/concepts/services-networking/ingress-controllers) and\nis not specified in your Ingress resources.\nIf no `.spec.rules` are specified, `.spec.defaultBackend` must be specified.\nIf `defaultBackend` is not set, the handling of requests that do not match any of the rules will be up to the\ningress controller (consult the documentation for your ingress controller to find out how it handles this case).\n\nIf none of the hosts or paths match the HTTP request in the Ingress objects, the traffic is\nrouted to your default backend."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#default-field-values-2",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > Default field values",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\n# ...\nspec:\n  selector:\n    matchLabels:\n      app: nginx\n  minReadySeconds: 5\n  replicas: 1 # defaulted by apiserver\n  strategy:\n    rollingUpdate: # defaulted by apiserver - derived from strategy.type\n      maxSurge: 1\n      maxUnavailable: 1\n    type: RollingUpdate # defaulted by apiserver\n  template:\n    metadata:\n      creationTimestamp: null\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - image: nginx:1.14.2\n        imagePullPolicy: IfNotPresent # defaulted by apiserver\n        name: nginx\n        ports:\n        - containerPort: 80\n          protocol: TCP # defaulted by apiserver\n        resources: {} # defaulted by apiserver\n        terminationMessagePath: /dev/termination-log # defaulted by apiserver\n      dnsPolicy: ClusterFirst # defaulted by apiserver\n      restartPolicy: Always # defaulted by apiserver\n      securityContext: {} # defaulted by apiserver\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#default-field-values-5",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > Default field values",
+  "text": "```yaml\n# last-applied-configuration\nspec:\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.14.2\n        ports:\n        - containerPort: 80\n# configuration file\nspec:\n  strategy:\n    type: Recreate # updated value\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.14.2\n        ports:\n        - containerPort: 80\n# live configuration\nspec:\n  strategy:\n    type: RollingUpdate # defaulted value\n    rollingUpdate: # defaulted value derived from type\n      maxSurge : 1\n      maxUnavailable: 1\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.14.2\n        ports:\n        - containerPort: 80\n# result after merge - ERROR!\nspec:\n  strategy:\n    type: Recreate # updated value: incompatible with rollingUpdate\n    rollingUpdate: # defaulted value: incompatible with \"type: Recreate\"\n      maxSurge : 1\n      maxUnavailable: 1\n```"
+ }
+]

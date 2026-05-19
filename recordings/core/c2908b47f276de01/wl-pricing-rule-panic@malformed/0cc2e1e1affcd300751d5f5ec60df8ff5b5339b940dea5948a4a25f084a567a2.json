@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary**: I diagnosed ticket T-2009 by examining the crashing pricing-engine pods and their logs. The issue is not with Kubernetes, but with an application bug in the pricing-engine code\u2014specifically an off-by-one error in tier indexing that gets triggered when compiling the \"BF-2026-STACKED\" pricing rule. The pods are correctly entering CrashLoopBackOff as expected when the application panics during startup. The fix requires the pricing-engine team to patch the tier lookup logic and deploy a new version.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 6154,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 123,
+ "stop_reason": "end_turn"
+}

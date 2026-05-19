@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/scheduling-eviction/api-eviction#how-api-initiated-eviction-works-0",
+  "heading": "API-initiated Eviction > How API-initiated eviction works",
+  "text": "When you request an eviction using the API, the API server performs admission\nchecks and responds in one of the following ways:\n\n* `200 OK`: the eviction is allowed, the `Eviction` subresource is created, and\n  the Pod is deleted, similar to sending a `DELETE` request to the Pod URL.\n* `429 Too Many Requests`: the eviction is not currently allowed because of the\n  configured PodDisruptionBudget.\n  You may be able to attempt the eviction again later. You might also see this\n  response because of API rate limiting.\n* `500 Internal Server Error`: the eviction is not allowed because there is a\n  misconfiguration, like if multiple PodDisruptionBudgets reference the same Pod.\n\nIf the Pod you want to evict isn't part of a workload that has a\nPodDisruptionBudget, the API server always returns `200 OK` and allows the\neviction.\n\nIf the API server allows the eviction, the Pod is deleted as follows:"
+ },
+ {
+  "chunk_id": "concepts/services-networking/service-traffic-policy#using-service-internal-traffic-policy-0",
+  "heading": "Service Internal Traffic Policy > Using Service Internal Traffic Policy",
+  "text": "You can enable the internal-only traffic policy for a\nService, by setting its\n`.spec.internalTrafficPolicy` to `Local`. This tells kube-proxy to only use node local\nendpoints for cluster internal traffic.\n\nFor pods on nodes with no endpoints for a given Service, the Service\nbehaves as if it has zero endpoints (for Pods on this node) even if the service\ndoes have endpoints on other nodes.\n\nThe following example shows what a Service looks like when you set\n`.spec.internalTrafficPolicy` to `Local`:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n      targetPort: 9376\n  internalTrafficPolicy: Local\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/access-api-from-pod#without-using-a-proxy-0",
+  "heading": "Accessing the Kubernetes API from a Pod > Accessing the API from within a Pod > Without using a proxy",
+  "text": "It is possible to avoid using the kubectl proxy by passing the authentication token\ndirectly to the API server. The internal certificate secures the connection.\n\n```shell\n# Point to the internal API server hostname\nAPISERVER=https://kubernetes.default.svc\n\n# Path to ServiceAccount token\nSERVICEACCOUNT=/var/run/secrets/kubernetes.io/serviceaccount\n\n# Read this Pod's namespace\nNAMESPACE=$(cat ${SERVICEACCOUNT}/namespace)\n\n# Read the ServiceAccount bearer token\nTOKEN=$(cat ${SERVICEACCOUNT}/token)\n\n# Reference the internal certificate authority (CA)\nCACERT=${SERVICEACCOUNT}/ca.crt\n\n# Explore the API with TOKEN\ncurl --cacert ${CACERT} --header \"Authorization: Bearer ${TOKEN}\" -X GET ${APISERVER}/api\n```\n\nThe output will be similar to this:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-kube-proxy-running-1",
+  "heading": "Debug Services > Is the kube-proxy working? > Is kube-proxy running?",
+  "text": "```none\nI1027 22:14:53.995134    5063 server.go:200] Running in resource-only container \"/kube-proxy\"\nI1027 22:14:53.998163    5063 server.go:247] Using iptables Proxier.\nI1027 22:14:54.038140    5063 proxier.go:352] Setting endpoints for \"kube-system/kube-dns:dns-tcp\" to [10.244.1.3:53]\nI1027 22:14:54.038164    5063 proxier.go:352] Setting endpoints for \"kube-system/kube-dns:dns\" to [10.244.1.3:53]\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-kube-proxy-proxying-0",
+  "heading": "Debug Services > Is the kube-proxy working? > Is kube-proxy proxying?",
+  "text": "Assuming you do see one the above cases, try again to access your Service by\nIP from one of your Nodes:\n\n```shell\ncurl 10.0.1.175:80\n```\n```none\nhostnames-632524106-bbpiw\n```\n\nIf this still fails, look at the `kube-proxy` logs for specific lines like:\n\n```none\nSetting endpoints for default/hostnames:default to [10.244.0.5:9376 10.244.0.6:9376 10.244.0.7:9376]\n```\n\nIf you don't see those, try restarting `kube-proxy` with the `-v` flag set to 4, and\nthen look at the logs again."
+ },
+ {
+  "chunk_id": "concepts/security/hardening-guide/authentication-mechanisms#authenticating-proxy-0",
+  "heading": "Hardening Guide - Authentication Mechanisms > Authenticating proxy",
+  "text": "Another option for integrating external authentication systems into Kubernetes is to use an\n[authenticating proxy](/docs/reference/access-authn-authz/authentication/#authenticating-proxy).\nWith this mechanism, Kubernetes expects to receive requests from the proxy with specific header\nvalues set, indicating the username and group memberships to assign for authorization purposes.\nIt is important to note that there are specific considerations to take into account when using\nthis mechanism.\n\nFirstly, securely configured TLS must be used between the proxy and Kubernetes API server to\nmitigate the risk of traffic interception or sniffing attacks. This ensures that the communication\nbetween the proxy and Kubernetes API server is secure.\n\nSecondly, it is important to be aware that an attacker who is able to modify the headers of the\nrequest may be able to gain unauthorized access to Kubernetes resources. As such, it is important\nto ensure that the headers are properly secured and cannot be tampered with."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-kube-proxy-running-2",
+  "heading": "Debug Services > Is the kube-proxy working? > Is kube-proxy running?",
+  "text": "```none\nI1027 22:14:54.038209    5063 proxier.go:352] Setting endpoints for \"default/kubernetes:https\" to [10.240.0.2:443]\nI1027 22:14:54.038238    5063 proxier.go:429] Not syncing iptables until Services and Endpoints have been received from master\nI1027 22:14:54.040048    5063 proxier.go:294] Adding new service \"default/kubernetes:https\" at 10.0.0.1:443/TCP\nI1027 22:14:54.040154    5063 proxier.go:294] Adding new service \"kube-system/kube-dns:dns\" at 10.0.0.10:53/UDP\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#is-kube-proxy-running-4",
+  "heading": "Debug Services > Is the kube-proxy working? > Is kube-proxy running?",
+  "text": "If you see error messages about not being able to contact the master, you\nshould double-check your Node configuration and installation steps.\n\nKube-proxy can run in one of a few modes.  In the log listed above, the\nline `Using iptables Proxier` indicates that kube-proxy is running in\n\"iptables\" mode.  The most common other mode is \"ipvs\".\n\n#### Iptables mode\n\nIn \"iptables\" mode, you should see something like the following on a Node:"
+ }
+]

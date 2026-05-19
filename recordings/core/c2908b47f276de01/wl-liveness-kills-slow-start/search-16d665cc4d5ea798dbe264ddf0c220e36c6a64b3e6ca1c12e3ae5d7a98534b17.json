@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "`initialDelaySeconds`\n: Number of seconds after the container has started before startup, liveness or readiness probes are initiated. If a startup probe is defined, liveness and readiness probe delays do not begin until the startup probe has succeeded. In some older Kubernetes versions, the initialDelaySeconds might be ignored if periodSeconds was set to a value higher than initialDelaySeconds. However, in current versions, initialDelaySeconds is always honored and the probe will not start until after this initial delay. Defaults to 0 seconds. Minimum value is 0.\n\n`periodSeconds`\n: How often (in seconds) to perform the probe. Default to 10 seconds. The minimum value is 1. While a container is not Ready, the readiness probe may be executed at times other than the configured `periodSeconds` interval. This is to make the Pod ready faster.\n\n`timeoutSeconds`\n: Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Protect slow starting containers with startup probes",
+  "text": "Thanks to the startup probe, the application will have a maximum of 5 minutes\n(30 * 10 = 300s) to finish its startup.\nOnce the startup probe has succeeded once, the liveness probe takes over to\nprovide a fast response to container deadlocks.\nIf the startup probe never succeeds, the container is killed after 300s and\nsubject to the pod's `restartPolicy`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#liveness-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Types of probe > Liveness probe",
+  "text": "Liveness probes determine when to restart a container.\nFor example, liveness probes could catch a deadlock, where an application is\nrunning, but unable to make progress. Restarting a container in such a state\ncan help to make the application more available despite bugs.\n\nIf a container fails its liveness probe more times than the configured tolerance,\nthe kubelet restarts that container.\nLiveness probes do not wait for readiness probes to succeed. If you want to\nwait before executing a liveness probe, you can either define\n`initialDelaySeconds` or use a [startup probe](#startup-probe).\n\nLiveness probes can be a powerful way to recover from application failures,\nbut they should be used with caution.\nLiveness probes must be configured carefully to ensure that they truly indicate\nunrecoverable application failure, for example a deadlock."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-results-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe results",
+  "text": "The kubelet evaluates the result of each probe execution and takes action\naccordingly. Each probe has one of three results:\n\n`Success`\n: The container passed the diagnostic.\n\n`Failure`\n: The container failed the diagnostic. For liveness and startup probes, the\n  kubelet kills the container, and the container is subjected to its\n  [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy).\n  For readiness probes, the kubelet marks the container as not ready, and the\n  Pod stops receiving traffic from matching Services.\n\n`Unknown`\n: The diagnostic failed (no action should be taken, and the kubelet will make\n  further checks).\n\nIf a container does not provide a particular probe, the kubelet always\nconsiders the result as `Success`. For readiness probes specifically,\nthe result is considered `Failure` before the initial delay."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-command-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a liveness command",
+  "text": "In the configuration file, you can see that the Pod has a single `Container`.\nThe `periodSeconds` field specifies that the kubelet should perform a liveness\nprobe every 5 seconds. The `initialDelaySeconds` field tells the kubelet that it\nshould wait 5 seconds before performing the first probe. To perform a probe, the\nkubelet executes the command `cat /tmp/healthy` in the target container. If the\ncommand succeeds, it returns 0, and the kubelet considers the container to be alive and\nhealthy. If the command returns a non-zero value, the kubelet kills the container\nand restarts it.\n\nWhen the container starts, it executes this command:\n\n```shell\n/bin/sh -c \"touch /tmp/healthy; sleep 30; rm -f /tmp/healthy; sleep 600\"\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-tcp-liveness-probe-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a TCP liveness probe",
+  "text": "As you can see, configuration for a TCP check is quite similar to an HTTP check.\nThis example uses both readiness and liveness probes. The kubelet will run the\nfirst liveness probe 15 seconds after the container starts. This will attempt to\nconnect to the `goproxy` container on port 8080. If the liveness probe fails,\nthe container will be restarted. The kubelet will continue to run this check\nevery 10 seconds.\n\nIn addition to the liveness probe, this configuration includes a readiness\nprobe. The kubelet will run the first readiness probe 15 seconds after the\ncontainer starts. Similar to the liveness probe, this will attempt to connect to\nthe `goproxy` container on port 8080. If the probe succeeds, the Pod will be\nmarked as ready and will receive traffic from services. If the readiness probe\nfails, the pod will be marked unready and will not receive traffic from any\nservices.\n\nTo try the TCP liveness check, create a Pod:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#startup-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Types of probe > Startup probe",
+  "text": "Startup probes verify whether the application within a container is started.\nIf a startup probe is configured, Kubernetes does not execute liveness or \nreadiness probes until the startup probe succeeds, allowing the application\ntime to finish its initialization.\n\nThis type of probe is only executed at startup, unlike liveness and readiness\nprobes, which are run periodically.\nIf the startup probe fails, the kubelet kills the container, and the container\nis subjected to its [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-http-request-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a liveness HTTP request",
+  "text": "In the configuration file, you can see that the Pod has a single container.\nThe `periodSeconds` field specifies that the kubelet should perform a liveness\nprobe every 3 seconds. The `initialDelaySeconds` field tells the kubelet that it\nshould wait 3 seconds before performing the first probe. To perform a probe, the\nkubelet sends an HTTP GET request to the server that is running in the container\nand listening on port 8080. If the handler for the server's `/healthz` path\nreturns a success code, the kubelet considers the container to be alive and\nhealthy. If the handler returns a failure code, the kubelet kills the container\nand restarts it.\n\nAny code greater than or equal to 200 and less than 400 indicates success. Any\nother code indicates failure.\n\nYou can see the source code for the server in\n[server.go](https://github.com/kubernetes/kubernetes/blob/master/test/images/agnhost/liveness/server.go)."
+ }
+]

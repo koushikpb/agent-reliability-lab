@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results don't have specific nginx ingress documentation about `allow-snippet-annotations`. Let me search more specifically for NGINX ingress controller configuration and snippet annotations.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DG8tzebffDFZ5iSnQBeRyW",
+   "input": {
+    "query": "nginx ingress controller snippet annotations security"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7056,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 95,
+ "stop_reason": "tool_use"
+}

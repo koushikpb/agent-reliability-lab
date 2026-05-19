@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me get the logs from the failed deployment job:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011Lf9PN4uFzdo4SogZyNMFG",
+   "input": {
+    "pod": "deploy-pdf-exporter-28591340-wq7mz"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1921,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 82,
+ "stop_reason": "tool_use"
+}

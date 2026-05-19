@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#path-types-1",
+  "heading": "Ingress > The Ingress resource > Path types",
+  "text": "  If the last element of the path is a substring of the last\n  element in request path, it is not a match (for example: `/foo/bar`\n  matches `/foo/bar/baz`, but does not match `/foo/barbaz`)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#path-types-0",
+  "heading": "Ingress > The Ingress resource > Path types",
+  "text": "Each path in an Ingress is required to have a corresponding path type. Paths\nthat do not include an explicit `pathType` will fail validation. There are three\nsupported path types:\n\n* `ImplementationSpecific`: With this path type, matching is up to the\n  IngressClass. Implementations can treat this as a separate `pathType` or treat\n  it identically to `Prefix` or `Exact` path types.\n\n* `Exact`: Matches the URL path exactly and with case sensitivity.\n\n* `Prefix`: Matches based on a URL path prefix split by `/`. Matching is case\n  sensitive and done on a path element by element basis. A path element refers\n  to the list of labels in the path split by the `/` separator. A request is a\n  match for path _p_ if every _p_ is an element-wise prefix of _p_ of the\n  request path."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#hostname-wildcards-2",
+  "heading": "Ingress > Hostname wildcards",
+  "text": "```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: ingress-wildcard-host\nspec:\n  rules:\n  - host: \"foo.bar.com\"\n    http:\n      paths:\n      - pathType: Prefix\n        path: \"/bar\"\n        backend:\n          service:\n            name: service1\n            port:\n              number: 80\n  - host: \"*.foo.com\"\n    http:\n      paths:\n      - pathType: Prefix\n        path: \"/foo\"\n        backend:\n          service:\n            name: service2\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#the-ingress-resource-0",
+  "heading": "Ingress > The Ingress resource",
+  "text": "A minimal Ingress resource example:\n\n```yaml\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: minimal-ingress\nspec:\n  ingressClassName: nginx-example\n  rules:\n  - http:\n      paths:\n      - path: /testpath\n        pathType: Prefix\n        backend:\n          service:\n            name: test\n            port:\n              number: 80\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#examples-3",
+  "heading": "Ingress > The Ingress resource > Examples",
+  "text": "#### Multiple matches\n\nIn some cases, multiple paths within an Ingress will match a request. In those\ncases precedence will be given first to the longest matching path. If two paths\nare still equally matched, precedence will be given to paths with an exact path\ntype over prefix path type."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#examples-1",
+  "heading": "Ingress > The Ingress resource > Examples",
+  "text": "| Prefix | `/foo/`                         | `/foo`, `/foo/`               | Yes                                |\n| Prefix | `/aaa/bb`                       | `/aaa/bbb`                    | No                                 |\n| Prefix | `/aaa/bbb`                      | `/aaa/bbb`                    | Yes                                |\n| Prefix | `/aaa/bbb/`                     | `/aaa/bbb`                    | Yes, ignores trailing slash        |\n| Prefix | `/aaa/bbb`                      | `/aaa/bbb/`                   | Yes,  matches trailing slash       |\n| Prefix | `/aaa/bbb`                      | `/aaa/bbb/ccc`                | Yes, matches subpath               |\n| Prefix | `/aaa/bbb`                      | `/aaa/bbbxyz`                 | No, does not match string prefix   |\n| Prefix | `/`, `/aaa`                     | `/aaa/ccc`                    | Yes, matches `/aaa` prefix         |\n| Prefix | `/`, `/aaa`, `/aaa/bbb`         | `/aaa/bbb`                    | Yes, matches `/aaa/bbb` prefix     |"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#examples-0",
+  "heading": "Ingress > The Ingress resource > Examples",
+  "text": "| Kind   | Path(s)                         | Request path(s)               | Matches?                           |\n|--------|---------------------------------|-------------------------------|------------------------------------|\n| Prefix | `/`                             | (all paths)                   | Yes                                |\n| Exact  | `/foo`                          | `/foo`                        | Yes                                |\n| Exact  | `/foo`                          | `/bar`                        | No                                 |\n| Exact  | `/foo`                          | `/foo/`                       | No                                 |\n| Exact  | `/foo/`                         | `/foo`                        | No                                 |\n| Prefix | `/foo`                          | `/foo`, `/foo/`               | Yes                                |"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#examples-2",
+  "heading": "Ingress > The Ingress resource > Examples",
+  "text": "| Prefix | `/`, `/aaa`, `/aaa/bbb`         | `/ccc`                        | Yes, matches `/` prefix            |\n| Prefix | `/aaa`                          | `/ccc`                        | No, uses default backend           |\n| Mixed  | `/foo` (Prefix), `/foo` (Exact) | `/foo`                        | Yes, prefers Exact                 |"
+ }
+]

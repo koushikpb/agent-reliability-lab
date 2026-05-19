@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EsMHCqQBCBMYAipAHGvSxWge3wqpr6payiFLgThSGh+SuHHI5RF0c/yWxSjfucy3OCvi5pFP2edPdBCU6e+HSguzAj87WtVVJGd1yjIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBx9Lw1gYSDO30hfuV1PJ7eLkJrxoMaVnosR0zrBA0QJ3aIjAAd3Mx16C81XtLvjuJZMWd3FhmcH7nEfcwtdIKeV1oc0JJIN/kEuzA/XVVzRoezNQqywWNXgQVbGBYJHMTZEKvNJ6ZHo8ROsAni4mI2vMJi5VS2Rn1UzC5EfKbhuqnQrhbiwi6/LvtKCC8NAQVAB76eb6VeW2P+NgjkDqSSp9fREz0daiGLO7XtERd/qRIm7z+mn+eMyBHkdbDbtTz+f4sWLpQ9kLjRDNGB4SWCIds4KEdCp2cb6vVuGIlqoy4JntQoDKLD+iBvQPSA34dk5/4rAzPjWuzMnluIIBBYmscZvz3Y2T2JiZkibuf7PU7mu9d/A8ADZ4CATU6ljk4p/RfCh/Az+9GUpPRA7elfqsSN+GQfa+++yMyx7dvaxmMLF8M//XWurWBaK4tzShsA0iH7/IV8slY81uD83O1s42sF1LoNjW7diz0a0KpwRzlNxSsH8S96YbM8k30ORorV2eOZQnmw5MvcFmKtBhgCFWutzT9Brv0kgjqFe1+SUTAydG6KP4qiUeo3xhyHeojLugQ5hOXk/5iBndWm0cafHD9XFvdLdQ4KVMwV+hHqUsSPHW6yKKC2mf0G+P7DDWjBZhGP8M9psTuOppn/ecVBDl6XEa8nvlyFmCJ/8FrRtthGtrLYYv5CDluOiiv0ZSV0iPUpv+WdaThhZcylhVmOZuJjhTEOnXDAKCzVrCNJ3xJ2+ALnL30eWvLnkiHnqKp4fRPNc+MsQa2JAFPz3OW/jCxVnSxUjeir+25/7PbCib0DMyJkn8RG5UN55AL7nhfQETdCHhtXC5amsy9EAbdaqmUqCPTqG5FGcang0EM84hlak0yivtGM6/mRMWdfyUZQ+rzQr9HwwOVQiYQtcibqtqgdstjbjITnk/h4yILCt5R2VevEqsRzWkhQqXwjCO1goUPYIV04c3Ej0N+DfK0emyfS054Ghfik/CqsGqCknbrkDSXD02TWqQYoUOh5VoIpxdIgV2rNEf+Q9iSjDUXYDm9356jZ6XyNYBGzCawRK8HGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01TGPvaHfnpAFAc1kcqLhdxw",
+   "input": {
+    "query": "CrashLoopBackOff restart policy exit code application crash"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2950,
+ "model": "claude-opus-4-7",
+ "output_tokens": 348,
+ "stop_reason": "tool_use"
+}

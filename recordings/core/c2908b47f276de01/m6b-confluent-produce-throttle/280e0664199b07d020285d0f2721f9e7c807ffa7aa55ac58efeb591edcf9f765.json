@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "text": "The Kubernetes documentation doesn't cover Kafka-specific behavior. However, the logs are very clear about what's happening. Based on the evidence in the pod logs, I can now resolve this ticket. The issue is clear:\n\n1. **The logs show broker-side throttling** - Multiple THROTTLE warnings indicating the Kafka broker is throttling the producer\n2. **Scaling didn't help** - Increasing from 4 to 8 replicas didn't reduce throttling because the bottleneck is at the Kafka broker, not in the client application\n3. **The producer queue is filling up** - \"producer queue=96% full\" indicates the client can't send fast enough due to broker throttling\n4. **Consumer lag is growing** - \"consumer lag clickstream-raw (group total)=31,204,551, growing\" confirms messages are backing up\n\nThis is a Kafka broker-side issue (quota/rate limit), not a Kubernetes application issue. Since the ticket notes state \"The Kafka cluster is run by the data platform team; we only have a client API key for our topics,\" this requires escalation to the data platform team to adjust quotas or investigate broker issues.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01RmMqKraLDAbkGHb5DgtDbW",
+   "input": {
+    "id": "T-6005",
+    "reason": "The clickstream-ingest pods are experiencing broker-side throttling from the Kafka cluster. Pod logs show repeated THROTTLE warnings with throttle times of 2.7-3s per batch, and producer queue is 96% full. Scaling to 8 replicas had no effect because the bottleneck is at the Kafka broker (quota/rate limiting), not the client. This requires the data platform team to investigate and adjust broker quotas or settings."
+   },
+   "name": "escalate",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7890,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 429,
+ "stop_reason": "tool_use"
+}

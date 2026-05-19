@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WbhFYCMWwbKGMBqfo6mGwF",
+   "input": {
+    "id": "T-4004",
+    "note": "Cause: notification-worker is configured with SMTP_HOST=smtp-relay (bare service name). After the platform team moved smtp-relay from the notify namespace into shared-infra on Sunday night, that short name no longer resolves, because DNS queries without a namespace are limited to the pod's own namespace [cite: tasks/administer-cluster/dns-debugging-resolution#are-you-in-the-right-namespace-for-the-service-0]. To reach a Service in another namespace you must use the qualified name; a bare `<service-name>` only resolves to a Service local to the pod's namespace, and crossing namespaces requires the FQDN [cite: tasks/administer-cluster/namespaces#understanding-namespaces-and-dns-0].\n\nEvidence:\n- notification-worker logs show repeated: `smtp dial: dial tcp: lookup smtp-relay on 10.96.0.10:53: no such host` and config line `SMTP_HOST=smtp-relay SMTP_PORT=587`.\n- Pod notify/notification-worker is Running/Ready; DB lookups to `notify-db` in the same namespace succeed, confirming CoreDNS itself is healthy.\n- smtp-relay pods are Running/Ready in shared-infra, consistent with other teams sending mail successfully using the cross-namespace name.\n\nFix: Update the notification-worker Deployment's SMTP_HOST to the cross-namespace name for the relay's new location, e.g. `smtp-relay.shared-infra` or the FQDN `smtp-relay.shared-infra.svc.cluster.local`, and roll the Deployment. No code change is required; this is a config-only change in the notify namespace.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5910,
+ "model": "claude-opus-4-7",
+ "output_tokens": 676,
+ "stop_reason": "tool_use"
+}

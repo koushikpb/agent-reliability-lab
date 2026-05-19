@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-1",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics > Container resource metrics",
+  "text": "```yaml\ntype: ContainerResource\ncontainerResource:\n  name: cpu\n  container: application\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\n\nIn the above example the HPA controller scales the target such that the average utilization of the cpu\nin the `application` container of all the pods is 60%.\n\nIf you change the name of a container that a HorizontalPodAutoscaler is tracking, you can\nmake that change in a specific order to ensure scaling remains available and effective\nwhilst the change is being applied. Before you update the resource that defines the container\n(such as a Deployment), you should update the associated HPA to track both the new and\nold container names. This way, the HPA is able to calculate a scaling recommendation\nthroughout the update process.\n\nOnce you have rolled out the container name change to the workload resource, tidy up by removing\nthe old container name from the HPA specification."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics > Container resource metrics",
+  "text": "The HorizontalPodAutoscaler API also supports a container metric source where the HPA can track the\nresource usage of individual containers across a set of Pods, in order to scale the target resource.\nThis lets you configure scaling thresholds for the containers that matter most in a particular Pod.\nFor example, if you have a web application and a sidecar container that provides logging, you can scale based on the resource\nuse of the web application, ignoring the sidecar container and its resource use.\n\nIf you revise the target resource to have a new Pod specification with a different set of containers,\nyou should revise the HPA spec if that newly added container should also be used for\nscaling. If the specified container in the metric source is not present or only present in a subset\nof the pods then those pods are ignored and the recommendation is recalculated. See [Algorithm](#algorithm-details)\nfor more details about the calculation. To use container resources for autoscaling define a metric\nsource as follows:"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics",
+  "text": "Any HPA target can be scaled based on the resource usage of the pods in the scaling target.\nWhen defining the pod specification the resource requests like `cpu` and `memory` should\nbe specified. This is used to determine the resource utilization and used by the HPA controller\nto scale the target up or down. To use resource utilization based scaling specify a metric source\nlike this:\n\n```yaml\ntype: Resource\nresource:\n  name: cpu\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nWith this metric the HPA controller will keep the average utilization of the pods in the scaling\ntarget at 60%. Utilization is the ratio between the current usage of resource to the requested\nresources of the pod. See [Algorithm](#algorithm-details) for more details about how the utilization\nis calculated and averaged.\n\nSince the resource usages of all the containers are summed up the total pod utilization may not\naccurately represent the individual container resource usage. This could lead to situations where\na single container might be running with high usage and the HPA will not scale out because the overall\npod usage is still within acceptable limits."
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#autoscaling-on-multiple-metrics-and-custom-metrics-2",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Autoscaling on multiple metrics and custom metrics",
+  "text": "Notice that the `targetCPUUtilizationPercentage` field has been replaced with an array called `metrics`.\nThe CPU utilization metric is a *resource metric*, since it is represented as a percentage of a resource\nspecified on pod containers.  Notice that you can specify other resource metrics besides CPU.  By default,\nthe only other supported resource metric is `memory`.  These resources do not change names from cluster\nto cluster, and should always be available, as long as the `metrics.k8s.io` API is available.\n\nYou can also specify resource metrics in terms of direct values, instead of as percentages of the\nrequested value, by using a `target.type` of `AverageValue` instead of `Utilization`, and\nsetting the corresponding `target.averageValue` field instead of the `target.averageUtilization`.\n\n```\n  metrics:\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: AverageValue\n        averageValue: 500Mi\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-5",
+  "heading": "Resource metrics pipeline",
+  "text": "* [cAdvisor](https://github.com/google/cadvisor): Daemon for collecting, aggregating and exposing\n  container metrics included in Kubelet.\n* [kubelet](/docs/concepts/architecture/#kubelet): Node agent for managing container\n  resources. Resource metrics are accessible using the `/metrics/resource` and `/stats` kubelet\n  API endpoints.\n* [node level resource metrics](/docs/reference/instrumentation/node-metrics): API provided by the kubelet for discovering and retrieving\n  per-node summarized stats available through the `/metrics/resource` endpoint.\n* [metrics-server](#metrics-server): Cluster addon component that collects and aggregates resource\n  metrics pulled from each kubelet. The API server serves Metrics API for use by HPA, VPA, and by\n  the `kubectl top` command. Metrics Server is a reference implementation of the Metrics API."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-7",
+  "heading": "Resource metrics pipeline",
+  "text": "  cAdvisor supports reading metrics from cgroups, which works with typical container runtimes on Linux.\n  If you use a container runtime that uses another resource isolation mechanism, for example\n  virtualization, then that container runtime must support\n  [CRI Container Metrics](https://github.com/kubernetes/community/blob/main/contributors/devel/sig-node/cri-container-stats.md)\n  in order for metrics to be available to the kubelet."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-1",
+  "heading": "Resource metrics pipeline",
+  "text": "The Metrics API, and the metrics pipeline that it enables, only offers the minimum\nCPU and memory metrics to enable automatic scaling using HPA and / or VPA.\nIf you would like to provide a more complete set of metrics, you can complement\nthe simpler Metrics API by deploying a second\n[metrics pipeline](/docs/tasks/debug/debug-cluster/resource-usage-monitoring/#full-metrics-pipeline)\nthat uses the _Custom Metrics API_.\n\nFigure 1 illustrates the architecture of the resource metrics pipeline."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-0",
+  "heading": "Resource metrics pipeline",
+  "text": "For Kubernetes, the _Metrics API_ offers a basic set of metrics to support automatic scaling and\nsimilar use cases.  This API makes information available about resource usage for node and pod,\nincluding metrics for CPU and memory.  If you deploy the Metrics API into your cluster, clients of\nthe Kubernetes API can then query for this information, and you can use Kubernetes' access control\nmechanisms to manage permissions to do so.\n\nThe [HorizontalPodAutoscaler](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)  (HPA) and\n[VerticalPodAutoscaler](/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/) (VPA)\nuse data from the metrics API to adjust workload replicas and resources to meet customer demand.\n\nYou can also view the resource metrics using the\n[`kubectl top`](/docs/reference/generated/kubectl/kubectl-commands#top)\ncommand."
+ }
+]

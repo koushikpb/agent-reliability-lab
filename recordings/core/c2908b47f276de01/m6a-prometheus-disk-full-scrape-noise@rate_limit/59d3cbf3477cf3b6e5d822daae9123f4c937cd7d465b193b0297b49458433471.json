@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the monitoring namespace to see what pods are running and their status.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01NUuCofTbzdYrdSJf7NwsGm",
+   "input": {
+    "namespace": "monitoring"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1342,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 71,
+ "stop_reason": "tool_use"
+}

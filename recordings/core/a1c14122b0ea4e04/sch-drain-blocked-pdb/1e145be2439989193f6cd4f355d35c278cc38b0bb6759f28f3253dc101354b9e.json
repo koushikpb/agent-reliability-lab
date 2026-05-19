@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Summary: Read T-3007, listed kafka pods and found zk-2 in CrashLoopBackOff (epoch-file corruption in logs) alongside healthy zk-0/zk-1, which explains why the PDB (minAvailable:2) refuses to evict zk-0. Confirmed in the docs that drain blocks indefinitely in this case under the default UnhealthyPodEvictionPolicy. Resolved the ticket telling the owner not to bypass the PDB (quorum/data-loss risk on a 3-node ZK ensemble), to recover zk-2 first, and optionally to set `unhealthyPodEvictionPolicy: AlwaysAllow` on the PDB for the future.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9064,
+ "model": "claude-opus-4-7",
+ "output_tokens": 238,
+ "stop_reason": "end_turn"
+}

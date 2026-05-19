@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "**Found it!** The issue is with the use of `subPath`. Looking at the pod volume mounts from earlier:\n\n```\n\"volume_mounts\": [...{\"name\": \"limits\", \"mountPath\": \"/etc/gateway/limits.yaml\", \"subPath\": \"limits.yaml\", \"readOnly\": true}...]\n```\n\nAccording to the documentation: **\"A container using a ConfigMap as a subPath volume mount will not receive ConfigMap updates.\"** [cite: concepts/storage/volumes#configmap-2]\n\nThis is exactly the problem. The gateway pod is using `subPath` when mounting the ConfigMap, which means ConfigMap updates are NOT propagated to the pod, even though the configuration claims it should pick up changes without restart.\n\nThe fix is to either:\n1. Remove the `subPath` and adjust how the application reads the file, OR\n2. Restart the pods so they reload the ConfigMap with the new limits\n\nLet me update the ticket with this resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_012qMEeQVkWCmFmjvoj9A6Gw",
+   "input": {
+    "id": "T-5004",
+    "note": "Root cause: The api-gateway pods are mounting the gateway-limits ConfigMap using subPath, which prevents automatic updates from being propagated to the running containers. \n\nEvidence: Pod logs show limit_rps=100 throughout the entire time period, including at 11:29 (2 hours 19 minutes after the 09:10 update claim). The ConfigMap file hash remains \"9c1e4b07\" unchanged, and the limits watcher reports \"unchanged\" every 30 seconds.\n\nAccording to Kubernetes documentation: \"A container using a ConfigMap as a subPath volume mount will not receive ConfigMap updates.\" [cite: concepts/storage/volumes#configmap-2]\n\nFix: The gateway pods must be restarted to pick up the new limit of 500 rps for acme-logistics from the gateway-limits ConfigMap. To permanently fix this, the pod deployment should be modified to remove the subPath and mount the entire directory instead, which will allow automatic ConfigMap updates to be received without pod restarts. [cite: concepts/storage/volumes#configmap-2]",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6996,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 545,
+ "stop_reason": "tool_use"
+}

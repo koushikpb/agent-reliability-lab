@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics",
+  "text": "Any HPA target can be scaled based on the resource usage of the pods in the scaling target.\nWhen defining the pod specification the resource requests like `cpu` and `memory` should\nbe specified. This is used to determine the resource utilization and used by the HPA controller\nto scale the target up or down. To use resource utilization based scaling specify a metric source\nlike this:\n\n```yaml\ntype: Resource\nresource:\n  name: cpu\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nWith this metric the HPA controller will keep the average utilization of the pods in the scaling\ntarget at 60%. Utilization is the ratio between the current usage of resource to the requested\nresources of the pod. See [Algorithm](#algorithm-details) for more details about how the utilization\nis calculated and averaged.\n\nSince the resource usages of all the containers are summed up the total pod utilization may not\naccurately represent the individual container resource usage. This could lead to situations where\na single container might be running with high usage and the HPA will not scale out because the overall\npod usage is still within acceptable limits."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-0",
+  "heading": "Resource metrics pipeline",
+  "text": "For Kubernetes, the _Metrics API_ offers a basic set of metrics to support automatic scaling and\nsimilar use cases.  This API makes information available about resource usage for node and pod,\nincluding metrics for CPU and memory.  If you deploy the Metrics API into your cluster, clients of\nthe Kubernetes API can then query for this information, and you can use Kubernetes' access control\nmechanisms to manage permissions to do so.\n\nThe [HorizontalPodAutoscaler](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)  (HPA) and\n[VerticalPodAutoscaler](/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/) (VPA)\nuse data from the metrics API to adjust workload replicas and resources to meet customer demand.\n\nYou can also view the resource metrics using the\n[`kubectl top`](/docs/reference/generated/kubectl/kubectl-commands#top)\ncommand."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-pod-level-resources#create-a-pod-with-memory-requests-and-limits-at-pod-level-2",
+  "heading": "Assign Pod-level CPU and memory resources > Create a pod with memory requests and limits at pod-level",
+  "text": "```yaml\n...\nspec:\n  containers:\n  ...\n  resources:\n    requests:\n      memory: 100Mi\n    limits:\n      memory: 200Mi\n...\n```\n\nRun `kubectl top` to fetch the metrics for the pod:\n\n```shell\nkubectl top pod memory-demo --namespace=pod-resources-example\n```\n\nThe output shows that the Pod is using about 162,900,000 bytes of memory, which\nis about 150 MiB. This is greater than the Pod's 100 MiB request, but within the\nPod's 200 MiB limit.\n\n```\nNAME                        CPU(cores)   MEMORY(bytes)\nmemory-demo                 <something>  162856960\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#autoscaling-on-multiple-metrics-and-custom-metrics-2",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Autoscaling on multiple metrics and custom metrics",
+  "text": "Notice that the `targetCPUUtilizationPercentage` field has been replaced with an array called `metrics`.\nThe CPU utilization metric is a *resource metric*, since it is represented as a percentage of a resource\nspecified on pod containers.  Notice that you can specify other resource metrics besides CPU.  By default,\nthe only other supported resource metric is `memory`.  These resources do not change names from cluster\nto cluster, and should always be available, as long as the `metrics.k8s.io` API is available.\n\nYou can also specify resource metrics in terms of direct values, instead of as percentages of the\nrequested value, by using a `target.type` of `AverageValue` instead of `Utilization`, and\nsetting the corresponding `target.averageValue` field instead of the `target.averageUtilization`.\n\n```\n  metrics:\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: AverageValue\n        averageValue: 500Mi\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-1",
+  "heading": "Resource metrics pipeline",
+  "text": "The Metrics API, and the metrics pipeline that it enables, only offers the minimum\nCPU and memory metrics to enable automatic scaling using HPA and / or VPA.\nIf you would like to provide a more complete set of metrics, you can complement\nthe simpler Metrics API by deploying a second\n[metrics pipeline](/docs/tasks/debug/debug-cluster/resource-usage-monitoring/#full-metrics-pipeline)\nthat uses the _Custom Metrics API_.\n\nFigure 1 illustrates the architecture of the resource metrics pipeline."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#pod-level-resource-specification-1",
+  "heading": "Resource Management for Pods and Containers > Pod-level resource specification",
+  "text": "For a Pod, you can specify resource limits and requests for CPU and memory by including the following:\n* `spec.resources.limits.cpu`\n* `spec.resources.limits.memory`\n* `spec.resources.limits.hugepages-<size>`\n* `spec.resources.requests.cpu`\n* `spec.resources.requests.memory`\n* `spec.resources.requests.hugepages-<size>`"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#cpu-0",
+  "heading": "Resource metrics pipeline > Measuring resource usage > CPU",
+  "text": "CPU is reported as the average core usage measured in cpu units. One cpu, in Kubernetes, is\nequivalent to 1 vCPU/Core for cloud providers, and 1 hyper-thread on bare-metal Intel processors.\n\nThis value is derived by taking a rate over a cumulative CPU counter provided by the kernel (in\nboth Linux and Windows kernels). The time window used to calculate CPU is shown under window field\nin Metrics API.\n\nTo learn more about how Kubernetes allocates and measures CPU resources, see\n[meaning of CPU](/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu)."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-usage-monitoring#resource-metrics-pipeline-0",
+  "heading": "Tools for Monitoring Resources > Resource metrics pipeline",
+  "text": "The resource metrics pipeline provides a limited set of metrics related to\ncluster components such as the\n[Horizontal Pod Autoscaler](/docs/tasks/run-application/horizontal-pod-autoscale/)\ncontroller, as well as the `kubectl top` utility.\nThese  metrics are collected by the lightweight, short-term, in-memory \n[metrics-server](https://github.com/kubernetes-sigs/metrics-server) and\n are exposed via the `metrics.k8s.io` API. "
+ }
+]

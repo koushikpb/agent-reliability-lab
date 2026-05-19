@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The logs show the service is getting requests and the worker pool is busy. Now let me search for documentation about HPA metrics and CPU metrics being \"unknown\" since that's the key symptom mentioned.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01BYu8j6AfXMjoqfJWXiQhay",
+   "input": {
+    "query": "HPA metrics unknown CPU scaling"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2463,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 100,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "The logs show that both pods are receiving SIGTERM during the shard loading phase, before the HTTP listener starts. This means the liveness probe is timing out and killing the container before it finishes starting. Let me search the Kubernetes documentation about liveness probes and startup times.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01XTqhTQpmYZCjYa1XYWZDyc",
+   "input": {
+    "query": "liveness probe startup delay timing"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01UhSfFtRY1n9WoDR9G7xLBC",
+   "input": {
+    "query": "startup probe for long initialization"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2730,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 158,
+ "stop_reason": "tool_use"
+}

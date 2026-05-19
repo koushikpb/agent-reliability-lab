@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me search more specifically about service port configuration and what causes connection failures to backends.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WeFTDqTu6PF4eXudvKjTtH",
+   "input": {
+    "query": "service port containerPort backend readiness probe"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6294,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 78,
+ "stop_reason": "tool_use"
+}

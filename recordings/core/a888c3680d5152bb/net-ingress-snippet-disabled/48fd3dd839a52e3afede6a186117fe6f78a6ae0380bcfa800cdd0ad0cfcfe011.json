@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try with the fully qualified pod name:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01YE7WgmPRDDFEitwGY4inE6",
+   "input": {
+    "pod_name": "ingress-nginx/ingress-nginx-controller-5c8f9d7b6-qh4tn"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2004,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 94,
+ "stop_reason": "tool_use"
+}

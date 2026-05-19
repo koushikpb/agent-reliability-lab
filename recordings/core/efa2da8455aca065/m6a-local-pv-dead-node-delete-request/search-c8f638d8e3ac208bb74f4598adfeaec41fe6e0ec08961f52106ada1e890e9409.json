@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-1",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "`Delete`\n: The PVCs created from the StatefulSet `volumeClaimTemplate` are deleted for each Pod\n  affected by the policy. With the `whenDeleted` policy all PVCs from the\n  `volumeClaimTemplate` are deleted after their Pods have been deleted. With the\n  `whenScaled` policy, only PVCs corresponding to Pod replicas being scaled down are\n  deleted, after their Pods have been deleted.\n\n`Retain` (default)\n: PVCs from the `volumeClaimTemplate` are not affected when their Pod is\n  deleted. This is the behavior before this new feature.\n\nBear in mind that these policies **only** apply when Pods are being removed due to the\nStatefulSet being deleted or scaled down. For example, if a Pod associated with a StatefulSet\nfails due to node failure, and the control plane creates a replacement Pod, the StatefulSet\nretains the existing PVC.  The existing volume is unaffected, and the cluster will attach it to\nthe node where the new Pod is about to launch.\n\nThe default for policies is `Retain`, matching the StatefulSet behavior before this new feature.\n\nHere is an example policy:"
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-1",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "A Pod is not deleted automatically when a node is unreachable.\nThe Pods running on an unreachable Node enter the 'Terminating' or 'Unknown' state after a\n[timeout](/docs/concepts/architecture/nodes/#condition).\nPods may also enter these states when the user attempts graceful deletion of a Pod\non an unreachable Node.\nThe only ways in which a Pod in such a state can be removed from the apiserver are as follows:\n\n- The Node object is deleted (either by you, or by the\n  [Node Controller](/docs/concepts/architecture/nodes/#node-controller)).\n- The kubelet on the unresponsive Node starts responding, kills the Pod and removes the entry\n   from the apiserver.\n- Force deletion of the Pod by the user."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#delete-pods-2",
+  "heading": "Force Delete StatefulSet Pods > Delete Pods",
+  "text": "The recommended best practice is to use the first or second approach. If a Node is confirmed\nto be dead (e.g. permanently disconnected from the network, powered down, etc), then delete\nthe Node object. If the Node is suffering from a network partition, then try to resolve this\nor wait for it to resolve. When the partition heals, the kubelet will complete the deletion\nof the Pod and free up its name in the apiserver.\n\nNormally, the system completes the deletion once the Pod is no longer running on a Node, or\nthe Node is deleted by an administrator. You may override this by force deleting the Pod."
+ },
+ {
+  "chunk_id": "tasks/run-application/run-replicated-stateful-application#simulate-pod-and-node-downtime-0",
+  "heading": "Run a Replicated Stateful Application > Simulate Pod and Node failure",
+  "text": "To demonstrate the increased availability of reading from the pool of replicas\ninstead of a single server, keep the `SELECT @@server_id` loop from above\nrunning while you force a Pod out of the Ready state."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-pods-are-pending-with-event-message-failedscheduling-1",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My Pods are pending with event message `FailedScheduling`",
+  "text": "In the preceding example, the Pod named \"frontend\" fails to be scheduled due to\ninsufficient CPU resource on any node. Similar error messages can also suggest\nfailure due to insufficient memory (PodExceedsFreeMemory). In general, if a Pod\nis pending with a message of this type, there are several things to try:\n\n- Add more nodes to the cluster.\n- Terminate unneeded Pods to make room for pending Pods.\n- Check that the Pod is not larger than all the nodes. For example, if all the\n  nodes have a capacity of `cpu: 1`, then a Pod with a request of `cpu: 1.1` will\n  never be scheduled.\n- Check for node taints. If most of your nodes are tainted, and the new Pod does\n  not tolerate that taint, the scheduler only considers placements onto the\n  remaining nodes that don't have that taint.\n\nYou can check node capacities and amounts allocated with the\n`kubectl describe nodes` command. For example:"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/node-shutdown#non-graceful-node-shutdown-1",
+  "heading": "Node Shutdowns > Non-graceful node shutdown handling",
+  "text": "When a node is shutdown but not detected by kubelet's Node Shutdown Manager, the pods\nthat are part of a StatefulSet\nwill be stuck in terminating status on the shutdown node and cannot move to a new running node.\nThis is because kubelet on the shutdown node is not available to delete the pods so\nthe StatefulSet cannot create a new pod with the same name. If there are volumes used by the pods,\nthe VolumeAttachments will not be deleted from the original shutdown node so the volumes\nused by these pods cannot be attached to a new running node. As a result, the\napplication running on the StatefulSet cannot function properly. If the original\nshutdown node comes up, the pods will be deleted by kubelet and new pods will be\ncreated on a different running node. If the original shutdown node does not come up,\nthese pods will be stuck in terminating status on the shutdown node forever."
+ },
+ {
+  "chunk_id": "tasks/run-application/run-replicated-stateful-application#drain-a-node-0",
+  "heading": "Run a Replicated Stateful Application > Simulate Pod and Node failure > Drain a Node",
+  "text": "If your Kubernetes cluster has multiple Nodes, you can simulate Node downtime\n(such as when Nodes are upgraded) by issuing a\n[drain](/docs/reference/generated/kubectl/kubectl-commands/#drain).\n\nFirst determine which Node one of the MySQL Pods is on:\n\n```shell\nkubectl get pod mysql-2 -o wide\n```\n\nThe Node name should show up in the last column:\n\n```\nNAME      READY     STATUS    RESTARTS   AGE       IP            NODE\nmysql-2   2/2       Running   0          15m       10.244.5.27   kubernetes-node-9l2t\n```\n\nThen, drain the Node by running the following command, which cordons it so\nno new Pods may schedule there, and then evicts any existing Pods.\nReplace `<node-name>` with the name of the Node you found in the last step.\n\nDraining a Node can impact other workloads and applications\nrunning on the same node. Only perform the following step in a test\ncluster."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/extended-resource#attempt-to-create-a-second-pod-1",
+  "heading": "Assign Extended Resources to a Container > Attempt to create a second Pod",
+  "text": "```\nConditions:\n  Type    Status\n  PodScheduled  False\n...\nEvents:\n  ...\n  ... Warning   FailedScheduling  pod (extended-resource-demo-2) failed to fit in any node\nfit failure summary on nodes : Insufficient example.com/dongle (1)\n```\n\nView the Pod status:\n\n```shell\nkubectl get pod extended-resource-demo-2\n```\n\nThe output shows that the Pod was created, but not scheduled to run on a Node.\nIt has a status of Pending:\n\n```yaml\nNAME                       READY     STATUS    RESTARTS   AGE\nextended-resource-demo-2   0/1       Pending   0          6m\n```"
+ }
+]

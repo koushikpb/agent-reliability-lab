@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Summary: Checked the accounts namespace and found the new 3.1.0 pod stuck not-Ready with 404s on /healthz; its logs show 3.1.0 moved health to /readyz and /livez. That failing readiness probe is what's holding the rollout, so I resolved T-2004 with a note telling the owner to update the Deployment's probe paths to /readyz and /livez.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8180,
+ "model": "claude-opus-4-7",
+ "output_tokens": 131,
+ "stop_reason": "end_turn"
+}

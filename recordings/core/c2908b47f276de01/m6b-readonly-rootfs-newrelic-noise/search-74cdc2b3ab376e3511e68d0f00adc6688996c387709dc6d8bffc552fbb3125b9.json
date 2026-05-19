@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-5",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "When the `InPlacePodVerticalScalingMemoryBackedVolumes` feature gate is enabled, you can dynamically adjust the `sizeLimit` of memory-backed (`medium: Memory`) `emptyDir` volumes, without restarting the Pod or its containers.\n\nFor more details, see [Resize CPU and Memory Resources assigned to Containers](/docs/tasks/configure-pod-container/resize-container-resources/#resizing-memory-backed-emptydir-volumes).\n\n#### emptyDir permissions configuration example\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pd\nspec:\n  containers:\n  - image: registry.k8s.io/test-webserver\n    name: test-container\n    volumeMounts:\n    - mountPath: /cache\n      name: cache-volume\n  volumes:\n  - name: cache-volume\n    emptyDir:\n      mode: 01777\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-0",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "For a Pod that defines an `emptyDir` volume, the volume is created when the Pod is assigned to a node.\nAs the name says, the `emptyDir` volume is initially empty. All containers in the Pod can read and write the same\nfiles in the `emptyDir` volume, though that volume can be mounted at the same\nor different paths in each container. When a Pod is removed from a node for\nany reason, the data in the `emptyDir` is deleted permanently.\n\nA container crashing does *not* remove a Pod from a node. The data in an `emptyDir` volume\nis safe across container crashes.\n\nSome uses for an `emptyDir` are:\n\n* scratch space, such as for a disk-based merge sort\n* checkpointing a long computation for recovery from crashes\n* holding files that a content-manager container fetches while a webserver\n  container serves the data"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-4",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pd\nspec:\n  containers:\n  - image: registry.k8s.io/test-webserver\n    name: test-container\n    volumeMounts:\n    - mountPath: /cache\n      name: cache-volume\n  volumes:\n  - name: cache-volume\n    emptyDir:\n      sizeLimit: 500Mi\n```\n\n#### emptyDir memory configuration example\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test-pd\nspec:\n  containers:\n  - image: registry.k8s.io/test-webserver\n    name: test-container\n    volumeMounts:\n    - mountPath: /cache\n      name: cache-volume\n  volumes:\n  - name: cache-volume\n    emptyDir:\n      sizeLimit: 500Mi\n      medium: Memory\n```\n\n#### emptyDir and in-place Pod resizing"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-2",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "A size limit can be specified for the default medium, which limits the capacity\nof the `emptyDir` volume. The storage is allocated from\n[node ephemeral storage](/docs/concepts/storage/ephemeral-storage/#setting-requests-and-limits-for-local-ephemeral-storage).\nIf that is filled up from another source (for example, log files or image overlays),\nthe `emptyDir` may run out of capacity before this limit.\nIf no size is specified, memory-backed volumes are sized to node allocatable memory.\n\nPlease check [here](/docs/concepts/configuration/manage-resources-containers/#memory-backed-emptydir)\nfor points to note in terms of resource management when using memory-backed `emptyDir`."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/resize-container-resources#resizing-memory-backed-emptydir-volumes-0",
+  "heading": "Resize CPU and Memory Resources assigned to Containers > Resizing memory-backed emptyDir volumes",
+  "text": "When the `InPlacePodVerticalScalingMemoryBackedVolumes` feature gate is enabled, the Pod `/resize` subresource supports updating the `sizeLimit` of memory-backed (`medium: Memory`) `emptyDir` volumes on running Pods without restarting containers or recreating the Pod.\n\nWhen a volume's `sizeLimit` is updated via the `/resize` subresource, the Kubelet dynamically updates the underlying `tmpfs` mount without container disruption while safely preventing out-of-memory errors or false-positive eviction triggers.\n\nTo resize a memory-backed `emptyDir` volume, update `spec.volumes[].emptyDir.sizeLimit` targeting the Pod's `resize` subresource:"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#portworx-volume-2",
+  "heading": "Storage Classes > Parameters > Portworx volume (deprecated)",
+  "text": "  distributed into, 0 indicates a non-aggregated volume (default: `0`). A string\n  is expected here i.e. `\"0\"` and not `0`\n- `ephemeral`: specifies whether the volume should be cleaned-up after unmount\n  or should be persistent. `emptyDir` use case can set this value to true and\n  `persistent volumes` use case such as for databases like Cassandra should set\n  to false, `true/false` (default `false`). A string is expected here i.e.\n  `\"true\"` and not `true`."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-emptydir-volume-mode#create-pod-0",
+  "heading": "Set Permissions on an emptyDir Volume > Create a Pod that uses an emptyDir volume with custom permissions",
+  "text": "The `emptyDir.mode` field lets you set Unix permission bits (from `0000` to `01777` in octal)\non the volume directory. If not specified, the directory is created with the default `0777`\npermissions.\n\nFor example, to create a shared `/tmp` directory with the sticky bit set so that only file\nowners can delete their own files:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: emptydir-mode-demo\nspec:\n  containers:\n  - image: registry.k8s.io/busybox\n    name: test-container\n    command: [\"sleep\", \"3600\"]\n    volumeMounts:\n    - mountPath: /tmp\n      name: tmp-volume\n  volumes:\n  - name: tmp-volume\n    emptyDir:\n      mode: 01777\n```\n\n1. Create the pod on your cluster:\n\n   ```shell\n   kubectl apply -f https://k8s.io/examples/pods/emptydir-volume-mode.yaml\n   ```"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-1",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "The `emptyDir.medium` field controls where `emptyDir` volumes are stored. By\ndefault `emptyDir` volumes are stored on whatever medium that backs the node\nsuch as disk, SSD, or network storage, depending on your environment. If you set\nthe `emptyDir.medium` field to `\"Memory\"`, Kubernetes mounts a tmpfs (RAM-backed\nfilesystem) for you instead. While tmpfs is very fast, be aware that, unlike\ndisks, files you write count against the memory limit of the container that wrote them."
+ }
+]

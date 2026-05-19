@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now I can see the issue clearly. The pods are crashing during startup with a panic when compiling a pricing rule called \"BF-2026-STACKED\". The error is an index out of range error in the tier lookup logic. However, the pods have 0 restarts shown, which suggests they may have recently recovered or been restarted. Let me search the documentation to understand more about crash loops and how Kubernetes handles them.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_018R7ZD9aAKyrtoZLWrjjnTq",
+   "input": {
+    "query": "crash loop pod restart policy container restart"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2651,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 154,
+ "stop_reason": "tool_use"
+}

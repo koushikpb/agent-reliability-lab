@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#service-account-issuer-discovery-2",
+  "heading": "Configure Service Accounts for Pods > ServiceAccount token volume projection > Service account issuer discovery",
+  "text": "Clusters that use RBAC include a\ndefault ClusterRole called `system:service-account-issuer-discovery`.\nA default ClusterRoleBinding assigns this role to the `system:serviceaccounts` group,\nwhich all ServiceAccounts implicitly belong to.\nThis allows pods running on the cluster to access the service account discovery document\nvia their mounted service account token. Administrators may, additionally, choose to\nbind the role to `system:authenticated` or `system:unauthenticated` depending on their\nsecurity requirements and which external systems they intend to federate with.\n\nThe JWKS response contains public keys that a relying party can use to validate\nthe Kubernetes service account tokens. Relying parties first query for the\nOpenID Provider Configuration, and use the `jwks_uri` field in the response to\nfind the JWKS."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-1",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "- Assign permissions at the namespace level where possible. Use RoleBindings as opposed to\n  ClusterRoleBindings to give users rights only within a specific namespace.\n- Avoid providing wildcard permissions when possible, especially to all resources.\n  As Kubernetes is an extensible system, providing wildcard access gives rights\n  not just to all object types that currently exist in the cluster, but also to all object types\n  which are created in the future.\n- Administrators should not use `cluster-admin` accounts except where specifically needed.\n  Providing a low privileged account with\n  [impersonation rights](/docs/reference/access-authn-authz/authentication/#user-impersonation)\n  can avoid accidental modification of cluster resources.\n- Avoid adding users to the `system:masters` group. Any user who is a member of this group\n  bypasses all RBAC rights checks and will always have unrestricted superuser access, which cannot be\n  revoked by removing RoleBindings or ClusterRoleBindings. As an aside, if a cluster is"
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#access-controls-1",
+  "heading": "Multi-tenancy > Control plane isolation > Access controls",
+  "text": "Role-based access control (RBAC) is commonly used to enforce authorization in the Kubernetes\ncontrol plane, for both users and workloads (service accounts).\n[Roles](/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and\n[RoleBindings](/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) are\nKubernetes objects that are used at a namespace level to enforce access control in your\napplication; similar objects exist for authorizing access to cluster-level objects, though these\nare less useful for multi-tenant clusters.\n\nIn a multi-team environment, RBAC must be used to restrict tenants' access to the appropriate\nnamespaces, and ensure that cluster-wide resources can only be accessed or modified by privileged\nusers such as cluster administrators."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-gmsa#assign-role-to-service-accounts-to-use-specific-gmsa-credspecs-0",
+  "heading": "Configure GMSA for Windows Pods and containers > Assign role to service accounts to use specific GMSA credspecs",
+  "text": "A service account (that Pods will be configured with) needs to be bound to the\ncluster role create above. This authorizes the service account to use the desired\nGMSA credential spec resource. The following shows the default service account\nbeing bound to a cluster role `webapp1-role` to use `gmsa-WebApp1` credential spec resource created above.\n\n```yaml\napiVersion: rbac.authorization.k8s.io/v1\nkind: RoleBinding\nmetadata:\n  name: allow-default-svc-account-read-on-gmsa-WebApp1\n  namespace: default\nsubjects:\n- kind: ServiceAccount\n  name: default\n  namespace: default\nroleRef:\n  kind: ClusterRole\n  name: webapp1-role\n  apiGroup: rbac.authorization.k8s.io\n```"
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#default-service-accounts-0",
+  "heading": "Service Accounts > What are service accounts? > Default service accounts",
+  "text": "When you create a cluster, Kubernetes automatically creates a ServiceAccount\nobject named `default` for every namespace in your cluster. The `default`\nservice accounts in each namespace get no permissions by default other than the\n[default API discovery permissions](/docs/reference/access-authn-authz/rbac/#default-roles-and-role-bindings)\nthat Kubernetes grants to all authenticated principals if role-based access control (RBAC) is enabled.\nIf you delete the `default` ServiceAccount object in a namespace, the\ncontrol plane\nreplaces it with a new one.\n\nIf you deploy a Pod in a namespace, and you don't\n[manually assign a ServiceAccount to the Pod](#assign-to-pod), Kubernetes\nassigns the `default` ServiceAccount for that namespace to the Pod."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-1",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use RBAC to allow service accounts in one namespace to perform actions\non resources in a different namespace in the cluster. For example, consider a\nscenario where you have a service account and Pod in the `dev` namespace and\nyou want your Pod to see Jobs running in the `maintenance` namespace. You could\ncreate a Role object that grants permissions to list Job objects. Then,\nyou'd create a RoleBinding object in the `maintenance` namespace to bind the\nRole to the ServiceAccount object. Now, Pods in the `dev` namespace can list\nJob objects in the `maintenance` namespace using that service account."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/hardening-dra#bind-roles-to-explicit-identities-0",
+  "heading": "Harden Dynamic Resource Allocation in Your Cluster > Bind roles to explicit identities",
+  "text": "Create `ClusterRoleBinding` objects for each component identity, and avoid\nsharing a broad role across unrelated DRA components.\n\nRestrict `resourceclaims/driver` rules with `resourceNames` where possible so\nan identity can only write status for the specific DRA driver it operates."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#what-are-service-accounts-0",
+  "heading": "Service Accounts > What are service accounts?",
+  "text": "A service account is a type of non-human account that, in Kubernetes, provides\na distinct identity in a Kubernetes cluster. Application Pods, system\ncomponents, and entities inside and outside the cluster can use a specific\nServiceAccount's credentials to identify as that ServiceAccount. This identity\nis useful in various situations, including authenticating to the API server or\nimplementing identity-based security policies.\n\nService accounts exist as ServiceAccount objects in the API server. Service\naccounts have the following properties:\n\n* **Namespaced:** Each service account is bound to a Kubernetes\n  namespace. Every namespace\n  gets a [`default` ServiceAccount](#default-service-accounts) upon creation.\n\n* **Lightweight:** Service accounts exist in the cluster and are\n  defined in the Kubernetes API. You can quickly create service accounts to\n  enable specific tasks.\n\n* **Portable:** A configuration bundle for a complex containerized workload\n  might include service account definitions for the system's components. The\n  lightweight nature of service accounts and the namespaced identities make\n  the configurations portable."
+ }
+]

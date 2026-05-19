@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary:** Ticket T-5004 is resolved. I read the ticket, listed the pods in the `edge` namespace, and confirmed that both `api-gateway` pods mount the `gateway-limits` ConfigMap using `subPath: limits.yaml`. Kubernetes documentation explicitly states that containers mounting a ConfigMap via `subPath` do **not** receive automatic updates \u2014 meaning the pods still hold the old 100 req/s limit. The immediate fix is a rolling restart (`kubectl rollout restart deployment/api-gateway -n edge`), and the long-term fix is to remove the `subPath` so that Kubernetes can propagate future ConfigMap changes automatically.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 5227,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 147,
+ "stop_reason": "end_turn"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/scale-stateful-set#scaling-down-does-not-work-right-0",
+  "heading": "Scale a StatefulSet > Troubleshooting > Scaling down does not work right",
+  "text": "You cannot scale down a StatefulSet when any of the stateful Pods it manages is\nunhealthy. Scaling down only takes place after those stateful Pods become running and ready.\n\nIf spec.replicas > 1, Kubernetes cannot determine the reason for an unhealthy Pod.\nIt might be the result of a permanent fault or of a transient fault. A transient\nfault can be caused by a restart required by upgrading or maintenance.\n\nIf the Pod is unhealthy due to a permanent fault, scaling\nwithout correcting the fault may lead to a state where the StatefulSet membership\ndrops below a certain minimum number of replicas that are needed to function\ncorrectly. This may cause your StatefulSet to become unavailable.\n\nIf the Pod is unhealthy due to a transient fault and the Pod might become available again,\nthe transient error may interfere with your scale-up or scale-down operation. Some distributed\ndatabases have issues when nodes join and leave at the same time. It is better\nto reason about scaling operations at the application level in these cases, and\nperform scaling only when you are sure that your stateful application cluster is\ncompletely healthy."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0",
+  "heading": "StatefulSets > Deployment and Scaling Guarantees",
+  "text": "* For a StatefulSet with N replicas, when Pods are being deployed, they are created sequentially, in order from {0..N-1}.\n* When Pods are being deleted, they are terminated in reverse order, from {N-1..0}.\n* Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready. If [`.spec.minReadySeconds`](#minimum-ready-seconds) is set, predecessors must be available (Ready for at least `minReadySeconds`).\n* Before a Pod is terminated, all of its successors must be completely shutdown.\n\nThe StatefulSet should not specify a `pod.Spec.TerminationGracePeriodSeconds` of 0. This practice\nis unsafe and strongly discouraged. For further explanation, please refer to\n[force deleting StatefulSet Pods](/docs/tasks/run-application/force-delete-stateful-set-pod/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#pod-management-policies-0",
+  "heading": "StatefulSets > Deployment and Scaling Guarantees > Pod Management Policies",
+  "text": "StatefulSet allows you to relax its ordering guarantees while\npreserving its uniqueness and identity guarantees via its `.spec.podManagementPolicy` field.\n\n#### OrderedReady Pod Management\n\n`OrderedReady` pod management is the default for StatefulSets. It implements the behavior\ndescribed in [Deployment and Scaling Guarantees](#deployment-and-scaling-guarantees).\n\n#### Parallel Pod Management\n\n`Parallel` pod management tells the StatefulSet controller to launch or\nterminate all Pods in parallel, and to not wait for Pods to become Running\nand Ready or completely terminated prior to launching or terminating another\nPod.\n\nFor scaling operations, this means all Pods are created or terminated simultaneously.\n\nFor rolling updates when [`.spec.updateStrategy.rollingUpdate.maxUnavailable`](#maximum-unavailable-pods)\nis greater than 1, the StatefulSet controller terminates and creates up to `maxUnavailable` Pods\nsimultaneously (also known as \"bursting\"). This can speed up updates but may result in Pods becoming ready out of order, which might not be suitable for applications requiring strict ordering."
+ },
+ {
+  "chunk_id": "tasks/run-application/force-delete-stateful-set-pod#statefulset-considerations-0",
+  "heading": "Force Delete StatefulSet Pods > StatefulSet considerations",
+  "text": "In normal operation of a StatefulSet, there is **never** a need to force delete a StatefulSet Pod.\nThe [StatefulSet controller](/docs/concepts/workloads/controllers/statefulset/) is responsible for\ncreating, scaling and deleting members of the StatefulSet. It tries to ensure that the specified\nnumber of Pods from ordinal 0 through N-1 are alive and ready. StatefulSet ensures that, at any time,\nthere is at most one Pod with a given identity running in a cluster. This is referred to as\n*at most one* semantics provided by a StatefulSet."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#forced-rollback-0",
+  "heading": "StatefulSets > Rolling Updates > Forced rollback",
+  "text": "When using [Rolling Updates](#rolling-updates) with the default\n[Pod Management Policy](#pod-management-policies) (`OrderedReady`),\nit's possible to get into a broken state that requires manual intervention to repair.\n\nIf you update the Pod template to a configuration that never becomes Running and\nReady (for example, due to a bad binary or application-level configuration error),\nStatefulSet will stop the rollout and wait.\n\nIn this state, it's not enough to revert the Pod template to a good configuration.\nDue to a [known issue](https://github.com/kubernetes/kubernetes/issues/67250),\nStatefulSet will continue to wait for the broken Pod to become Ready\n(which never happens) before it will attempt to revert it back to the working\nconfiguration.\n\nAfter reverting the template, you must also delete any Pods that StatefulSet had\nalready attempted to run with the bad configuration.\nStatefulSet will then begin to recreate the Pods using the reverted template."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#limitations-0",
+  "heading": "StatefulSets > Limitations",
+  "text": "* The storage for a given Pod must either be provisioned by a\n  [PersistentVolume Provisioner](/docs/concepts/storage/dynamic-provisioning/)\n  based on the requested _storage class_, or pre-provisioned by an admin.\n* Deleting and/or scaling a StatefulSet down will _not_ delete the volumes associated with the\n  StatefulSet. This is done to ensure data safety, which is generally more valuable than an\n  automatic purge of all related StatefulSet resources.\n* StatefulSets currently require a [Headless Service](/docs/concepts/services-networking/service/#headless-services)\n  to be responsible for the network identity of the Pods. You are responsible for creating this\n  Service.\n* StatefulSets do not provide any guarantees on the termination of pods when a StatefulSet is\n  deleted. To achieve ordered and graceful termination of the pods in the StatefulSet, it is\n  possible to scale the StatefulSet down to 0 prior to deletion.\n* When using [Rolling Updates](#rolling-updates) with the default"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#rolling-updates-0",
+  "heading": "StatefulSets > Rolling Updates",
+  "text": "When a StatefulSet's `.spec.updateStrategy.type` is set to `RollingUpdate`, the\nStatefulSet controller will delete and recreate each Pod in the StatefulSet. It will proceed\nin the same order as Pod termination (from the largest ordinal to the smallest), updating\neach Pod one at a time.\n\nThe Kubernetes control plane waits until an updated Pod is Running and Ready prior\nto updating its predecessor. If you have set `.spec.minReadySeconds` (see\n[Minimum Ready Seconds](#minimum-ready-seconds)), the control plane additionally waits that\namount of time after the Pod turns ready, before moving on."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#replicas-0",
+  "heading": "StatefulSets > PersistentVolumeClaim retention > Replicas",
+  "text": "`.spec.replicas` is an optional field that specifies the number of desired Pods. It defaults to 1.\n\nShould you manually scale a StatefulSet, via `kubectl scale\nstatefulset statefulset --replicas=X`, and then you update that StatefulSet\nbased on a manifest (for example: by running `kubectl apply -f\nstatefulset.yaml`), then applying that manifest overwrites the manual scaling\nthat you previously did.\n\nIf a [HorizontalPodAutoscaler](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)\n(or any similar API for horizontal scaling) is managing scaling for a\nStatefulset, don't set `.spec.replicas`. Instead, allow the Kubernetes\ncontrol plane to manage\nthe `.spec.replicas` field automatically."
+ }
+]

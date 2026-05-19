@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/job#handling-pod-and-container-failures-0",
+  "heading": "Jobs > Handling Pod and container failures",
+  "text": "A container in a Pod may fail for a number of reasons, such as because the process in it exited with\na non-zero exit code, or the container was killed for exceeding a memory limit, etc. If this\nhappens, and the `.spec.template.spec.restartPolicy = \"OnFailure\"`, then the Pod stays\non the node, but the container is re-run. Therefore, your program needs to handle the case when it is\nrestarted locally, or else specify `.spec.template.spec.restartPolicy = \"Never\"`.\nSee [pod lifecycle](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) for more information on `restartPolicy`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-2",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "1. **Check logs**: Use `kubectl logs <name-of-pod>` to check the logs of the container.\n   This is often the most direct way to diagnose the issue causing the crashes.\n1. **Inspect events**: Use `kubectl describe pod <name-of-pod>` to see events\n   for the Pod, which can provide hints about configuration or resource issues.\n1. **Review configuration**: Ensure that the Pod configuration, including\n   environment variables and mounted volumes, is correct and that all required\n   external resources are available.\n1. **Check resource limits**: Make sure that the container has enough CPU\n   and memory allocated. Sometimes, increasing the resources in the Pod definition\n   can resolve the issue.\n1. **Debug application**: There might exist bugs or misconfigurations in the\n   application code. Running this container image locally or in a development\n   environment can help diagnose application specific issues."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#job-termination-and-cleanup-3",
+  "heading": "Jobs > Job termination and cleanup",
+  "text": "Note that both the Job spec and the [Pod template spec](/docs/concepts/workloads/pods/init-containers/#detailed-behavior)\nwithin the Job have an `activeDeadlineSeconds` field. Ensure that you set this field at the proper level.\n\nKeep in mind that the `restartPolicy` applies to the Pod, and not to the Job itself:\nthere is no automatic Job restart once the Job status is `type: Failed`.\nThat is, the Job termination mechanisms activated with `.spec.activeDeadlineSeconds`\nand `.spec.backoffLimit` result in a permanent Job failure that requires manual intervention to resolve."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-phase-2",
+  "heading": "Pod Lifecycle > Pod phase",
+  "text": "When a pod is failing to start repeatedly, `CrashLoopBackOff` may appear in the `Status` field of some kubectl commands.\nSimilarly, when a pod is being deleted, `Terminating` may appear in the `Status` field of some kubectl commands.\n\nMake sure not to confuse _Status_, a kubectl display field for user intuition, with the pod's `phase`.\nPod phase is an explicit part of the Kubernetes data model and of the\n[Pod API](/docs/reference/kubernetes-api/workload-resources/pod-v1/). \n\n```\n  NAMESPACE               NAME               READY   STATUS             RESTARTS   AGE\n  alessandras-namespace   alessandras-pod    0/1     CrashLoopBackOff   200        2d9h\n```\n\nA Pod is granted a term to terminate gracefully, which defaults to 30 seconds.\nYou can use the flag `--force` to [terminate a Pod by force](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced)."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#my-container-is-terminated-3",
+  "heading": "Resource Management for Pods and Containers > Troubleshooting > My container is terminated",
+  "text": "In the preceding example, the `Restart Count:  5` indicates that the `simmemleak`\ncontainer in the Pod was terminated and restarted five times (so far).\nThe `OOMKilled` reason shows that the container tried to use more memory than its limit.\n\nYour next step might be to check the application code for a memory leak. If you\nfind that the application is behaving how you expect, consider setting a higher\nmemory limit (and possibly request) for that container."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-5",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "**Example 2: Batch job with `restartPolicy: OnFailure`**\n```yaml\napiVersion: batch/v1\nkind: Job\nmetadata:\n  name: data-processor\nspec:\n  template:\n    spec:\n      restartPolicy: OnFailure  # Only restart on non-zero exit codes\n      containers:\n      - name: processor\n        image: busybox:1.28\n        command: ['sh', '-c', 'echo \"Processing data...\"; exit 0']\n        # Exit code 0: Job completes successfully, no restart\n        # Exit code 1+: Container restarts to retry the task\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#exceed-a-container-s-memory-limit-4",
+  "heading": "Assign Memory Resources to Containers and Pods > Exceed a Container's memory limit",
+  "text": "```\n... Normal  Created   Created container with id 66a3a20aa7980e61be4922780bf9d24d1a1d8b7395c09861225b0eba1b1f8511\n... Warning BackOff   Back-off restarting failed container\n```\n\nView detailed information about your cluster's Nodes:\n\n```\nkubectl describe nodes\n```\n\nThe output includes a record of the Container being killed because of an out-of-memory condition:\n\n```\nWarning OOMKilling Memory cgroup out of memory: Kill process 4481 (stress) score 1994 or sacrifice child\n```\n\nDelete your Pod:\n\n```shell\nkubectl delete pod memory-demo-2 --namespace=mem-example\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-13",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: fail-pod-if-init-fails\nspec:\n  restartPolicy: Always\n  initContainers:\n  - name: init-once      # This init container will only try once. If it fails, the pod will fail.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'echo \"Failing initialization\" && sleep 10 && exit 1']\n    restartPolicy: Never\n  containers:\n  - name: main-container # This container will always be restarted once initialization succeeds.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'sleep 1800 && exit 0']\n```\n\nA Pod with Never restart policy with a container that ignores and restarts on specific exit codes.\nThis is useful to differentiate between restartable errors and non-restartable errors:"
+ }
+]

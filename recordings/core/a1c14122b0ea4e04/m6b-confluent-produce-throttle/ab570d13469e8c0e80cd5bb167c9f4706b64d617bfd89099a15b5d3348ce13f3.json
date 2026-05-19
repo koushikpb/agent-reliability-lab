@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EqoCCqQBCBMYAipAwifQdFy7QlD2fIW+c7YgNqMo6Q+Fg3m6UHzkBCw/vQoq48QLtJuQtXqKLFBxt877THUXFxO+48eSf02km2JaYzIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB+O/w1gYSDK/oRc3qi2Jl8+L65xoMpfFnnEiY3j1NKeYHIjBFCF7A79e6TNUrXMPN+iXzCroRSAN0LiWiTJWkMSgxSV1BONRulFHfeKnMNVu+JQgqM0J5Wts9EpSh8rUJaLK9Q2+xGr5pOR01mJykl2M6DwvFB6HkutkhFZCl2TVjd10rLlrYaBgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CRwHNm1TBiK3BBKw8kWYE9",
+   "input": {
+    "id": "T-6005"
+   },
+   "name": "get_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1600,
+ "model": "claude-opus-4-7",
+ "output_tokens": 99,
+ "stop_reason": "tool_use"
+}

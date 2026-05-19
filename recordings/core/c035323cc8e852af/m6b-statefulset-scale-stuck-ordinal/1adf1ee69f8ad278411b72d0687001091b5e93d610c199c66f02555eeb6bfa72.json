@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I can see docindex-3 is running but not ready. Let me check its logs to understand why it's failing the readiness probe.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MHsSwcbhxkrDm9FZJhbApc",
+   "input": {
+    "pod": "docindex-3"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2000,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 89,
+ "stop_reason": "tool_use"
+}

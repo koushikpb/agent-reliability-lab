@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results give me information about init containers in general, but I need more specific information about Vault integration. Let me search for more specific Vault-related information:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016pY25FhbTXiMCKxjVrwV6n",
+   "input": {
+    "query": "service account Kubernetes authentication token"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6715,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 94,
+ "stop_reason": "tool_use"
+}

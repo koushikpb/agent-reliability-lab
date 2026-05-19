@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/multi-tenancy#dns-0",
+  "heading": "Multi-tenancy > Additional Considerations > DNS",
+  "text": "Kubernetes clusters include a Domain Name System (DNS) service to provide translations from names\nto IP addresses, for all Services and Pods. By default, the Kubernetes DNS service allows lookups\nacross all namespaces in the cluster.\n\nIn multi-tenant environments where tenants can access pods and other Kubernetes resources, or where\nstronger isolation is required, it may be necessary to prevent pods from looking up services in other\nNamespaces.\nYou can restrict cross-namespace DNS lookups by configuring security rules for the DNS service.\nFor example, CoreDNS (the default DNS service for Kubernetes) can leverage Kubernetes metadata\nto restrict queries to Pods and Services within a namespace. For more information, read an\n[example](https://github.com/coredns/policy#kubernetes-metadata-multi-tenancy-policy) of\nconfiguring this within the CoreDNS documentation."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#dns-0",
+  "heading": "Service > Discovering services > DNS",
+  "text": "You can (and almost always should) set up a DNS service for your Kubernetes\ncluster using an [add-on](/docs/concepts/cluster-administration/addons/).\n\nA cluster-aware DNS server, such as CoreDNS, watches the Kubernetes API for new\nServices and creates a set of DNS records for each one.  If DNS has been enabled\nthroughout your cluster then all Pods should automatically be able to resolve\nServices by their DNS name.\n\nFor example, if you have a Service called `my-service` in a Kubernetes\nnamespace `my-ns`, the control plane and the DNS Service acting together\ncreate a DNS record for `my-service.my-ns`. Pods in the `my-ns` namespace\nshould be able to find the service by doing a name lookup for `my-service`\n(`my-service.my-ns` would also work).\n\nPods in other namespaces must qualify the name as `my-service.my-ns`. These names\nwill resolve to the cluster IP assigned for the Service."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-records-0",
+  "heading": "DNS for Services and Pods > Namespaces of Services > DNS Records",
+  "text": "What objects get DNS records?\n\n1. Services\n1. Pods\n\nThe following sections detail the supported DNS record types and layout that is\nsupported. Any other layout or names or queries that happen to work are\nconsidered implementation details and are subject to change without warning.\nFor more up-to-date specification, see\n[Kubernetes DNS-Based Service Discovery](https://github.com/kubernetes/dns/blob/master/docs/specification.md)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#dns-1",
+  "heading": "Service > Discovering services > DNS",
+  "text": "Kubernetes also supports DNS SRV (Service) records for named ports.  If the\n`my-service.my-ns` Service has a port named `http` with the protocol set to\n`TCP`, you can do a DNS SRV query for `_http._tcp.my-service.my-ns` to discover\nthe port number for `http`, as well as the IP address.\n\nThe Kubernetes DNS server is the only way to access `ExternalName` Services.\nYou can find more information about `ExternalName` resolution in\n[DNS for Services and Pods](/docs/concepts/services-networking/dns-pod-service/)."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#network-isolation-1",
+  "heading": "Multi-tenancy > Data Plane Isolation > Network isolation",
+  "text": "Pod-to-pod communication can be controlled using [Network Policies](/docs/concepts/services-networking/network-policies/),\nwhich restrict communication between pods using namespace labels or IP address ranges.\nIn a multi-tenant environment where strict network isolation between tenants is required, starting\nwith a default policy that denies communication between pods is recommended with another rule that\nallows all pods to query the DNS server for name resolution. With such a default policy in place,\nyou can begin adding more permissive rules that allow for communication within a namespace.\nIt is also recommended not to use empty label selector '{}' for namespaceSelector field in network policy definition,\nin case traffic need to be allowed between namespaces.\nThis scheme can be further refined as required. Note that this only applies to pods within a single\ncontrol plane; pods that belong to different virtual control planes cannot talk to each other via\nKubernetes networking.\n\nNamespace management tools may simplify the creation of default or common network policies.\nIn addition, some of these tools allow you to enforce a consistent set of namespace labels across\nyour cluster, ensuring that they are a trusted basis for your policies."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#a-aaaa-records-1-1",
+  "heading": "DNS for Services and Pods > Pods > A/AAAA records",
+  "text": "For example, if a Pod in the `cafe` namespace has the IP address 172.17.0.3,\nis an endpoint of a Service named `barista`, and the domain name for your cluster is\n`cluster.local`, then the Pod would have this service-scoped DNS `A` record.\n\n```\n172-17-0-3.barista.cafe.svc.cluster.local\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#pod-hostname-and-subdomain-field-3",
+  "heading": "DNS for Services and Pods > Pods > Pod's hostname and subdomain fields",
+  "text": "Given the above Service `\"busybox-subdomain\"` and the Pods which set `spec.subdomain`\nto `\"busybox-subdomain\"`, the first Pod will see its own FQDN as\n`\"busybox-1.busybox-subdomain.my-namespace.svc.cluster-domain.example\"`. DNS serves\nA and/or AAAA records at that name, pointing to the Pod's IP. Both Pods \"`busybox1`\" and\n\"`busybox2`\" will have their own address records.\n\nAn EndpointSlice can specify\nthe DNS hostname for any endpoint addresses, along with its IP."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#are-you-in-the-right-namespace-for-the-service-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Are you in the right namespace for the service?",
+  "text": "DNS queries that don't specify a namespace are limited to the pod's \nnamespace. \n\nIf the namespace of the pod and service differ, the DNS query must include \nthe namespace of the service.\n\nThis query is limited to the pod's namespace:\n```shell\nkubectl exec -i -t dnsutils -- nslookup <service-name>\n```\n\nThis query specifies the namespace:\n```shell\nkubectl exec -i -t dnsutils -- nslookup <service-name>.<namespace>\n```\n\nTo learn more about name resolution, see \n[DNS for Services and Pods](/docs/concepts/services-networking/dns-pod-service/#what-things-get-dns-names). "
+ }
+]

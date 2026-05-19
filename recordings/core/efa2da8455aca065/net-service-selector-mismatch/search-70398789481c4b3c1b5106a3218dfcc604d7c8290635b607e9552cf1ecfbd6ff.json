@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/endpoint-slices#endpointslice-resource-0",
+  "heading": "EndpointSlices > EndpointSlice API",
+  "text": "In Kubernetes, an EndpointSlice contains references to a set of network\nendpoints. The control plane automatically creates EndpointSlices\nfor any Kubernetes Service that has a selector specified. These EndpointSlices include\nreferences to all the Pods that match the Service selector. EndpointSlices group\nnetwork endpoints together by unique combinations of IP family, protocol,\nport number, and Service name.\nThe name of a EndpointSlice object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).\n\nAs an example, here's a sample EndpointSlice object, that's owned by the `example`\nKubernetes Service."
+ },
+ {
+  "chunk_id": "concepts/services-networking/endpoint-slices#conditions-0",
+  "heading": "EndpointSlices > EndpointSlice API > Conditions",
+  "text": "The EndpointSlice API stores conditions about endpoints that may be useful for consumers.\nThe three conditions are `serving`, `terminating`, and `ready`.\n\n#### Serving\n\nThe `serving` condition indicates that the endpoint is currently serving responses, and\nso it should be used as a target for Service traffic. For endpoints backed by a Pod, this\nmaps to the Pod's `Ready` condition.\n\n#### Terminating\n\nThe `terminating` condition indicates that the endpoint is\nterminating. For endpoints backed by a Pod, this condition is set when\nthe Pod is first deleted (that is, when it receives a deletion\ntimestamp, but most likely before the Pod's containers exit).\n\nService proxies will normally ignore endpoints that are `terminating`,\nbut they may route traffic to endpoints that are both `serving` and\n`terminating` if all available endpoints are `terminating`. (This\nhelps to ensure that no Service traffic is lost during rolling updates\nof the underlying Pods.)\n\n#### Ready"
+ },
+ {
+  "chunk_id": "concepts/services-networking/endpoint-slices#endpointslice-mirroring-0",
+  "heading": "EndpointSlices > EndpointSlice API > EndpointSlice mirroring",
+  "text": "The EndpointSlice API is a replacement for the older Endpoints API. To\npreserve compatibility with older controllers and user workloads that\nexpect kube-proxy\nto route traffic based on Endpoints resources, the cluster's control\nplane mirrors most user-created Endpoints resources to corresponding\nEndpointSlices.\n\n(However, this feature, like the rest of the Endpoints API, is\ndeprecated. Users who manually specify endpoints for selectorless\nServices should do so by creating EndpointSlice resources directly,\nrather than by creating Endpoints resources and allowing them to be\nmirrored.)\n\nThe control plane mirrors Endpoints resources unless:\n\n* the Endpoints resource has a `endpointslice.kubernetes.io/skip-mirror` label\n  set to `true`.\n* the Endpoints resource has a `control-plane.alpha.kubernetes.io/leader`\n  annotation.\n* the corresponding Service resource does not exist.\n* the corresponding Service resource has a non-nil selector."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-1",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "Because this Service has no selector, the corresponding EndpointSlice\nobjects are not created automatically. You can map the Service\nto the network address and port where it's running, by adding an EndpointSlice\nobject manually. For example:\n\n```yaml\napiVersion: discovery.k8s.io/v1\nkind: EndpointSlice\nmetadata:\n  name: my-service-1 # by convention, use the name of the Service\n                     # as a prefix for the name of the EndpointSlice\n  labels:\n    # You should set the \"kubernetes.io/service-name\" label.\n    # Set its value to match the name of the Service\n    kubernetes.io/service-name: my-service\naddressType: IPv4\nports:\n  - name: http # should match with the name of the service port defined above\n    appProtocol: http\n    protocol: TCP\n    port: 9376\nendpoints:\n  - addresses:\n      - \"10.4.5.6\"\n  - addresses:\n      - \"10.1.2.3\"\n```\n\n#### Custom EndpointSlices"
+ },
+ {
+  "chunk_id": "concepts/services-networking/endpoint-slices#endpointslice-resource-1",
+  "heading": "EndpointSlices > EndpointSlice API",
+  "text": "```yaml\napiVersion: discovery.k8s.io/v1\nkind: EndpointSlice\nmetadata:\n  name: example-abc\n  labels:\n    kubernetes.io/service-name: example\naddressType: IPv4\nports:\n  - name: http\n    protocol: TCP\n    port: 80\nendpoints:\n  - addresses:\n      - \"10.1.2.3\"\n    conditions:\n      ready: true\n    hostname: pod-1\n    nodeName: node-1\n    zone: us-west2-a\n```\n\nBy default, the control plane creates and manages EndpointSlices to have no\nmore than 100 endpoints each. You can configure this with the\n`--max-endpoints-per-slice`\nkube-controller-manager\nflag, up to a maximum of 1000.\n\nEndpointSlices act as the source of truth for\nkube-proxy when it comes to\nhow to route internal traffic."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#services-without-selectors-4",
+  "heading": "Service > Defining a Service > Services without selectors",
+  "text": "#### Accessing a Service without a selector {#service-no-selector-access}\n\nAccessing a Service without a selector works the same as if it had a selector.\nIn the [example](#services-without-selectors) for a Service without a selector,\ntraffic is routed to one of the two endpoints defined in\nthe EndpointSlice manifest: a TCP connection to 10.1.2.3 or 10.4.5.6, on port 9376.\n\nThe Kubernetes API server does not allow proxying to endpoints that are not mapped to\npods. Actions such as `kubectl port-forward service/<service-name> forwardedPort:servicePort` where the service has no\nselector will fail due to this constraint. This prevents the Kubernetes API server\nfrom being used as a proxy to endpoints the caller may not be authorized to access.\n\nAn `ExternalName` Service is a special case of Service that does not have\nselectors and uses DNS names instead. For more information, see the\n[ExternalName](#externalname) section."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-2",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "This confirms that the EndpointSlice controller has found the correct Pods for\nyour Service.  If the `ENDPOINTS` column is `<none>`, you should check that\nthe `spec.selector` field of your Service actually selects for\n`metadata.labels` values on your Pods.  A common mistake is to have a typo or\nother error, such as the Service selecting for `app=hostnames`, but the\nDeployment specifying `run=hostnames`, as in versions previous to 1.18, where\nthe `kubectl run` command could have been also used to create a Deployment."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service-traffic-policy#using-service-internal-traffic-policy-0",
+  "heading": "Service Internal Traffic Policy > Using Service Internal Traffic Policy",
+  "text": "You can enable the internal-only traffic policy for a\nService, by setting its\n`.spec.internalTrafficPolicy` to `Local`. This tells kube-proxy to only use node local\nendpoints for cluster internal traffic.\n\nFor pods on nodes with no endpoints for a given Service, the Service\nbehaves as if it has zero endpoints (for Pods on this node) even if the service\ndoes have endpoints on other nodes.\n\nThe following example shows what a Service looks like when you set\n`.spec.internalTrafficPolicy` to `Local`:\n\n```yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: my-service\nspec:\n  selector:\n    app.kubernetes.io/name: MyApp\n  ports:\n    - protocol: TCP\n      port: 80\n      targetPort: 9376\n  internalTrafficPolicy: Local\n```"
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#detailed-behavior-0",
+  "heading": "Init Containers > Detailed behavior",
+  "text": "During Pod startup, the kubelet delays running init containers until the networking\nand storage are ready. Then the kubelet runs the Pod's init containers in the order\nthey appear in the Pod's spec.\n\nEach init container must exit successfully before\nthe next container starts. If a container fails to start due to the runtime or\nexits with failure, it is retried according to the Pod `restartPolicy`. However,\nif the Pod `restartPolicy` is set to Always, the init containers use\n`restartPolicy` OnFailure.\n\nA Pod cannot be `Ready` until all init containers have succeeded. The ports on an\ninit container are not aggregated under a Service. A Pod that is initializing\nis in the `Pending` state but should have a condition `Initialized` set to false.\n\nIf the Pod [restarts](#pod-restart-reasons), or is restarted, all init containers\nmust execute again."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-init-containers#getting-details-about-init-containers-0",
+  "heading": "Debug Init Containers > Getting details about Init Containers",
+  "text": "View more detailed information about Init Container execution:\n\n```shell\nkubectl describe pod <pod-name>\n```\n\nFor example, a Pod with two Init Containers might show the following:\n\n```\nInit Containers:\n  <init-container-1>:\n    Container ID:    ...\n    ...\n    State:           Terminated\n      Reason:        Completed\n      Exit Code:     0\n      Started:       ...\n      Finished:      ...\n    Ready:           True\n    Restart Count:   0\n    ...\n  <init-container-2>:\n    Container ID:    ...\n    ...\n    State:           Waiting\n      Reason:        CrashLoopBackOff\n    Last State:      Terminated\n      Reason:        Error\n      Exit Code:     1\n      Started:       ...\n      Finished:      ...\n    Ready:           False\n    Restart Count:   3\n    ...\n```\n\nYou can also access the Init Container statuses programmatically by reading the\n`status.initContainerStatuses` field on the Pod Spec:\n\n```shell\nkubectl get pod <pod-name> --template '{{.status.initContainerStatuses}}'\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#detailed-behavior-1",
+  "heading": "Init Containers > Detailed behavior",
+  "text": "Changes to the init container spec are limited to the container image field.\nDirectly altering the `image` field of  an init container does _not_ restart the\nPod or trigger its recreation. If the Pod has yet to start, that change may\nhave an effect on how the Pod boots up.\n\nFor a [pod template](/docs/concepts/workloads/pods/#pod-templates)\nyou can typically change any field for an init container; the impact of making\nthat change depends on where the pod template is used.\n\nBecause init containers can be restarted, retried, or re-executed, init container\ncode should be idempotent. In particular, code that writes into any `emptyDir` volume\nshould be prepared for the possibility that an output file already exists.\n\nInit containers have all of the fields of an app container. However, Kubernetes\nprohibits `readinessProbe` from being used because init containers cannot\ndefine readiness distinct from completion. This is enforced during validation."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-13",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: fail-pod-if-init-fails\nspec:\n  restartPolicy: Always\n  initContainers:\n  - name: init-once      # This init container will only try once. If it fails, the pod will fail.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'echo \"Failing initialization\" && sleep 10 && exit 1']\n    restartPolicy: Never\n  containers:\n  - name: main-container # This container will always be restarted once initialization succeeds.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'sleep 1800 && exit 0']\n```\n\nA Pod with Never restart policy with a container that ignores and restarts on specific exit codes.\nThis is useful to differentiate between restartable errors and non-restartable errors:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#understanding-init-containers-0",
+  "heading": "Init Containers > Understanding init containers",
+  "text": "A Pod can have multiple containers\nrunning apps within it, but it can also have one or more init containers, which are run\nbefore the app containers are started.\n\nInit containers are exactly like regular containers, except:\n\n* Init containers always run to completion.\n* Each init container must complete successfully before the next one starts.\n\nIf a Pod's init container fails, the kubelet repeatedly restarts that init container until it succeeds.\nHowever, if the Pod has a `restartPolicy` of Never, and an init container fails during startup of that Pod, Kubernetes treats the overall Pod as failed."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#examples-4",
+  "heading": "Init Containers > Using init containers > Examples",
+  "text": "You can start this Pod by running:\n\n```shell\nkubectl apply -f myapp.yaml\n```\nThe output is similar to this:\n```\npod/myapp-pod created\n```\n\nAnd check on its status with:\n```shell\nkubectl get -f myapp.yaml\n```\nThe output is similar to this:\n```\nNAME        READY     STATUS     RESTARTS   AGE\nmyapp-pod   0/1       Init:0/2   0          6m\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-init-containers#understanding-pod-status-0",
+  "heading": "Debug Init Containers > Understanding Pod status",
+  "text": "A Pod status beginning with `Init:` summarizes the status of Init Container\nexecution. The table below describes some example status values that you might\nsee while debugging Init Containers.\n\nStatus | Meaning\n------ | -------\n`Init:N/M` | The Pod has `M` Init Containers, and `N` have completed so far.\n`Init:Error` | An Init Container has failed to execute.\n`Init:CrashLoopBackOff` | An Init Container has failed repeatedly.\n`Pending` | The Pod has not yet begun executing Init Containers.\n`PodInitializing` or `Running` | The Pod has already finished executing Init Containers."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#pod-restart-reasons-0",
+  "heading": "Init Containers > Detailed behavior > Pod restart reasons",
+  "text": "A Pod can restart, causing re-execution of init containers, for the following\nreasons:\n\n* The Pod infrastructure container is restarted. This is uncommon and would\n  have to be done by someone with root access to nodes.\n* All containers in a Pod are terminated while `restartPolicy` is set to Always,\n  forcing a restart, and the init container completion record has been lost due\n  to garbage collection.\n\nThe Pod will not be restarted when the init container image is changed, or the\ninit container completion record has been lost due to garbage collection. This\napplies for Kubernetes v1.20 and later. If you are using an earlier version of\nKubernetes, consult the documentation for the version you are using."
+ }
+]

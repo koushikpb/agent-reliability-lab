@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary of what I did:**\n\n1. **Read ticket T-2003** \u2014 both `catalog-search` pods in the `search` namespace had been crash-looping since ~9am, no code change deployed.\n2. **Listed pods** \u2014 confirmed both pods were in `CrashLoopBackOff` (10\u201311 restarts each), with exit code 143 (SIGTERM) and the liveness probe failing because port 8080 was unreachable.\n3. **Fetched pod logs** \u2014 both pods showed the app loading a 48-shard, 12.4 GiB index snapshot into memory *before* opening the HTTP listener, taking ~108 seconds \u2014 but the liveness probe (30s delay + 3\u00d710s = 60s budget) was killing the container at ~53s, right around shard 23.\n4. **Searched docs** \u2014 confirmed that a `startupProbe` is the recommended solution for slow-starting containers [cite: tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0][cite: concepts/workloads/pods/pod-lifecycle#startup-probe-0].\n5. **Resolved the ticket** with a clear cause, evidence, and a concrete fix: add a `startupProbe` with `failureThreshold: 24` and `periodSeconds: 10` (240s window) to give the app enough time to load all shards before the liveness probe kicks in.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9783,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 349,
+ "stop_reason": "end_turn"
+}

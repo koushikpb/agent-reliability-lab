@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I have all the information I need. The issue is clear: Prometheus ran out of disk space starting at 03:02:44 UTC on 2026-05-22, which prevented it from writing metrics and caused the data gaps in Grafana. The fix is to expand the PersistentVolumeClaim.\n\nNow I'll resolve the ticket with the cause, evidence, and fix.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01AFUzhRGNKep5MyTSpgduJu",
+   "input": {
+    "id": "T-5005",
+    "note": "**Cause:** Prometheus ran out of disk space on its persistent volume starting at 2026-05-22 03:02:44 UTC, which prevented it from writing metrics to the Write-Ahead Log (WAL). This caused metric collection to fail and resulted in the data gaps in Grafana dashboards and missed alerts.\n\n**Evidence:** Prometheus logs show multiple \"no space left on device\" errors beginning at 03:02:44 UTC: \"Failed to write to WAL\" err=\"write /prometheus/wal/00004812: no space left on device\" and \"compaction failed\" err=\"persist head block: write chunks: write /prometheus/01HZ8K3V4R6M2TQ9WX5B7N1C0D.tmp-for-creation/chunks/000001: no space left on device\". The PVC prometheus-k8s-db-prometheus-k8s-0 is currently 100Gi.\n\n**Fix:** Expand the Prometheus PVC prometheus-k8s-db-prometheus-k8s-0 in the monitoring namespace. The storage class gp3-resizable has allowVolumeExpansion: true and supports CSI volume expansion. Edit the PVC and increase the storage request to a larger value (e.g., 200Gi). Per Kubernetes documentation [cite: concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-0], PVC expansion is enabled by default and only requires the storage class to have allowVolumeExpansion set to true. The Prometheus pod will automatically become available to the expanded volume once the file system resize completes [cite: concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-3], with no need to recreate the pod. The file system is ext4, which supports online expansion [cite: concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-2].",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5882,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 606,
+ "stop_reason": "tool_use"
+}

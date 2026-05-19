@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The 3.9.0 pod is stuck in the initialization phase. Let me check the logs from the vault-agent-init container to see what's failing:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01U4pnJbA3MpBdtxukyAVmqF",
+   "input": {
+    "pod_name": "orders-api-5b4d7c8f9-hn6wd"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2257,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 111,
+ "stop_reason": "tool_use"
+}

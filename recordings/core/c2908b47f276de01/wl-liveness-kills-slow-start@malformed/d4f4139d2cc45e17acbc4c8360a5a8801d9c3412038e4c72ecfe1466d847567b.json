@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The logs show a critical issue: the pod is being terminated via SIGTERM while it's still loading the index shards. The index load takes a long time (over 30 seconds), but the liveness probe has a delay of only 30 seconds before it starts checking. Let me search for information about liveness probe configuration best practices:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_016WjciMouknPXpXXyihoKmS",
+   "input": {
+    "query": "liveness probe initial delay timeout configuration best practices"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2453,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 134,
+ "stop_reason": "tool_use"
+}

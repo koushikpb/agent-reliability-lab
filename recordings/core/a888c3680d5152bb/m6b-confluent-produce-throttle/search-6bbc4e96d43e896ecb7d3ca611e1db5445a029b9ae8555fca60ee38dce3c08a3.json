@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#strategy-1",
+  "heading": "Deployments > Writing a Deployment Spec > Strategy",
+  "text": "The Deployment updates Pods in a rolling update\nfashion (gradually scale down the old ReplicaSets and scale up the new one) when `.spec.strategy.type==RollingUpdate`. You can specify `maxUnavailable` and `maxSurge` to control\nthe rolling update process.\n\n##### Max Unavailable\n\n`.spec.strategy.rollingUpdate.maxUnavailable` is an optional field that specifies the maximum number\nof Pods that can be unavailable during the update process. The value can be an absolute number (for example, 5)\nor a percentage of desired Pods (for example, 10%). The absolute number is calculated from percentage by\nrounding down. The value cannot be 0 if `.spec.strategy.rollingUpdate.maxSurge` is 0. The default value is 25%."
+ },
+ {
+  "chunk_id": "tasks/run-application/update-deployment-rolling#configuring-rolling-update-strategy-1",
+  "heading": "Update a Deployment Without Downtime > Configuring rolling update strategy",
+  "text": "`maxUnavailable` and `maxSurge` accept an absolute number or a percentage.\nKubernetes calculates percentages from the desired replica count, rounding down\nfor `maxUnavailable` and rounding up for `maxSurge`.\n\nTo configure these parameters, use `kubectl patch`:\n\n```shell\nkubectl patch deployment nginx-deployment -p \\\n  '{\"spec\":{\"strategy\":{\"rollingUpdate\":{\"maxUnavailable\":\"25%\",\"maxSurge\":\"25%\"}}}}'\n```\n\nYou can also set these fields in a Deployment manifest under\n`.spec.strategy.rollingUpdate`. For detailed examples, see\n[max unavailable](/docs/concepts/workloads/controllers/deployment/#max-unavailable)\nand [max surge](/docs/concepts/workloads/controllers/deployment/#max-surge)\nin the Deployment concepts documentation."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#strategy-2",
+  "heading": "Deployments > Writing a Deployment Spec > Strategy",
+  "text": "For example, when this value is set to 30%, the old ReplicaSet can be scaled down to 70% of desired\nPods immediately when the rolling update starts. Once new Pods are ready, old ReplicaSet can be scaled\ndown further, followed by scaling up the new ReplicaSet, ensuring that the total number of Pods available\nat all times during the update is at least 70% of the desired Pods.\n\n##### Max Surge\n\n`.spec.strategy.rollingUpdate.maxSurge` is an optional field that specifies the maximum number of Pods\nthat can be created over the desired number of Pods. The value can be an absolute number (for example, 5) or a\npercentage of desired Pods (for example, 10%). The value cannot be 0 if `maxUnavailable` is 0. The absolute number\nis calculated from the percentage by rounding up. The default value is 25%."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#strategy-3",
+  "heading": "Deployments > Writing a Deployment Spec > Strategy",
+  "text": "For example, when this value is set to 30%, the new ReplicaSet can be scaled up immediately when the\nrolling update starts, such that the total number of old and new Pods does not exceed 130% of desired\nPods. Once old Pods have been killed, the new ReplicaSet can be scaled up further, ensuring that the\ntotal number of Pods running at any time during the update is at most 130% of desired Pods.\n\nHere are some Rolling Update Deployment examples that use the `maxUnavailable` and `maxSurge`:\n\n ```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx-deployment\n  labels:\n    app: nginx\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.14.2\n        ports:\n        - containerPort: 80\n  strategy:\n    type: RollingUpdate\n    rollingUpdate:\n      maxUnavailable: 1\n ```"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#autoscaling-during-rolling-update-0",
+  "heading": "Horizontal Pod Autoscaling > Autoscaling during rolling update",
+  "text": "Kubernetes lets you perform a rolling update on a Deployment. In that\ncase, the Deployment manages the underlying ReplicaSets for you.\nWhen you configure autoscaling for a Deployment, you bind a\nHorizontalPodAutoscaler to a single Deployment. The HorizontalPodAutoscaler\nmanages the `replicas` field of the Deployment. The deployment controller is responsible\nfor setting the `replicas` of the underlying ReplicaSets so that they add up to a suitable\nnumber during the rollout and also afterwards.\n\nIf you perform a rolling update of a StatefulSet that has an autoscaled number of\nreplicas, the StatefulSet directly manages its set of Pods (there is no intermediate resource\nsimilar to ReplicaSet)."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#rollover-aka-multiple-updates-in-flight-0",
+  "heading": "Deployments > Updating a Deployment > Rollover (aka multiple updates in-flight)",
+  "text": "Each time a new Deployment is observed by the Deployment controller, a ReplicaSet is created to bring up\nthe desired Pods. If the Deployment is updated, the existing ReplicaSet that controls Pods whose labels\nmatch `.spec.selector` but whose template does not match `.spec.template` is scaled down. Eventually, the new\nReplicaSet is scaled to `.spec.replicas` and all old ReplicaSets is scaled to 0.\n\nIf you update a Deployment while an existing rollout is in progress, the Deployment creates a new ReplicaSet\nas per the update and start scaling that up, and rolls over the ReplicaSet that it was scaling up previously\n-- it will add it to its list of old ReplicaSets and start scaling it down."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#updating-a-deployment-7",
+  "heading": "Deployments > Updating a Deployment",
+  "text": "      Normal  ScalingReplicaSet  14s   deployment-controller  Scaled down replica set nginx-deployment-2035384211 to 0\n  ```\n  Here you see that when you first created the Deployment, it created a ReplicaSet (nginx-deployment-2035384211)\n  and scaled it up to 3 replicas directly. When you updated the Deployment, it created a new ReplicaSet\n  (nginx-deployment-1564180365) and scaled it up to 1 and waited for it to come up. Then it scaled down the old ReplicaSet\n  to 2 and scaled up the new ReplicaSet to 2 so that at least 3 Pods were available and at most 4 Pods were created at all times.\n  It then continued scaling up and down the new and the old ReplicaSet, with the same rolling update strategy.\n  Finally, you'll have 3 available replicas in the new ReplicaSet, and the old ReplicaSet is scaled down to 0."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicaset#deployment-recommended-0",
+  "heading": "ReplicaSet > Alternatives to ReplicaSet > Deployment (recommended)",
+  "text": "[`Deployment`](/docs/concepts/workloads/controllers/deployment/) is an object which can own ReplicaSets and update\nthem and their Pods via declarative, server-side rolling updates.\nWhile ReplicaSets can be used independently, today they're mainly used by Deployments as a mechanism to orchestrate Pod\ncreation, deletion and updates. When you use Deployments you don't have to worry about managing the ReplicaSets that\nthey create. Deployments own and manage their ReplicaSets.\nAs such, it is recommended to use Deployments when you want ReplicaSets."
+ }
+]

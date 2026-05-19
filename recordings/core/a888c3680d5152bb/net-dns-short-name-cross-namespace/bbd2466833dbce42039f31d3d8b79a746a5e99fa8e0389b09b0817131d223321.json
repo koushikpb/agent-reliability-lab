@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-4004. The issue was that notification-worker was using a short service name (\"smtp-relay\") to connect to the SMTP relay after the platform team moved it to a different namespace (shared-infra). Kubernetes DNS can only resolve short names within the same namespace; cross-namespace access requires a fully qualified domain name. The fix is to update the notification-worker configuration to use `smtp-relay.shared-infra.svc.cluster.local` instead of just `smtp-relay`, then redeploy the application.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8973,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 124,
+ "stop_reason": "end_turn"
+}

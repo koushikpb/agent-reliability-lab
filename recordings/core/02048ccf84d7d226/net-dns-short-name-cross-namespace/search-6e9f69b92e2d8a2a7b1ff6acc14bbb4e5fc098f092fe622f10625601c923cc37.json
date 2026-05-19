@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/multi-tenancy#dns-0",
+  "heading": "Multi-tenancy > Additional Considerations > DNS",
+  "text": "Kubernetes clusters include a Domain Name System (DNS) service to provide translations from names\nto IP addresses, for all Services and Pods. By default, the Kubernetes DNS service allows lookups\nacross all namespaces in the cluster.\n\nIn multi-tenant environments where tenants can access pods and other Kubernetes resources, or where\nstronger isolation is required, it may be necessary to prevent pods from looking up services in other\nNamespaces.\nYou can restrict cross-namespace DNS lookups by configuring security rules for the DNS service.\nFor example, CoreDNS (the default DNS service for Kubernetes) can leverage Kubernetes metadata\nto restrict queries to Pods and Services within a namespace. For more information, read an\n[example](https://github.com/coredns/policy#kubernetes-metadata-multi-tenancy-policy) of\nconfiguring this within the CoreDNS documentation."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#dns-1",
+  "heading": "Service > Discovering services > DNS",
+  "text": "Kubernetes also supports DNS SRV (Service) records for named ports.  If the\n`my-service.my-ns` Service has a port named `http` with the protocol set to\n`TCP`, you can do a DNS SRV query for `_http._tcp.my-service.my-ns` to discover\nthe port number for `http`, as well as the IP address.\n\nThe Kubernetes DNS server is the only way to access `ExternalName` Services.\nYou can find more information about `ExternalName` resolution in\n[DNS for Services and Pods](/docs/concepts/services-networking/dns-pod-service/)."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#a-aaaa-records-1-0",
+  "heading": "DNS for Services and Pods > Pods > A/AAAA records",
+  "text": "Kube-DNS versions, prior to the implementation of the\n[DNS specification](https://github.com/kubernetes/dns/blob/master/docs/specification.md),\nhad the following DNS resolution:\n\n```\n<pod-IPv4-address>.<namespace>.pod.<cluster-domain>\n```\n\nFor example, if a Pod in the `default` namespace has the IP address 172.17.0.3,\nand the domain name for your cluster is `cluster.local`, then the Pod has a DNS name:\n\n```\n172-17-0-3.default.pod.cluster.local\n```\n\nSome cluster DNS mechanisms, like [CoreDNS](https://coredns.io/), also provide `A` records for:\n\n```\n<pod-ipv4-address>.<service-name>.<my-namespace>.svc.<cluster-domain.example>\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#are-you-in-the-right-namespace-for-the-service-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Are you in the right namespace for the service?",
+  "text": "DNS queries that don't specify a namespace are limited to the pod's \nnamespace. \n\nIf the namespace of the pod and service differ, the DNS query must include \nthe namespace of the service.\n\nThis query is limited to the pod's namespace:\n```shell\nkubectl exec -i -t dnsutils -- nslookup <service-name>\n```\n\nThis query specifies the namespace:\n```shell\nkubectl exec -i -t dnsutils -- nslookup <service-name>.<namespace>\n```\n\nTo learn more about name resolution, see \n[DNS for Services and Pods](/docs/concepts/services-networking/dns-pod-service/#what-things-get-dns-names). "
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#dns-0",
+  "heading": "Service > Discovering services > DNS",
+  "text": "You can (and almost always should) set up a DNS service for your Kubernetes\ncluster using an [add-on](/docs/concepts/cluster-administration/addons/).\n\nA cluster-aware DNS server, such as CoreDNS, watches the Kubernetes API for new\nServices and creates a set of DNS records for each one.  If DNS has been enabled\nthroughout your cluster then all Pods should automatically be able to resolve\nServices by their DNS name.\n\nFor example, if you have a Service called `my-service` in a Kubernetes\nnamespace `my-ns`, the control plane and the DNS Service acting together\ncreate a DNS record for `my-service.my-ns`. Pods in the `my-ns` namespace\nshould be able to find the service by doing a name lookup for `my-service`\n(`my-service.my-ns` would also work).\n\nPods in other namespaces must qualify the name as `my-service.my-ns`. These names\nwill resolve to the cluster IP assigned for the Service."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-custom-nameservers#introduction-0",
+  "heading": "Customizing DNS Service > Introduction",
+  "text": "DNS is a built-in Kubernetes service launched automatically\nusing the _addon manager_ [cluster add-on](https://github.com/kubernetes/kubernetes/blob/master/cluster/addons/addon-manager/README.md).\n\nThe CoreDNS Service is named `kube-dns` in the `metadata.name` field.  \nThe intent is to ensure greater interoperability with workloads that relied on\nthe legacy `kube-dns` Service name to resolve addresses internal to the cluster.\nUsing a Service named `kube-dns` abstracts away the implementation detail of\nwhich DNS provider is running behind that common name.\n\nIf you are running CoreDNS as a Deployment, it will typically be exposed as\na Kubernetes Service with a static IP address.\nThe kubelet passes DNS resolver information to each container with the\n`--cluster-dns=<dns-service-ip>` flag."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/dns-debugging-resolution#is-dns-service-up-0",
+  "heading": "Debugging DNS Resolution > Before you begin > Is DNS service up?",
+  "text": "Verify that the DNS service is up by using the `kubectl get service` command.\n\n```shell\nkubectl get svc --namespace=kube-system\n```\n```\nNAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)             AGE\n...\nkube-dns     ClusterIP   10.0.0.10      <none>        53/UDP,53/TCP        1h\n...\n```\n\nThe Service for CoreDNS is named `kube-dns`, for backward compatibility with the\noriginal kube-dns.\n\nIf you have created the Service or in the case it should be created by default\nbut it does not appear, see\n[debugging Services](/docs/tasks/debug/debug-application/debug-service/) for\nmore information."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/_index#optional-cluster-services-0",
+  "heading": "Cluster Administration > Optional Cluster Services",
+  "text": "* [DNS Integration](/docs/concepts/services-networking/dns-pod-service/) describes how to resolve\n  a DNS name directly to a Kubernetes service.\n\n* [Logging and Monitoring Cluster Activity](/docs/concepts/cluster-administration/logging/)\n  explains how logging in Kubernetes works and how to implement it."
+ }
+]

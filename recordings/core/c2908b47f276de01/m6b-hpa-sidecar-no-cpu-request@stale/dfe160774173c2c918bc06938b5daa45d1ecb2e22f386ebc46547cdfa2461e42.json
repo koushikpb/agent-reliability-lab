@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Based on my investigation, I found the issue. The key finding is that when HPA shows `cpu <unknown>/60%`, this indicates that metrics cannot be fetched properly. According to the Kubernetes documentation, CPU metrics can be undefined if some containers don't have resource requests set. \n\nLooking at the pod specification from the list_pods output, I can see that the `log-forwarder` container does NOT have CPU or memory resource requests specified:\n\n```\n\"containers\": [\n  {\"name\": \"api\", \"resources\": {\"requests\": {\"cpu\": \"1\", \"memory\": \"2Gi\"}, ...}},\n  {\"name\": \"log-forwarder\", \"image\": \"fluent/fluent-bit:3.1.4\", \"resources\": {}}  <-- NO REQUESTS\n]\n```\n\nThis is the problem. According to the documentation [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-3], if some containers don't have resource requests set, \"CPU utilization for the Pod will not be defined and the autoscaler will not take any action for that metric.\"\n\nThis is a change that must have occurred with the 4.8.0 release - either the log-forwarder sidecar was added without resource requests, or the resource request definitions were changed.\n\nLet me update the ticket with the resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01BYe9A4FghSumxbZZmgh3Uc",
+   "input": {
+    "id": "T-6001",
+    "note": "ROOT CAUSE: The search-api pods in the 4.8.0 release include a log-forwarder sidecar container that lacks CPU and memory resource requests. According to Kubernetes HPA documentation, when any container in a Pod lacks resource requests defined, \"CPU utilization for the Pod will not be defined and the autoscaler will not take any action for that metric\" [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-3]. This causes HPA to report \"cpu <unknown>\" and prevents scaling.\n\nEVIDENCE: Pod inspection showed the log-forwarder container has empty resource definitions while the api container has proper requests (1 cpu). HPA shows \"cpu <unknown>/60%\" because it cannot calculate utilization ratios without requests on all containers.\n\nFIX: Update the search-api Deployment manifest to add resource requests to the log-forwarder sidecar container. For example:\n```yaml\n- name: log-forwarder\n  image: fluent/fluent-bit:3.1.4\n  resources:\n    requests:\n      cpu: 100m      # adjust as needed\n      memory: 128Mi   # adjust as needed\n```\n\nOnce applied, the HPA will be able to fetch metrics from the Metrics API [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0] and resume normal scaling behavior at lunch peak loads.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 11492,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 749,
+ "stop_reason": "tool_use"
+}

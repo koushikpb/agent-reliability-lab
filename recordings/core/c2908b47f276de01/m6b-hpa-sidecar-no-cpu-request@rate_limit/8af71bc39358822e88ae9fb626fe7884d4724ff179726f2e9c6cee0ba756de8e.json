@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Summary**: I resolved ticket T-6001 by identifying that the search-api 4.8.0 release added a `log-forwarder` sidecar container without resource requests, which prevents the HPA from calculating CPU utilization metrics. The fix is to add CPU and memory resource requests to the log-forwarder container in the Deployment specification.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8492,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 82,
+ "stop_reason": "end_turn"
+}

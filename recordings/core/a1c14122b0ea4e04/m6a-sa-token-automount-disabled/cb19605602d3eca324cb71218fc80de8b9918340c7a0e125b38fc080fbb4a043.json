@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EtYCCqQBCBMYAipAefd18eg/1xIbjB6Y5iV9LIvHellShQzPV2rrVuWltZ9kx3kHMCPGGXwfdA6zBsKcFDzHFMl2n+Bjo0ePBKuWHDIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB4+/w1gYSDKaItCJwp5VeiGQ/KhoMXojVA0SOEJDFPHhNIjB5P3sQk2laqH83nmHBnY25W3j8aTnpB74F2o2ldiwZqN00ly3lX2uQsQdwg224abMqX+4HbejZkMxYooqB5iSuHBGJTtgEGhR3wLuJDqYee+Ydzq8u0vPiVY1/zgf5qEFtcOMRlBF2zMcJAn1yZ/w5aKo1jRPOdQTaxpb9qZ5qZe/5wL1RwBf3XFWgPJQNV9LQGAE=",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01X8jevawFa2DwZHADzVPW2x",
+   "input": {
+    "pod": "job-dispatcher-7b6f9c4d8-zk5np"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2580,
+ "model": "claude-opus-4-7",
+ "output_tokens": 136,
+ "stop_reason": "tool_use"
+}

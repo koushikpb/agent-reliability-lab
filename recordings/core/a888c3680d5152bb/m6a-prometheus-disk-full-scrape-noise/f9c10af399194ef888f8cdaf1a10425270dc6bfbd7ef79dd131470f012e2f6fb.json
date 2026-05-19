@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The monitoring pods look healthy. Let me check the Prometheus logs to see if there's any issue with data collection or storage.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01T6WMwZyTrsKkgfhumXhRGV",
+   "input": {
+    "pod_name": "prometheus-k8s-0"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1918,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 90,
+ "stop_reason": "tool_use"
+}

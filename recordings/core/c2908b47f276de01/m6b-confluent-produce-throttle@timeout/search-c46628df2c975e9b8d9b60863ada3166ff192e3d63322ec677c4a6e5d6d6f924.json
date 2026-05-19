@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/configure-upgrade-etcd#multi-node-etcd-cluster-0",
+  "heading": "Operating etcd clusters for Kubernetes > Starting etcd clusters > Multi-node etcd cluster",
+  "text": "For durability and high availability, run etcd as a multi-node cluster in\nproduction and back it up periodically. A five-member cluster is recommended\nin production. For more information, see\n[FAQ documentation](https://etcd.io/docs/current/faq/#what-is-failure-tolerance).\n\nAs you're using Kubernetes, you have the option to run etcd as a container inside\none or more Pods. The `kubeadm` tool sets up etcd\nstatic pods by default, or\nyou can deploy a\n[separate cluster](/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/)\nand instruct kubeadm to use that etcd cluster as the control plane's backing store."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/namespaces#create-pods-in-each-namespace-2",
+  "heading": "Share a Cluster with Namespaces > Subdividing your cluster using Kubernetes namespaces > Create pods in each namespace",
+  "text": "```shell\nkubectl create deployment cattle --image=registry.k8s.io/serve_hostname -n=production\nkubectl scale deployment cattle --replicas=5 -n=production\n\nkubectl get deployment -n=production\n```\n\n```console\nNAME         READY   UP-TO-DATE   AVAILABLE   AGE\ncattle       5/5     5            5           10s\n```\n\n```shell\nkubectl get pods -l app=cattle -n=production\n```\n```console\nNAME                      READY     STATUS    RESTARTS   AGE\ncattle-2263376956-41xy6   1/1       Running   0          34s\ncattle-2263376956-kw466   1/1       Running   0          34s\ncattle-2263376956-n4v97   1/1       Running   0          34s\ncattle-2263376956-p5p3i   1/1       Running   0          34s\ncattle-2263376956-sxpth   1/1       Running   0          34s\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/swap-memory-management#how-is-the-swap-limit-being-determined-with-limitedswap-1",
+  "heading": "Swap memory management > Swap behavior details > How is the swap limit being determined with LimitedSwap?",
+  "text": "With `LimitedSwap`, Pods that do not fall under the Burstable QoS classification (i.e.\n`BestEffort`/`Guaranteed` QoS Pods) are prohibited from utilizing swap memory.\n`BestEffort` QoS Pods exhibit unpredictable memory consumption patterns and lack\ninformation regarding their memory usage, making it difficult to determine a safe\nallocation of swap memory.\nConversely, `Guaranteed` QoS Pods are typically employed for applications that rely on the\nprecise allocation of resources specified by the workload, with memory being immediately available.\nTo maintain the aforementioned security and node health guarantees,\nthese Pods are not permitted to use swap memory when `LimitedSwap` is in effect.\nIn addition, high-priority pods are not permitted to use swap in order to ensure the memory\nthey consume always resides in RAM, hence ready to use."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-metrics#kubelet-pressure-stall-information-psi-metrics-5",
+  "heading": "Metrics For Kubernetes System Components > Component metrics > kubelet Pressure Stall Information (PSI) metrics",
+  "text": "Here is a simple spike scenario. The cpu.some `avg10` value of `0.74` indicates that in the last 10 seconds, at least one task in this container was stalled on the CPU for 0.74% of the time (0.0074 seconds or 74 milliseconds). Because `avg10` (0.74) is significantly higher than `avg300` (0.21) on the same resource, this suggests a recent surge in resource contention rather than a sustained long-term bottleneck. If monitored continuously and the `avg300` metrics increase as well, we can diagnose a more serious, lasting issue!"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics",
+  "text": "Any HPA target can be scaled based on the resource usage of the pods in the scaling target.\nWhen defining the pod specification the resource requests like `cpu` and `memory` should\nbe specified. This is used to determine the resource utilization and used by the HPA controller\nto scale the target up or down. To use resource utilization based scaling specify a metric source\nlike this:\n\n```yaml\ntype: Resource\nresource:\n  name: cpu\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nWith this metric the HPA controller will keep the average utilization of the pods in the scaling\ntarget at 60%. Utilization is the ratio between the current usage of resource to the requested\nresources of the pod. See [Algorithm](#algorithm-details) for more details about how the utilization\nis calculated and averaged.\n\nSince the resource usages of all the containers are summed up the total pod utilization may not\naccurately represent the individual container resource usage. This could lead to situations where\na single container might be running with high usage and the HPA will not scale out because the overall\npod usage is still within acceptable limits."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/dra#kube-controller-manager-metrics-1",
+  "heading": "Good practices for Dynamic Resource Allocation as a Cluster Admin > Monitor and tune components for higher load, especially in high scale environments > `kube-controller-manager` metrics",
+  "text": "If you are experiencing low Workqueue Add Rate, high Workqueue Depth, and/or\nhigh Workqueue Work Duration, this suggests the controller isn't performing\noptimally. Consider tuning parameters like QPS, burst, and CPU/memory\nconfigurations.\n\nIf you are experiencing high Workequeue Add Rate, high Workqueue Depth, but\nreasonable Workqueue Work Duration, this indicates the controller is processing\nwork, but concurrency might be insufficient. Concurrency is hardcoded in the\ncontroller, so as a cluster administrator, you can tune for this by reducing the\npod creation QPS, so the add rate to the resource claim workqueue is more\nmanageable."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#iscsi-0",
+  "heading": "Volumes > Types of volumes > iscsi",
+  "text": "An `iscsi` volume allows an existing iSCSI (SCSI over IP) volume to be mounted\ninto your Pod. Unlike `emptyDir`, which is erased when a Pod is removed, the\ncontents of an `iscsi` volume are preserved, and the volume is merely\nunmounted. This means that an iscsi volume can be pre-populated with data, and\nthat data can be shared between Pods.\n\nYou must have your own iSCSI server running with the volume created before you can use it.\n\nA feature of iSCSI is that it can be mounted as read-only by multiple consumers\nsimultaneously. This means that you can pre-populate a volume with your dataset\nand then serve it in parallel from as many Pods as you need. Unfortunately,\niSCSI volumes can only be mounted by a single consumer in read-write mode.\nSimultaneous writers are not allowed."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/certificates#distributing-self-signed-ca-certificate-0",
+  "heading": "Generate Certificates Manually > Distributing Self-Signed CA Certificate",
+  "text": "A client node may refuse to recognize a self-signed CA certificate as valid.\nFor a non-production deployment, or for a deployment that runs behind a company\nfirewall, you can distribute a self-signed CA certificate to all clients and\nrefresh the local list for valid certificates.\n\nOn each client, perform the following operations:\n\n```shell\nsudo cp ca.crt /usr/local/share/ca-certificates/kubernetes.crt\nsudo update-ca-certificates\n```\n\n```none\nUpdating certificates in /etc/ssl/certs...\n1 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d....\ndone.\n```"
+ }
+]

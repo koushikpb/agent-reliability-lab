@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#meaning-of-cpu-0",
+  "heading": "Resource Management for Pods and Containers > Resource units in Kubernetes > CPU resource units",
+  "text": "Limits and requests for CPU resources are measured in *cpu* units.\nIn Kubernetes, 1 CPU unit is equivalent to **1 physical CPU core**,\nor **1 virtual core**, depending on whether the node is a physical host\nor a virtual machine running inside a physical machine.\n\nFractional requests are allowed. When you define a container with\n`spec.containers[].resources.requests.cpu` set to `0.5`, you are requesting half\nas much CPU time compared to if you asked for `1.0` CPU.\nFor CPU resource units, the [quantity](/docs/reference/kubernetes-api/common-definitions/quantity/) expression `0.1` is equivalent to the\nexpression `100m`, which can be read as \"one hundred millicpu\". Some people say\n\"one hundred millicores\", and this is understood to mean the same thing."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics > Container resource metrics",
+  "text": "The HorizontalPodAutoscaler API also supports a container metric source where the HPA can track the\nresource usage of individual containers across a set of Pods, in order to scale the target resource.\nThis lets you configure scaling thresholds for the containers that matter most in a particular Pod.\nFor example, if you have a web application and a sidecar container that provides logging, you can scale based on the resource\nuse of the web application, ignoring the sidecar container and its resource use.\n\nIf you revise the target resource to have a new Pod specification with a different set of containers,\nyou should revise the HPA spec if that newly added container should also be used for\nscaling. If the specified container in the metric source is not present or only present in a subset\nof the pods then those pods are ignored and the recommendation is recalculated. See [Algorithm](#algorithm-details)\nfor more details about the calculation. To use container resources for autoscaling define a metric\nsource as follows:"
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#autoscaling-on-multiple-metrics-and-custom-metrics-6",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Autoscaling on multiple metrics and custom metrics",
+  "text": "```yaml\napiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: php-apache\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: php-apache\n  minReplicas: 1\n  maxReplicas: 10\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 50\n  - type: Pods\n    pods:\n      metric:\n        name: packets-per-second\n      target:\n        type: AverageValue\n        averageValue: 1k\n  - type: Object\n    object:\n      metric:\n        name: requests-per-second\n      describedObject:\n        apiVersion: networking.k8s.io/v1\n        kind: Ingress\n        name: main-route\n      target:\n        type: Value\n        value: 10k\nstatus:\n  observedGeneration: 1\n  lastScaleTime: <some-time>\n  currentReplicas: 1\n  desiredReplicas: 1\n  currentMetrics:\n  - type: Resource\n    resource:\n      name: cpu\n    current:\n      averageUtilization: 0\n      averageValue: 0\n  - type: Object\n    object:\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-6",
+  "heading": "Resource metrics pipeline",
+  "text": "* [Metrics API](#metrics-api): Kubernetes API supporting access to CPU and memory used for\n  workload autoscaling. To make this work in your cluster, you need an API extension server that\n  provides the Metrics API."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-and-a-cpu-limit-1",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request and a CPU limit",
+  "text": "```shell\nkubectl apply -f https://k8s.io/examples/pods/resource/cpu-request-limit.yaml --namespace=cpu-example\n```\n\nVerify that the Pod is running:\n\n```shell\nkubectl get pod cpu-demo --namespace=cpu-example\n```\n\nView detailed information about the Pod:\n\n```shell\nkubectl get pod cpu-demo --output=yaml --namespace=cpu-example\n```\n\nThe output shows that the one container in the Pod has a CPU request of 500 milliCPU\nand a CPU limit of 1 CPU.\n\n```yaml\nresources:\n  limits:\n    cpu: \"1\"\n  requests:\n    cpu: 500m\n```\n\nUse `kubectl top` to fetch the metrics for the Pod:\n\n```shell\nkubectl top pod cpu-demo --namespace=cpu-example\n```\n\nThis example output shows that the Pod is using 974 milliCPU, which is\nslightly less than the limit of 1 CPU specified in the Pod configuration."
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#autoscaling-on-multiple-metrics-and-custom-metrics-1",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Autoscaling on multiple metrics and custom metrics",
+  "text": "```yaml\napiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  name: php-apache\nspec:\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: php-apache\n  minReplicas: 1\n  maxReplicas: 10\n  metrics:\n  - type: Resource\n    resource:\n      name: cpu\n      target:\n        type: Utilization\n        averageUtilization: 50\nstatus:\n  observedGeneration: 1\n  lastScaleTime: <some-time>\n  currentReplicas: 1\n  desiredReplicas: 1\n  currentMetrics:\n  - type: Resource\n    resource:\n      name: cpu\n      current:\n        averageUtilization: 0\n        averageValue: 0\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/system-metrics#kube-scheduler-metrics-0",
+  "heading": "Metrics For Kubernetes System Components > Component metrics > kube-scheduler metrics",
+  "text": "The scheduler exposes optional metrics that reports the requested resources and the desired limits\nof all running pods. These metrics can be used to build capacity planning dashboards, assess\ncurrent or historical scheduling limits, quickly identify workloads that cannot schedule due to\nlack of resources, and compare actual usage to the pod's request.\n\nThe kube-scheduler identifies the resource [requests and limits](/docs/concepts/configuration/manage-resources-containers/)\nconfigured for each Pod; when either a request or limit is non-zero, the kube-scheduler reports a\nmetrics timeseries. The time series is labelled by:\n\n- namespace\n- pod name\n- the node where the pod is scheduled or an empty string if not yet scheduled\n- priority\n- the assigned scheduler for that pod\n- the name of the resource (for example, `cpu`)\n- the unit of the resource if known (for example, `cores`)"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling#autoscaling-based-on-cluster-size-1",
+  "heading": "Autoscaling Workloads > Scaling workloads automatically > Autoscaling based on cluster size",
+  "text": "While the Cluster Proportional Autoscaler scales the number of replicas of a workload,\nthe Cluster Proportional Vertical Autoscaler adjusts the resource requests for a workload\n(for example a Deployment or DaemonSet) based on the number of nodes and/or cores in the cluster."
+ }
+]

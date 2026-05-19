@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics",
+  "text": "Any HPA target can be scaled based on the resource usage of the pods in the scaling target.\nWhen defining the pod specification the resource requests like `cpu` and `memory` should\nbe specified. This is used to determine the resource utilization and used by the HPA controller\nto scale the target up or down. To use resource utilization based scaling specify a metric source\nlike this:\n\n```yaml\ntype: Resource\nresource:\n  name: cpu\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nWith this metric the HPA controller will keep the average utilization of the pods in the scaling\ntarget at 60%. Utilization is the ratio between the current usage of resource to the requested\nresources of the pod. See [Algorithm](#algorithm-details) for more details about how the utilization\nis calculated and averaged.\n\nSince the resource usages of all the containers are summed up the total pod utilization may not\naccurately represent the individual container resource usage. This could lead to situations where\na single container might be running with high usage and the HPA will not scale out because the overall\npod usage is still within acceptable limits."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#pod-readiness-and-autoscaling-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Pod readiness and autoscaling metrics",
+  "text": "The HorizontalPodAutoscaler (HPA) controller includes two command line options that influence how CPU metrics are collected from Pods during startup:\n\n1. `--horizontal-pod-autoscaler-cpu-initialization-period` (default: 5 minutes)\n\n  This defines the time window after a Pod starts during which its **CPU usage is ignored** unless:\n    - The Pod is in a `Ready` state **and**\n    - The metric sample was taken entirely during the period it was `Ready`.\n\n  This command line option helps **exclude misleading high CPU usage** from initializing Pods (for example: Java apps warming up) in HPA scaling decisions.\n\n1. `--horizontal-pod-autoscaler-initial-readiness-delay` (default: 30 seconds)\n\n  This defines a short delay period after a Pod starts during which the HPA controller treats Pods that are currently `Unready` as still initializing, **even if they have previously transitioned to `Ready` briefly**."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-1",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics > Container resource metrics",
+  "text": "```yaml\ntype: ContainerResource\ncontainerResource:\n  name: cpu\n  container: application\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\n\nIn the above example the HPA controller scales the target such that the average utilization of the cpu\nin the `application` container of all the pods is 60%.\n\nIf you change the name of a container that a HorizontalPodAutoscaler is tracking, you can\nmake that change in a specific order to ensure scaling remains available and effective\nwhilst the change is being applied. Before you update the resource that defines the container\n(such as a Deployment), you should update the associated HPA to track both the new and\nold container names. This way, the HPA is able to calculate a scaling recommendation\nthroughout the update process.\n\nOnce you have rolled out the container name change to the workload resource, tidy up by removing\nthe old container name from the HPA specification."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-1",
+  "heading": "Resource metrics pipeline",
+  "text": "The Metrics API, and the metrics pipeline that it enables, only offers the minimum\nCPU and memory metrics to enable automatic scaling using HPA and / or VPA.\nIf you would like to provide a more complete set of metrics, you can complement\nthe simpler Metrics API by deploying a second\n[metrics pipeline](/docs/tasks/debug/debug-cluster/resource-usage-monitoring/#full-metrics-pipeline)\nthat uses the _Custom Metrics API_.\n\nFigure 1 illustrates the architecture of the resource metrics pipeline."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-0",
+  "heading": "Resource metrics pipeline",
+  "text": "For Kubernetes, the _Metrics API_ offers a basic set of metrics to support automatic scaling and\nsimilar use cases.  This API makes information available about resource usage for node and pod,\nincluding metrics for CPU and memory.  If you deploy the Metrics API into your cluster, clients of\nthe Kubernetes API can then query for this information, and you can use Kubernetes' access control\nmechanisms to manage permissions to do so.\n\nThe [HorizontalPodAutoscaler](/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)  (HPA) and\n[VerticalPodAutoscaler](/docs/concepts/workloads/autoscaling/vertical-pod-autoscale/) (VPA)\nuse data from the metrics API to adjust workload replicas and resources to meet customer demand.\n\nYou can also view the resource metrics using the\n[`kubectl top`](/docs/reference/generated/kubectl/kubectl-commands#top)\ncommand."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#scaling-to-and-from-zero-1",
+  "heading": "Horizontal Pod Autoscaling > Scaling to and from zero",
+  "text": "This behavior is controlled by the `HPAScaleToZero`\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/), which is enabled by\ndefault. The feature gate must be enabled on both the\nkube-apiserver (which allows\n`minReplicas: 0`) and the\nkube-controller-manager\n(which performs the scaling).\n\nWhile the HPA is holding a workload at zero replicas, it records a `ScaledToZero` condition set to\n`True` on the HorizontalPodAutoscaler's status. The HPA uses this condition to distinguish a\nworkload that it scaled to zero (and will scale back up when the metric returns) from one that was\n[manually deactivated](#implicit-maintenance-mode-deactivation) by setting its replica count to\n`0`. Once the workload is scaled back up, the condition is set to `False` with the reason\n`NotScaledToZero`."
+ },
+ {
+  "chunk_id": "tasks/run-application/scale-deployment#when-to-use-manual-versus-automatic-scaling-0",
+  "heading": "Horizontal Manual Scaling for a Deployment > When to use manual versus automatic scaling",
+  "text": "| Aspect | Manual scaling | Automatic scaling (HPA) |\n|--------|---------------|------------------------|\n| Best for | Predictable, scheduled, or one-off load changes | Variable or unpredictable demand |\n| How it works | You set `.spec.replicas` directly | HPA adjusts replicas based on observed metrics |\n| Response time | Immediate when you run the command | Reacts to metrics with a short delay |\n| Metrics awareness | None \u2014 you decide the replica count | Monitors CPU, memory, or custom metrics |\n| Maintenance | Requires manual intervention to adjust | Runs autonomously after configuration |\n\nIf a HorizontalPodAutoscaler manages a Deployment, do not set replicas manually.\nThe HPA continuously reconciles the replica count and overrides any manual\nchanges."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#tolerance-0",
+  "heading": "Horizontal Pod Autoscaling > Configurable scaling behavior > Tolerance",
+  "text": "The `tolerance` field configures a threshold for metric variations, preventing the\nautoscaler from scaling for changes below that value.\n\nThis tolerance is defined as the amount of variation around the desired metric value under\nwhich no scaling will occur. For example, consider a HorizontalPodAutoscaler configured\nwith a target memory consumption of 100MiB and a scale-up tolerance of 5%:\n\n```yaml\nbehavior:\n  scaleUp:\n    tolerance: 0.05 # 5% tolerance for scale up\n```\n\nWith this configuration, the HPA algorithm will only consider scaling up if the memory\nconsumption is higher than 105MiB (that is: 5% above the target)."
+ }
+]

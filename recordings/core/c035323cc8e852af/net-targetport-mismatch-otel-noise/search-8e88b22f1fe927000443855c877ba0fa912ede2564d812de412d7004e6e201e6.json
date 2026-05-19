@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/ingress#updating-an-ingress-2",
+  "heading": "Ingress > Updating an Ingress",
+  "text": "```\nName:             test\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:80 (10.8.0.90:80)\n  bar.baz.com\n               /foo   service2:80 (10.8.0.91:80)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     45s                loadbalancer-controller  default/test\n```\n\nYou can achieve the same outcome by invoking `kubectl replace -f` on a modified Ingress YAML file."
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-5",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "  which offers API gateway functionality.\n* [Higress](https://github.com/alibaba/higress) is an [Envoy](https://www.envoyproxy.io) based API gateway that can run as an ingress controller.\n* The [HAProxy Ingress Controller for Kubernetes](https://github.com/haproxytech/kubernetes-ingress#readme)\n  is an ingress controller for [HAProxy](https://www.haproxy.org/#desc).\n* [Istio Ingress](https://istio.io/latest/docs/tasks/traffic-management/ingress/kubernetes-ingress/)\n  is an [Istio](https://istio.io/) based ingress controller.\n* The [Kong Ingress Controller for Kubernetes](https://github.com/Kong/kubernetes-ingress-controller#readme)"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-4",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* [EnRoute](https://getenroute.io/) is an [Envoy](https://www.envoyproxy.io) based API gateway that can run as an ingress controller.\n* F5 BIG-IP [Container Ingress Services for Kubernetes](https://clouddocs.f5.com/containers/latest/userguide/kubernetes/)\n  lets you use an Ingress to configure F5 BIG-IP virtual servers.\n* [FortiADC Ingress Controller](https://docs.fortinet.com/document/fortiadc/7.0.0/fortiadc-ingress-controller/742835/fortiadc-ingress-controller-overview) support the Kubernetes Ingress resources and allows you to manage FortiADC objects from Kubernetes\n* [Gloo](https://gloo.solo.io) is an open-source ingress controller based on [Envoy](https://www.envoyproxy.io),"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/declare-network-policy#create-an-nginx-deployment-and-expose-it-via-a-service-1",
+  "heading": "Declare Network Policy > Create an `nginx` deployment and expose it via a service",
+  "text": "```none\nNAME                        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE\nservice/kubernetes          10.100.0.1    <none>        443/TCP    46m\nservice/nginx               10.100.0.16   <none>        80/TCP     33s\n\nNAME                        READY         STATUS        RESTARTS   AGE\npod/nginx-701339712-e0qfq   1/1           Running       0          35s\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress-controllers#third-party-ingress-controllers-3",
+  "heading": "Ingress Controllers > Third party ingress controllers",
+  "text": "* [Cilium Ingress Controller](https://docs.cilium.io/en/stable/network/servicemesh/ingress/) is an ingress controller powered by [Cilium](https://cilium.io/).\n* The [Citrix ingress controller](https://github.com/citrix/citrix-k8s-ingress-controller#readme) works with\n  Citrix Application Delivery Controller.\n* [Contour](https://projectcontour.io/) is an [Envoy](https://www.envoyproxy.io/) based ingress controller.\n* [Emissary-Ingress](https://www.getambassador.io/products/api-gateway) API Gateway is an [Envoy](https://www.envoyproxy.io)-based ingress\n  controller."
+ },
+ {
+  "chunk_id": "tasks/run-application/run-stateless-application-deployment#creating-and-exploring-an-nginx-deployment-1",
+  "heading": "Run a Stateless Application Using a Deployment > Creating and exploring an nginx deployment",
+  "text": "   ```\n   Name:     nginx-deployment\n   Namespace:    default\n   CreationTimestamp:  Tue, 30 Aug 2016 18:11:37 -0700\n   Labels:     app=nginx\n   Annotations:    deployment.kubernetes.io/revision=1\n   Selector:   app=nginx\n   Replicas:   2 desired | 2 updated | 2 total | 2 available | 0 unavailable\n   StrategyType:   RollingUpdate\n   MinReadySeconds:  0\n   RollingUpdateStrategy:  1 max unavailable, 1 max surge\n   Pod Template:\n     Labels:       app=nginx\n     Containers:\n       nginx:\n       Image:              nginx:1.14.2\n       Port:               80/TCP\n       Environment:        <none>\n       Mounts:             <none>\n     Volumes:              <none>\n   Conditions:\n     Type          Status  Reason\n     ----          ------  ------\n     Available     True    MinimumReplicasAvailable\n     Progressing   True    NewReplicaSetAvailable\n   OldReplicaSets:   <none>\n   NewReplicaSet:    nginx-deployment-1771418926 (2/2 replicas created)\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/ingress#simple-fanout-1",
+  "heading": "Ingress > Types of Ingress > Simple fanout",
+  "text": "```\nName:             simple-fanout-example\nNamespace:        default\nAddress:          178.91.123.132\nDefault backend:  default-http-backend:80 (10.8.2.3:8080)\nRules:\n  Host         Path  Backends\n  ----         ----  --------\n  foo.bar.com\n               /foo   service1:4200 (10.8.0.90:4200)\n               /bar   service2:8080 (10.8.0.91:8080)\nEvents:\n  Type     Reason  Age                From                     Message\n  ----     ------  ----               ----                     -------\n  Normal   ADD     22s                loadbalancer-controller  default/test\n```\n\nThe Ingress controller provisions an implementation-specific load balancer\nthat satisfies the Ingress, as long as the Services (`service1`, `service2`) exist.\nWhen it has done so, you can see the address of the load balancer at the\nAddress field."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#default-field-values-5",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > Default field values",
+  "text": "```yaml\n# last-applied-configuration\nspec:\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.14.2\n        ports:\n        - containerPort: 80\n# configuration file\nspec:\n  strategy:\n    type: Recreate # updated value\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.14.2\n        ports:\n        - containerPort: 80\n# live configuration\nspec:\n  strategy:\n    type: RollingUpdate # defaulted value\n    rollingUpdate: # defaulted value derived from type\n      maxSurge : 1\n      maxUnavailable: 1\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.14.2\n        ports:\n        - containerPort: 80\n# result after merge - ERROR!\nspec:\n  strategy:\n    type: Recreate # updated value: incompatible with rollingUpdate\n    rollingUpdate: # defaulted value: incompatible with \"type: Recreate\"\n      maxSurge : 1\n      maxUnavailable: 1\n```"
+ }
+]

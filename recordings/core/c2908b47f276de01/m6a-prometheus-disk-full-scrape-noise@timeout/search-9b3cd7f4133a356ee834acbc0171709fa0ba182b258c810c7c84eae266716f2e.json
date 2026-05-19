@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-1",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "To request a larger volume for a PVC, edit the PVC object and specify a larger\nsize. This triggers expansion of the volume that backs the underlying PersistentVolume. A\nnew PersistentVolume is never created to satisfy the claim. Instead, an existing volume is resized.\n\nDirectly editing the size of a PersistentVolume can prevent an automatic resize of that volume.\nIf you edit the capacity of a PersistentVolume, and then edit the `.spec` of a matching\nPersistentVolumeClaim to make the size of the PersistentVolumeClaim match the PersistentVolume,\nthen no storage resize happens.\nThe Kubernetes control plane will see that the desired state of both resources matches,\nconclude that the backing volume size has been manually\nincreased and that no resize is necessary.\n\n#### CSI Volume expansion\n\nSupport for expanding CSI volumes is enabled by default but it also requires a\nspecific CSI driver to support volume expansion. Refer to documentation of the\nspecific CSI driver for more information.\n\n#### Resizing a volume containing a file system"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-4",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "If expanding underlying storage fails, the cluster administrator can manually\nrecover the Persistent Volume Claim (PVC) state and cancel the resize requests.\nOtherwise, the resize requests are continuously retried by the controller without\nadministrator intervention.\n\n1. Mark the PersistentVolume(PV) that is bound to the PersistentVolumeClaim(PVC)\n   with `Retain` reclaim policy.\n2. Delete the PVC. Since PV has `Retain` reclaim policy - we will not lose any data\n   when we recreate the PVC.\n3. Delete the `claimRef` entry from PV specs, so as new PVC can bind to it.\n   This should make the PV `Available`.\n4. Re-create the PVC with smaller size than PV and set `volumeName` field of the\n   PVC to the name of the PV. This should bind new PVC to existing PV.\n5. Don't forget to restore the reclaim policy of the PV."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/resize-container-resources#limitations-3",
+  "heading": "Resize CPU and Memory Resources assigned to Containers > Limitations",
+  "text": "* **Swap:** Pods utilizing [swap memory](/docs/concepts/architecture/nodes/#swap-memory) cannot resize memory requests\n  unless the `resizePolicy` for memory is `RestartContainer`.\n* **Memory-Backed Volume Resizing:** Resizing memory-backed (`medium: Memory`) `emptyDir` volumes in-place requires nodes running cgroup v2. On cgroup v1 nodes, in-place volume resize requests are rejected as infeasible. Disk-backed `emptyDir` volumes and persistent volumes cannot be resized via the Pod `/resize` subresource."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-2",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "You can only resize volumes containing a file system if the file system is XFS, Ext3, or Ext4.\n\nWhen a volume contains a file system, the file system is only resized when a new Pod is using\nthe PersistentVolumeClaim in `ReadWrite` mode. File system expansion is either done when a Pod is starting up\nor when a Pod is running and the underlying file system supports online expansion.\n\nFlexVolumes (deprecated since Kubernetes v1.23) allow resize if the driver is configured with the\n`RequiresFSResize` capability to `true`. The FlexVolume can be resized on Pod restart.\n\n#### Resizing an in-use PersistentVolumeClaim"
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#allow-volume-expansion-0",
+  "heading": "Storage Classes > Volume expansion",
+  "text": "PersistentVolumes can be configured to be expandable. This allows you to resize the\nvolume by editing the corresponding PVC object, requesting a new larger amount of\nstorage.\n\nThe following types of volumes support volume expansion, when the underlying\nStorageClass has the field `allowVolumeExpansion` set to true.\n\n| Volume type          | Required Kubernetes version for volume expansion |\n| :------------------- | :----------------------------------------------- |\n| Azure File           | 1.11                                             |\n| CSI                  | 1.24                                             |\n| FlexVolume           | 1.13                                             |\n| Portworx             | 1.11                                             |\n| rbd                  | 1.11                                             |\n\nYou can only use the volume expansion feature to grow a Volume, not to shrink it."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-5",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "If expansion has failed for a PVC, you can retry expansion with a\nsmaller size than the previously requested value. To request a new expansion attempt with a\nsmaller proposed size, edit `.spec.resources` for that PVC and choose a value that is less than the\nvalue you previously tried.\nThis is useful if expansion to a higher value did not succeed because of capacity constraint.\nIf that has happened, or you suspect that it might have, you can retry expansion by specifying a\nsize that is within the capacity limits of underlying storage provider. You can monitor status of\nresize operation by watching `.status.allocatedResourceStatuses` and events on the PVC.\n\nNote that,\nalthough you can specify a lower amount of storage than what was requested previously,\nthe new value must still be higher than `.status.capacity`.\nKubernetes does not support shrinking a PVC to less than its current size."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-3",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Expanding Persistent Volumes Claims",
+  "text": "In this case, you don't need to delete and recreate a Pod or deployment that is using an existing PVC.\nAny in-use PVC automatically becomes available to its Pod as soon as its file system has been expanded.\nThis feature has no effect on PVCs that are not in use by a Pod or deployment. You must create a Pod that\nuses the PVC before the expansion can complete.\n\nSimilar to other volume types - FlexVolume volumes can also be expanded when in-use by a Pod.\n\nFlexVolume resize is possible only when the underlying driver supports resize.\n\n#### Recovering from Failure when Expanding Volumes\n\nIf a user specifies a new size that is too big to be satisfied by underlying\nstorage system, expansion of PVC will be continuously retried until user or\ncluster administrator takes some action. This can be undesirable and hence\nKubernetes provides following methods of recovering from such failures."
+ },
+ {
+  "chunk_id": "concepts/storage/windows-storage#storage-2",
+  "heading": "Windows Storage > Persistent storage",
+  "text": "Kubernetes volumes enable complex\napplications, with data persistence and Pod volume sharing requirements, to be deployed\non Kubernetes. Management of persistent volumes associated with a specific storage\nback-end or protocol includes actions such as provisioning/de-provisioning/resizing\nof volumes, attaching/detaching a volume to/from a Kubernetes node and\nmounting/dismounting a volume to/from individual containers in a pod that needs to\npersist data.\n\nVolume management components are shipped as Kubernetes volume\n[plugin](/docs/concepts/storage/volumes/#volume-types).\nThe following broad classes of Kubernetes volume plugins are supported on Windows:\n\n* [`FlexVolume plugins`](/docs/concepts/storage/volumes/#flexvolume)\n  * Please note that FlexVolumes have been deprecated as of 1.23\n* [`CSI Plugins`](/docs/concepts/storage/volumes/#csi)\n\n##### In-tree volume plugins\n\nThe following in-tree plugins support persistent storage on Windows nodes:"
+ }
+]

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the state of the pricing namespace to see what's happening with the pods.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011E5gYxTuvSyfNw1p2MWLZq",
+   "input": {
+    "namespace": "pricing"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1341,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 73,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/_index#how-pods-manage-multiple-containers-2",
+  "heading": "Pods > Pods with multiple containers",
+  "text": "Some Pods have init containers\nas well as app containers.\nBy default, init containers run and complete before the app containers are started.\n\nYou can also have [sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/)\nthat provide auxiliary services to the main application Pod (for example: a service mesh).\n\nEnabled by default, the `SidecarContainers` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)\nallows you to specify `restartPolicy: Always` for init containers.\nSetting the `Always` restart policy ensures that the containers where you set it are\ntreated as _sidecars_ that are kept running during the entire lifetime of the Pod.\nContainers that you explicitly define as sidecar containers\nstart up before the main application Pod and remain running until the Pod is\nshut down."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/user-namespaces#limitations-0",
+  "heading": "User Namespaces > Limitations",
+  "text": "When using a user namespace for the pod, it is disallowed to use other host\nnamespaces. In particular, if you set `hostUsers: false` then you are not\nallowed to set any of:\n\n * `hostNetwork: true`\n * `hostIPC: true`\n * `hostPID: true`\n\nNo container can use `volumeDevices` (raw block volumes, like /dev/sda) either.\nThis includes all the container arrays in the pod spec:\n * `containers`\n * `initContainers`\n * `ephemeralContainers`"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/_index#pod-networking-0",
+  "heading": "Pods > Resource sharing and communication > Pod networking",
+  "text": "Each Pod is assigned a unique IP address for each address family. Every\ncontainer in a Pod shares the network namespace, including the IP address and\nnetwork ports. Inside a Pod (and **only** then), the containers that belong to the Pod\ncan communicate with one another using `localhost`. When containers in a Pod communicate\nwith entities *outside the Pod*,\nthey must coordinate how they use the shared network resources (such as ports).\nWithin a Pod, containers share an IP address and port space, and\ncan find each other via `localhost`. The containers in a Pod can also communicate\nwith each other using standard inter-process communications like SystemV semaphores\nor POSIX shared memory.  Containers in different Pods have distinct IP addresses\nand can not communicate by OS-level IPC without special configuration.\nContainers that want to interact with a container running in a different Pod can\nuse IP networking to communicate.\n\nContainers within the Pod see the system hostname as being the same as the configured\n`name` for the Pod. There's more about this in the [networking](/docs/concepts/cluster-administration/networking/)\nsection."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-state-waiting-0",
+  "heading": "Pod Lifecycle > Container states > `Waiting`",
+  "text": "If a container is not in either the `Running` or `Terminated` state, it is `Waiting`.\nA container in the `Waiting` state is still running the operations it requires in\norder to complete start up: for example, pulling the container image from a container\nimage registry, or applying Secret\ndata.\nWhen you use `kubectl` to query a Pod with a container that is `Waiting`, you also see\na Reason field to summarize why the container is in that state."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-memory-resource#intro-0",
+  "heading": "Assign Memory Resources to Containers and Pods",
+  "text": "This page shows how to assign a memory *request* and a memory *limit* to a\nContainer. A Container is guaranteed to have as much memory as it requests,\nbut is not allowed to use more memory than its limit."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-1",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "The `spec` of a Pod has a `restartPolicy` field with possible values Always, OnFailure,\nand Never. The default value is Always.\n\nThe `restartPolicy` for a Pod applies to app containers\nin the Pod and to regular [init containers](/docs/concepts/workloads/pods/init-containers/).\n[Sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/)\nignore the Pod-level `restartPolicy` field: in Kubernetes, a sidecar is defined as an\nentry inside `initContainers` that has its container-level `restartPolicy` set to `Always`.\nFor init containers that exit with an error, the kubelet restarts the init container if\nthe Pod level `restartPolicy` is either `OnFailure` or `Always`:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#intro-0",
+  "heading": "Init Containers",
+  "text": "This page provides an overview of init containers: specialized containers that run\nbefore app containers in a Pod.\nInit containers can contain utilities or setup scripts not present in an app image.\n\nYou can specify init containers in the Pod specification alongside the `containers`\narray (which describes app containers).\n\nIn Kubernetes, a [sidecar container](/docs/concepts/workloads/pods/sidecar-containers/) is a container that\nstarts before the main application container and _continues to run_. This document is about init containers:\ncontainers that run to completion during Pod initialization."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#using-init-containers-0",
+  "heading": "Init Containers > Using init containers",
+  "text": "Because init containers have separate images from app containers, they\nhave some advantages for start-up related code:\n\n* Init containers can contain utilities or custom code for setup that are not present in an app\n  image. For example, there is no need to make an image `FROM` another image just to use a tool like\n  `sed`, `awk`, `python`, or `dig` during setup.\n* The application image builder and deployer roles can work independently without\n  the need to jointly build a single app image.\n* Init containers can run with a different view of the filesystem than app containers in the\n  same Pod. Consequently, they can be given access to\n  Secrets that app containers cannot access.\n* Because init containers run to completion before any app containers start, init containers offer\n  a mechanism to block or delay app container startup until a set of preconditions are met. Once\n  preconditions are met, all of the app containers in a Pod can start in parallel.\n* Init containers can securely run utilities or custom code that would otherwise make an app\n  container image less secure. By keeping unnecessary tools separate you can limit the attack\n  surface of your app container image."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/policy/pid-limiting#intro-0",
+  "heading": "Process ID Limits And Reservations",
+  "text": "Kubernetes allow you to limit the number of process IDs (PIDs) that a\nPod can use.\nYou can also reserve a number of allocatable PIDs for each node\nfor use by the operating system and daemons (rather than by Pods).\n\nProcess IDs (PIDs) are a fundamental resource on nodes. It is trivial to hit the\ntask limit without hitting any other resource limits, which can then cause\ninstability to a host machine.\n\nCluster administrators require mechanisms to ensure that Pods running in the\ncluster cannot induce PID exhaustion that prevents host daemons (such as the\nkubelet or\nkube-proxy,\nand potentially also the container runtime) from running.\nIn addition, it is important to ensure that PIDs are limited among Pods in order\nto ensure they have limited impact on other workloads on the same node.\n\nOn certain Linux installations, the operating system sets the PIDs limit to a low default,\nsuch as `32768`. Consider raising the value of `/proc/sys/kernel/pid_max`."
+ },
+ {
+  "chunk_id": "concepts/policy/pid-limiting#intro-1",
+  "heading": "Process ID Limits And Reservations",
+  "text": "You can configure a kubelet to limit the number of PIDs a given Pod can consume.\nFor example, if your node's host OS is set to use a maximum of `262144` PIDs and\nexpect to host less than `250` Pods, one can give each Pod a budget of `1000`\nPIDs to prevent using up that node's overall number of available PIDs. If the\nadmin wants to overcommit PIDs similar to CPU or memory, they may do so as well\nwith some additional risks. Either way, a single Pod will not be able to bring\nthe whole machine down. This kind of resource limiting helps to prevent simple\nfork bombs from affecting operation of an entire cluster.\n\nPer-Pod PID limiting allows administrators to protect one Pod from another, but\ndoes not ensure that all Pods scheduled onto that host are unable to impact the node overall.\nPer-Pod limiting also does not protect the node agents themselves from PID exhaustion."
+ },
+ {
+  "chunk_id": "concepts/scheduling-eviction/pod-overhead#usage-example-3",
+  "heading": "Pod Overhead > Usage example",
+  "text": "If the resource has a limit defined for each container (Guaranteed QoS or Burstable QoS with limits defined),\nthe kubelet will set an upper limit for the pod cgroup associated with that resource (cpu.cfs_quota_us for CPU\nand memory.limit_in_bytes memory). This upper limit is based on the sum of the container limits plus the `overhead`\ndefined in the PodSpec.\n\nFor CPU, if the Pod is Guaranteed or Burstable QoS, the kubelet will set `cpu.shares` based on the\nsum of container requests plus the `overhead` defined in the PodSpec.\n\nLooking at our example, verify the container requests for the workload:\n\n```bash\nkubectl get pod test-pod -o jsonpath='{.spec.containers[*].resources.limits}'\n```\n\nThe total container requests are 2000m CPU and 200MiB of memory:\n\n```\nmap[cpu: 500m memory:100Mi] map[cpu:1500m memory:100Mi]\n```\n\nCheck this against what is observed by the node:"
+ },
+ {
+  "chunk_id": "concepts/workloads/workload-api/_index#compositepodgrouptemplates-5",
+  "heading": "Workload API > API structure > CompositePodGroupTemplates",
+  "text": "To ensure cluster stability and control-plane efficiency, the group-template hierarchy\nenforces the following limits:\n\n- **Maximum nesting depth**: The group-template hierarchy supports a maximum depth of\n  4 levels.\n- **List limit**: Every `compositePodGroupTemplates` and `podGroupTemplates` list is strictly\n  capped at a maximum of 8 items.\n\nRight now, you cannot add new or remove existing `CompositePodGroupTemplates`. You can only change\nthe `minCount` value in the gang scheduling policy defined in the leaf `PodGroupTemplates`.\n\n#### Example\n\nThe following example defines a hierarchical `Workload` with a `CompositePodGroup` template\nthat enforces gang scheduling across two child `PodGroup` templates (`minGroupCount: 2`),\neach specifying its own gang scheduling policy:"
+ },
+ {
+  "chunk_id": "concepts/workloads/compositepodgroup-api/lifecycle#limitations-and-validation-rules-1",
+  "heading": "CompositePodGroup Lifecycle > Limitations and validation rules",
+  "text": "  the Pods. If a mismatch is detected, the scheduler rejects the hierarchy as unschedulable.\n- **Maximum nesting depth**: The group-template hierarchy supports a maximum depth of 4 levels.\n- **List item limit**: The maximum number of child `CompositePodGroupTemplates` and\n  `PodGroupTemplates` at any level of a `Workload` is 8.\n- **Immutable gang group count**: The `spec.schedulingPolicy.gang.minGroupCount` field on a\n  `CompositePodGroup` is immutable after creation.\n- **Immutable hierarchy references**: `spec.parentCompositePodGroupName` on groups and\n  `spec.schedulingGroup` on Pods are immutable once set."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#requests-and-limits-1",
+  "heading": "Resource Management for Pods and Containers > Requests and limits",
+  "text": "`memory` limits are enforced by the kernel with out of memory (OOM) kills. When\na container uses more than its `memory` limit, the kernel may terminate it. However,\nterminations only happen when the kernel detects memory pressure. Thus, a\ncontainer that over allocates memory may not be immediately killed. This means\n`memory` limits are enforced reactively. A container may use more memory than\nits `memory` limit, but if it does, it may get killed.\n\nThere is a feature `MemoryQoS` which adds memory throttling and optional\ntiered memory reservation on Linux nodes using cgroup v2. For details, see\n[Memory QoS with cgroup v2](/docs/concepts/workloads/pods/pod-qos/#memory-qos-with-cgroup-v2).\n\nIf you specify a limit for a resource, but do not specify any request, and no admission-time\nmechanism has applied a default request for that resource, then Kubernetes copies the limit\nyou specified and uses it as the requested value for the resource."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/user-namespaces#pods-and-userns-1",
+  "heading": "User Namespaces > Understanding user namespaces for pods",
+  "text": "This means containers can run as root and be mapped to a non-root user on the\nhost. Inside the container the process will think it is running as root (and\ntherefore tools like `apt`, `dnf`, etc. work fine), while in reality the process\ndoesn't have privileges on the host. You can verify this, for example, if you\ncheck which user the container process is running by executing `ps aux` from\nthe host. The user `ps` shows is not the same as the user you see if you\nexecute inside the container the command `id`.\n\nThis abstraction limits what can happen, for example, if the container manages\nto escape to the host. Given that the container is running as a non-privileged\nuser on the host, it is limited what it can do to the host.\n\nFurthermore, as users on each pod will be mapped to different non-overlapping\nusers in the host, it is limited what they can do to other pods too."
+ },
+ {
+  "chunk_id": "concepts/policy/limit-range#intro-1",
+  "heading": "Limit Ranges",
+  "text": "- Enforce minimum and maximum compute resources usage per Pod or Container in a namespace.\n- Enforce minimum and maximum storage request per\n  PersistentVolumeClaim in a namespace.\n- Enforce a ratio between request and limit for a resource in a namespace.\n- Set default request/limit for compute resources in a namespace and automatically\n  inject them to Containers at runtime.\n\nKubernetes constrains resource allocations to Pods in a particular namespace\nwhenever there is at least one LimitRange object in that namespace.\n\nThe name of a LimitRange object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names)."
+ }
+]

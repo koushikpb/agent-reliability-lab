@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_015HpKmQozFEcJ26HDEwFzSZ",
+   "input": {
+    "namespace": "vision"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01RpZuizbR3JHjiwqiCDtWeE",
+   "input": {
+    "query": "pod pending GPU node taints tolerations nodeSelector"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1853,
+ "model": "claude-opus-4-7",
+ "output_tokens": 131,
+ "stop_reason": "tool_use"
+}

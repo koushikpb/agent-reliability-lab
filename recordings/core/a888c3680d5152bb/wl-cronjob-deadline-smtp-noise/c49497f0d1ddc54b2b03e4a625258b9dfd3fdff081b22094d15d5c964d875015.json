@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me get the logs from one of the failed jobs to see what the error is.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01N2Z2ehZL1WywpKo5zGNUem",
+   "input": {
+    "pod_name": "ledger-export-29637420-k4x9d"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1939,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 89,
+ "stop_reason": "tool_use"
+}

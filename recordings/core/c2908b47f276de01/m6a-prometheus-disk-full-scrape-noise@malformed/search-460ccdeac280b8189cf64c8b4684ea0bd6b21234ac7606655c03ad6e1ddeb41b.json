@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-1",
+  "heading": "Observability > Metrics",
+  "text": "flowchart LR\n    C[Cluster components] --> P[Prometheus scraper]\n    P --> TS[(Time series storage)]\n    TS --> D[Dashboards and alerts]\n    TS --> A[Automated actions]\n\n*Figure 2. Components of a typical Kubernetes metrics pipeline.*\n\nFor multi-cluster or multi-cloud visibility, distributed time series databases (for example Thanos or Cortex) can complement Prometheus.\n\nSee [Common observability tools - metrics tools](#metrics-tools) for metrics scrapers and time series databases."
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-tools-0",
+  "heading": "Observability > Common observability tools > Metrics tools",
+  "text": "- [Cortex](https://cortexmetrics.io/) offers horizontally scalable, long-term Prometheus storage.\n- [Grafana Mimir](https://grafana.com/oss/mimir/) is a Grafana Labs project that provides multi-tenant, horizontally scalable Prometheus-compatible storage.\n- [Prometheus](https://prometheus.io/) is the monitoring system that scrapes and stores metrics from Kubernetes components.\n- [Thanos](https://thanos.io/) extends Prometheus with global querying, downsampling, and object storage support."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/check-if-dockershim-removal-affects-you#some-filesystem-metrics-are-missing-and-the-metrics-format-is-different-2",
+  "heading": "Check whether dockershim removal affects you > Known issues > Some filesystem metrics are missing and the metrics format is different",
+  "text": "You can mitigate this issue by using [cAdvisor](https://github.com/google/cadvisor) as a standalone daemonset.\n\n1. Find the latest [cAdvisor release](https://github.com/google/cadvisor/releases)\n   with the name pattern `vX.Y.Z-containerd-cri` (for example, `v0.42.0-containerd-cri`).\n2. Follow the steps in [cAdvisor Kubernetes Daemonset](https://github.com/google/cadvisor/tree/master/deploy/kubernetes) to create the daemonset.\n3. Point the installed metrics collector to use the cAdvisor `/metrics` endpoint\n   which provides the full set of\n   [Prometheus container metrics](https://github.com/google/cadvisor/blob/master/docs/storage/prometheus.md).\n\nAlternatives:"
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#configurations-0",
+  "heading": "Local ephemeral storage > Configurations for local ephemeral storage",
+  "text": "Kubernetes supports the following ways to configure local ephemeral storage on a\nnode:\n\nIn this configuration, you place all different kinds of ephemeral local data\n(`emptyDir` volumes, writeable layers, container images, logs) into one filesystem.\n\nThe kubelet also writes\n[node-level container logs](/docs/concepts/cluster-administration/logging/#logging-at-the-node-level)\nand treats these similarly to ephemeral local storage.\n\nThe kubelet writes logs to files inside its configured log directory (`/var/log`\nby default); and has a base directory for other locally stored data\n(`/var/lib/kubelet` by default).\n\nTypically, both `/var/lib/kubelet` and `/var/log` are on the system root filesystem,\nand the kubelet is designed with that layout in mind.\n\nYour node can have as many other filesystems, not used for Kubernetes,\nas you like."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#configurations-2",
+  "heading": "Local ephemeral storage > Configurations for local ephemeral storage",
+  "text": "In this configuration, container image layers are on a separate filesystem, and\ncontainer writeable layers are on the same filesystem as the kubelet's ephemeral\ndata, such as logs and `emptyDir` volumes.\n\nThis layout requires support for the `containerfs` eviction signals. For details\nabout the feature gate and the container runtimes that support this layout, see\n[node-pressure eviction](/docs/concepts/scheduling-eviction/node-pressure-eviction/#filesystem-signals).\n\nThe [node-pressure eviction](/docs/concepts/scheduling-eviction/node-pressure-eviction/#filesystem-signals)\npage refers to these observed filesystems as `nodefs`, `imagefs`, and\n`containerfs`. Those names do not always mean separate mount points.\n\nThe kubelet can measure local storage use when you set up the node using one of\nthe supported configurations for local ephemeral storage.\n\nIf you have a different configuration, then the kubelet does not apply resource\nlimits for ephemeral local storage."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-1",
+  "heading": "Local ephemeral storage > Ephemeral storage consumption management",
+  "text": "However, if the filesystem space for writeable container layers, node-level logs,\nor `emptyDir` volumes falls low, the node\ntaints itself as short on local storage\nand this taint triggers eviction for any Pods that don't specifically tolerate the taint.\n\nSee the supported [configurations](#configurations) for ephemeral local storage.\n\nThe kubelet supports different ways to measure Pod storage use:\n\nThe kubelet performs regular, scheduled checks that scan each `emptyDir` volume,\ncontainer log directory, and writeable container layer.\n\nThe scan measures how much space is used.\n\nIn this mode, the kubelet does not track open file descriptors\nfor deleted files.\n\nIf you (or a container) create a file inside an `emptyDir` volume,\nsomething then opens that file, and you delete the file while it is still open,\nthen the inode for the deleted file stays until you close that file\nbut the kubelet does not categorize the space as in use."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#configurations-1",
+  "heading": "Local ephemeral storage > Configurations for local ephemeral storage",
+  "text": "You use one filesystem on the node for ephemeral data from running Pods, such as\nlogs and `emptyDir` volumes. You can also use this filesystem for other data,\nsuch as system logs that are not related to Kubernetes; it can even be the root\nfilesystem.\n\nThe kubelet also writes\n[node-level container logs](/docs/concepts/cluster-administration/logging/#logging-at-the-node-level)\ninto the first filesystem, and treats these similarly to ephemeral local storage.\n\nYou also use a separate filesystem, backed by a different logical storage device.\nIn this configuration, the container runtime stores both container image layers\nand writeable layers on this second filesystem. Configure this storage location\nin your container runtime, not in the kubelet.\n\nThe first filesystem does not hold any image layers or writeable layers.\n\nYour node can have as many other filesystems, not used for Kubernetes,\nas you like."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#configurations-3",
+  "heading": "Local ephemeral storage > Configurations for local ephemeral storage",
+  "text": "The kubelet tracks `tmpfs` emptyDir volumes as container memory use, rather\nthan as local ephemeral storage.\n\nThe kubelet can only track ephemeral storage on the filesystems it observes\nthrough the supported layouts. If you mount extra filesystems under paths such as\n`/var/lib/kubelet`, `/var/log`, or the container runtime storage directory\noutside those layouts, the kubelet might not report ephemeral storage correctly."
+ }
+]

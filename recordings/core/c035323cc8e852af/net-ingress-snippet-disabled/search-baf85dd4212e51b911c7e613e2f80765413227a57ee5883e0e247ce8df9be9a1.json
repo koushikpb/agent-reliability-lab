@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/probes#http-probes-5",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe mechanism details > HTTP probes",
+  "text": "When the kubelet probes a container using HTTP, it follows redirects only if\nthe redirect is to the same host. This includes redirects that change the\nprotocol from HTTP to HTTPS, even if the probe is configured with\n`scheme: HTTP`.\n\nIf the redirect is to a different hostname, the kubelet does not follow it.\nInstead, the kubelet treats the probe as successful and records a\n`ProbeWarning` event.\n\nIf the kubelet follows a redirect and receives 11 or more redirects in total, the probe\nis considered successful and records a `ProbeWarning` event. For example:"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merging-changes-for-fields-of-type-list-5",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merging changes for fields of type list",
+  "text": "**Explanation:**\n\n- The container named \"nginx-helper-a\" was deleted because no container\n  named \"nginx-helper-a\" appeared in the configuration file.\n- The container named \"nginx-helper-b\" retained the changes to `args`\n  in the live configuration. `kubectl apply` was able to identify\n  that \"nginx-helper-b\" in the live configuration was the same\n  \"nginx-helper-b\" as in the configuration file, even though their fields\n  had different values (no `args` in the configuration file). This is\n  because the `patchMergeKey` field value (name) was identical in both.\n- The container named \"nginx-helper-c\" was added because no container\n  with that name appeared in the live configuration, but one with\n  that name appeared in the configuration file.\n- The container named \"nginx-helper-d\" was retained because\n  no element with that name appeared in the last-applied-configuration."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#overview-1",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > Overview",
+  "text": "- *object configuration file / configuration file*: A file that defines the\n  configuration for a Kubernetes object. This topic shows how to pass configuration\n  files to `kubectl apply`. Configuration files are typically stored in source control, such as Git.\n- *live object configuration / live configuration*: The live configuration\n  values of an object, as observed by the Kubernetes cluster. These are kept in the Kubernetes\n  cluster storage, typically etcd.\n- *declarative configuration writer / declarative writer*: A person or software component\n  that makes updates to a live object. The live writers referred to in this topic make changes\n  to object configuration files and run `kubectl apply` to write the changes."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#api-kinds-0",
+  "heading": "Configuration > Kubernetes configuration-related APIs",
+  "text": "Kubernetes provides two main API kinds that you can use to store configuration,\nready for a Pod (or other component) to load and use:\n[ConfigMap](/docs/concepts/configuration/configmap/), and\n[Secret](/docs/concepts/configuration/secret/).\n\nThe special-use\n[CertificateSigningRequest](/docs/reference/access-authn-authz/certificate-signing-requests/#certificate-signing-requests)\nand\n[ClusterTrustBundle](/docs/reference/access-authn-authz/certificate-signing-requests/#cluster-trust-bundles)\nAPI kinds also hold configuration data that's relevant to some specific cases,\nsuch as TLS configuration.\n\nAll of these configuration mechanisms, even for certificates, are designed so that configuration\ncan be reused and shared across multiple Pods. You typically don't have to write the configuration\nout once per Pod, and you should design applications where possible so that they can work with\nshared configuration."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#config-helper-init-container-0",
+  "heading": "Configuration > Configuration via sidecar containers or init containers > Init container helper",
+  "text": "Pods can have _init_ containers that start before the main application. Unlike sidecars,\ninit containers complete before the Pod's main (application) containers start up, so the\nconfiguration only gets set once.\n\nYou have two main options for configuration using init containers:\n\n#### Configuration via the filesystem {#init-container-shared-volume}\n\nWith this option, the init container fetches configuration and writes the configuration to\na file, or several files, typically to a Pod-local\nvolume.\n\n#### Configuration via environment variables {#init-container-env-files}\n\nThis is done using a local volume, but only the init container mounts that volume. The kubelet then reads from that volume before starting the app container.\n\nRead [Define Environment Variable Values Using An Init Container](/docs/tasks/inject-data-application/define-environment-variable-via-file/)\nto learn more."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/kubelet-config-file#kubelet-conf-d-1",
+  "heading": "Set Kubelet Parameters Via A Configuration File > Drop-in directory for kubelet configuration files",
+  "text": "The kubelet processes files in its config drop-in directory by sorting the **entire file name** alphanumerically.\nFor instance, `00-kubelet.conf` is processed first, and then overridden with a file named `01-kubelet.conf`.\n\nThese files may contain partial configurations but should not be invalid and must include type metadata, specifically `apiVersion` and `kind`. \nValidation is only performed on the final resulting configuration structure stored internally in the kubelet. \nThis offers flexibility in managing and merging kubelet configurations from different sources while preventing undesirable configurations. \nHowever, it is important to note that behavior varies based on the data type of the configuration fields.\n\nDifferent data types in the kubelet configuration structure merge differently. See the\n[reference document](/docs/reference/node/kubelet-config-directory-merging/)\nfor more information."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merging-changes-to-primitive-fields-1",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merging changes to primitive fields",
+  "text": "| Field in object configuration file  | Field in live object configuration | Field in last-applied-configuration | Action                                    |\n|-------------------------------------|------------------------------------|-------------------------------------|-------------------------------------------|\n| Yes                                 | Yes                                | -                                   | Set live to configuration file value.  |\n| Yes                                 | No                                 | -                                   | Set live to local configuration.           |\n| No                                  | -                                  | Yes                                 | Clear from live configuration.            |"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#configurable-container-restart-delay-0",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Configurable container restart delay",
+  "text": "With the feature gate `KubeletCrashLoopBackOffMax` enabled, you can\nreconfigure the maximum delay between container start retries from the default\nof 300s (5 minutes). This configuration is set per node using kubelet\nconfiguration. In your [kubelet configuration](/docs/tasks/administer-cluster/kubelet-config-file/),\nunder `crashLoopBackOff` set the `maxContainerRestartPeriod` field between `\"1s\"` and\n`\"300s\"`. As described above in [Container restart policy](#restart-policy),\ndelays on that node will still start at 10s and increase exponentially by 2x\neach restart, but will now be capped at your configured maximum. If the\n`maxContainerRestartPeriod` you configure is less than the default initial value\nof 10s, the initial delay will instead be set to the configured maximum.\n\nSee the following kubelet configuration examples:"
+ }
+]

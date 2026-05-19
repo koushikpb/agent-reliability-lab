@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try with the correct parameter name:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WNwGT1N2UtqPqFowvW8NV6",
+   "input": {
+    "pod_name": "notification-worker-5b7d6c9f48-jq2vx"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1762,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 85,
+ "stop_reason": "tool_use"
+}

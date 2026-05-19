@@ -1,0 +1,45 @@
+{
+ "content": [
+  {
+   "text": "The logs show the pods are receiving SIGTERM signals during the shard loading phase, before the HTTP listeners are opened. This happens before the liveness probe can succeed. Let me search the Kubernetes documentation to understand pod startup timeouts and termination:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01M2Rn3TcC5vkhzZ1FJUECf2",
+   "input": {
+    "query": "pod startup timeout grace period termination"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01B9GPfungvREP7S8nC9mTKH",
+   "input": {
+    "query": "liveness probe failure CrashLoopBackOff"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01GnCC1GhzKgADPYJfJYJdGx",
+   "input": {
+    "query": "pod initialization startup probe delay"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2822,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 199,
+ "stop_reason": "tool_use"
+}

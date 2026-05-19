@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/run-application/run-replicated-stateful-application#scaling-the-number-of-replicas-2",
+  "heading": "Run a Replicated Stateful Application > Scaling the number of replicas",
+  "text": "```\nNAME           STATUS    VOLUME                                     CAPACITY   ACCESSMODES   AGE\ndata-mysql-0   Bound     pvc-8acbf5dc-b103-11e6-93fa-42010a800002   10Gi       RWO           20m\ndata-mysql-1   Bound     pvc-8ad39820-b103-11e6-93fa-42010a800002   10Gi       RWO           20m\ndata-mysql-2   Bound     pvc-8ad69a6d-b103-11e6-93fa-42010a800002   10Gi       RWO           20m\ndata-mysql-3   Bound     pvc-50043c45-b1c5-11e6-93fa-42010a800002   10Gi       RWO           2m\ndata-mysql-4   Bound     pvc-500a9957-b1c5-11e6-93fa-42010a800002   10Gi       RWO           2m\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/encrypt-data#key-storage-1",
+  "heading": "Encrypting Confidential Data at Rest > Understanding the encryption at rest configuration > Key storage",
+  "text": "The KMS provider uses _envelope encryption_: Kubernetes encrypts resources using a data key, and then\nencrypts that data key using the managed encryption service. Kubernetes generates a unique data key for\neach resource. The API server stores an encrypted version of the data key in etcd alongside the ciphertext;\nwhen reading the resource, the API server calls the managed encryption service and provides both the\nciphertext and the (encrypted) data key.\nWithin the managed encryption service, the provider use a _key encryption key_ to decipher the data key,\ndeciphers the data key, and finally recovers the plain text. Communication between the control plane\nand the KMS requires in-transit protection, such as TLS.\n\nUsing envelope encryption creates dependence on the key encryption key, which is not stored in Kubernetes.\nIn the KMS case, an attacker who intends to get unauthorised access to the plaintext\nvalues would need to compromise etcd **and** the third-party KMS provider."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#emptydir-0",
+  "heading": "Volumes > Types of volumes > emptyDir",
+  "text": "For a Pod that defines an `emptyDir` volume, the volume is created when the Pod is assigned to a node.\nAs the name says, the `emptyDir` volume is initially empty. All containers in the Pod can read and write the same\nfiles in the `emptyDir` volume, though that volume can be mounted at the same\nor different paths in each container. When a Pod is removed from a node for\nany reason, the data in the `emptyDir` is deleted permanently.\n\nA container crashing does *not* remove a Pod from a node. The data in an `emptyDir` volume\nis safe across container crashes.\n\nSome uses for an `emptyDir` are:\n\n* scratch space, such as for a disk-based merge sort\n* checkpointing a long computation for recovery from crashes\n* holding files that a content-manager container fetches while a webserver\n  container serves the data"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#using-subpath-1",
+  "heading": "Volumes > Using subPath",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: my-lamp-site\nspec:\n    containers:\n    - name: mysql\n      image: mysql\n      env:\n      - name: MYSQL_ROOT_PASSWORD\n        value: \"rootpasswd\"\n      volumeMounts:\n      - mountPath: /var/lib/mysql\n        name: site-data\n        subPath: mysql\n    - name: php\n      image: php:7.0-apache\n      volumeMounts:\n      - mountPath: /var/www/html\n        name: site-data\n        subPath: html\n    volumes:\n    - name: site-data\n      persistentVolumeClaim:\n        claimName: my-lamp-site-data\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/configure-upgrade-etcd#understanding-etcdctl-and-etcdutl-0",
+  "heading": "Operating etcd clusters for Kubernetes > Understanding etcdctl and etcdutl",
+  "text": "`etcdctl` and `etcdutl` are command-line tools used to interact with etcd clusters, but they serve different purposes:\n\n- `etcdctl`: This is the primary command-line client for interacting with etcd over a\nnetwork. It is used for day-to-day operations such as managing keys and values,\nadministering the cluster, checking health, and more.\n\n- `etcdutl`: This is an administration utility designed to operate directly on etcd data\nfiles, including migrating data between etcd versions, defragmenting the database,\nrestoring snapshots, and validating data consistency. For network operations, `etcdctl`\nshould be used.\n\nFor more information on `etcdutl`, you can refer to the [etcd recovery documentation](https://etcd.io/docs/v3.5/op-guide/recovery/)."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/encrypt-data#verifying-that-data-is-encrypted-0",
+  "heading": "Encrypting Confidential Data at Rest > Encrypt your data > Verify that newly written data is encrypted",
+  "text": "Data is encrypted when written to etcd. After restarting your `kube-apiserver`, any newly\ncreated or updated Secret (or other resource kinds configured in `EncryptionConfiguration`)\nshould be encrypted when stored.\n\nTo check this, you can use the `etcdctl` command line\nprogram to retrieve the contents of your secret data.\n\nThis example shows how to check this for encrypting the Secret API.\n\n1. Create a new Secret called `secret1` in the `default` namespace:\n\n   ```shell\n   kubectl create secret generic secret1 -n default --from-literal=mykey=mydata\n   ```\n\n1. Using the `etcdctl` command line tool, read that Secret out of etcd:\n\n   ```\n   ETCDCTL_API=3 etcdctl get /registry/secrets/default/secret1 [...] | hexdump -C\n   ```\n\n   where `[...]` must be the additional arguments for connecting to the etcd server."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/kms-provider#kms-encryption-and-per-object-encryption-keys-0",
+  "heading": "Using a KMS provider for data encryption > KMS encryption and per-object encryption keys",
+  "text": "The KMS encryption provider uses an envelope encryption scheme to encrypt data in etcd.\nThe data is encrypted using a data encryption key (DEK).\nThe DEKs are encrypted with a key encryption key (KEK) that is stored and managed in a remote KMS.\n\nIf you use the (deprecated) v1 implementation of KMS, a new DEK is generated for each encryption.\n\nWith KMS v2, a new DEK is generated **per encryption**: the API server uses a\n_key derivation function_ to generate single use data encryption keys from a secret seed\ncombined with some random data.\nThe seed is rotated whenever the KEK is rotated\n(see the _Understanding key_id and Key Rotation_ section below for more details).\n\nThe KMS provider uses gRPC to communicate with a specific KMS plugin over a UNIX domain socket.\nThe KMS plugin, which is implemented as a gRPC server and deployed on the same host(s)\nas the Kubernetes control plane, is responsible for all communication with the remote KMS."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/_index#example-debugging-a-down-unreachable-node-3",
+  "heading": "Troubleshooting Clusters > Listing your cluster > Example: debugging a down/unreachable node",
+  "text": "```none\n  Type                 Status    LastHeartbeatTime                 LastTransitionTime                Reason              Message\n  ----                 ------    -----------------                 ------------------                ------              -------\n  NetworkUnavailable   False     Thu, 17 Feb 2022 17:09:13 -0500   Thu, 17 Feb 2022 17:09:13 -0500   WeaveIsUp           Weave pod has set this\n  MemoryPressure       Unknown   Thu, 17 Feb 2022 17:12:40 -0500   Thu, 17 Feb 2022 17:13:52 -0500   NodeStatusUnknown   Kubelet stopped posting node status.\n  DiskPressure         Unknown   Thu, 17 Feb 2022 17:12:40 -0500   Thu, 17 Feb 2022 17:13:52 -0500   NodeStatusUnknown   Kubelet stopped posting node status.\n```"
+ }
+]

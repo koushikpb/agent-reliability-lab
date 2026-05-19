@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've successfully resolved ticket T-4004. The issue was that notification-worker was configured to connect to `smtp-relay` using a short hostname, but the service had been moved from the `notify` namespace to `shared-infra` on Sunday night. Kubernetes DNS automatically searches within the pod's own namespace first, so the lookup failed. The fix is to update the SMTP_HOST environment variable to use the fully-qualified domain name `smtp-relay.shared-infra.svc.cluster.local` to correctly reach the service across namespaces.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9188,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 126,
+ "stop_reason": "end_turn"
+}

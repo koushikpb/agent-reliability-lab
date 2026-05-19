@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Based on my investigation, I now have enough evidence to identify the issue. The key evidence is:\n\n1. The ticket states \"cpu <unknown>/60%\" - meaning metrics are unavailable\n2. Version 4.8.0 was just released and this is when the problem started\n3. The pods have a sidecar `log-forwarder` container that does NOT have CPU requests defined\n4. The `api` container DOES have CPU requests defined (1 CPU)\n5. According to Kubernetes documentation, when pod specs change to include new containers, the HPA spec must be updated if those containers are part of the metric calculation\n\nThe most likely issue is that the 4.8.0 release either:\n- Added the log-forwarder sidecar container to the pod spec\n- Changed how the HPA is configured (possibly switching to ContainerResource metrics)\n- The HPA might be trying to track a container that doesn't exist, or the metric calculation is failing because the sidecar lacks resource requests\n\nThe fix is to update the HPA to explicitly specify which container to track (the `api` container with its CPU requests), or to ensure the HPA is using Pod-level Resource metrics rather than ContainerResource metrics.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MP2gXi4fPe244Y9bSPDodR",
+   "input": {
+    "id": "T-6001",
+    "note": "CAUSE: The 4.8.0 release likely changed the pod specification (possibly adding or modifying the `log-forwarder` sidecar container). When pod specs change with new containers, the HPA configuration must be updated accordingly. The \"cpu <unknown>\" status indicates the HPA cannot calculate CPU metrics.\n\nEVIDENCE: \n- Current pods show two containers: `api` (1 CPU request) and `log-forwarder` (no CPU requests defined)\n- The HPA shows \"cpu <unknown>/60%\" indicating metrics are unavailable\n- Per Kubernetes documentation: \"If you revise the target resource to have a new Pod specification with a different set of containers, you should revise the HPA spec if that newly added container should also be used for scaling. If the specified container in the metric source is not present or only present in a subset of the pods then those pods are ignored\" [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0]\n- The documentation also states: \"When defining the pod specification the resource requests like `cpu` and `memory` should be specified. This is used to determine the resource utilization and used by the HPA controller\" [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0]\n\nFIX: Update the HPA for search-api to explicitly specify the `api` container using ContainerResource metrics (instead of Pod-level metrics), or verify that the HPA is configured to track the correct container. The command should be similar to:\n```yaml\ntype: ContainerResource\ncontainerResource:\n  name: cpu\n  container: api\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nThis ensures the HPA tracks only the main application container and ignores the sidecar container's metrics.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 11918,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 784,
+ "stop_reason": "tool_use"
+}

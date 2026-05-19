@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0196LmsiF49oGhFNatCdARTR",
+   "input": {
+    "id": "T-5005",
+    "note": "Cause: The Prometheus TSDB volume is full. prometheus-k8s-0 logs show repeated \"no space left on device\" errors starting at 03:02:44 UTC writing to /prometheus/wal/00004812, plus a failed 05:00 head-block compaction (\"persist head block: write chunks: ... no space left on device\"). With the WAL unable to accept samples, scrapes fail with \"Append failed\", which is why dashboards show gaps and alerts did not fire. Scrape timeouts on node-exporter/kafka are a secondary symptom.\n\nEvidence:\n- Pod prometheus-k8s-0 is Running/Ready with 0 restarts, mounting PVC prometheus-k8s-db-prometheus-k8s-0 (100Gi, ext4, StorageClass gp3-resizable).\n- The StorageClass gp3-resizable has allowVolumeExpansion: true and provisioner ebs.csi.aws.com.\n- Log lines at 03:02:44, 05:00:02 and 07:41:30 all report ENOSPC on /prometheus.\n\nFix (you own the monitoring namespace, so you can apply this): expand the PVC in place. Edit prometheus-k8s-db-prometheus-k8s-0 and raise spec.resources.requests.storage (e.g. to 200Gi). Because the backing StorageClass has allowVolumeExpansion: true and uses a CSI driver, editing the PVC triggers expansion of the underlying PV [cite: concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-0] [cite: concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-1]. The ext4 filesystem supports online resize, so no pod recreation is required and the larger size becomes available to the running Prometheus pod automatically once expansion completes [cite: concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-2] [cite: concepts/storage/persistent-volumes#expanding-persistent-volumes-claims-3]. Note: if your Prometheus is managed by the prometheus-operator, change storage.volumeClaimTemplate.spec.resources.requests.storage on the Prometheus CR (and/or edit the PVC directly) since StatefulSet volumeClaimTemplates are immutable. After expansion, Prometheus will resume writing to the WAL; historical gaps in the 03:00\\u2013now window cannot be recovered. Consider lowering --storage.tsdb.retention.time or adding a disk-usage alert to prevent recurrence.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 11078,
+ "model": "claude-opus-4-7",
+ "output_tokens": 983,
+ "stop_reason": "tool_use"
+}

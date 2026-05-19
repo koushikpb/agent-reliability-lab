@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#namespaces-of-services-1",
+  "heading": "DNS for Services and Pods > Namespaces of Services",
+  "text": "DNS queries may be expanded using the Pod's `/etc/resolv.conf`. kubelet\nconfigures this file for each Pod. For example, a query for just `data` may be\nexpanded to `data.test.svc.cluster.local`. The values of the `search` option\nare used to expand queries. To learn more about DNS queries, see\n[the `resolv.conf` manual page](https://www.man7.org/linux/man-pages/man5/resolv.conf.5.html).\n\n```\nnameserver 10.32.0.10\nsearch <namespace>.svc.cluster.local svc.cluster.local cluster.local\noptions ndots:5\n```\n\nIn summary, a Pod in the _test_ namespace can successfully resolve either\n`data.prod` or `data.prod.svc.cluster.local`."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#externalname-1",
+  "heading": "Service > Service type > `type: ExternalName`",
+  "text": "When looking up the host `my-service.prod.svc.cluster.local`, the cluster DNS Service\nreturns a `CNAME` record with the value `my.database.example.com`. Accessing\n`my-service` works in the same way as other Services but with the crucial\ndifference that redirection happens at the DNS level rather than via proxying or\nforwarding. Should you later decide to move your database into your cluster, you\ncan start its Pods, add appropriate selectors or endpoints, and change the\nService's `type`.\n\nYou may have trouble using ExternalName for some common protocols, including HTTP and HTTPS.\nIf you use ExternalName then the hostname used by clients inside your cluster is different from\nthe name that the ExternalName references.\n\nFor protocols that use hostnames this difference may lead to errors or unexpected responses.\nHTTP requests will have a `Host:` header that the origin server does not recognize;\nTLS servers will not be able to provide a certificate matching the hostname that the client connected to."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#a-aaaa-records-0",
+  "heading": "DNS for Services and Pods > Services > A/AAAA records",
+  "text": "\"Normal\" (not headless) Services are assigned DNS A and/or AAAA records,\ndepending on the IP family or families of the Service, with a name of the form\n`my-svc.my-namespace.svc.cluster-domain.example`. This resolves to the cluster IP\nof the Service.\n\n[Headless Services](/docs/concepts/services-networking/service/#headless-services)\n(without a cluster IP) are also assigned DNS A and/or AAAA records,\nwith a name of the form `my-svc.my-namespace.svc.cluster-domain.example`. Unlike normal\nServices, this resolves to the set of IPs of all of the Pods selected by the Service.\nClients are expected to consume the set or else use standard round-robin\nselection from the set."
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#dns-windows-0",
+  "heading": "DNS for Services and Pods > DNS resolution on Windows nodes",
+  "text": "- `ClusterFirstWithHostNet` is not supported for Pods that run on Windows nodes.\n  Windows treats all names with a `.` as a FQDN and skips FQDN resolution.\n- On Windows, there are multiple DNS resolvers that can be used. As these come with\n  slightly different behaviors, using the\n  [`Resolve-DNSName`](https://docs.microsoft.com/powershell/module/dnsclient/resolve-dnsname)\n  powershell cmdlet for name query resolutions is recommended.\n- On Linux, you have a DNS suffix list, which is used after resolution of a name as fully\n  qualified has failed.\n  On Windows, you can only have 1 DNS suffix, which is the DNS suffix associated with that\n  Pod's namespace (example: `mydns.svc.cluster.local`). Windows can resolve FQDNs, Services,\n  or network name which can be resolved with this single suffix. For example, a Pod spawned"
+ },
+ {
+  "chunk_id": "concepts/services-networking/dns-pod-service#srv-records-0",
+  "heading": "DNS for Services and Pods > Services > SRV records",
+  "text": "SRV Records are created for named ports that are part of normal or headless\nservices.\n\n- For each named port, the SRV record has the form\n  `_port-name._port-protocol.my-svc.my-namespace.svc.cluster-domain.example`.\n- For a regular Service, this resolves to the port number and the domain name:\n  `my-svc.my-namespace.svc.cluster-domain.example`.\n- For a headless Service, this resolves to multiple answers, one for each Pod\n  that is backing the Service, and contains the port number and the domain name of the Pod\n  of the form `hostname.my-svc.my-namespace.svc.cluster-domain.example`."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#stable-network-id-0",
+  "heading": "StatefulSets > Pod Identity > Stable Network ID",
+  "text": "Each Pod in a StatefulSet derives its hostname from the name of the StatefulSet\nand the ordinal of the Pod. The pattern for the constructed hostname\nis `$(statefulset name)-$(ordinal)`. The example above will create three Pods\nnamed `web-0,web-1,web-2`.\nA StatefulSet can use a [Headless Service](/docs/concepts/services-networking/service/#headless-services)\nto control the domain of its Pods. The domain managed by this Service takes the form:\n`$(service name).$(namespace).svc.cluster.local`, where \"cluster.local\" is the\ncluster domain.\nAs each Pod is created, it gets a matching DNS subdomain, taking the form:\n`$(podname).$(governing service domain)`, where the governing service is defined\nby the `serviceName` field on the StatefulSet."
+ },
+ {
+  "chunk_id": "concepts/services-networking/service#environment-variables-0",
+  "heading": "Service > Discovering services > Environment variables",
+  "text": "When a Pod is run on a Node, the kubelet adds a set of environment variables\nfor each active Service. It adds `{SVCNAME}_SERVICE_HOST` and `{SVCNAME}_SERVICE_PORT` variables,\nwhere the Service name is upper-cased and dashes are converted to underscores.\n\nFor example, the Service `redis-primary` which exposes TCP port 6379 and has been\nallocated cluster IP address 10.0.0.11, produces the following environment\nvariables:"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/access-cluster-services#discovering-builtin-services-3",
+  "heading": "Access Services Running on Clusters > Accessing services running on the cluster > Discovering builtin services",
+  "text": "As mentioned above, you use the `kubectl cluster-info` command to retrieve the service's proxy URL. To create\nproxy URLs that include service endpoints, suffixes, and parameters, you append to the service's proxy URL:\n`http://`*`kubernetes_master_address`*`/api/v1/namespaces/`*`namespace_name`*`/services/`*`[https:]service_name[:port_name]`*`/proxy`\n\nIf you haven't specified a name for your port, you don't have to specify *port_name* in the URL. You can also\nuse the port number in place of the *port_name* for both named and unnamed ports."
+ }
+]

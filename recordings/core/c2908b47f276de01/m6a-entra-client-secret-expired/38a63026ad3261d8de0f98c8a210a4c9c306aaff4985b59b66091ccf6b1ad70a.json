@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I've found the root cause. The oauth2-proxy logs show a clear error message. The client secret for the Azure app registration has expired. Let me search the documentation to understand this better and confirm this is the expected behavior.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011hRTDeBBayFmDQDQs7Mumo",
+   "input": {
+    "query": "oauth2-proxy Azure client secret expired"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3700,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 110,
+ "stop_reason": "tool_use"
+}

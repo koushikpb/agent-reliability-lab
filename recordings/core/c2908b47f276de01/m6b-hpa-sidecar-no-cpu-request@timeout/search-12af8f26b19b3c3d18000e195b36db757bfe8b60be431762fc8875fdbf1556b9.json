@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#intro-1",
+  "heading": "Horizontal Pod Autoscaling",
+  "text": "The HorizontalPodAutoscaler is implemented as a Kubernetes API resource and a\ncontroller.\nThe resource determines the behavior of the controller.\nThe horizontal pod autoscaling controller, running within the Kubernetes\ncontrol plane, periodically adjusts the\ndesired scale of its target (for example, a Deployment) to match observed metrics such as average\nCPU utilization, average memory utilization, or any other custom metric you specify.\n\nThere is [walkthrough example](/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/) of using\nhorizontal pod autoscaling."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#pod-readiness-and-autoscaling-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Pod readiness and autoscaling metrics",
+  "text": "The HorizontalPodAutoscaler (HPA) controller includes two command line options that influence how CPU metrics are collected from Pods during startup:\n\n1. `--horizontal-pod-autoscaler-cpu-initialization-period` (default: 5 minutes)\n\n  This defines the time window after a Pod starts during which its **CPU usage is ignored** unless:\n    - The Pod is in a `Ready` state **and**\n    - The metric sample was taken entirely during the period it was `Ready`.\n\n  This command line option helps **exclude misleading high CPU usage** from initializing Pods (for example: Java apps warming up) in HPA scaling decisions.\n\n1. `--horizontal-pod-autoscaler-initial-readiness-delay` (default: 30 seconds)\n\n  This defines a short delay period after a Pod starts during which the HPA controller treats Pods that are currently `Unready` as still initializing, **even if they have previously transitioned to `Ready` briefly**."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#scaling-on-custom-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Scaling on custom metrics",
+  "text": "(the `autoscaling/v2beta2` API version previously provided this ability as a beta feature)\n\nProvided that you use the `autoscaling/v2` API version, you can configure a HorizontalPodAutoscaler\nto scale based on a custom metric (that is not built in to Kubernetes or any Kubernetes component).\nThe HorizontalPodAutoscaler controller then queries for these custom metrics from the Kubernetes\nAPI.\n\nSee [Support for metrics APIs](#support-for-metrics-apis) for the requirements."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#pod-readiness-good-practices-0",
+  "heading": "Horizontal Pod Autoscaling > Pod readiness and autoscaling metrics > Good practice for pod readiness",
+  "text": "- Configure a `startupProbe` that doesn't pass until the high CPU usage has passed, or\n- Ensure your `readinessProbe` only reports `Ready` **after** the CPU spike subsides, using `initialDelaySeconds`.\n\nAnd ideally also set `--horizontal-pod-autoscaler-cpu-initialization-period` to **cover the startup duration**."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#scaling-on-multiple-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Scaling on multiple metrics",
+  "text": "(the `autoscaling/v2beta2` API version previously provided this ability as a beta feature)\n\nProvided that you use the `autoscaling/v2` API version, you can specify multiple metrics for a\nHorizontalPodAutoscaler to scale on. Then, the HorizontalPodAutoscaler controller evaluates each metric,\nand proposes a new scale based on that metric. The HorizontalPodAutoscaler takes the maximum scale\nrecommended for each metric and sets the workload to that size (provided that this isn't larger than the\noverall maximum that you configured)."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics",
+  "text": "Any HPA target can be scaled based on the resource usage of the pods in the scaling target.\nWhen defining the pod specification the resource requests like `cpu` and `memory` should\nbe specified. This is used to determine the resource utilization and used by the HPA controller\nto scale the target up or down. To use resource utilization based scaling specify a metric source\nlike this:\n\n```yaml\ntype: Resource\nresource:\n  name: cpu\n  target:\n    type: Utilization\n    averageUtilization: 60\n```\nWith this metric the HPA controller will keep the average utilization of the pods in the scaling\ntarget at 60%. Utilization is the ratio between the current usage of resource to the requested\nresources of the pod. See [Algorithm](#algorithm-details) for more details about how the utilization\nis calculated and averaged.\n\nSince the resource usages of all the containers are summed up the total pod utilization may not\naccurately represent the individual container resource usage. This could lead to situations where\na single container might be running with high usage and the HPA will not scale out because the overall\npod usage is still within acceptable limits."
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#autoscaling-on-multiple-metrics-and-custom-metrics-2",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Autoscaling on multiple metrics and custom metrics",
+  "text": "Notice that the `targetCPUUtilizationPercentage` field has been replaced with an array called `metrics`.\nThe CPU utilization metric is a *resource metric*, since it is represented as a percentage of a resource\nspecified on pod containers.  Notice that you can specify other resource metrics besides CPU.  By default,\nthe only other supported resource metric is `memory`.  These resources do not change names from cluster\nto cluster, and should always be available, as long as the `metrics.k8s.io` API is available.\n\nYou can also specify resource metrics in terms of direct values, instead of as percentages of the\nrequested value, by using a `target.type` of `AverageValue` instead of `Utilization`, and\nsetting the corresponding `target.averageValue` field instead of the `target.averageUtilization`.\n\n```\n  metrics:\n  - type: Resource\n    resource:\n      name: memory\n      target:\n        type: AverageValue\n        averageValue: 500Mi\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#how-does-a-horizontalpodautoscaler-work-3",
+  "heading": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work?",
+  "text": "- For per-pod resource metrics (like CPU), the controller fetches the metrics\n  from the resource metrics API for each Pod targeted by the HorizontalPodAutoscaler.\n  Then, if a target utilization value is set, the controller calculates the utilization\n  value as a percentage of the equivalent\n  [resource request](/docs/concepts/configuration/manage-resources-containers/#requests-and-limits)\n  on the containers in each Pod. If a target raw value is set, the raw metric values are used directly.\n  The controller then takes the mean of the utilization or the raw value (depending on the type\n  of target specified) across all targeted Pods, and produces a ratio used to scale\n  the number of desired replicas.\n\n  Please note that if some of the Pod's containers do not have the relevant resource request set,\n  CPU utilization for the Pod will not be defined and the autoscaler will\n  not take any action for that metric. See the [algorithm details](#algorithm-details) section below\n  for more information about how the autoscaling algorithm works."
+ }
+]

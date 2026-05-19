@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Based on my investigation, I found the issue. The pods have CPU requests defined (1 CPU per container), which is necessary for HPA to work. The documentation clearly states that [cite: concepts/workloads/autoscaling/horizontal-pod-autoscale#support-for-resource-metrics-0] resource requests must be specified for the HPA controller to determine resource utilization.\n\nHowever, the key issue is that the log-forwarder container (fluent-bit) in the updated 4.8.0 version **does not have CPU requests defined**, while the main API container does. Let me search for more information about how HPA handles containers without resource requests.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KFx4n4ux6e9edEuovb7UKn",
+   "input": {
+    "query": "HPA scaling metrics container without resource requests"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6999,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 208,
+ "stop_reason": "tool_use"
+}

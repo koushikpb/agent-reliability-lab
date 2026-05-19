@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Based on the documentation, deployment rollouts can fail due to several reasons including image pull errors. Let me search more specifically about image pull issues:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_017N1e2TFKspnbLNfMq6kjcW",
+   "input": {
+    "query": "ImagePullBackOff image pull error registry authentication"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4128,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 93,
+ "stop_reason": "tool_use"
+}

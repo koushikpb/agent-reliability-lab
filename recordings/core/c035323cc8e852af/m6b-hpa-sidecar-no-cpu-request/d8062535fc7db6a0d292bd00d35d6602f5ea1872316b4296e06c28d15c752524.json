@@ -1,0 +1,45 @@
+{
+ "content": [
+  {
+   "text": "The logs show the worker pool is saturated (16/16 busy with 41 queued). The ticket mentions the HPA shows \"cpu <unknown>/60%\" - this indicates that CPU metrics are unavailable to the HPA. Let me search the documentation to understand what could cause metrics to become unknown after a version upgrade.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01VJgFsQYGSTJwjLkhNXXpxQ",
+   "input": {
+    "query": "HPA cpu unknown metrics not available"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01HxVZHY8yipzJXi7khEtSz4",
+   "input": {
+    "query": "horizontal pod autoscaler metrics server"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_0128weiHpD45kLquQZWbma3X",
+   "input": {
+    "query": "resource metrics CPU request scaling"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2478,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 211,
+ "stop_reason": "tool_use"
+}

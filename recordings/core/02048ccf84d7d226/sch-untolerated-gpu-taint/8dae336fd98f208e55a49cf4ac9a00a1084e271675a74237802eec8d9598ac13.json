@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "Et8CCqgBCBMYAipALNX6IQOVqINF0juSYdgnd/Bv7u1m+l1bRuelfSFouHUPMDFU+uZG3BtHKZSFL9wSnspbv3yXPvYSvjNf4+ifxjIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAYf08dYGEgxZlpvqzlrzt9PWkOcaDFFxgZrIDUGJqaGZDSIwnM0r7SZTXZPrkU6q6szKENDQ2pM3RzQk9UDrbDTQTX5a2LBWJeAHvWje6H/twegSKmTahA4BEX3XmorXawftzbplOXLYqaUq5LO2LOkyEK6l3/2rEuS5gsZUuRGwNKYDSuxzygGVjiTlgqQ6HGmP0M0UT79ImJmI0NbHyYjg8nG7KaTmq+SV8Dn0gqNlA81mkM21g7n2GAE=",
+   "thinking": "Let me start by reading the ticket and looking at the cluster state simultaneously.",
+   "type": "thinking"
+  },
+  {
+   "text": "I'll start by reading the ticket right away!",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01TE9wJ3itEo9bzYH1yHtsTm",
+   "input": {
+    "id": "T-3002"
+   },
+   "name": "get_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1303,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 97,
+ "stop_reason": "tool_use"
+}

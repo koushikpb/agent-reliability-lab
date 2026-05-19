@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01B4ejLyzqvGdeZ54pTFKXGT",
+   "input": {
+    "query": "Pod Security Standards restricted securityContext container spec fields required"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6006,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 63,
+ "stop_reason": "tool_use"
+}

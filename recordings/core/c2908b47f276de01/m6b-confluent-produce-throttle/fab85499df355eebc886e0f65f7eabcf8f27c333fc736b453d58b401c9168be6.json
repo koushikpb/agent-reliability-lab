@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The Kubernetes docs don't directly cover Kafka broker throttling. However, the logs are very clear about what's happening. Let me search for more information about Kafka producer configuration and broker-side rate limiting.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01YaQJeGHm4oV47R9WqGK7jZ",
+   "input": {
+    "query": "Kafka producer configuration batch size linger time performance"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7823,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 107,
+ "stop_reason": "tool_use"
+}

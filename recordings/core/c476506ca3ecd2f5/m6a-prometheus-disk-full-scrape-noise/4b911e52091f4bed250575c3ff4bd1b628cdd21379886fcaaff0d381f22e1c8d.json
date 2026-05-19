@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "EugICqgBCBMYAipA4f2JynYIGLB77jFBApq3QeH5f6u0nlIxMw/3i+B/yLIdMF7qQ0kJsg0lK+r1UcKHukK540sGbA14vtPIyM8ZGjIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAcz68dYGEgwfHAyU28H3a2Rm5g8aDNcX26K+bAhodHgpDyIwE9HffmuatnbYTK7te+6xFDwSDUaPTc5bOjdKfaKdX7UxmZ9OZc2pmk9lwaoYYronKuwG+3UFOlCmDiqdMWKphyMPyCGxdXbQlEJBRKKBfj/ULNsi/sFtNRPmn7cCRS7ss1YnkTQIBUUsTC8ZTwUfK9J2mODsgqCmW2qE/c+hRIT94URvsAYI/tbWjbZtvRJu3AIbjJZQnfA+nkPUjewnxD1xJ/QRpGtaqSkb9zvCJmSYrMqet5hSh/UVcJ64HIwRe5vEYf5JhZcGv1OrDBDT7G9ixlSDtibhoT9U3Znub1L9bUrizczngaQ8vzRnxhiwrDgJowVZ3zp6dWQf5RRpu8LhzmLNf/sgQK8b3W+TqSDChVsfMkpedelzXf4WbbJvLkvlEn7KHYwoVjBz6Ilqd/Q9mXjN0tp+e2GEI/q+woi3x+v2gBTHO+Bw0ds9jYf3Epz3P1gQtV+5A7aR+a0pJqlBxXW2gheG1RednyxCOpi5mRLA492UwoBPxb6vW9tThNmDm8Brc2QWudZSGeDvKO233ZtlVxpW0vd+ZrucNqsJ9TmyGF4PMySZp0t2dyhQeZoH3qY4HtNkJ76mERW9PXeUkYy2be41SlfmctKkaUgqTUg8Da34YUXxQ3bcDooD61Zi0NVwjYfxz8sQnZ2x6T02kEYSAh0iCTHpP89+vQgbvaRYa7V82mSVRCScer1NTYe85JGgZRNq2KcIEfNN3R4DuhB+N+b79iCCjRfBvwfnRB45/PvQw22tR8yvcsbF8os+E6lenNXGz/RV7J8s51PD1XUDAPNGVLWXaK6z5fg6Q453hIINxt4h9Z5yIZJ/+FNBzyL34iw49l4uX36Lu1sHoH9rwcQvRHtLkkrxfpV+dgIutfWYZtNjy6X55wsFijd+jRPIngL6qAJZwSq2D6uTD/BT/Gma31aflM+G4LN+meGyMmedgOl1b1+fn/iDCzcEMSJW6rqj3ccQj1AblFDAjrhGto6v8YyT8nKZeRKZTo5CNesRigomqmgI5B4sR4rxSDg0OQRsPKpo+/BMmVaKA1vEpf/JYWiFtxXycxDYSt5m81D2C4kGH1VqTlZDrkwXwa5HjhCcm+KKgMsMheObtfXWtaasZUEC/736vFCrs97o70KtvW6Y/v34pw6lAXHahdXVy0q8DzBux3a1rY30hCZ8oM8vyzPDPTmMQQeQL4drtidR44tTXAFAbNoyLJ3y/yd8pV8iCVZRNi5UGAE=",
+   "thinking": "The cause is clear. The Prometheus pod's PVC (`prometheus-k8s-db-prometheus-k8s-0`) has run out of disk space. Starting at 03:02:44 on 2026-05-22, the logs show:\n\n1. `Failed to write to WAL` with `no space left on device` \n2. `Append failed` with `no space left on device`\n3. `compaction failed` with `no space left on device`\n\nThis explains the dashboard gaps starting around 03:00. Prometheus can't write metrics to its TSDB when the volume is full, so no data is being stored.\nThe PVC is 100Gi on a resizable storage class, so expanding it should fix this, but since that requires editing the PVC and possibly the StatefulSet, this is something the ticket owner needs to do rather than me directly. I should look into how to properly expand a PVC before advising them.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "The root cause is clear from the logs. Let me also search for how to expand a PersistentVolumeClaim.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_011YXqjqBrbMhA87UqewVcbn",
+   "input": {
+    "query": "expand PersistentVolumeClaim resize storage volume"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 7506,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 352,
+ "stop_reason": "tool_use"
+}

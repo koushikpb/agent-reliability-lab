@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#container-resource-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Support for resource metrics > Container resource metrics",
+  "text": "The HorizontalPodAutoscaler API also supports a container metric source where the HPA can track the\nresource usage of individual containers across a set of Pods, in order to scale the target resource.\nThis lets you configure scaling thresholds for the containers that matter most in a particular Pod.\nFor example, if you have a web application and a sidecar container that provides logging, you can scale based on the resource\nuse of the web application, ignoring the sidecar container and its resource use.\n\nIf you revise the target resource to have a new Pod specification with a different set of containers,\nyou should revise the HPA spec if that newly added container should also be used for\nscaling. If the specified container in the metric source is not present or only present in a subset\nof the pods then those pods are ignored and the recommendation is recalculated. See [Algorithm](#algorithm-details)\nfor more details about the calculation. To use container resources for autoscaling define a metric\nsource as follows:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#resource-sharing-within-containers-1",
+  "heading": "Sidecar Containers > Resource sharing within containers",
+  "text": "* The highest of any particular resource request or limit defined on all init\n  containers is the *effective init request/limit*. If any resource has no\n  resource limit specified this is considered as the highest limit.\n* The Pod's *effective request/limit* for a resource is the sum of\n[pod overhead](/docs/concepts/scheduling-eviction/pod-overhead/) and the higher of:\n  * the sum of all non-init containers(app and sidecar containers) request/limit for a\n  resource\n  * the effective init request/limit for a resource\n* Scheduling is done based on effective requests/limits, which means\n  init containers can reserve resources for initialization that are not used\n  during the life of the Pod.\n* The QoS (quality of service) tier of the Pod's *effective QoS tier* is the\n  QoS tier for all init, sidecar and app containers alike.\n\nQuota and limits are applied based on the effective Pod request and\nlimit."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#resource-sharing-within-containers-0",
+  "heading": "Init Containers > Detailed behavior > Resource sharing within containers",
+  "text": "Given the order of execution for init, sidecar and app containers, the following rules\nfor resource usage apply:\n\n* The highest of any particular resource request or limit defined on all init\n  containers is the *effective init request/limit*. If any resource has no\n  resource limit specified this is considered as the highest limit.\n* The Pod's *effective request/limit* for a resource is the higher of:\n  * the sum of all app containers request/limit for a resource\n  * the effective init request/limit for a resource\n* Scheduling is done based on effective requests/limits, which means\n  init containers can reserve resources for initialization that are not used\n  during the life of the Pod.\n* The QoS (quality of service) tier of the Pod's *effective QoS tier* is the\n  QoS tier for init containers and app containers alike.\n\nQuota and limits are applied based on the effective Pod request and\nlimit."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/resource-metrics-pipeline#intro-5",
+  "heading": "Resource metrics pipeline",
+  "text": "* [cAdvisor](https://github.com/google/cadvisor): Daemon for collecting, aggregating and exposing\n  container metrics included in Kubelet.\n* [kubelet](/docs/concepts/architecture/#kubelet): Node agent for managing container\n  resources. Resource metrics are accessible using the `/metrics/resource` and `/stats` kubelet\n  API endpoints.\n* [node level resource metrics](/docs/reference/instrumentation/node-metrics): API provided by the kubelet for discovering and retrieving\n  per-node summarized stats available through the `/metrics/resource` endpoint.\n* [metrics-server](#metrics-server): Cluster addon component that collects and aggregates resource\n  metrics pulled from each kubelet. The API server serves Metrics API for use by HPA, VPA, and by\n  the `kubectl top` command. Metrics Server is a reference implementation of the Metrics API."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#cgroups-0",
+  "heading": "Sidecar Containers > Resource sharing within containers > Sidecar containers and Linux cgroups",
+  "text": "On Linux, resource allocations for Pod level control groups (cgroups) are based on the effective Pod\nrequest and limit, the same as the scheduler."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#differences-from-regular-containers-0",
+  "heading": "Init Containers > Understanding init containers > Differences from regular containers",
+  "text": "Init containers support all the fields and features of app containers,\nincluding resource limits, [volumes](/docs/concepts/storage/volumes/), and security settings. However, the\nresource requests and limits for an init container are handled differently,\nas documented in [Resource sharing within containers](#resource-sharing-within-containers).\n\nRegular init containers (in other words: excluding sidecar containers) do not support the\n`lifecycle`, `livenessProbe`, `readinessProbe`, or `startupProbe` fields. Init containers\nmust run to completion before the Pod can be ready; sidecar containers continue running\nduring a Pod's lifetime, and _do_ support some probes. See [sidecar container](/docs/concepts/workloads/pods/sidecar-containers/)\nfor further details about sidecar containers."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/resize-container-resources#limitations-2",
+  "heading": "Resize CPU and Memory Resources assigned to Containers > Limitations",
+  "text": "    * *Burstable*: Requests and limits cannot become equal for *both* CPU and memory simultaneously\n      (as this would change it to Guaranteed).\n    * *BestEffort*: Resource requirements (`requests` or `limits`) cannot be added\n      (as this would change it to Burstable or Guaranteed).\n* **Container Types:** Non-restartable init containers and\n  ephemeral containers cannot be resized.\n  [Sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/) can be resized.\n* **Resource Removal:** Resource requests and limits cannot be entirely removed once set;\n  they can only be changed to different values.\n* **Operating System:** Windows pods do not support in-place resize.\n* **Node Policies:** Pods managed by [static CPU or Memory manager policies](/docs/tasks/administer-cluster/cpu-management-policies/)\n  cannot be resized in-place."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#cgroups-0",
+  "heading": "Init Containers > Detailed behavior > Init containers and Linux cgroups",
+  "text": "On Linux, resource allocations for Pod level control groups (cgroups) are based on the effective Pod\nrequest and limit, the same as the scheduler.\n\nThis section also present under [sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/) page.\nIf you're editing this section, change both places."
+ }
+]

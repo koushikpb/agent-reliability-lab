@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Configure all key-value pairs in a Secret as container environment variables",
+  "text": "This functionality is available in Kubernetes v1.6 and later.\n\n- Create a Secret containing multiple key-value pairs\n\n  ```shell\n  kubectl create secret generic test-secret --from-literal=username='my-app' --from-literal=password='39528$vdg7Jb'\n  ```\n\n- Use envFrom to define all of the Secret's data as container environment variables.\n  The key from the Secret becomes the environment variable name in the Pod.\n\n  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: envfrom-secret\nspec:\n  containers:\n  - name: envars-test-container\n    image: nginx\n    envFrom:\n    - secretRef:\n        name: test-secret\n```\n\n- Create the Pod:\n\n  ```shell\n  kubectl create -f https://k8s.io/examples/pods/inject/pod-secret-envFrom.yaml\n  ```"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#define-a-container-environment-variable-with-data-from-a-single-secret-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Define container environment variables using Secret data > Define a container environment variable with data from a single Secret",
+  "text": "- Define an environment variable as a key-value pair in a Secret:\n\n  ```shell\n  kubectl create secret generic backend-user --from-literal=backend-username='backend-admin'\n  ```\n\n- Assign the `backend-username` value defined in the Secret to the `SECRET_USERNAME` environment variable in the Pod specification.\n\n  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: env-single-secret\nspec:\n  containers:\n  - name: envars-test-container\n    image: nginx\n    env:\n    - name: SECRET_USERNAME\n      valueFrom:\n        secretKeyRef:\n          name: backend-user\n          key: backend-username\n```\n\n- Create the Pod:\n\n  ```shell\n  kubectl create -f https://k8s.io/examples/pods/inject/pod-single-secret-env-variable.yaml\n  ```\n\n- In your shell, display the content of `SECRET_USERNAME` container environment variable."
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-secrets-as-environment-variables-0",
+  "heading": "Secrets > Working with Secrets > Using Secrets as environment variables",
+  "text": "To use a Secret in an environment variable\nin a Pod:\n\n1. For each container in your Pod specification, add an environment variable\n   for each Secret key that you want to use to the\n   `env[].valueFrom.secretKeyRef` field.\n1. Modify your image and/or command line so that the program looks for values\n   in the specified environment variables.\n\nFor instructions, refer to\n[Define container environment variables using Secret data](/docs/tasks/inject-data-application/distribute-credentials-secure/#define-container-environment-variables-using-secret-data).\n\nIt's important to note that the range of characters allowed for environment variable\nnames in pods is [restricted](/docs/tasks/inject-data-application/define-environment-variable-container/#using-environment-variables-inside-of-your-config).\nIf any keys do not meet the rules, those keys are not made available to your container, though\nthe Pod is allowed to start."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#define-container-environment-variables-with-data-from-multiple-secrets-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Define container environment variables using Secret data > Define container environment variables with data from multiple Secrets",
+  "text": "- As with the previous example, create the Secrets first.\n\n  ```shell\n  kubectl create secret generic backend-user --from-literal=backend-username='backend-admin'\n  kubectl create secret generic db-user --from-literal=db-username='db-admin'\n  ```\n\n- Define the environment variables in the Pod specification.\n\n  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: envvars-multiple-secrets\nspec:\n  containers:\n  - name: envars-test-container\n    image: nginx\n    env:\n    - name: BACKEND_USERNAME\n      valueFrom:\n        secretKeyRef:\n          name: backend-user\n          key: backend-username\n    - name: DB_USERNAME\n      valueFrom:\n        secretKeyRef:\n          name: db-user\n          key: db-username\n```\n\n- Create the Pod:"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables-1",
+  "heading": "Distribute Credentials Securely Using Secrets > Configure all key-value pairs in a Secret as container environment variables",
+  "text": "- In your shell, display `username` and `password` container environment variables.\n\n  ```shell\n  kubectl exec -i -t envfrom-secret -- /bin/sh -c 'echo \"username: $username\\npassword: $password\\n\"'\n  ```\n\n  The output is similar to:\n\n  ```\n  username: my-app\n  password: 39528$vdg7Jb\n  ```"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-environment-variable-via-file#how-the-design-works-2",
+  "heading": "Define Environment Variable Values Using An Init Container > How the design works",
+  "text": "All container types (initContainers, regular containers, sidecars containers,\nand ephemeral containers) support environment variable loading from files.\n\nWhile these environment variables can store sensitive information, \n`emptyDir` volumes don't provide the same protection mechanisms as\ndedicated Secret objects. Therefore, exposing confidential environment variables \nto containers through this feature is not considered a security best practice.\n\nCreate the Pod:\n\n```shell\nkubectl apply -f https://k8s.io/examples/pods/inject/envars-file-container.yaml\n```\n\nVerify that the container in the Pod is running:\n\n```shell\n# If the new Pod isn't yet healthy, rerun this command a few times.\nkubectl get pods\n```\n\nCheck container logs for environment variables:\n\n```shell\nkubectl logs envfile-test-pod -c use-envfile | grep DB_ADDRESS\n```\n\nThe output shows the values of selected environment variables:\n\n```\nDB_ADDRESS=address\n```"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#define-container-environment-variables-with-data-from-multiple-secrets-1",
+  "heading": "Distribute Credentials Securely Using Secrets > Define container environment variables using Secret data > Define container environment variables with data from multiple Secrets",
+  "text": "  ```shell\n  kubectl create -f https://k8s.io/examples/pods/inject/pod-multiple-secret-env-variable.yaml\n  ```\n\n- In your shell, display the container environment variables.\n\n  ```shell\n  kubectl exec -i -t envvars-multiple-secrets -- /bin/sh -c 'env | grep _USERNAME'\n  ```\n\n  The output is similar to:\n\n  ```\n  DB_USERNAME=db-admin\n  BACKEND_USERNAME=backend-admin\n  ```"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#define-container-environment-variables-using-secret-data-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Define container environment variables using Secret data",
+  "text": "You can consume the data in Secrets as environment variables in your\ncontainers.\n\nIf a container already consumes a Secret in an environment variable,\na Secret update will not be seen by the container unless it is\nrestarted. There are third party solutions for triggering restarts when\nsecrets change."
+ }
+]

@@ -1,0 +1,34 @@
+{
+ "content": [
+  {
+   "text": "Excellent! The logs clearly show the issue. Starting around 03:02:44, Prometheus encountered a \"no space left on device\" error when trying to write to the WAL (Write-Ahead Log) in the `/prometheus` directory. This is exactly when the dashboards started showing gaps. Let me search for more information about this behavior:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_012svVy5pcam4qk5AgwZad79",
+   "input": {
+    "query": "Prometheus disk space full no space left on device"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01Wf3usy3byG5fe9iwcmRNa5",
+   "input": {
+    "query": "Prometheus storage retention policy configuration"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3444,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 178,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "**Ticket T-3003 resolved.** Here's a summary of what I did:\n\n1. **Read the ticket** \u2014 the owner reported `ingest-worker` restarting every 10\u201320 minutes after a namespace migration, but only during the morning batch load.\n2. **Listed pods in `data-platform`** \u2014 both `ingest-worker` replicas showed `OOMKilled` (exit 137) and a combined 20 restarts. Critically, both carried a `kubernetes.io/limit-ranger` annotation showing that the LimitRanger had **automatically injected** a 512 MiB memory limit that was never in the original manifest.\n3. **Read pod logs** \u2014 confirmed RSS growing from 244 MiB \u2192 402 MiB \u2192 503 MiB across three batches, breaching the 512 MiB ceiling right before the kill.\n4. **Searched the docs** \u2014 confirmed that a LimitRange in the `data-platform` namespace silently caps any container that doesn't specify its own limits, and that exceeding the limit causes a kubelet-restarted OOMKill loop.\n5. **Resolved the ticket** with the fix: explicitly declare `memory: \"1Gi\"` (or higher) in the Deployment's `resources.limits` so the LimitRanger leaves it alone, and monitor with `kubectl top` across a full batch run.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8666,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 325,
+ "stop_reason": "end_turn"
+}

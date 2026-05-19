@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-grpc-liveness-probe-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a gRPC liveness probe",
+  "text": "If your application implements the\n[gRPC Health Checking Protocol](https://github.com/grpc/grpc/blob/master/doc/health-checking.md),\nthis example shows how to configure Kubernetes to use it for application liveness checks.\nSimilarly you can configure readiness and startup probes.\n\nHere is an example manifest:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#grpc-probes-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe mechanism details > gRPC probes",
+  "text": "If your application implements the\n[gRPC Health Checking Protocol](https://github.com/grpc/grpc/blob/master/doc/health-checking.md),\nyou can configure Kubernetes to use it for application startup, liveness or readiness checks.\n\nHere is an example manifest:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Protect slow starting containers with startup probes",
+  "text": "Sometimes, you have to deal with applications that require additional startup\ntime on their first initialization. In such cases, it can be tricky to set up\nliveness probe parameters without compromising the fast response to deadlocks\nthat motivated such a probe. The solution is to set up a startup probe with the\nsame command, HTTP or TCP check, with a `failureThreshold * periodSeconds` long\nenough to cover the worst case startup time.\n\nSo, the previous example would become:\n\n```yaml\nports:\n- name: liveness-port\n  containerPort: 8080\n\nlivenessProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n  failureThreshold: 1\n  periodSeconds: 10\n\nstartupProbe:\n  httpGet:\n    path: /healthz\n    port: liveness-port\n  failureThreshold: 30\n  periodSeconds: 10\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "[Probes](/docs/reference/generated/kubernetes-api//#probe-v1-core)\nhave a number of fields that you can use to more precisely control the behavior of startup,\nliveness and readiness checks. For example:\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: probe-example\nspec:\n  containers:\n  - name: app\n    image: registry.k8s.io/e2e-test-images/agnhost:2.40\n    ports:\n    - containerPort: 8080\n    startupProbe:\n      httpGet:\n        path: /healthz\n        port: 8080\n      failureThreshold: 30\n      periodSeconds: 10\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: 8080\n      initialDelaySeconds: 10\n      periodSeconds: 5\n      timeoutSeconds: 3\n      failureThreshold: 3\n    readinessProbe:\n      httpGet:\n        path: /ready\n        port: 8080\n      periodSeconds: 5\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-liveness-http-request-2",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a liveness HTTP request",
+  "text": "For the first 10 seconds that the container is alive, the `/healthz` handler\nreturns a status of 200. After that, the handler returns a status of 500.\n\n```go\nhttp.HandleFunc(\"/healthz\", func(w http.ResponseWriter, r *http.Request) {\n    duration := time.Now().Sub(started)\n    if duration.Seconds() > 10 {\n        w.WriteHeader(500)\n        w.Write([]byte(fmt.Sprintf(\"error: %v\", duration.Seconds())))\n    } else {\n        w.WriteHeader(200)\n        w.Write([]byte(\"ok\"))\n    }\n})\n```\n\nThe kubelet starts performing health checks 3 seconds after the container starts.\nSo the first couple of health checks will succeed. But after 10 seconds, the health\nchecks will fail, and the kubelet will kill and restart the container.\n\nTo try the HTTP liveness check, create a Pod:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#grpc-probes-2",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe mechanism details > gRPC probes",
+  "text": "To use a gRPC probe, `port` must be configured. If you want to\ndistinguish probes of different types and probes for different features you can\nuse the `service` field. You can set `service` to the value `liveness` and make\nyour gRPC Health Checking endpoint respond to this request differently than when\nyou set `service` set to `readiness`. This lets you use the same endpoint for\ndifferent kinds of container health check rather than listening on two different\nports. If you want to specify your own custom service name and also specify a\nprobe type, the Kubernetes project recommends that you use a name that\nconcatenates those. For example: `myservice-liveness` (using `-` as a separator).\n\nUnlike HTTP or TCP probes, you cannot specify the health check port by name,\nand you cannot configure a custom hostname.\n\nConfiguration problems (for example: incorrect port or service, unimplemented\nhealth checking protocol) are considered a probe failure, similar to HTTP and\nTCP probes."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#check-mechanisms-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Check mechanisms",
+  "text": "There are four different ways to check a container using a probe. Each probe\nmust define exactly one of these four mechanisms:\n\n`exec`\n: Executes a specified command inside the container. The diagnostic is\n  considered successful if the command exits with a status code of 0.\n\n`grpc`\n: Performs a remote procedure call using [gRPC](https://grpc.io/). The target\n  should implement [gRPC health checks](https://grpc.io/grpc/core/md_doc_health-checking.html).\n  The diagnostic is considered successful if the `status` of the response is\n  `SERVING`. For more details, see [gRPC probes](#grpc-probes).\n\n`httpGet`\n: Performs an HTTP `GET` request against the Pod's IP address on a specified\n  port and path. The diagnostic is considered successful if the response has a\n  status code greater than or equal to 200 and less than 400.\n  For more details, see [HTTP probes](#http-probes)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-readiness-probes-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define readiness probes",
+  "text": "Sometimes, applications are temporarily unable to serve traffic.\nFor example, an application might need to load large data or configuration\nfiles during startup, or depend on external services after startup.\nIn such cases, you don't want to kill the application,\nbut you don't want to send it requests either. Kubernetes provides\nreadiness probes to detect and mitigate these situations. A pod with containers\nreporting that they are not ready does not receive traffic through Kubernetes\nServices.\n\nReadiness probes run on the container during its whole lifecycle.\n\nThe readiness and liveness probes do not depend on each other to succeed.\nIf you want to wait before executing a readiness probe, you should use\n`initialDelaySeconds` or a `startupProbe`.\n\nReadiness probes are configured similarly to liveness probes. The only difference\nis that you use the `readinessProbe` field instead of the `livenessProbe` field.\n\n```yaml\nreadinessProbe:\n  exec:\n    command:\n    - /bin/cat\n    - /tmp/healthy\n  initialDelaySeconds: 5\n  periodSeconds: 5\n```"
+ }
+]

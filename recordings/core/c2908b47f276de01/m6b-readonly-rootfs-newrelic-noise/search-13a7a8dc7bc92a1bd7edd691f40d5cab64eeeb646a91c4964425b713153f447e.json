@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#discussion-0",
+  "heading": "Configure a Security Context for a Pod or Container > Discussion",
+  "text": "The security context for a Pod applies to the Pod's Containers and also to\nthe Pod's Volumes when applicable. Specifically `fsGroup` and `seLinuxOptions` are\napplied to Volumes as follows:\n\n* `fsGroup`: Volumes that support ownership management are modified to be owned\n  and writable by the GID specified in `fsGroup`. See the\n  [Ownership Management design document](https://git.k8s.io/design-proposals-archive/storage/volume-ownership-management.md)\n  for more details.\n\n* `seLinuxOptions`: Volumes that support SELinux labeling are relabeled to be accessible\n  by the label specified under `seLinuxOptions`. Usually you only\n  need to set the `level` section. This sets the\n  [Multi-Category Security (MCS)](https://selinuxproject.org/page/NB_MLS)\n  label given to all Containers in the Pod as well as the Volumes."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#intro-2",
+  "heading": "Configure a Security Context for a Pod or Container",
+  "text": "  - is run as privileged, or\n  - has the capability `CAP_SYS_ADMIN`\n\n* `readOnlyRootFilesystem`: Mounts the container's root filesystem as read-only.\n\nThe above bullets are not a complete set of security context settings -- please see\n[SecurityContext](/docs/reference/generated/kubernetes-api//#securitycontext-v1-core)\nfor a comprehensive list."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#efficient-selinux-volume-relabeling-7",
+  "heading": "Configure a Security Context for a Pod or Container > Assign SELinux labels to a Container > Efficient SELinux volume relabeling",
+  "text": "* `SELinuxMountReadWriteOncePod`: enables the optimization for volumes with `accessModes: [\"ReadWriteOncePod\"]`.\n  This is a very safe feature gate to enable, as it cannot happen that two pods can share one single volume with\n  this access mode. GA since 1.36.\n* `SELinuxChangePolicy`: enables `spec.securityContext.seLinuxChangePolicy` field in Pod and related SELinuxWarningController\n  in kube-controller-manager. This can be used to opt-out Pods from the mount optimization\n  when multiple Pods with different SELinux labels share a volume. GA since 1.36.\n* `SELinuxMount`: enables the optimization for all eligible volumes. GA since 1.37.\n  When upgrading from older Kubernetes versions where `SELinuxMount` was disabled by default,\n  we recommend enabling `SELinuxChangePolicy` feature gate + SELinuxWarningController first to"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#configure-volume-permission-and-ownership-change-policy-for-pods-1",
+  "heading": "Configure a Security Context for a Pod or Container > Configure volume permission and ownership change policy for Pods",
+  "text": "* _OnRootMismatch_: Only change permissions and ownership if the permission and the ownership of\n  root directory does not match with expected permissions of the volume.\n  This could help shorten the time it takes to change ownership and permission of a volume.\n* _Always_: Always change permission and ownership of the volume when volume is mounted.\n\nFor example:\n\n```yaml\nsecurityContext:\n  runAsUser: 1000\n  runAsGroup: 3000\n  fsGroup: 2000\n  fsGroupChangePolicy: \"OnRootMismatch\"\n```\n\nThis field has no effect on ephemeral volume types such as\n[`secret`](/docs/concepts/storage/volumes/#secret),\n[`configMap`](/docs/concepts/storage/volumes/#configmap),\nand [`emptyDir`](/docs/concepts/storage/volumes/#emptydir)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#configure-volume-permission-and-ownership-change-policy-for-pods-0",
+  "heading": "Configure a Security Context for a Pod or Container > Configure volume permission and ownership change policy for Pods",
+  "text": "By default, Kubernetes recursively changes ownership and permissions for the contents of each\nvolume to match the `fsGroup` specified in a Pod's `securityContext` when that volume is\nmounted.\nFor large volumes, checking and changing ownership and permissions can take a lot of time,\nslowing Pod startup. You can use the `fsGroupChangePolicy` field inside a `securityContext`\nto control the way that Kubernetes checks and manages ownership and permissions\nfor a volume.\n\n**fsGroupChangePolicy** - `fsGroupChangePolicy` defines behavior for changing ownership\n  and permission of the volume before being exposed inside a Pod.\n  This field only applies to volume types that support `fsGroup` controlled ownership and permissions.\n  This field has two possible values:"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#set-the-security-context-for-a-pod-1",
+  "heading": "Configure a Security Context for a Pod or Container > Set the security context for a Pod",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo\nspec:\n  securityContext:\n    runAsUser: 1000\n    runAsGroup: 3000\n    fsGroup: 2000\n    supplementalGroups: [4000]\n  volumes:\n  - name: sec-ctx-vol\n    emptyDir: {}\n  containers:\n  - name: sec-ctx-demo\n    image: busybox:1.28\n    command: [ \"sh\", \"-c\", \"sleep 1h\" ]\n    volumeMounts:\n    - name: sec-ctx-vol\n      mountPath: /data/demo\n    securityContext:\n      allowPrivilegeEscalation: false\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#efficient-selinux-volume-relabeling-0",
+  "heading": "Configure a Security Context for a Pod or Container > Assign SELinux labels to a Container > Efficient SELinux volume relabeling",
+  "text": "By default, Kubernetes applies the SELinux label to eligible volumes instantly by using\na mount option `-o context=<label>`.\n\nTo benefit from this speedup, all these conditions must be met:\n\n* Pod must use a PersistentVolumeClaim.\n* Pod has `spec.securityContext.seLinuxChangePolicy`\n  either nil (default) or `MountOption`.\n* Pod (or all its Containers that use the PersistentVolumeClaim) must\n  have `seLinuxOptions` set.\n* The corresponding PersistentVolume must be either:\n  * A volume that uses the legacy in-tree `iscsi`, `rbd` or `fc` volume type.\n  * Or a volume that uses a CSI driver.\n    The CSI driver must announce that it supports mounting with `-o context` by setting\n    `spec.seLinuxMount: true` in its CSIDriver instance."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#efficient-selinux-volume-relabeling-2",
+  "heading": "Configure a Security Context for a Pod or Container > Assign SELinux labels to a Container > Efficient SELinux volume relabeling",
+  "text": "For Pods that want to opt-out from relabeling using mount options, they can set\n`spec.securityContext.seLinuxChangePolicy` to `Recursive`. This is required\nwhen multiple pods share a single volume on the same node, but they run with\ndifferent SELinux labels that allows simultaneous access to the volume. For example, a privileged pod\nrunning with label `spc_t` and an unprivileged pod running with the default label `container_file_t`.\nWith unset `spec.securityContext.seLinuxChangePolicy` (or with the default value `MountOption`),\nonly one of such pods is able to run on a node, the other one gets ContainerCreating with error\n`conflicting SELinux labels of volume <name of the volume>: <label of the running pod> and <label of the pod that can't start>`."
+ }
+]

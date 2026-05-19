@@ -1,0 +1,19 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01KbEfEyQ3ufo2qziJc1U7YQ",
+   "input": {
+    "pod": "invoice-charge-backfill-2026-04-6qz8t"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2355,
+ "model": "claude-opus-4-7",
+ "output_tokens": 88,
+ "stop_reason": "tool_use"
+}

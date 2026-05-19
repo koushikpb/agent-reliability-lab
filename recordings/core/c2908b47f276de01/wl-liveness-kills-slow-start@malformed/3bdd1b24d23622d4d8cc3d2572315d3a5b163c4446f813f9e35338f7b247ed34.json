@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! I now understand the issue. Let me search for more information about startup probes specifically:\n\nBased on my investigation, I can now resolve the ticket:\n\n**Cause**: The catalog-search pods are crashing due to a probe configuration problem. The application takes approximately 30+ seconds to load the index shards on startup (as shown in the logs: loading shards 4/48, 8/48, 12/48, etc., with ~9 seconds per batch), but the liveness probe is configured with an `initialDelaySeconds` of 30 seconds. This means the liveness probe starts checking almost immediately after the container starts, before the application has finished initializing. Once the HTTP listener is not yet ready, the liveness probe fails and the container is killed.\n\n**Evidence**:\n- Pod logs show: \"received SIGTERM, aborting shard load\" at 09:16:33, just after the pod started loading shards\n- The index has 48 shards (12.4 GiB) and takes considerable time to load\n- Liveness probe config shows `delay=30s` but the readiness probe has `delay=0s`\n- The pod keeps restarting in a CrashLoopBackOff state [cite: concepts/workloads/pods/probes#liveness-probe-0]\n\n**Fix**: The application needs either:\n\n1. **Option A (Recommended)**: Use a startup probe in addition to the liveness probe. Configure a startup probe with a `failureThreshold * periodSeconds` long enough to cover the worst-case startup time (approximately 60-90 seconds based on the observed shard load time). Keep the liveness probe aggressive for detecting deadlocks after startup. [cite: tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0]\n\n2. **Option B**: Increase the liveness probe's `initialDelaySeconds` to at least 90 seconds to allow the application full time to load the index before health checks begin.\n\nThe ticket owner should update the deployment configuration for catalog-search to implement one of these solutions.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01WX7KvT6cDSzwf6wSigrA2G",
+   "input": {
+    "id": "T-2003",
+    "note": "**Root Cause**: Liveness probe misconfiguration. The catalog-search application takes 30+ seconds to load 48 shards (12.4 GiB) on startup, but the liveness probe with `initialDelaySeconds=30s` begins checking before initialization is complete. When the HTTP listener isn't ready, the probe fails and kubelet kills the container, creating a restart loop [cite: concepts/workloads/pods/probes#liveness-probe-0].\n\n**Evidence**: Pod logs show \"received SIGTERM, aborting shard load\" at 09:16:33 during shard initialization. Both catalog-search pods are in CrashLoopBackOff with 10-11 restarts and liveness probe failures showing connection refused errors.\n\n**Solution**: Configure a startup probe with sufficient failureThreshold * periodSeconds to cover the ~90 second startup time, while keeping the liveness probe aggressive for detecting deadlocks after startup [cite: tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0]. Alternatively, increase the liveness probe's initialDelaySeconds to at least 90 seconds.\n\nPlease update the deployment spec to add a startup probe checking `/healthz` endpoint with failureThreshold=30 and periodSeconds=10, keeping the existing liveness probe configuration.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4901,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 878,
+ "stop_reason": "tool_use"
+}

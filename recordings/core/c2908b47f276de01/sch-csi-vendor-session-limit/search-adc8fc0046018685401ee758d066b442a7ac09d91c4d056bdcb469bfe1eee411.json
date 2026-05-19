@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/storage-classes#mount-options-0",
+  "heading": "Storage Classes > Mount options",
+  "text": "PersistentVolumes that are dynamically created by a StorageClass will have the\nmount options specified in the `mountOptions` field of the class.\n\nIf the volume plugin does not support mount options but mount options are\nspecified, provisioning will fail. Mount options are **not** validated on either\nthe class or PV. If a mount option is invalid, the PV mount fails."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/user-namespaces#filesystem-support-0",
+  "heading": "User Namespaces > Limitations > Filesystem support",
+  "text": "Pods that use a user namespace require the filesystem to support idmap mounts.\nSome filesystems don't support idmap mounts, and therefore cannot be used with user namespaces.\nIn such cases, the following events will be generated. Please note that the warning details depend on the container runtime you are using.\n\n```\nWarning  Failed 1s kubelet Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: failed to fulfil mount request: failed to set MOUNT_ATTR_IDMAP on ${your mount path} invalid argument (maybe the filesystem used doesn't support idmap mounts on this kernel?): unknown\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/volume-health-monitoring#health-reported-on-pods-0",
+  "heading": "Volume Health Monitoring > Health reported on Pods",
+  "text": "For volumes that use a CSI driver supporting the node-side `NodeGetVolumeHealth` RPC,\nthe kubelet periodically calls that\nRPC for each CSI volume it has mounted for a Pod, and writes the result to\n`pod.status.volumeHealth`, keyed by the volume name from `pod.spec.volumes`. The probe\ninterval is the kubelet's `volumeStatsAggPeriod` setting (the\n`--volume-stats-agg-period` command line flag).\n\n```yaml\napiVersion: v1\nkind: Pod\n# ...\nstatus:\n  volumeHealth:\n  - name: my-volume\n    healthConditions:\n    - status: Inaccessible\n      reason: VolumeNotFound\n      message: \"volume not found on the storage backend\"\n    lastTransitionTime: \"2026-07-20T12:00:00Z\"\n```\n\nThe kubelet only writes `pods/status`, a subresource it is already authorized to\nupdate for Pods bound to its own node, so no new authorization is required for this\nfield."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/troubleshooting-cni-plugin-related-errors#failed-to-destroy-network-for-sandbox-error-0",
+  "heading": "Troubleshooting CNI plugin-related errors > About the \"Incompatible CNI versions\" and \"Failed to destroy network for sandbox\" errors > Failed to destroy network for sandbox error",
+  "text": "If the version of the plugin is missing in the CNI plugin config, the pod may\nrun. However, stopping the pod generates an error similar to:\n\n```\nERROR[2022-04-26T00:43:24.518165483Z] StopPodSandbox for \"b\" failed\nerror=\"failed to destroy network for sandbox \\\"bbc85f891eaf060c5a879e27bba9b6b06450210161dfdecfbb2732959fb6500a\\\": invalid version \\\"\\\": the version is empty\"\n```"
+ },
+ {
+  "chunk_id": "concepts/containers/container-lifecycle-hooks#debugging-hook-handlers-2",
+  "heading": "Container Lifecycle Hooks > Container hooks > Debugging Hook handlers",
+  "text": "```\n  Warning  FailedPostStartHook  4s (x2 over 5s)  kubelet            Exec lifecycle hook ([badcommand]) for Container \"lifecycle-demo-container\" in Pod \"lifecycle-demo_default(30229739-9651-4e5a-9a32-a8f1688862db)\" failed - error: command 'badcommand' exited with 126: , message: \"OCI runtime exec failed: exec failed: container_linux.go:380: starting container process caused: exec: \\\"badcommand\\\": executable file not found in $PATH: unknown\\r\\n\"\n  Normal   Killing              4s (x2 over 5s)  kubelet            FailedPostStartHook\n  Normal   Pulled               4s               kubelet            Successfully pulled image \"nginx\" in 215.66395ms\n  Warning  BackOff              2s (x2 over 3s)  kubelet            Back-off restarting failed container\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#pod-specification-adding-raw-block-device-path-in-container-0",
+  "heading": "Persistent Volumes > Raw Block Volume Support > Pod specification adding Raw Block Device path in container",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: pod-with-block-volume\nspec:\n  containers:\n    - name: fc-container\n      image: fedora:26\n      command: [\"/bin/sh\", \"-c\"]\n      args: [ \"tail -f /dev/null\" ]\n      volumeDevices:\n        - name: data\n          devicePath: /dev/xvda\n  volumes:\n    - name: data\n      persistentVolumeClaim:\n        claimName: block-pvc\n```\n\nWhen adding a raw block device for a Pod, you specify the device path in the\ncontainer instead of a mount path."
+ },
+ {
+  "chunk_id": "concepts/storage/volume-health-monitoring#health-reported-on-persistentvolumeclaims-1",
+  "heading": "Volume Health Monitoring > Health reported on PersistentVolumeClaims",
+  "text": "Whether this path is available for a given driver depends on that driver, and its\ndeployment of the `csi-external-health-monitor-controller` sidecar, having adopted the\nnew controller RPCs."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#mount-propagation-2",
+  "heading": "Volumes > Mount propagation",
+  "text": "  This mode is equal to `rslave` mount propagation as described in the\n  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)\n\n* `Bidirectional` - This volume mount behaves the same as the `HostToContainer` mount.\n  In addition, all volume mounts created by the container will be propagated\n  back to the host and to all containers of all Pods that use the same volume.\n\n  A typical use case for this mode is a Pod with a FlexVolume or CSI driver, or\n  a Pod that needs to mount something on the host using a `hostPath` volume.\n\n  This mode is equal to `rshared` mount propagation as described in the\n  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)"
+ }
+]

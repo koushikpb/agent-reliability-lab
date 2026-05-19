@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "This is helpful. The HPA relies on the metrics-server to get CPU metrics. When CPU shows as `<unknown>`, it means metrics aren't available. Let me search for more information about what causes CPU to show as unknown.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DaKPHj7VQd75uBUUYQ9B3y",
+   "input": {
+    "query": "HPA CPU requests required missing resource metrics"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4659,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 110,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#algorithm-details-4",
+  "heading": "Horizontal Pod Autoscaling > How does a HorizontalPodAutoscaler work? > Algorithm details",
+  "text": "Note that the _original_ value for the average utilization is reported\nback via the HorizontalPodAutoscaler status, without factoring in the\nnot-yet-ready pods or missing metrics, even when the new usage ratio is\nused.\n\nIf multiple metrics are specified in a HorizontalPodAutoscaler, this\ncalculation is done for each metric, and then the largest of the desired\nreplica counts is chosen. If any of these metrics cannot be converted\ninto a desired replica count (e.g. due to an error fetching the metrics\nfrom the metrics APIs) and a scale down is suggested by the metrics which\ncan be fetched, scaling is skipped. This means that the HPA is still capable\nof scaling up if one or more metrics give a `desiredReplicas` greater than\nthe current value."
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#appendix-horizontal-pod-autoscaler-status-conditions-1",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Appendix: Horizontal Pod Autoscaler Status Conditions",
+  "text": "```\nName:                           cm-test\nNamespace:                      prom\nLabels:                         <none>\nAnnotations:                    <none>\nCreationTimestamp:              Fri, 16 Jun 2017 18:09:22 +0000\nReference:                      ReplicationController/cm-test\nMetrics:                        ( current / target )\n  \"http_requests\" on pods:      66m / 500m\nMin replicas:                   1\nMax replicas:                   4\nReplicationController pods:     1 current / 1 desired\nConditions:\n  Type                  Status  Reason                  Message\n  ----                  ------  ------                  -------\n  AbleToScale           True    ReadyForNewScale        the last scale time was sufficiently old as to warrant a new scale\n  ScalingActive         True    ValidMetricFound        the HPA was able to successfully calculate a replica count from pods metric http_requests\n  ScalingLimited        False   DesiredWithinRange      the desired replica count is within the acceptable range\nEvents:\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/horizontal-pod-autoscale-walkthrough#appendix-horizontal-pod-autoscaler-status-conditions-2",
+  "heading": "HorizontalPodAutoscaler Walkthrough > Appendix: Horizontal Pod Autoscaler Status Conditions",
+  "text": "For this HorizontalPodAutoscaler, you can see several conditions in a healthy state.  The first,\n`AbleToScale`, indicates whether or not the HPA is able to fetch and update scales, as well as\nwhether or not any backoff-related conditions would prevent scaling.  The second, `ScalingActive`,\nindicates whether or not the HPA is enabled (i.e. the replica count of the target is not zero) and\nis able to calculate desired scales. When it is `False`, it generally indicates problems with\nfetching metrics.  Finally, the last condition, `ScalingLimited`, indicates that the desired scale\nwas capped by the maximum or minimum of the HorizontalPodAutoscaler.  This is an indication that\nyou may wish to raise or lower the minimum or maximum replica count constraints on your\nHorizontalPodAutoscaler."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#implicit-maintenance-mode-deactivation-0",
+  "heading": "Horizontal Pod Autoscaling > Implicit maintenance-mode deactivation",
+  "text": "You can implicitly deactivate the HPA for a target without the\nneed to change the HPA configuration itself. If the target's desired replica count\nis set to 0, and the HPA's minimum replica count is greater than 0, the HPA\nstops adjusting the target (and sets the `ScalingActive` Condition on itself\nto `false`) until you reactivate it by manually adjusting the target's desired\nreplica count or HPA's minimum replica count."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#migrating-deployments-and-statefulsets-to-horizontal-autoscaling-0",
+  "heading": "Horizontal Pod Autoscaling > Implicit maintenance-mode deactivation > Migrating Deployments and StatefulSets to horizontal autoscaling",
+  "text": "When an HPA is enabled, it is recommended that the value of `spec.replicas` of\nthe Deployment and / or StatefulSet be removed from their\nmanifest(s). If this isn't done, any time\na change to that object is applied, for example via `kubectl apply -f\ndeployment.yaml`, this will instruct Kubernetes to scale the current number of Pods\nto the value of the `spec.replicas` key. This may not be\ndesired and could be troublesome when an HPA is active, resulting in thrashing or flapping behavior."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#scaling-to-and-from-zero-1",
+  "heading": "Horizontal Pod Autoscaling > Scaling to and from zero",
+  "text": "This behavior is controlled by the `HPAScaleToZero`\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/), which is enabled by\ndefault. The feature gate must be enabled on both the\nkube-apiserver (which allows\n`minReplicas: 0`) and the\nkube-controller-manager\n(which performs the scaling).\n\nWhile the HPA is holding a workload at zero replicas, it records a `ScaledToZero` condition set to\n`True` on the HorizontalPodAutoscaler's status. The HPA uses this condition to distinguish a\nworkload that it scaled to zero (and will scale back up when the metric returns) from one that was\n[manually deactivated](#implicit-maintenance-mode-deactivation) by setting its replica count to\n`0`. Once the workload is scaled back up, the condition is set to `False` with the reason\n`NotScaledToZero`."
+ },
+ {
+  "chunk_id": "tasks/run-application/scale-deployment#when-to-use-manual-versus-automatic-scaling-0",
+  "heading": "Horizontal Manual Scaling for a Deployment > When to use manual versus automatic scaling",
+  "text": "| Aspect | Manual scaling | Automatic scaling (HPA) |\n|--------|---------------|------------------------|\n| Best for | Predictable, scheduled, or one-off load changes | Variable or unpredictable demand |\n| How it works | You set `.spec.replicas` directly | HPA adjusts replicas based on observed metrics |\n| Response time | Immediate when you run the command | Reacts to metrics with a short delay |\n| Metrics awareness | None \u2014 you decide the replica count | Monitors CPU, memory, or custom metrics |\n| Maintenance | Requires manual intervention to adjust | Runs autonomously after configuration |\n\nIf a HorizontalPodAutoscaler manages a Deployment, do not set replicas manually.\nThe HPA continuously reconciles the replica count and overrides any manual\nchanges."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#stabilization-window-0",
+  "heading": "Horizontal Pod Autoscaling > Configurable scaling behavior > Stabilization window",
+  "text": "The stabilization window is used to restrict the [flapping](#flapping) of\nreplica count when the metrics used for scaling keep fluctuating. The autoscaling algorithm\nuses this window to infer a previous desired state and avoid unwanted changes to workload\nscale.\n\nFor example, in the following example snippet, a stabilization window is specified for `scaleDown`.\n\n```yaml\nbehavior:\n  scaleDown:\n    stabilizationWindowSeconds: 300\n```\n\nWhen the metrics indicate that the target should be scaled down the algorithm looks\ninto previously computed desired states, and uses the highest value from the specified\ninterval. In the above example, all desired states from the past 5 minutes will be considered.\n\nThis approximates a rolling maximum, and avoids having the scaling algorithm frequently\nremove Pods only to trigger recreating an equivalent Pod just moments later."
+ }
+]

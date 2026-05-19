@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01AnYonBZpkLt68U49vCMTrm",
+   "input": {
+    "namespace": "documents"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01ALC53er8sMg5NYyEvbPBR6",
+   "input": {
+    "namespace": "ci"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1877,
+ "model": "claude-opus-4-7",
+ "output_tokens": 115,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#intro-0",
+  "heading": "Init Containers",
+  "text": "This page provides an overview of init containers: specialized containers that run\nbefore app containers in a Pod.\nInit containers can contain utilities or setup scripts not present in an app image.\n\nYou can specify init containers in the Pod specification alongside the `containers`\narray (which describes app containers).\n\nIn Kubernetes, a [sidecar container](/docs/concepts/workloads/pods/sidecar-containers/) is a container that\nstarts before the main application container and _continues to run_. This document is about init containers:\ncontainers that run to completion during Pod initialization."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/sidecar-containers#pod-sidecar-containers-0",
+  "heading": "Sidecar Containers > Sidecar containers in Kubernetes",
+  "text": "Kubernetes implements sidecar containers as a special case of\n[init containers](/docs/concepts/workloads/pods/init-containers/); sidecar containers remain\nrunning after Pod startup. This document uses the term _regular init containers_ to clearly\nrefer to containers that only run during Pod startup.\n\nProvided that your cluster has the `SidecarContainers`\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) enabled\n(the feature is active by default since Kubernetes v1.29), you can specify a `restartPolicy`\nfor containers listed in a Pod's `initContainers` field.\nThese restartable _sidecar_ containers are independent from other init containers and from\nthe main application container(s) within the same pod.\nThese can be started, stopped, or restarted without affecting the main application container\nand other init containers."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#understanding-init-containers-1",
+  "heading": "Init Containers > Understanding init containers",
+  "text": "To specify an init container for a Pod, add the `initContainers` field into\nthe [Pod specification](/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec),\nas an array of `container` items (similar to the app `containers` field and its contents).\nSee [Container](/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container) in the\nAPI reference for more details.\n\nThe status of the init containers is returned in `.status.initContainerStatuses`\nfield as an array of the container statuses (similar to the `.status.containerStatuses`\nfield)."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#config-helper-overview-0",
+  "heading": "Configuration > Configuration via sidecar containers or init containers",
+  "text": "You can also use an \ninit container or a\nsidecar container\nto provide configuration to your workload.\n\nThis is useful if you already have some means, outside of Kubernetes, to store\nconfiguration or security keys or other information that your containers must\nuse, and that shouldn't be stored in container images."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#understanding-init-containers-0",
+  "heading": "Init Containers > Understanding init containers",
+  "text": "A Pod can have multiple containers\nrunning apps within it, but it can also have one or more init containers, which are run\nbefore the app containers are started.\n\nInit containers are exactly like regular containers, except:\n\n* Init containers always run to completion.\n* Each init container must complete successfully before the next one starts.\n\nIf a Pod's init container fails, the kubelet repeatedly restarts that init container until it succeeds.\nHowever, if the Pod has a `restartPolicy` of Never, and an init container fails during startup of that Pod, Kubernetes treats the overall Pod as failed."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/migrating-from-dockershim/migrating-telemetry-and-security-agents#why-do-some-telemetry-agents-communicate-with-docker-engine-0",
+  "heading": "Migrating telemetry and security agents from dockershim > Telemetry and security agents > Why do some telemetry agents communicate with Docker Engine?",
+  "text": "Historically, Kubernetes was written to work specifically with Docker Engine.\nKubernetes took care of networking and scheduling, relying on Docker Engine for\nlaunching and running containers (within Pods) on a node. Some information that\nis relevant to telemetry, such as a pod name, is only available from Kubernetes\ncomponents. Other data, such as container metrics, is not the responsibility of\nthe container runtime. Early telemetry agents needed to query the container\nruntime *and* Kubernetes to report an accurate picture. Over time, Kubernetes\ngained the ability to support multiple runtimes, and now supports any runtime\nthat is compatible with the [container runtime interface](/docs/concepts/architecture/cri/)."
+ },
+ {
+  "chunk_id": "concepts/configuration/_index#config-helper-init-container-0",
+  "heading": "Configuration > Configuration via sidecar containers or init containers > Init container helper",
+  "text": "Pods can have _init_ containers that start before the main application. Unlike sidecars,\ninit containers complete before the Pod's main (application) containers start up, so the\nconfiguration only gets set once.\n\nYou have two main options for configuration using init containers:\n\n#### Configuration via the filesystem {#init-container-shared-volume}\n\nWith this option, the init container fetches configuration and writes the configuration to\na file, or several files, typically to a Pod-local\nvolume.\n\n#### Configuration via environment variables {#init-container-env-files}\n\nThis is done using a local volume, but only the init container mounts that volume. The kubelet then reads from that volume before starting the app container.\n\nRead [Define Environment Variable Values Using An Init Container](/docs/tasks/inject-data-application/define-environment-variable-via-file/)\nto learn more."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#pod-restart-reasons-0",
+  "heading": "Init Containers > Detailed behavior > Pod restart reasons",
+  "text": "A Pod can restart, causing re-execution of init containers, for the following\nreasons:\n\n* The Pod infrastructure container is restarted. This is uncommon and would\n  have to be done by someone with root access to nodes.\n* All containers in a Pod are terminated while `restartPolicy` is set to Always,\n  forcing a restart, and the init container completion record has been lost due\n  to garbage collection.\n\nThe Pod will not be restarted when the init container image is changed, or the\ninit container completion record has been lost due to garbage collection. This\napplies for Kubernetes v1.20 and later. If you are using an earlier version of\nKubernetes, consult the documentation for the version you are using."
+ }
+]

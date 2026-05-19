@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-qos#memory-throttling-0",
+  "heading": "Pod Quality of Service Classes > Memory QoS with cgroup v2 > Memory throttling",
+  "text": "Memory throttling is controlled by the `kubelet` configuration field\n`memoryThrottlingFactor`. Its default value is `nil`, which means that the\n`kubelet` does not set `memory.high`. To enable memory throttling, set\n`memoryThrottlingFactor` to a value greater than 0 and less than or equal to 1.\n\nFor Burstable Pods, the kubelet uses `memory.high` to throttle memory allocation\nbefore the workload hits its hard limit (`memory.max`). The throttling threshold\nfor a container is calculated as:\n\n```\nmemory.high = requests + memoryThrottlingFactor * (limits - requests)\n```\n\nFor example, with `memoryThrottlingFactor` set to `0.9`, a container with a\n`256 MiB` request and a `1 GiB` limit gets `memory.high` set to roughly `947 MiB`.\nIf a Burstable container has no memory limit, the kubelet uses node allocatable\nmemory in place of the limit."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/vertical-pod-autoscale#controlledvalues-0",
+  "heading": "Vertical Pod Autoscaling > Resource policies > controlledValues",
+  "text": "The `controlledValues` field determines whether VPA controls resource requests, limits, or both:\n\nRequestsAndLimits\n: VPA sets both requests and limits. The limit scales proportionally to the request based on the request-to-limit ratio defined in the Pod spec. This is the default mode.\n\nRequestsOnly\n: VPA only sets requests, leaving limits unchanged. Limits are respected and can still trigger throttling or out-of-memory kills if usage exceeds them.\n\nSee [requests and limits](/docs/concepts/configuration/manage-resources-containers/#requests-and-limits) to learn more about those two concepts."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#batching-1",
+  "heading": "Auditing > Event batching",
+  "text": "- `--audit-webhook-batch-buffer-size` defines the number of events to buffer before batching.\n  If the rate of incoming events overflows the buffer, events are dropped. The default value is 10000.\n- `--audit-webhook-batch-max-size` defines the maximum number of events in one batch. The default value is 400.\n- `--audit-webhook-batch-max-wait` defines the maximum amount of time to wait before unconditionally\n  batching events in the queue. The default value is 30 seconds.\n- `--audit-webhook-batch-throttle-enable` defines whether batching throttling is enabled. Throttling is enabled by default.\n- `--audit-webhook-batch-throttle-qps` defines the maximum average number of batches generated\n  per second. The default value is 10.\n- `--audit-webhook-batch-throttle-burst` defines the maximum number of batches generated at the same\n  moment if the allowed QPS was underutilized previously. The default value is 15."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/_index#resource-requests-and-limits-0",
+  "heading": "Pods > Resource requests and limits",
+  "text": "When you specify a Pod, you can optionally specify how much of each resource\na container needs. The most common resources to specify are CPU and memory (RAM).\n\nWhen you specify the resource _request_ for containers in a Pod, the\nkube-scheduler uses this information to decide which node to place the Pod on.\nWhen you specify a resource _limit_ for a container, the kubelet enforces\nthose limits so that the running container is not allowed to use more of that\nresource than the limit you set.\n\nCPU limits are enforced by CPU throttling. When a container approaches its\nCPU limit, the kernel restricts its access to CPU. Memory limits are enforced\nby the kernel with out-of-memory (OOM) kills when a container exceeds its limit.\n\nSetting CPU limits involves a trade-off. CPU limits help prevent noisy neighbor\nproblems where a single workload starves others on the same node. This is\nespecially important in multi-tenant environments. However, CPU limits can cause\nthrottling even when the node has spare CPU capacity, potentially degrading\nlatency-sensitive workload performance. Whether to set CPU limits depends on\nyour environment, workload characteristics, and isolation requirements."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#requests-and-limits-1",
+  "heading": "Resource Management for Pods and Containers > Requests and limits",
+  "text": "`memory` limits are enforced by the kernel with out of memory (OOM) kills. When\na container uses more than its `memory` limit, the kernel may terminate it. However,\nterminations only happen when the kernel detects memory pressure. Thus, a\ncontainer that over allocates memory may not be immediately killed. This means\n`memory` limits are enforced reactively. A container may use more memory than\nits `memory` limit, but if it does, it may get killed.\n\nThere is a feature `MemoryQoS` which adds memory throttling and optional\ntiered memory reservation on Linux nodes using cgroup v2. For details, see\n[Memory QoS with cgroup v2](/docs/concepts/workloads/pods/pod-qos/#memory-qos-with-cgroup-v2).\n\nIf you specify a limit for a resource, but do not specify any request, and no admission-time\nmechanism has applied a default request for that resource, then Kubernetes copies the limit\nyou specified and uses it as the requested value for the resource."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-cluster/audit#batching-3",
+  "heading": "Auditing > Event batching",
+  "text": "- `--audit-log-batch-buffer-size` defines the number of events to buffer before batching.\n  If the rate of incoming events overflows the buffer, events are dropped.\n- `--audit-log-batch-max-size` defines the maximum number of events in one batch.\n- `--audit-log-batch-max-wait` defines the maximum amount of time to wait before unconditionally\n  batching events in the queue.\n- `--audit-log-batch-throttle-enable` defines whether batching throttling is enabled.\n- `--audit-log-batch-throttle-qps` defines the maximum average number of batches generated\n  per second.\n- `--audit-log-batch-throttle-burst` defines the maximum number of batches generated at the same\n  moment if the allowed QPS was underutilized previously."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#requests-and-limits-0",
+  "heading": "Resource Management for Pods and Containers > Requests and limits",
+  "text": "If the node where a Pod is running has enough of a resource available, it's possible (and\nallowed) for a container to use more resource than its `request` for that resource specifies.\n\nFor example, if you set a `memory` request of 256 MiB for a container, and that container is in\na Pod scheduled to a Node with 8GiB of memory and no other Pods, then the container can try to use\nmore RAM.\n\nLimits are a different story. Both `cpu` and `memory` limits are applied by the kubelet (and\ncontainer runtime),\nand are ultimately enforced by the kernel. On Linux nodes, the Linux kernel\nenforces limits with\ncgroups.\nThe behavior of `cpu` and `memory` limit enforcement is slightly different.\n\n`cpu` limits are enforced by CPU throttling. When a container approaches\nits `cpu` limit, the kernel will restrict access to the CPU corresponding to the\ncontainer's limit. Thus, a `cpu` limit is a hard limit the kernel enforces.\nContainers may not use more CPU than is specified in their `cpu` limit."
+ },
+ {
+  "chunk_id": "concepts/security/multi-tenancy#qos-1",
+  "heading": "Multi-tenancy > Additional Considerations > Quality-of-Service (QoS)",
+  "text": "Typically, all pods on a node share a network interface. Without network QoS, some pods may\nconsume an unfair share of the available bandwidth at the expense of other pods.\nThe Kubernetes [bandwidth plugin](https://www.cni.dev/plugins/current/meta/bandwidth/) creates an\n[extended resource](/docs/concepts/configuration/manage-resources-containers/#extended-resources)\nfor networking that allows you to use Kubernetes resources constructs, i.e. requests/limits, to\napply rate limits to pods by using Linux tc queues.\nBe aware that the plugin is considered experimental as per the\n[Network Plugins](/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/#support-traffic-shaping)\ndocumentation and should be thoroughly tested before use in production environments."
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "`initialDelaySeconds`\n: Number of seconds after the container has started before startup, liveness or readiness probes are initiated. If a startup probe is defined, liveness and readiness probe delays do not begin until the startup probe has succeeded. In some older Kubernetes versions, the initialDelaySeconds might be ignored if periodSeconds was set to a value higher than initialDelaySeconds. However, in current versions, initialDelaySeconds is always honored and the probe will not start until after this initial delay. Defaults to 0 seconds. Minimum value is 0.\n\n`periodSeconds`\n: How often (in seconds) to perform the probe. Default to 10 seconds. The minimum value is 1. While a container is not Ready, the readiness probe may be executed at times other than the configured `periodSeconds` interval. This is to make the Pod ready faster.\n\n`timeoutSeconds`\n: Number of seconds after which the probe times out. Defaults to 1 second. Minimum value is 1."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#startup-probe-0",
+  "heading": "Pod Lifecycle > Container probes > Startup probe",
+  "text": "Startup probes verify whether the application within a container is started.\nIf a startup probe is configured, Kubernetes does not execute liveness or\nreadiness probes until the startup probe succeeds, allowing the application\ntime to finish its initialization.\n\nThis type of probe is only executed at startup, unlike liveness and readiness\nprobes, which are run periodically.\n\nIf the startup probe fails, the kubelet kills the container, and the container\nis subjected to its [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-results-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe results",
+  "text": "The kubelet evaluates the result of each probe execution and takes action\naccordingly. Each probe has one of three results:\n\n`Success`\n: The container passed the diagnostic.\n\n`Failure`\n: The container failed the diagnostic. For liveness and startup probes, the\n  kubelet kills the container, and the container is subjected to its\n  [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy).\n  For readiness probes, the kubelet marks the container as not ready, and the\n  Pod stops receiving traffic from matching Services.\n\n`Unknown`\n: The diagnostic failed (no action should be taken, and the kubelet will make\n  further checks).\n\nIf a container does not provide a particular probe, the kubelet always\nconsiders the result as `Success`. For readiness probes specifically,\nthe result is considered `Failure` before the initial delay."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#startup-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Types of probe > Startup probe",
+  "text": "Startup probes verify whether the application within a container is started.\nIf a startup probe is configured, Kubernetes does not execute liveness or \nreadiness probes until the startup probe succeeds, allowing the application\ntime to finish its initialization.\n\nThis type of probe is only executed at startup, unlike liveness and readiness\nprobes, which are run periodically.\nIf the startup probe fails, the kubelet kills the container, and the container\nis subjected to its [restart policy](/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Protect slow starting containers with startup probes",
+  "text": "Thanks to the startup probe, the application will have a maximum of 5 minutes\n(30 * 10 = 300s) to finish its startup.\nOnce the startup probe has succeeded once, the liveness probe takes over to\nprovide a fast response to container deadlocks.\nIf the startup probe never succeeds, the container is killed after 300s and\nsubject to the pod's `restartPolicy`."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/init-containers#detailed-behavior-0",
+  "heading": "Init Containers > Detailed behavior",
+  "text": "During Pod startup, the kubelet delays running init containers until the networking\nand storage are ready. Then the kubelet runs the Pod's init containers in the order\nthey appear in the Pod's spec.\n\nEach init container must exit successfully before\nthe next container starts. If a container fails to start due to the runtime or\nexits with failure, it is retried according to the Pod `restartPolicy`. However,\nif the Pod `restartPolicy` is set to Always, the init containers use\n`restartPolicy` OnFailure.\n\nA Pod cannot be `Ready` until all init containers have succeeded. The ports on an\ninit container are not aggregated under a Service. A Pod that is initializing\nis in the `Pending` state but should have a condition `Initialized` set to false.\n\nIf the Pod [restarts](#pod-restart-reasons), or is restarted, all init containers\nmust execute again."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#pod-readiness-and-autoscaling-metrics-0",
+  "heading": "Horizontal Pod Autoscaling > Pod readiness and autoscaling metrics",
+  "text": "The HorizontalPodAutoscaler (HPA) controller includes two command line options that influence how CPU metrics are collected from Pods during startup:\n\n1. `--horizontal-pod-autoscaler-cpu-initialization-period` (default: 5 minutes)\n\n  This defines the time window after a Pod starts during which its **CPU usage is ignored** unless:\n    - The Pod is in a `Ready` state **and**\n    - The metric sample was taken entirely during the period it was `Ready`.\n\n  This command line option helps **exclude misleading high CPU usage** from initializing Pods (for example: Java apps warming up) in HPA scaling decisions.\n\n1. `--horizontal-pod-autoscaler-initial-readiness-delay` (default: 30 seconds)\n\n  This defines a short delay period after a Pod starts during which the HPA controller treats Pods that are currently `Unready` as still initializing, **even if they have previously transitioned to `Ready` briefly**."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#liveness-probe-0",
+  "heading": "Pod Lifecycle > Container probes > Liveness probe",
+  "text": "Liveness probes determine when to restart a container.\nFor example, liveness probes could catch a deadlock, where an application is\nrunning, but unable to make progress. Restarting a container in such a state\ncan help to make the application more available despite bugs.\n\nIf a container fails its liveness probe more times than the configured tolerance,\nthe kubelet restarts that container.\nLiveness probes do not wait for readiness probes to succeed. If you want to\nwait before executing a liveness probe, you can either define\n`initialDelaySeconds` or use a startup probe."
+ }
+]

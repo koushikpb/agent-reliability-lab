@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/configure-upgrade-etcd#restoring-an-etcd-cluster-3",
+  "heading": "Operating etcd clusters for Kubernetes > Restoring an etcd cluster",
+  "text": "   If `<data-dir-location>` is the same folder as before, delete it and stop the etcd process before restoring the cluster. \n   Otherwise, change etcd configuration and restart the etcd process after restoration to have it use the new data directory:\n   first change  `/etc/kubernetes/manifests/etcd.yaml`'s `volumes.hostPath.path` for `name: etcd-data`  to `<data-dir-location>`,\n   then execute `kubectl -n kube-system delete pod <name-of-etcd-pod>` or `systemctl restart kubelet.service` (or both).\n\nFor more information and examples on restoring a cluster from a snapshot file, see\n[etcd disaster recovery documentation](https://etcd.io/docs/current/op-guide/recovery/#restoring-a-cluster)."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/configure-upgrade-etcd#restoring-an-etcd-cluster-1",
+  "heading": "Operating etcd clusters for Kubernetes > Restoring an etcd cluster",
+  "text": "Before starting the restore operation, a snapshot file must be present. It can\neither be a snapshot file from a previous backup operation, or from a remaining\n[data directory](https://etcd.io/docs/current/op-guide/configuration/#--data-dir).\n\n   When restoring the cluster using [`etcdutl`](https://github.com/etcd-io/etcd/blob/main/etcdutl/README.md),\n   use the `--data-dir` option to specify to which folder the cluster should be restored:\n\n   ```shell\n   etcdutl --data-dir <data-dir-location> snapshot restore snapshot.db\n   ```\n   where `<data-dir-location>` is a directory that will be created during the restore process."
+ },
+ {
+  "chunk_id": "tasks/run-application/run-replicated-stateful-application#scaling-the-number-of-replicas-2",
+  "heading": "Run a Replicated Stateful Application > Scaling the number of replicas",
+  "text": "```\nNAME           STATUS    VOLUME                                     CAPACITY   ACCESSMODES   AGE\ndata-mysql-0   Bound     pvc-8acbf5dc-b103-11e6-93fa-42010a800002   10Gi       RWO           20m\ndata-mysql-1   Bound     pvc-8ad39820-b103-11e6-93fa-42010a800002   10Gi       RWO           20m\ndata-mysql-2   Bound     pvc-8ad69a6d-b103-11e6-93fa-42010a800002   10Gi       RWO           20m\ndata-mysql-3   Bound     pvc-50043c45-b1c5-11e6-93fa-42010a800002   10Gi       RWO           2m\ndata-mysql-4   Bound     pvc-500a9957-b1c5-11e6-93fa-42010a800002   10Gi       RWO           2m\n```"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/logging#log-location-node-0",
+  "heading": "Logging Architecture > System component logs > Log locations",
+  "text": "The way that the kubelet and container runtime write logs depends on the operating\nsystem that the node uses:\n\nOn Linux nodes that use systemd, the kubelet and container runtime write to journald\nby default. You use `journalctl` to read the systemd journal; for example:\n`journalctl -u kubelet`.\n\nIf systemd is not present, the kubelet and container runtime write to `.log` files in the\n`/var/log` directory. If you want to have logs written elsewhere, you can indirectly\nrun the kubelet via a helper tool, `kube-log-runner`, and use that tool to redirect\nkubelet logs to a directory that you choose.\n\nBy default, kubelet directs your container runtime to write logs into directories within\n`/var/log/pods`.\n\nFor more information on `kube-log-runner`, read [System Logs](/docs/concepts/cluster-administration/system-logs/#klog)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reclaiming-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reclaiming",
+  "text": "When a user is done with their volume, they can delete the PVC objects from the\nAPI that allows reclamation of the resource. The reclaim policy for a PersistentVolume\ntells the cluster what to do with the volume after it has been released of its claim.\nCurrently, volumes can either be Retained, Recycled, or Deleted.\n\n#### Retain\n\nThe `Retain` reclaim policy allows for manual reclamation of the resource.\nWhen the PersistentVolumeClaim is deleted, the PersistentVolume still exists\nand the volume is considered \"released\". But it is not yet available for\nanother claim because the previous claimant's data remains on the volume.\nAn administrator can manually reclaim the volume with the following steps.\n\n1. Delete the PersistentVolume. The associated storage asset in external infrastructure\n   still exists after the PV is deleted.\n1. Manually clean up the data on the associated storage asset accordingly.\n1. Manually delete the associated storage asset.\n\nIf you want to reuse the same storage asset, create a new PersistentVolume with\nthe same storage asset definition.\n\n#### Delete"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/encrypt-data#key-storage-1",
+  "heading": "Encrypting Confidential Data at Rest > Understanding the encryption at rest configuration > Key storage",
+  "text": "The KMS provider uses _envelope encryption_: Kubernetes encrypts resources using a data key, and then\nencrypts that data key using the managed encryption service. Kubernetes generates a unique data key for\neach resource. The API server stores an encrypted version of the data key in etcd alongside the ciphertext;\nwhen reading the resource, the API server calls the managed encryption service and provides both the\nciphertext and the (encrypted) data key.\nWithin the managed encryption service, the provider use a _key encryption key_ to decipher the data key,\ndeciphers the data key, and finally recovers the plain text. Communication between the control plane\nand the KMS requires in-transit protection, such as TLS.\n\nUsing envelope encryption creates dependence on the key encryption key, which is not stored in Kubernetes.\nIn the KMS case, an attacker who intends to get unauthorised access to the plaintext\nvalues would need to compromise etcd **and** the third-party KMS provider."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-3",
+  "heading": "Local ephemeral storage > Ephemeral storage consumption management",
+  "text": "Quotas are faster and more accurate than directory scanning.\nWhen a directory is assigned to a project, all files created under a directory\nare created in that project, and the kernel merely has to keep track of\nhow many blocks are in use by files in that project.\nIf a file is created and deleted, but has an open file descriptor,\nit continues to consume space. Quota tracking records that space accurately\nwhereas directory scans overlook the storage used by deleted files.\n\nTo use quotas to track a pod's resource usage, the pod must be in \na user namespace. Within user namespaces, the kernel restricts changes \nto projectIDs on the filesystem, ensuring the reliability of storage \nmetrics calculated by quotas.\n\nIf you want to use project quotas, you should:"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#volume-populators-and-data-sources-0",
+  "heading": "Persistent Volumes > Volume populators and data sources",
+  "text": "[Volume cloning](#volume-cloning) and\n[snapshot restore](#volume-snapshot-and-restore-volume-from-snapshot-support) pre-populate\na new volume from a built-in _data source_. _Volume populators_ extend this mechanism so that\na PersistentVolumeClaim can be pre-populated from other kinds of source (a custom resource),\nreferenced through its `dataSourceRef` field:\n\n```yaml\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: populated-pvc\nspec:\n  dataSourceRef:\n    name: example-name\n    kind: ExampleDataSource\n    apiGroup: example.storage.k8s.io\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: 10Gi\n```\n\nFor details, including cross-namespace data sources, see\n[Volume Populators and Data Sources](/docs/concepts/storage/volume-populators-and-data-sources/)."
+ }
+]

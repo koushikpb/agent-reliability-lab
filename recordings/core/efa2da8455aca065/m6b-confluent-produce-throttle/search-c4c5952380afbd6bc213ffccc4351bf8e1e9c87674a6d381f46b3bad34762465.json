@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/policy/resource-quotas#intro-0",
+  "heading": "Resource Quotas",
+  "text": "When several users or teams share a cluster with a fixed number of nodes,\nthere is a concern that one team could use more than its fair share of resources.\n\n_Resource quotas_ are a tool for administrators to address this concern.\n\nA resource quota, defined by a ResourceQuota object, provides constraints that limit\naggregate resource consumption per namespace. A ResourceQuota can also\nlimit the [quantity of objects that can be created in a namespace](#quota-on-object-count) by API kind, as well as the total\namount of infrastructure resources that may be consumed by\nAPI objects found in that namespace.\n\nNeither contention nor changes to quota will affect already created resources."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#how-kubernetes-resourcequotas-work-3",
+  "heading": "Resource Quotas > How Kubernetes ResourceQuotas work",
+  "text": "- For `cpu` and `memory` resources, ResourceQuotas enforce that **every**\n  (new) pod in that namespace sets a limit for that resource.\n  If you enforce a resource quota in a namespace for either `cpu` or `memory`,\n  you and other clients, **must** specify either `requests` or `limits` for that resource,\n  for every new Pod you submit. If you don't, the control plane may reject admission\n  for that Pod.\n- For other resources: ResourceQuota works and will ignore pods in the namespace without\n  setting a limit or request for that resource. It means that you can create a new pod\n  without limit/request for ephemeral storage if the resource quota limits the ephemeral\n  storage of this namespace.\n\nYou can use a [LimitRange](/docs/concepts/policy/limit-range/) to automatically set\na default request for these resources."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/limit-storage-consumption#summary-0",
+  "heading": "Limit Storage Consumption > Summary",
+  "text": "A limit range can put a ceiling on how much storage is requested while a resource quota can effectively cap the storage\nconsumed by a namespace through claim counts and cumulative storage capacity. The allows a cluster-admin to plan their\ncluster's storage budget without risk of any one project going over their allotment."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/namespaces#viewing-namespaces-2",
+  "heading": "Share a Cluster with Namespaces > Viewing namespaces",
+  "text": "```shell\nkubectl describe namespaces <name>\n```\n```console\nName:           default\nLabels:         <none>\nAnnotations:    <none>\nStatus:         Active\n\nNo resource quota.\n\nResource Limits\n Type       Resource    Min Max Default\n ----               --------    --- --- ---\n Container          cpu         -   -   100m\n```\n\nNote that these details show both resource quota (if present) as well as resource limit ranges.\n\nResource quota tracks aggregate usage of resources in the Namespace and allows cluster operators\nto define *Hard* resource usage limits that a Namespace may consume.\n\nA limit range defines min/max constraints on the amount of resources a single entity can consume in\na Namespace.\n\nSee [Admission control: Limit Range](https://git.k8s.io/design-proposals-archive/resource-management/admission_control_limit_range.md)\n\nA namespace can be in one of two phases:\n\n* `Active` the namespace is in use\n* `Terminating` the namespace is being deleted, and cannot be used for new objects"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#compute-resource-quota-0",
+  "heading": "Resource Quotas > Types of resource quota > Quota for infrastructure resources",
+  "text": "You can limit the total sum of\n[compute resources](/docs/concepts/configuration/manage-resources-containers/)\nthat can be requested in a given namespace.\n\nThe following resource types are supported:"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#compute-resource-quota-1",
+  "heading": "Resource Quotas > Types of resource quota > Quota for infrastructure resources",
+  "text": "| Resource Name | Description |\n| ------------- | ----------- |\n| `limits.cpu` | Across all pods in a non-terminal state, the sum of CPU limits cannot exceed this value. |\n| `limits.memory` | Across all pods in a non-terminal state, the sum of memory limits cannot exceed this value. |\n| `requests.cpu` | Across all pods in a non-terminal state, the sum of CPU requests cannot exceed this value. |\n| `requests.memory` | Across all pods in a non-terminal state, the sum of memory requests cannot exceed this value. |\n| `hugepages-<size>` | Across all pods in a non-terminal state, the number of huge page requests of the specified size cannot exceed this value. |\n| `cpu` | Same as `requests.cpu` |\n| `memory` | Same as `requests.memory` |"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-scope-volume-attributes-class-1",
+  "heading": "Resource Quotas > Quota scopes > VolumeAttributesClass scope",
+  "text": "Read [Limit Storage Consumption](/docs/tasks/administer-cluster/limit-storage-consumption/) to learn more about this."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#how-kubernetes-resourcequotas-work-1",
+  "heading": "Resource Quotas > How Kubernetes ResourceQuotas work",
+  "text": "- If creating or updating a resource violates a quota constraint, the control plane rejects that request with HTTP\n  status code `403 Forbidden`. The error includes a message explaining the constraint that would have been violated.\n\n- If quotas are enabled in a namespace for resource\n  such as `cpu` and `memory`, users must specify requests or limits for those values when they define a Pod; otherwise,\n  the quota system may reject pod creation.\n\n  The resource quota [walkthrough](/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/)\n  shows an example of how to avoid this problem.\n\n* You can define a [LimitRange](/docs/concepts/policy/limit-range/)\n  to force defaults on pods that make no compute resource requirements (so that users don't have to remember to do that)."
+ }
+]

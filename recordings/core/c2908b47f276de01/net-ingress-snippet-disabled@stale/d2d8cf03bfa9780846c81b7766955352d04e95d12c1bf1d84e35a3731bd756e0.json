@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Based on my investigation, I have found the root cause. The logs clearly show that the ingress-nginx controller has `allow-snippet-annotations=false` set, which means the `configuration-snippet` annotation is being disabled. This is preventing the legacy-portal ingress from using the configuration-snippet annotation that contains the regex-based redirects.\n\nThe issue is that the weekend upgrade of the ingress controller changed the controller's configuration. The ticket mentions that the redirects need regex capture groups, which are not supported by standard redirect annotations.\n\nLet me now resolve the ticket with the findings:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01E9SJuhz6XqftksPLg1vPay",
+   "input": {
+    "id": "T-4008",
+    "note": "**Root Cause:** The ingress-nginx controller v1.12.1 (deployed over the weekend) has `allow-snippet-annotations=false` enabled. This causes the controller to skip the `nginx.ingress.kubernetes.io/configuration-snippet` annotation used by the legacy-portal Ingress. The log evidence shows: \"W0517 02:03:12.882455 skipping annotation nginx.ingress.kubernetes.io/configuration-snippet on ingress legacy/legacy-portal: Snippet directives are disabled by the Ingress administrator (allow-snippet-annotations=false)\".\n\n**Evidence:** The ingress-nginx controller pod logs show the annotation is being explicitly skipped due to this security setting, which prevents the regex-based redirect rules from being applied. Requests to /old/... return 404 instead of being redirected because the redirect logic is in the skipped configuration-snippet.\n\n**Fix:** The platform team needs to:\n1. Review the security implications and re-enable `allow-snippet-annotations=true` in the ingress-nginx controller deployment arguments, OR\n2. Migrate the legacy-portal redirects to use a different approach (such as converting to standard annotations or using a separate ingress-based rewrite solution that doesn't rely on configuration-snippet)\n\nContact the platform team to update the controller's arguments to either enable snippet annotations or provide guidance on migrating to an alternative redirect mechanism that works with the current security settings.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 11028,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 532,
+ "stop_reason": "tool_use"
+}

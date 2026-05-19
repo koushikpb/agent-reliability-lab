@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "I can see the issue clearly. The notification-worker is trying to connect to `smtp-relay` but the DNS lookup is failing because smtp-relay is now in the `shared-infra` namespace instead of the `notify` namespace. Let me search the Kubernetes documentation about DNS resolution for services in different namespaces:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_017y1BegaibdmEqNgCc1Pi86",
+   "input": {
+    "query": "DNS service resolution different namespace Kubernetes"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2079,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 128,
+ "stop_reason": "tool_use"
+}

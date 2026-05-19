@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Perfect! Now I understand the issue. The catalog-search application takes time to load its index shards (it was loading shard 23/48 when it got terminated). The current configuration has:\n- Liveness probe with initialDelaySeconds=30s\n- Readiness probe with initialDelaySeconds=0s\n\nThe application is taking more than 30 seconds to start (it was on shard 23 out of 48 at the 54-second mark), so the liveness probe begins failing before the app is ready. The probe needs more time, and the app needs a startup probe.\n\nLet me search for more information about pod configuration to understand the full context.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01YU9AHWLFv6sY96LJihnxXd",
+   "input": {
+    "query": "pod lifecycle startup slow application"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4451,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 206,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The Prometheus pod looks healthy. Let me check its logs to see if there's an issue:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01TVoFQGDbZwdYMd4Vw2YTGR",
+   "input": {
+    "pod": "prometheus-k8s-0"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1907,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 82,
+ "stop_reason": "tool_use"
+}

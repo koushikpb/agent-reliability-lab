@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-1",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "In practice, a `CrashLoopBackOff` is a condition or event that might be seen as output\nfrom the `kubectl` command, while describing or listing Pods, when a container in the Pod\nfails to start properly and then continually tries and fails in a loop.\n\nIn other words, when a container enters the crash loop, Kubernetes applies the\nexponential backoff delay mentioned in the [Container restart policy](#restart-policy).\nThis mechanism prevents a faulty container from overwhelming the system with continuous\nfailed start attempts.\n\nThe `CrashLoopBackOff` can be caused by issues like the following:\n\n* Application errors that cause the container to exit.\n* Configuration errors, such as incorrect environment variables or missing\n  configuration files.\n* Resource constraints, where the container might not have enough memory or CPU\n  to start properly.\n* Health checks failing if the application doesn't start serving within the\n  expected time.\n* Container liveness probes or startup probes returning a `Failure` result\n  as mentioned in the [probes section](#container-probes).\n\nTo investigate the root cause of a `CrashLoopBackOff` issue, a user can:"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/configure-access-multiple-clusters#windows-powershell-0",
+  "heading": "Configure Access to Multiple Clusters > Set the KUBECONFIG environment variable > Windows PowerShell",
+  "text": "```powershell\n$Env:KUBECONFIG_SAVED=$ENV:KUBECONFIG\n```\n\n The `KUBECONFIG` environment variable is a list of paths to configuration files. The list is\ncolon-delimited for Linux and Mac, and semicolon-delimited for Windows. If you have\na `KUBECONFIG` environment variable, familiarize yourself with the configuration files\nin the list.\n\nTemporarily append two paths to your `KUBECONFIG` environment variable. For example:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#container-restarts-2",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers",
+  "text": "1. **Check logs**: Use `kubectl logs <name-of-pod>` to check the logs of the container.\n   This is often the most direct way to diagnose the issue causing the crashes.\n1. **Inspect events**: Use `kubectl describe pod <name-of-pod>` to see events\n   for the Pod, which can provide hints about configuration or resource issues.\n1. **Review configuration**: Ensure that the Pod configuration, including\n   environment variables and mounted volumes, is correct and that all required\n   external resources are available.\n1. **Check resource limits**: Make sure that the container has enough CPU\n   and memory allocated. Sometimes, increasing the resources in the Pod definition\n   can resolve the issue.\n1. **Debug application**: There might exist bugs or misconfigurations in the\n   application code. Running this container image locally or in a development\n   environment can help diagnose application specific issues."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-environment-variable-container#using-environment-variables-inside-of-your-config-0",
+  "heading": "Define Environment Variables for a Container > Using environment variables inside of your config",
+  "text": "Environment variables that you define in a Pod's configuration under \n`.spec.containers[*].env[*]` can be used elsewhere in the configuration, for \nexample in commands and arguments that you set for the Pod's containers.\nIn the example configuration below, the `GREETING`, `HONORIFIC`, and\n`NAME` environment variables are set to `Warm greetings to`, `The Most\nHonorable`, and `Kubernetes`, respectively. The environment variable \n`MESSAGE` combines the set of all these environment variables and then uses it \nas a CLI argument passed to the `env-print-demo` container.\n\nEnvironment variable names may consist of any [printable ASCII characters](https://www.ascii-code.com/characters/printable-characters) except '='."
+ },
+ {
+  "chunk_id": "concepts/configuration/organize-cluster-access-kubeconfig#the-kubeconfig-environment-variable-0",
+  "heading": "Organizing Cluster Access Using kubeconfig Files > The KUBECONFIG environment variable",
+  "text": "The `KUBECONFIG` environment variable holds a list of kubeconfig files.\nFor Linux and Mac, the list is colon-delimited. For Windows, the list\nis semicolon-delimited. The `KUBECONFIG` environment variable is not\nrequired. If the `KUBECONFIG` environment variable doesn't exist,\n`kubectl` uses the default kubeconfig file, `$HOME/.kube/config`.\n\nIf the `KUBECONFIG` environment variable does exist, `kubectl` uses\nan effective configuration that is the result of merging the files\nlisted in the `KUBECONFIG` environment variable."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-environment-variable-container#define-an-environment-variable-for-a-container-0",
+  "heading": "Define Environment Variables for a Container > Define an environment variable for a container",
+  "text": "When you create a Pod, you can set environment variables for the containers\nthat run in the Pod. To set environment variables, include the `env` or\n`envFrom` field in the configuration file.\n\nThe `env` and `envFrom` fields have different effects.\n\n`env`\n: allows you to set environment variables for a container, specifying a value directly for each variable that you name.\n\n`envFrom`\n: allows you to set environment variables for a container by referencing either a ConfigMap or a Secret.\n When you use `envFrom`, all the key-value pairs in the referenced ConfigMap or Secret\n are set as environment variables for the container.\n You can also specify a common prefix string."
+ },
+ {
+  "chunk_id": "concepts/configuration/organize-cluster-access-kubeconfig#merging-kubeconfig-files-1",
+  "heading": "Organizing Cluster Access Using kubeconfig Files > Merging kubeconfig files",
+  "text": "   * Ignore empty filenames.\n   * Produce errors for files with content that cannot be deserialized.\n   * The first file to set a particular value or map key wins.\n   * Never change the value or map key.\n     Example: Preserve the context of the first file to set `current-context`.\n     Example: If two files specify a `red-user`, use only values from the first file's `red-user`.\n     Even if the second file has non-conflicting entries under `red-user`, discard them.\n\n   For an example of setting the `KUBECONFIG` environment variable, see\n   [Setting the KUBECONFIG environment variable](/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#set-the-kubeconfig-environment-variable).\n\n   Otherwise, use the default kubeconfig file, `$HOME/.kube/config`, with no merging.\n\n1. Determine the context to use based on the first hit in this chain:"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-running-pod#copying-a-pod-while-changing-its-command-0",
+  "heading": "Debug Running Pods > Debugging using a copy of the Pod > Copying a Pod while changing its command",
+  "text": "Sometimes it's useful to change the command for a container, for example to\nadd a debugging flag or because the application is crashing.\n\nTo simulate a crashing application, use `kubectl run` to create a container\nthat immediately exits:\n\n```\nkubectl run --image=busybox:1.28 myapp -- false\n```\n\nYou can see using `kubectl describe pod myapp` that this container is crashing:\n\n```\nContainers:\n  myapp:\n    Image:         busybox\n    ...\n    Args:\n      false\n    State:          Waiting\n      Reason:       CrashLoopBackOff\n    Last State:     Terminated\n      Reason:       Error\n      Exit Code:    1\n```\n\nYou can use `kubectl debug` to create a copy of this Pod with the command\nchanged to an interactive shell:\n\n```\nkubectl debug myapp -it --copy-to=myapp-debug --container=myapp -- sh\n```\n\n```\nIf you don't see a command prompt, try pressing enter.\n/ #\n```"
+ }
+]

@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Let me try updating the ticket again:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01GtCTmUHYF9tJTkYDf7MPRt",
+   "input": {
+    "id": "T-2003",
+    "note": "Root Cause: The liveness probe is terminating containers before they finish loading the index into memory. Logs show pods being killed via SIGTERM while still loading shards (23/48 complete). Current probe has 30s delay + 3 failures \u00d7 10s period = insufficient time for full index load.\n\nFix: Add a startup probe to the deployment that allows sufficient time for index initialization before liveness checks begin. Use failureThreshold=40 and periodSeconds=15 (600s total window). [cite: concepts/workloads/pods/probes#startup-probe-0] [cite: concepts/workloads/pods/probes#when-should-you-use-a-startup-probe-0] This allows the application to complete initialization while keeping fast liveness detection for actual failures. [cite: tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-startup-probes-0]",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 9579,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 309,
+ "stop_reason": "tool_use"
+}

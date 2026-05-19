@@ -1,0 +1,25 @@
+{
+ "content": [
+  {
+   "text": "Perfect! The documentation confirms that pods need matching tolerations for each taint on a node [cite: concepts/scheduling-eviction/taint-and-toleration#intro-0]. The GPU nodes are tainted with `dedicated: gpu` (with NoSchedule effect), but the doc-embedder pod doesn't have a toleration for this taint. \n\nThe pod currently has a toleration for `nvidia.com/gpu` but that's not enough. The issue is clear:\n\n- **Cause**: The GPU node pool has a `dedicated: gpu` taint that the doc-embedder pod doesn't tolerate\n- **Evidence**: The pod's condition shows \"3 node(s) had untolerated taint {dedicated: gpu}\"\n- **Fix**: Add a toleration for the `dedicated: gpu` taint to the doc-embedder deployment\n\nLet me update the ticket with the resolution:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01VkLiCw9FDJRAuFEAC2KVR4",
+   "input": {
+    "id": "T-3002",
+    "note": "The doc-embedder pod is stuck in Pending because the GPU node pool has a taint `dedicated: gpu` that the pod doesn't tolerate. The pod scheduling condition shows \"3 node(s) had untolerated taint {dedicated: gpu}\". \n\nThe pod currently has a toleration for `nvidia.com/gpu` but is missing a toleration for the `dedicated: gpu` taint. According to Kubernetes documentation, pods need matching tolerations for each taint on a node [cite: concepts/scheduling-eviction/taint-and-toleration#intro-0].\n\nFix: Add a toleration to the doc-embedder deployment spec for the `dedicated: gpu` taint:\n```yaml\ntolerations:\n- key: \"dedicated\"\n  operator: \"Equal\"\n  value: \"gpu\"\n  effect: \"NoSchedule\"\n```\n\nThis will allow the pod to be scheduled on the GPU nodes alongside the ml-serving team's pods (which presumably already have this toleration).",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3461,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 512,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\n**What I found:** The `docindex` StatefulSet scale-up from 3\u21925 was blocked by a stale `CLUSTER_SIZE=3` environment variable in the pod spec. When `docindex-3` started, it read that value, saw its own ordinal (3) was outside the configured cluster, and intentionally entered standby mode \u2014 deliberately returning HTTP 503 on `/ready` and refusing to accept shards. This caused its Kubernetes readiness probe to fail 290+ times over 48 minutes.\n\n**Why `docindex-4` never appeared:** StatefulSets use `OrderedReady` pod management by default, which requires each predecessor pod to be Running *and* Ready before the next one is created [cite: concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0]. Since `docindex-3` is stuck not-Ready, the controller is simply waiting and will never create `docindex-4` on its own.\n\n**The fix:** Update `CLUSTER_SIZE` to `5` on the StatefulSet (`kubectl set env statefulset/docindex -n search CLUSTER_SIZE=5`), then delete `docindex-3` so it restarts with the corrected value, joins the cluster properly, passes the readiness probe, and unblocks the creation of `docindex-4`.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 9458,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 310,
+ "stop_reason": "end_turn"
+}

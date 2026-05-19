@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/volume-health-monitoring#health-reported-on-persistentvolumeclaims-0",
+  "heading": "Volume Health Monitoring > Health reported on PersistentVolumeClaims",
+  "text": "Controller-observed volume health is written to `persistentvolumeclaim.status.healthStatus`\nby the `csi-external-health-monitor-controller` sidecar that runs alongside a CSI\ndriver's controller plugin. The sidecar calls `ControllerListVolumeHealth` (or falls\nback to `ControllerGetVolumeHealth` per volume) and writes the result:\n\n```yaml\napiVersion: v1\nkind: PersistentVolumeClaim\n# ...\nstatus:\n  healthStatus:\n    healthConditions:\n    - status: Inaccessible\n      reason: VolumeNotFound\n      message: \"volume not found on the storage backend\"\n    lastTransitionTime: \"2026-07-20T12:00:00Z\"\n```\n\nNo node ever writes this field; only the sidecar, running in the control plane, does.\nThis keeps a compromised or misbehaving node from being able to influence what other\nusers of the cluster see on a PVC."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#unused-pvc-tracking-0",
+  "heading": "Persistent Volumes > PersistentVolumeClaims > Unused PVC tracking",
+  "text": "When enabled, the PVC protection controller adds an `Unused`\n[condition](/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions) to each\nPersistentVolumeClaim to indicate whether it is currently referenced by any\nnon-terminal Pod.\n\nThe condition has two states:\n\n`Unused` with status `\"True\"` (reason `NoPodsUsingPVC`)\n: No non-terminal Pod references this PVC. The `lastTransitionTime` records when\n  the PVC became unused.\n\n`Unused` with status `\"False\"` (reason `PodUsingPVC`)\n: At least one non-terminal Pod currently references this PVC. The\n  `lastTransitionTime` records when the PVC started being used.\n\nA Pod is considered non-terminal if its phase is not `Succeeded` or `Failed`.\nThis means that a Pending Pod (even one that has not yet been scheduled) counts\nas using the PVC."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolumeclaims-0",
+  "heading": "Persistent Volumes > PersistentVolumeClaims",
+  "text": "Each PVC contains a spec and status, which is the specification and status of the claim.\nThe name of a PersistentVolumeClaim object must be a valid\n[DNS subdomain name](/docs/concepts/overview/working-with-objects/names#dns-subdomain-names).\n\n```yaml\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: myclaim\nspec:\n  accessModes:\n    - ReadWriteOnce\n  volumeMode: Filesystem\n  resources:\n    requests:\n      storage: 8Gi\n  storageClassName: slow\n  selector:\n    matchLabels:\n      release: \"stable\"\n    matchExpressions:\n      - {key: environment, operator: In, values: [dev]}\n```"
+ },
+ {
+  "chunk_id": "concepts/storage/volume-snapshots#persistent-volume-claim-as-snapshot-source-protection-0",
+  "heading": "Volume Snapshots > Lifecycle of a volume snapshot and volume snapshot content > Persistent Volume Claim as Snapshot Source Protection",
+  "text": "The purpose of this protection is to ensure that in-use\nPersistentVolumeClaim\nAPI objects are not removed from the system while a snapshot is being taken from it\n(as this may result in data loss).\n\nWhile a snapshot is being taken of a PersistentVolumeClaim, that PersistentVolumeClaim\nis in-use. If you delete a PersistentVolumeClaim API object in active use as a snapshot\nsource, the PersistentVolumeClaim object is not removed immediately. Instead, removal of\nthe PersistentVolumeClaim object is postponed until the snapshot is readyToUse or aborted."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/change-pv-reclaim-policy#why-change-reclaim-policy-of-a-persistentvolume-0",
+  "heading": "Change the Reclaim Policy of a PersistentVolume > Why change reclaim policy of a PersistentVolume",
+  "text": "PersistentVolumes can have various reclaim policies, including \"Retain\",\n\"Recycle\", and \"Delete\". For dynamically provisioned PersistentVolumes,\nthe default reclaim policy is \"Delete\". This means that a dynamically provisioned\nvolume is automatically deleted when a user deletes the corresponding\nPersistentVolumeClaim. This automatic behavior might be inappropriate if the volume\ncontains precious data. In that case, it is more appropriate to use the \"Retain\"\npolicy. With the \"Retain\" policy, if a user deletes a PersistentVolumeClaim,\nthe corresponding PersistentVolume will not be deleted. Instead, it is moved to the\nReleased phase, where all of its data can be manually recovered."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#reclaiming-0",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > Reclaiming",
+  "text": "When a user is done with their volume, they can delete the PVC objects from the\nAPI that allows reclamation of the resource. The reclaim policy for a PersistentVolume\ntells the cluster what to do with the volume after it has been released of its claim.\nCurrently, volumes can either be Retained, Recycled, or Deleted.\n\n#### Retain\n\nThe `Retain` reclaim policy allows for manual reclamation of the resource.\nWhen the PersistentVolumeClaim is deleted, the PersistentVolume still exists\nand the volume is considered \"released\". But it is not yet available for\nanother claim because the previous claimant's data remains on the volume.\nAn administrator can manually reclaim the volume with the following steps.\n\n1. Delete the PersistentVolume. The associated storage asset in external infrastructure\n   still exists after the PV is deleted.\n1. Manually clean up the data on the associated storage asset accordingly.\n1. Manually delete the associated storage asset.\n\nIf you want to reuse the same storage asset, create a new PersistentVolume with\nthe same storage asset definition.\n\n#### Delete"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#phase-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Phase",
+  "text": "A PersistentVolume will be in one of the following phases:\n\n`Available`\n: a free resource that is not yet bound to a claim\n\n`Bound`\n: the volume is bound to a claim\n\n`Released`\n: the claim has been deleted, but the associated storage resource is not yet reclaimed by the cluster\n\n`Failed`\n: the volume has failed its (automated) reclamation\n\nYou can see the name of the PVC bound to the PV using `kubectl describe persistentvolume <name>`.\n\n#### Phase transition timestamp\n\nThe `.status` field for a PersistentVolume can include an alpha `lastPhaseTransitionTime` field. This field records\nthe timestamp of when the volume last transitioned its phase. For newly created\nvolumes the phase is set to `Pending` and `lastPhaseTransitionTime` is set to\nthe current time."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#persistentvolumeclaim-retention-0",
+  "heading": "StatefulSets > PersistentVolumeClaim retention",
+  "text": "The optional `.spec.persistentVolumeClaimRetentionPolicy` field controls if\nand how PVCs are deleted during the lifecycle of a StatefulSet. You must enable the\n`StatefulSetAutoDeletePVC` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)\non the API server and the controller manager to use this field.\nOnce enabled, there are two policies you can configure for each StatefulSet:\n\n`whenDeleted`\n: Configures the volume retention behavior that applies when the StatefulSet is deleted.\n\n`whenScaled`\n: Configures the volume retention behavior that applies when the replica count of\n  the StatefulSet   is reduced; for example, when scaling down the set.\n\nFor each policy that you can configure, you can set the value to either `Delete` or `Retain`."
+ }
+]

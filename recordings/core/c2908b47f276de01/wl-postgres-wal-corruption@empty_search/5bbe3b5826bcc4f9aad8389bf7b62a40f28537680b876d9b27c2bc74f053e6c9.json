@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've escalated ticket T-2007 to a human engineer. The investigation revealed that the PostgreSQL database (inventory-db-0) is experiencing checkpoint corruption after a node reboot at 2am. The pod is in a CrashLoopBackOff state with 23+ restarts, and the logs show \"invalid primary checkpoint record\" and \"could not locate a valid checkpoint record\" errors. This is a critical data integrity issue that requires expert database recovery intervention beyond what can be safely automated.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 2814,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 113,
+ "stop_reason": "end_turn"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/service-accounts#assign-to-pod-6",
+  "heading": "Service Accounts > How to use service accounts > Assign a ServiceAccount to a Pod",
+  "text": "This restriction applies only to kubelets (node identities) and does not affect other\ncallers of the `TokenRequest` API. For details and RBAC examples,\nsee [Service account token audience restriction](/docs/reference/access-authn-authz/node/#service-account-token-audience-restriction).\n\nFor applications running outside your Kubernetes cluster, you might be considering\ncreating a long-lived ServiceAccount token that is stored in a Secret. This allows authentication, but the Kubernetes project recommends you avoid this approach.\nLong-lived bearer tokens represent a security risk as, once disclosed, the token\ncan be misused. Instead, consider using an alternative. For example, your external\napplication can authenticate using a well-protected private key `and` a certificate,\nor using a custom mechanism such as an [authentication webhook](/docs/reference/access-authn-authz/authentication/#webhook-token-authentication) that you implement yourself."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#serviceaccount-token-volume-projection-4",
+  "heading": "Configure Service Accounts for Pods > ServiceAccount token volume projection",
+  "text": "```yaml\n{\n  \"aud\": [  # matches the requested audiences, or the API server's default audiences when none are explicitly requested\n    \"https://kubernetes.default.svc\"\n  ],\n  \"exp\": 1731613413,\n  \"iat\": 1700077413,\n  \"iss\": \"https://kubernetes.default.svc\",  # matches the first value passed to the --service-account-issuer flag\n  \"jti\": \"ea28ed49-2e11-4280-9ec5-bc3d1d84661a\", \n  \"kubernetes.io\": {\n    \"namespace\": \"kube-system\",\n    \"node\": {\n      \"name\": \"127.0.0.1\",\n      \"uid\": \"58456cb0-dd00-45ed-b797-5578fdceaced\"\n    },\n    \"pod\": {\n```"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/kubelet-credential-provider#configure-a-kubelet-credential-provider-12",
+  "heading": "Configure a kubelet image credential provider > Configuring the Kubelet > Configure a kubelet credential provider",
+  "text": "* `serviceAccountTokenAudience`:\n  the intended audience for the projected service account token.\n  This cannot be the empty string.\n  When the `ServiceAccountNodeAudienceRestriction`\n  [feature gate](/docs/reference/command-line-tools-reference/feature-gates/) is enabled,\n  the kubelet must be authorized to request tokens for this audience;\n  otherwise the credential provider will not be invoked. You must grant\n  the `system:nodes` group permission to use the\n  `request-serviceaccounts-token-audience` verb on this audience via RBAC.\n  For details and examples, see\n  [Service account token audience restriction](/docs/reference/access-authn-authz/node/#service-account-token-audience-restriction).\n* `cacheType`:\n  the type of cache key used for caching the credentials returned by the plugin\n  when the service account token is used.\n  The most conservative option is to set this to `Token`,"
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#authenticating-credentials-0",
+  "heading": "Service Accounts > Authenticating service account credentials",
+  "text": "ServiceAccounts use signed\nJSON Web Tokens  (JWTs)\nto authenticate to the Kubernetes API server, and to any other system where a\ntrust relationship exists. Depending on how the token was issued\n(either time-limited using a `TokenRequest` or using a legacy mechanism with\na Secret), a ServiceAccount token might also have an expiry time, an audience,\nand a time after which the token *starts* being valid. When a client that is\nacting as a ServiceAccount tries to communicate with the Kubernetes API server,\nthe client includes an `Authorization: Bearer <token>` header with the HTTP\nrequest. The API server checks the validity of that bearer token as follows:\n\n1. Checks the token signature.\n1. Checks whether the token has expired.\n1. Checks whether object references in the token claims are currently valid.\n1. Checks whether the token is currently valid.\n1. Checks the audience claims."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#assign-to-pod-5",
+  "heading": "Service Accounts > How to use service accounts > Assign a ServiceAccount to a Pod",
+  "text": "#### Node audience restriction for service account tokens {#node-audience-restriction}\n\nWhen the `ServiceAccountNodeAudienceRestriction` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)\nis enabled, the [NodeRestriction](/docs/reference/access-authn-authz/admission-controllers#noderestriction)\nadmission plugin limits which audiences a kubelet can request when creating service\naccount tokens via the `TokenRequest` API. By default, the kubelet can only request\ntokens for audiences already referenced by pods on that node (through projected service\naccount token volumes or CSI driver token requests). Administrators can grant\nkubelets access to additional audiences using RBAC rules with the\n`request-serviceaccounts-token-audience` verb."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-service-account#serviceaccount-token-volume-projection-2",
+  "heading": "Configure Service Accounts for Pods > ServiceAccount token volume projection",
+  "text": "`--api-audiences` (can be omitted)\n: defines audiences for ServiceAccount tokens. The service account token authenticator\n  validates that tokens used against the API are bound to at least one of these audiences.\n  If `api-audiences` is specified multiple times, tokens for any of the specified audiences\n  are considered valid by the Kubernetes API server. If you specify the `--service-account-issuer`\n  command line argument but you don't set `--api-audiences`, the control plane defaults to\n  a single element audience list that contains only the issuer URL.\n\nThe kubelet can also project a ServiceAccount token into a Pod. You can\nspecify desired properties of the token, such as the audience and the validity\nduration. These properties are _not_ configurable on the default ServiceAccount\ntoken. The token will also become invalid against the API when either the Pod\nor the ServiceAccount is deleted."
+ },
+ {
+  "chunk_id": "concepts/storage/projected-volumes#serviceaccounttoken-1",
+  "heading": "Projected Volumes > serviceAccountToken projected volumes",
+  "text": "The example Pod has a projected volume containing the injected service account\ntoken. Containers in this Pod can use that token to access the Kubernetes API\nserver, authenticating with the identity of [the pod's ServiceAccount](/docs/tasks/configure-pod-container/configure-service-account/).\nThe `audience` field contains the intended audience of the\ntoken. A recipient of the token must identify itself with an identifier specified\nin the audience of the token, and otherwise should reject the token. This field\nis optional and it defaults to the identifier of the API server.\n\nThe `expirationSeconds` is the expected duration of validity of the service account\ntoken. It defaults to 1 hour and must be at least 10 minutes (600 seconds). An administrator\ncan also limit its maximum value by specifying the `--service-account-max-token-expiration`\noption for the API server. The `path` field specifies a relative path to the mount point\nof the projected volume."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#how-to-use-0",
+  "heading": "Service Accounts > How to use service accounts",
+  "text": "To use a Kubernetes service account, you do the following:\n\n1. Create a ServiceAccount object using a Kubernetes\n   client like `kubectl` or a manifest that defines the object.\n1. Grant permissions to the ServiceAccount object using an authorization\n   mechanism such as\n   [RBAC](/docs/reference/access-authn-authz/rbac/).\n1. Assign the ServiceAccount object to Pods during Pod creation.\n\n   If you're using the identity from an external service,\n   [retrieve the ServiceAccount token](#get-a-token) and use it from that\n   service instead.\n\nFor instructions, refer to\n[Configure Service Accounts for Pods](/docs/tasks/configure-pod-container/configure-service-account/)."
+ }
+]

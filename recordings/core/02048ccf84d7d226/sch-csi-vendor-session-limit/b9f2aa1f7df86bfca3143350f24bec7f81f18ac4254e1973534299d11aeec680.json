@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Ticket T-3008 has been escalated. Here's a summary of what I found and why I escalated:\n\n---\n\n**Root Cause \u2014 Storage Array LUN Mapping Limit Reached**\n\n`clickhouse-2` is stuck in `ContainerCreating` because the Corvane iSCSI block storage driver (`csi.corvane.io`) cannot attach the PVC (`pvc-8d21f6c3-2a9e-4b07-9f4d-3e6a1c5b8d90`) to node `ip-10-0-93-12`. The evidence is directly in the pod's status message:\n\n> `CVN-4127: host initiator iqn.1994-05.com.redhat:ip-10-0-93-12 rejected by array cv-array-02: host group hg-k8s-prod reached max LUN mappings (512); retry after mapping cleanup`\n\nThe Corvane array `cv-array-02` enforces a hard limit of **512 LUN mappings** per host group. The `hg-k8s-prod` host group has hit that ceiling, so no new volumes can be mapped to any node in the group \u2014 including the new `clickhouse-2` node.\n\n**Why Escalated**\n\nThe fix \u2014 cleaning up stale or unused LUN mappings from host group `hg-k8s-prod` on `cv-array-02` \u2014 requires direct access to the Corvane storage array's administration console. That is outside what the Kubernetes platform team can do safely, so a storage infrastructure administrator needs to take this over urgently (given tomorrow's load test deadline).",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8214,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 385,
+ "stop_reason": "end_turn"
+}

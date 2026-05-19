@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Good! I can see the issue - the two most recent cronjob runs failed with \"DeadlineExceeded\" status, meaning the jobs exceeded their `activeDeadlineSeconds` of 3600 seconds (1 hour). The older run succeeded. Let me check the logs from the most recent failed run:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01En3DinCXdkmU3stPYd2JoX",
+   "input": {
+    "pod": "ledger-export-29637420-k4x9d"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1941,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 137,
+ "stop_reason": "tool_use"
+}

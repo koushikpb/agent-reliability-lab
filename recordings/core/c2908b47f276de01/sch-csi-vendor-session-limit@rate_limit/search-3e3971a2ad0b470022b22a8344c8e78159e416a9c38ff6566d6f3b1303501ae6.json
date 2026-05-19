@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#mount-options-0",
+  "heading": "Persistent Volumes > Persistent Volumes > Mount Options",
+  "text": "A Kubernetes administrator can specify additional mount options for when a\nPersistent Volume is mounted on a node.\n\nNot all Persistent Volume types support mount options.\n\nThe following volume types support mount options:\n\n* `csi` (including CSI migrated volume types)\n* `iscsi`\n* `nfs`\n\nMount options are not validated. If a mount option is invalid, the mount fails.\n\nIn the past, the annotation `volume.beta.kubernetes.io/mount-options` was used instead\nof the `mountOptions` attribute. This annotation is still working; however,\nit will become fully deprecated in a future Kubernetes release."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#mount-options-0",
+  "heading": "Storage Classes > Mount options",
+  "text": "PersistentVolumes that are dynamically created by a StorageClass will have the\nmount options specified in the `mountOptions` field of the class.\n\nIf the volume plugin does not support mount options but mount options are\nspecified, provisioning will fail. Mount options are **not** validated on either\nthe class or PV. If a mount option is invalid, the PV mount fails."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#mount-propagation-2",
+  "heading": "Volumes > Mount propagation",
+  "text": "  This mode is equal to `rslave` mount propagation as described in the\n  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)\n\n* `Bidirectional` - This volume mount behaves the same as the `HostToContainer` mount.\n  In addition, all volume mounts created by the container will be propagated\n  back to the host and to all containers of all Pods that use the same volume.\n\n  A typical use case for this mode is a Pod with a FlexVolume or CSI driver, or\n  a Pod that needs to mount something on the host using a `hostPath` volume.\n\n  This mode is equal to `rshared` mount propagation as described in the\n  [`mount(8)`](https://man7.org/linux/man-pages/man8/mount.8.html)"
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#csi-3",
+  "heading": "Volumes > Out-of-tree volume plugins > csi",
+  "text": "* `readOnly`: An optional boolean value indicating whether the volume is to be\n  \"ControllerPublished\" (attached) as read-only. Default is false. This value is passed\n  to the CSI driver via the `readonly` field in the `ControllerPublishVolumeRequest`.\n* `fsType`: If the PV's `VolumeMode` is `Filesystem`, then this field may be used\n  to specify the filesystem that should be used to mount the volume. If the\n  volume has not been formatted and formatting is supported, this value will be\n  used to format the volume.\n  This value is passed to the CSI driver via the `VolumeCapability` field of\n  `ControllerPublishVolumeRequest`, `NodeStageVolumeRequest`, and\n  `NodePublishVolumeRequest`.\n* `volumeAttributes`: A map of string to string that specifies static properties\n  of a volume. This map must correspond to the map returned in the\n  `volume.attributes` field of the `CreateVolumeResponse` by the CSI driver as"
+ },
+ {
+  "chunk_id": "concepts/storage/volume-health-monitoring#health-reported-on-pods-0",
+  "heading": "Volume Health Monitoring > Health reported on Pods",
+  "text": "For volumes that use a CSI driver supporting the node-side `NodeGetVolumeHealth` RPC,\nthe kubelet periodically calls that\nRPC for each CSI volume it has mounted for a Pod, and writes the result to\n`pod.status.volumeHealth`, keyed by the volume name from `pod.spec.volumes`. The probe\ninterval is the kubelet's `volumeStatsAggPeriod` setting (the\n`--volume-stats-agg-period` command line flag).\n\n```yaml\napiVersion: v1\nkind: Pod\n# ...\nstatus:\n  volumeHealth:\n  - name: my-volume\n    healthConditions:\n    - status: Inaccessible\n      reason: VolumeNotFound\n      message: \"volume not found on the storage backend\"\n    lastTransitionTime: \"2026-07-20T12:00:00Z\"\n```\n\nThe kubelet only writes `pods/status`, a subresource it is already authorized to\nupdate for Pods bound to its own node, so no new authorization is required for this\nfield."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#out-of-tree-volume-plugins-0",
+  "heading": "Volumes > Out-of-tree volume plugins",
+  "text": "The out-of-tree volume plugins include\nContainer Storage Interface (CSI), and also\nFlexVolume (which is deprecated). These plugins enable storage vendors to create custom storage plugins\nwithout adding their plugin source code to the Kubernetes repository.\n\nPreviously, all volume plugins were \"in-tree\". The \"in-tree\" plugins were built, linked, compiled,\nand shipped with the core Kubernetes binaries. This meant that adding a new storage system to\nKubernetes (a volume plugin) required checking code into the core Kubernetes code repository.\n\nBoth CSI and FlexVolume allow volume plugins to be developed independently of\nthe Kubernetes code base, and deployed (installed) on Kubernetes clusters as\nextensions.\n\nFor storage vendors looking to create an out-of-tree volume plugin, please refer\nto the [volume plugin FAQ](https://github.com/kubernetes/community/blob/main/sig-storage/volume-plugin-faq.md)."
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#types-of-persistent-volumes-0",
+  "heading": "Persistent Volumes > Types of Persistent Volumes",
+  "text": "PersistentVolume types are implemented as plugins. Kubernetes currently supports the following plugins:\n\n* [`csi`](/docs/concepts/storage/volumes/#csi) - Container Storage Interface (CSI)\n* [`fc`](/docs/concepts/storage/volumes/#fc) - Fibre Channel (FC) storage\n* [`hostPath`](/docs/concepts/storage/volumes/#hostpath) - HostPath volume\n  (for single node testing only; WILL NOT WORK in a multi-node cluster;\n  consider using `local` volume instead)\n* [`iscsi`](/docs/concepts/storage/volumes/#iscsi) - iSCSI (SCSI over IP) storage\n* [`local`](/docs/concepts/storage/volumes/#local) - local storage devices\n  mounted on nodes.\n* [`nfs`](/docs/concepts/storage/volumes/#nfs) - Network File System (NFS) storage"
+ },
+ {
+  "chunk_id": "concepts/storage/persistent-volumes#persistentvolume-deletion-protection-finalizer-5",
+  "heading": "Persistent Volumes > Lifecycle of a volume and claim > PersistentVolume deletion protection finalizer",
+  "text": "```shell\n    VolumeAttributes:      storage.kubernetes.io/csiProvisionerIdentity=1648442357185-8081-csi.vsphere.vmware.com\n                           type=vSphere CNS Block Volume\nEvents:                <none>\n```"
+ }
+]

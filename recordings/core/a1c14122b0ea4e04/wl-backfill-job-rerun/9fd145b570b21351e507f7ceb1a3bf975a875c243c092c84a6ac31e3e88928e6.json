@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "EoUECqQBCBMYAipACvorouIRVYrnQ1b3BdSke1GWc0TFm2aWpOaVwx0gg8OSsp7kbctVB6MQnqqj/kG7Um4/X0CSPAtmz3ZR3v1RqTIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gBudHw1gYSDE4ePz/ZtgrrnjsOqBoM6zl6FwkGaxcGvSNfIjAvInZagzYeFLeZCJH5g9Xd2lI148wm1DAXGL1jgTcn56tAwyJjAUJKraK7v64pZOQqjQJw6V5YFisaLsfBM0L8u18gKZI3VxIiFLmXxFSUG11ADeFbbf5TAlcegCcGZl+nukXEj5VKQfj5nq/lTHBtK5zVEUK39sGihP6V2Rl+lcqmYyDVxUt0cqG+371dQ4XP//mJqKz74Y/ziOTROwCaz+0t3CsOKux9bFNO+CcSqBOlJayY+mO8kdDPgvAqpGqf7leaQgWILcviko4A/KiS+AhPpAoeRNvFaD/Q5txWXg+N8UA8krr2Pw36yUzg/CBkPDXI5ez+Dr7nj44t35oiSFUbhLj6LgmOSCYRFS/N5ZF9sQpkheV53kUdi1tT9k2lXyuYskhysPsRfQhLmk1IL0fUEaKt23JK7ezQX2jfphgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01RBEkxQfaovvxKesxfLgkMw",
+   "input": {
+    "namespace": "billing"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1827,
+ "model": "claude-opus-4-7",
+ "output_tokens": 164,
+ "stop_reason": "tool_use"
+}

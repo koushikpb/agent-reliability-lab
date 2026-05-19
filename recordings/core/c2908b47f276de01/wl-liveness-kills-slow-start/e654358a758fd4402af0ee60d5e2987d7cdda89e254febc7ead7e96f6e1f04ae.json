@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Interesting! The pod is receiving SIGTERM while in the middle of loading shards. This happens before the HTTP server starts, so the health probe can't connect. Let me search the Kubernetes documentation to understand startup probe behavior and how to handle this situation.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LnWybifwfBiCxY98NiYcbE",
+   "input": {
+    "query": "startup probe liveness probe grace period termination"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2393,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 116,
+ "stop_reason": "tool_use"
+}

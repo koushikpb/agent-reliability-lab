@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/probes#configure-probes-3",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields",
+  "text": "`terminationGracePeriodSeconds`\n: configure a grace period for the kubelet to wait between triggering a shut down of the failed container, and then forcing the container runtime to stop that container. The default is to inherit the Pod-level value for `terminationGracePeriodSeconds` (30 seconds if not specified), and the minimum value is 1. See [probe-level `terminationGracePeriodSeconds`](#probe-level-terminationgraceperiodseconds) for more detail.\n\nIncorrect implementation of readiness probes may result in an ever growing\nnumber of processes in the container, and resource starvation if this is left\nunchecked."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-level-terminationgraceperiodseconds-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields > Probe-level `terminationGracePeriodSeconds`",
+  "text": "In 1.25 and above, users can specify a probe-level `terminationGracePeriodSeconds`\nas part of the probe specification. When both a pod- and probe-level\n`terminationGracePeriodSeconds` are set, the kubelet will use the probe-level\nvalue.\n\nWhen setting the `terminationGracePeriodSeconds`, note the following:\n\n* The kubelet always honors the probe-level `terminationGracePeriodSeconds`\n  field if it is present on a Pod.\n* If you have existing Pods where the `terminationGracePeriodSeconds` field is\n  set and you no longer wish to use per-probe termination grace periods, you\n  must delete those existing Pods.\n\nFor example:"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#probe-level-terminationgraceperiodseconds-1",
+  "heading": "Liveness, Readiness, and Startup Probes > Configuration fields > Probe-level `terminationGracePeriodSeconds`",
+  "text": "```yaml\nspec:\n  terminationGracePeriodSeconds: 3600  # pod-level\n  containers:\n  - name: test\n    image: ...\n\n    ports:\n    - name: liveness-port\n      containerPort: 8080\n\n    livenessProbe:\n      httpGet:\n        path: /healthz\n        port: liveness-port\n      failureThreshold: 1\n      periodSeconds: 60\n      # Override pod-level terminationGracePeriodSeconds\n      terminationGracePeriodSeconds: 60\n```\n\nProbe-level `terminationGracePeriodSeconds` **cannot** be set for readiness probes.\nIt will be rejected by the API server."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-flow-1",
+  "heading": "Pod Lifecycle > Termination of Pods > Pod Termination Flow",
+  "text": "      If the `preStop` hook is still running after the grace period expires, the kubelet requests\n      a small, one-off grace period extension of 2 seconds.\n\n   If the `preStop` hook needs longer to complete than the default grace period allows,\n   you must modify `terminationGracePeriodSeconds` to suit this.\n\n   1. The kubelet triggers the container runtime to send a TERM signal to process 1 inside each\n      container.\n\n      There is [special ordering](#termination-with-sidecars) if the Pod has any\n      sidecar containers defined.\n      Otherwise, the containers in the Pod receive the TERM signal at different times and in\n      an arbitrary order. If the order of shutdowns matters, consider using a `preStop` hook\n      to synchronize (or switch to using sidecar containers)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#pod-termination-flow-0",
+  "heading": "Pod Lifecycle > Termination of Pods > Pod Termination Flow",
+  "text": "Pod termination flow, illustrated with an example:\n\n1. You use the `kubectl` tool to manually delete a specific Pod, with the default grace period\n   (30 seconds).\n\n1. The Pod in the API server is updated with the time beyond which the Pod is considered \"dead\"\n   along with the grace period.\n   If you use `kubectl describe` to check the Pod you're deleting, that Pod shows up as \"Terminating\".\n   On the node where the Pod is running: as soon as the kubelet sees that a Pod has been marked\n   as terminating (a graceful shutdown duration has been set), the kubelet begins the local Pod\n   shutdown process.\n\n   1. If one of the Pod's containers has defined a `preStop`\n      [hook](/docs/concepts/containers/container-lifecycle-hooks) and the `terminationGracePeriodSeconds`\n      in the Pod spec is not set to 0, the kubelet runs that hook inside of the container.\n      The default `terminationGracePeriodSeconds` setting is 30 seconds."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/disruptions#pod-disruption-budgets-3",
+  "heading": "Disruptions > Pod disruption budgets",
+  "text": "It is recommended to set `AlwaysAllow` [Unhealthy Pod Eviction Policy](/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy)\nto your PodDisruptionBudgets to support eviction of misbehaving applications during a node drain.\nThe default behavior is to wait for the application pods to become [healthy](/docs/tasks/run-application/configure-pdb/#healthiness-of-a-pod)\nbefore the drain can proceed.\n\nWhen a pod is evicted using the eviction API, it is gracefully\n[terminated](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination), honoring the\n`terminationGracePeriodSeconds` setting in its [PodSpec](/docs/reference/generated/kubernetes-api//#podspec-v1-core)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/attach-handler-lifecycle-event#reference-0",
+  "heading": "Attach Handlers to Container Lifecycle Events > What's next > Reference",
+  "text": "* [Lifecycle](/docs/reference/generated/kubernetes-api//#lifecycle-v1-core)\n* [Container](/docs/reference/generated/kubernetes-api//#container-v1-core)\n* See `terminationGracePeriodSeconds` in [PodSpec](/docs/reference/generated/kubernetes-api//#podspec-v1-core)"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-16",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "   * Pod UID, IP address, and network namespace\n   * Pod sandbox and any attached devices\n   * All volumes, including `emptyDir` and mounted volumes\n\n1. **Pod Status Update**: The Pod's status is updated with a `PodRestartInPlace` condition set to `True`.\n   This makes the restart process observable.\n1. **Full Restart Sequence**: Once all containers are terminated, the `PodRestartInPlace` condition\n   is set to `False`, and the Pod begins the standard startup process:\n\n   * **Init containers are re-run** in order.\n   * Sidecar and regular containers are started.\n\nA key aspect of this feature is that **all** containers are restarted, including those that\npreviously completed successfully or failed. The `RestartAllContainers` action overrides\nany configured container-level or Pod-level `restartPolicy`.\n\nThis mechanism is useful in scenarios where a clean slate for all containers is necessary, such as:"
+ }
+]

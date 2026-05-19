@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#notes-1",
+  "heading": "Configure Quotas for API Objects > Notes",
+  "text": "<table>\n<tr><th>String</th><th>API Object</th></tr>\n<tr><td>\"pods\"</td><td>Pod</td></tr>\n<tr><td>\"services\"</td><td>Service</td></tr>\n<tr><td>\"replicationcontrollers\"</td><td>ReplicationController</td></tr>\n<tr><td>\"resourcequotas\"</td><td>ResourceQuota</td></tr>\n<tr><td>\"secrets\"</td><td>Secret</td></tr>\n<tr><td>\"configmaps\"</td><td>ConfigMap</td></tr>\n<tr><td>\"persistentvolumeclaims\"</td><td>PersistentVolumeClaim</td></tr>"
+ },
+ {
+  "chunk_id": "concepts/cluster-administration/flow-control#metrics-1",
+  "heading": "API Priority and Fairness > Observability > Metrics",
+  "text": "  * `queue-full`, indicating that too many requests were already\n    queued.\n  * `concurrency-limit`, indicating that the\n    PriorityLevelConfiguration is configured to reject rather than\n    queue excess requests.\n  * `time-out`, indicating that the request was still in the queue\n    when its queuing time limit expired.\n  * `cancelled`, indicating that the request is not purge locked\n    and has been ejected from the queue.\n\n* `apiserver_flowcontrol_dispatched_requests_total` is a counter\n  vector (cumulative since server start) of requests that began\n  executing, broken down by `flow_schema` and `priority_level`.\n\n* `apiserver_flowcontrol_current_inqueue_requests` is a gauge vector\n  holding the instantaneous number of queued (not executing) requests,\n  broken down by `priority_level` and `flow_schema`."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#notes-2",
+  "heading": "Configure Quotas for API Objects > Notes",
+  "text": "<tr><td>\"services.nodeports\"</td><td>Service of type NodePort</td></tr>\n<tr><td>\"services.loadbalancers\"</td><td>Service of type LoadBalancer</td></tr>\n</table>"
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-on-object-count-1",
+  "heading": "Resource Quotas > Types of resource quota > Quota on object count",
+  "text": "If you define a quota this way, it applies to Kubernetes' APIs that are part of the API server, and\nto any custom resources backed by a CustomResourceDefinition.\nFor example, to create a quota on a `widgets` custom resource in the `example.com` API group,\nuse `count/widgets.example.com`.\nIf you use [API aggregation](/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/) to\nadd additional, custom APIs that are not defined as CustomResourceDefinitions, the core Kubernetes\ncontrol plane does not enforce quota for the aggregated API. The extension API server is expected to\nprovide quota enforcement if that's appropriate for the custom API.\n\n##### Generic syntax {#resource-quota-object-count-generic}\n\nThis is a list of common examples of object kinds that you may want to put under object count quota,\nlisted by the configuration string that you would use."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#intro-0",
+  "heading": "Configure Quotas for API Objects",
+  "text": "This page shows how to configure quotas for API objects, including\nPersistentVolumeClaims and Services. A quota restricts the number of\nobjects, of a particular type, that can be created in a namespace.\nYou specify quotas in a\n[ResourceQuota](/docs/reference/generated/kubernetes-api//#resourcequota-v1-core)\nobject."
+ },
+ {
+  "chunk_id": "concepts/policy/resource-quotas#quota-on-object-count-0",
+  "heading": "Resource Quotas > Types of resource quota > Quota on object count",
+  "text": "You can set quota for *the total number of one particular resource kind* in the Kubernetes API,\nusing the following syntax:\n\n* `count/<resource>.<group>` for resources from non-core API groups\n* `count/<resource>` for resources from the core API group\n\nFor example, the PodTemplate API is in the core API group and so if you want to limit the number of\nPodTemplate objects in a namespace, you use `count/podtemplates`.\n\nThese types of quotas are useful to protect against exhaustion of control plane storage. For example, you may\nwant to limit the number of Secrets in a server given their large size. Too many Secrets in a cluster can\nactually prevent servers and controllers from starting. You can set a quota for Jobs to protect against\na poorly configured CronJob. CronJobs that create too many Jobs in a namespace can lead to a denial of service."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#notes-0",
+  "heading": "Configure Quotas for API Objects > Notes",
+  "text": "These are the strings used to identify API resources that can be constrained\nby quotas:"
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/quota-api-object#create-a-resourcequota-1",
+  "heading": "Configure Quotas for API Objects > Create a ResourceQuota",
+  "text": "```yaml\nstatus:\n  hard:\n    persistentvolumeclaims: \"1\"\n    services.loadbalancers: \"2\"\n    services.nodeports: \"0\"\n  used:\n    persistentvolumeclaims: \"0\"\n    services.loadbalancers: \"0\"\n    services.nodeports: \"0\"\n```"
+ }
+]

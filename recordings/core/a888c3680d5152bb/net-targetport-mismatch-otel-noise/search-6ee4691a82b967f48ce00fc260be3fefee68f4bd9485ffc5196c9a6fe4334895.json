@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/services-networking/endpoint-slices#conditions-0",
+  "heading": "EndpointSlices > EndpointSlice API > Conditions",
+  "text": "The EndpointSlice API stores conditions about endpoints that may be useful for consumers.\nThe three conditions are `serving`, `terminating`, and `ready`.\n\n#### Serving\n\nThe `serving` condition indicates that the endpoint is currently serving responses, and\nso it should be used as a target for Service traffic. For endpoints backed by a Pod, this\nmaps to the Pod's `Ready` condition.\n\n#### Terminating\n\nThe `terminating` condition indicates that the endpoint is\nterminating. For endpoints backed by a Pod, this condition is set when\nthe Pod is first deleted (that is, when it receives a deletion\ntimestamp, but most likely before the Pod's containers exit).\n\nService proxies will normally ignore endpoints that are `terminating`,\nbut they may route traffic to endpoints that are both `serving` and\n`terminating` if all available endpoints are `terminating`. (This\nhelps to ensure that no Service traffic is lost during rolling updates\nof the underlying Pods.)\n\n#### Ready"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-1",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "The \"RESTARTS\" column says that these pods are not crashing frequently or being\nrestarted.  Frequent restarts could lead to intermittent connectivity issues.\nIf the restart count is high, read more about how to [debug pods](/docs/tasks/debug/debug-application/debug-pods).\n\nInside the Kubernetes system is a control loop which evaluates the selector of\nevery Service and saves the results into one or more EndpointSlice objects.\n\n```shell\nkubectl get endpointslices -l kubernetes.io/service-name=hostnames\n\nNAME              ADDRESSTYPE   PORTS   ENDPOINTS\nhostnames-ytpni   IPv4          9376    10.244.0.5,10.244.0.6,10.244.0.7\n```"
+ },
+ {
+  "chunk_id": "tasks/run-application/configure-pdb#unhealthy-pod-eviction-policy-1",
+  "heading": "Specifying a Disruption Budget for your Application > Unhealthy Pod Eviction Policy",
+  "text": ": This policy ensures that running pods of an already disrupted application have\n  the best chance to become healthy. This has negative implications for draining\n  nodes, which can be blocked by misbehaving applications that are guarded by a PDB.\n  More specifically applications with pods in `CrashLoopBackOff` state\n  (due to a bug or misconfiguration), or pods that are just failing to report the\n  `Ready` condition.\n\n`AlwaysAllow`\n: Running pods (`.status.phase=\"Running\"`), but not yet healthy are considered\n  disrupted and can be evicted regardless of whether the criteria in a PDB is met.\n\n: This means prospective running pods of a disrupted application might not get a\n  chance to become healthy. By using this policy, cluster managers can easily evict\n  misbehaving applications that are guarded by a PDB. More specifically applications\n  with pods in `CrashLoopBackOff` state (due to a bug or misconfiguration), or pods\n  that are just failing to report the `Ready` condition.\n\nPods in `Pending`, `Succeeded` or `Failed` phase are always considered for eviction."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-pods#debugging-services-0",
+  "heading": "Debug Pods > Diagnosing the problem > Debugging Services",
+  "text": "Services provide load balancing across a set of pods. There are several common problems that can make Services\nnot work properly.  The following instructions should help debug Service problems.\n\nFirst, verify that there are endpoints for the service. For every Service object,\nthe apiserver makes one or more `EndpointSlice` resources available.\n\nYou can view these resources with:\n\n```shell\nkubectl get endpointslices -l kubernetes.io/service-name=${SERVICE_NAME}\n```\n\nMake sure that the endpoints in the EndpointSlices match up with the number of pods that you expect to be members of your service.\nFor example, if your Service is for an nginx container with 3 replicas, you would expect to see three different\nIP addresses in the Service's endpoint slices.\n\n#### My service is missing endpoints\n\nIf you are missing endpoints, try listing Pods using the labels in the Service selector.\nFor example, that you have a Service with the following selector:\n\n```yaml\n...\nspec:\n  selector:\n    name: nginx\n    type: frontend\n```"
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-0",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "If you got this far, you have confirmed that your Service is correctly\ndefined and is resolved by DNS.  Now let's check that the Pods you ran are\nactually being selected by the Service.\n\nEarlier you saw that the Pods were running.  You can re-check that:\n\n```shell\nkubectl get pods -l app=hostnames\n```\n```none\nNAME                        READY     STATUS    RESTARTS   AGE\nhostnames-632524106-bbpiw   1/1       Running   0          1h\nhostnames-632524106-ly40y   1/1       Running   0          1h\nhostnames-632524106-tlaok   1/1       Running   0          1h\n```\n\nThe `-l app=hostnames` argument is a label selector configured on the Service.\n\nThe \"AGE\" column says that these Pods are about an hour old, which implies that\nthey are running fine and not crashing."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/job#handling-pod-and-container-failures-1",
+  "heading": "Jobs > Handling Pod and container failures",
+  "text": "An entire Pod can also fail, for a number of reasons, such as when the pod is kicked off the node\n(node is upgraded, rebooted, deleted, etc.), or if a container of the Pod fails and the\n`.spec.template.spec.restartPolicy = \"Never\"`. When a Pod fails, then the Job controller\nstarts a new Pod. This means that your application needs to handle the case when it is restarted in a new\npod. In particular, it needs to handle temporary files, locks, incomplete output and the like\ncaused by previous runs.\n\nBy default, each pod failure is counted towards the `.spec.backoffLimit` limit,\nsee [pod backoff failure policy](#pod-backoff-failure-policy). However, you can\ncustomize handling of pod failures by setting the Job's [pod failure policy](#pod-failure-policy)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-condition#status-for-pod-readiness-0",
+  "heading": "Pod Conditions > Enhanced Pod readiness > Status for Pod readiness",
+  "text": "To set these `status.conditions` for the Pod, applications and\noperators should use\nthe `PATCH` action on the Pod's status subresource. You can use `kubectl patch`\nwith `--subresource=status`, or a [Kubernetes client library](/docs/reference/using-api/client-libraries/) to write\ncode that sets custom Pod conditions for Pod readiness.\n\nFor a Pod that uses custom conditions, that Pod is evaluated to be ready **only** when both the following statements apply:\n\n- All containers in the Pod are ready.\n- All conditions specified in `readinessGates` are `True`.\n\nWhen a Pod's containers are Ready but at least one custom condition is missing or `False`,\nthe kubelet sets the Pod's `Ready` condition to `status: \"False\"` with `reason: ReadinessGatesNotReady`."
+ },
+ {
+  "chunk_id": "tasks/debug/debug-application/debug-service#does-the-service-have-any-endpointslices-2",
+  "heading": "Debug Services > Does the Service have any EndpointSlices?",
+  "text": "This confirms that the EndpointSlice controller has found the correct Pods for\nyour Service.  If the `ENDPOINTS` column is `<none>`, you should check that\nthe `spec.selector` field of your Service actually selects for\n`metadata.labels` values on your Pods.  A common mistake is to have a typo or\nother error, such as the Service selecting for `app=hostnames`, but the\nDeployment specifying `run=hostnames`, as in versions previous to 1.18, where\nthe `kubectl run` command could have been also used to create a Deployment."
+ }
+]

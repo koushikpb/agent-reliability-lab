@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/controlling-access#authorization-2",
+  "heading": "Controlling Access to the Kubernetes API > Authorization",
+  "text": "Kubernetes supports multiple authorization modules, such as ABAC mode, RBAC Mode,\nand Webhook mode. When an administrator creates a cluster, they configure the\nauthorization modules that should be used in the API server. If more than one\nauthorization modules are configured, Kubernetes checks each module, and if\nany module authorizes the request, then the request can proceed. If all of\nthe modules deny the request, then the request is denied (HTTP status code 403).\n\nTo learn more about Kubernetes authorization, including details about creating\npolicies using the supported authorization modules, see [Authorization](/docs/reference/access-authn-authz/authorization/)."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/securing-a-cluster#api-authorization-0",
+  "heading": "Securing a Cluster > Controlling access to the Kubernetes API > API Authorization",
+  "text": "Once authenticated, every API call is also expected to pass an authorization check. Kubernetes ships\nan integrated [Role-Based Access Control (RBAC)](/docs/reference/access-authn-authz/rbac/) component that matches an incoming user or group to a\nset of permissions bundled into roles. These permissions combine verbs (get, create, delete) with\nresources (pods, services, nodes) and can be namespace-scoped or cluster-scoped. A set of out-of-the-box\nroles are provided that offer reasonable default separation of responsibility depending on what\nactions a client might want to perform. It is recommended that you use the\n[Node](/docs/reference/access-authn-authz/node/) and\n[RBAC](/docs/reference/access-authn-authz/rbac/) authorizers together, in combination with the"
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#intro-0",
+  "heading": "Role Based Access Control Good Practices",
+  "text": "Kubernetes RBAC is a key security control\nto ensure that cluster users and workloads have only the access to resources required to\nexecute their roles. It is important to ensure that, when designing permissions for cluster\nusers, the cluster administrator understands the areas where privilege escalation could occur,\nto reduce the risk of excessive access leading to security incidents.\n\nThe good practices laid out here should be read in conjunction with the general\n[RBAC documentation](/docs/reference/access-authn-authz/rbac/#restrictions-on-role-creation-or-update)."
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#least-privilege-1",
+  "heading": "Role Based Access Control Good Practices > General good practice > Least privilege",
+  "text": "- Assign permissions at the namespace level where possible. Use RoleBindings as opposed to\n  ClusterRoleBindings to give users rights only within a specific namespace.\n- Avoid providing wildcard permissions when possible, especially to all resources.\n  As Kubernetes is an extensible system, providing wildcard access gives rights\n  not just to all object types that currently exist in the cluster, but also to all object types\n  which are created in the future.\n- Administrators should not use `cluster-admin` accounts except where specifically needed.\n  Providing a low privileged account with\n  [impersonation rights](/docs/reference/access-authn-authz/authentication/#user-impersonation)\n  can avoid accidental modification of cluster resources.\n- Avoid adding users to the `system:masters` group. Any user who is a member of this group\n  bypasses all RBAC rights checks and will always have unrestricted superuser access, which cannot be\n  revoked by removing RoleBindings or ClusterRoleBindings. As an aside, if a cluster is"
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#default-service-accounts-0",
+  "heading": "Service Accounts > What are service accounts? > Default service accounts",
+  "text": "When you create a cluster, Kubernetes automatically creates a ServiceAccount\nobject named `default` for every namespace in your cluster. The `default`\nservice accounts in each namespace get no permissions by default other than the\n[default API discovery permissions](/docs/reference/access-authn-authz/rbac/#default-roles-and-role-bindings)\nthat Kubernetes grants to all authenticated principals if role-based access control (RBAC) is enabled.\nIf you delete the `default` ServiceAccount object in a namespace, the\ncontrol plane\nreplaces it with a new one.\n\nIf you deploy a Pod in a namespace, and you don't\n[manually assign a ServiceAccount to the Pod](#assign-to-pod), Kubernetes\nassigns the `default` ServiceAccount for that namespace to the Pod."
+ },
+ {
+  "chunk_id": "concepts/security/service-accounts#grant-permissions-0",
+  "heading": "Service Accounts > How to use service accounts > Grant permissions to a ServiceAccount",
+  "text": "You can use the built-in Kubernetes\n[role-based access control (RBAC)](/docs/reference/access-authn-authz/rbac/)\nmechanism to grant the minimum permissions required by each service account.\nYou create a *role*, which grants access, and then *bind* the role to your\nServiceAccount. RBAC lets you define a minimum set of permissions so that the\nservice account permissions follow the principle of least privilege. Pods that\nuse that service account don't get more permissions than are required to\nfunction correctly.\n\nFor instructions, refer to\n[ServiceAccount permissions](/docs/reference/access-authn-authz/rbac/#service-account-permissions).\n\n#### Cross-namespace access using a ServiceAccount {#cross-namespace}"
+ },
+ {
+  "chunk_id": "concepts/security/rbac-good-practices#workload-creation-0",
+  "heading": "Role Based Access Control Good Practices > Kubernetes RBAC - privilege escalation risks > Workload creation",
+  "text": "Permission to create workloads (either Pods, or\n[workload resources](/docs/concepts/workloads/controllers/) that manage Pods) in a namespace\nimplicitly grants access to many other resources in that namespace, such as Secrets, ConfigMaps, and\nPersistentVolumes that can be mounted in Pods. Additionally, since Pods can run as any\n[ServiceAccount](/docs/reference/access-authn-authz/service-accounts-admin/), granting permission\nto create workloads also implicitly grants the API access levels of any service account in that\nnamespace."
+ },
+ {
+  "chunk_id": "concepts/security/controlling-access#authorization-1",
+  "heading": "Controlling Access to the Kubernetes API > Authorization",
+  "text": "```json\n{\n  \"apiVersion\": \"authorization.k8s.io/v1beta1\",\n  \"kind\": \"SubjectAccessReview\",\n  \"spec\": {\n    \"resourceAttributes\": {\n      \"namespace\": \"projectCaribou\",\n      \"verb\": \"get\",\n      \"group\": \"unicorn.example.org\",\n      \"resource\": \"pods\"\n    }\n  }\n}\n```\n\nIf Bob makes a request to write (`create` or `update`) to the objects in the\n`projectCaribou` namespace, his authorization is denied. If Bob makes a request\nto read (`get`) objects in a different namespace such as `projectFish`, then his authorization is denied.\n\nKubernetes authorization requires that you use common REST attributes to interact\nwith existing organization-wide or cloud-provider-wide access control systems.\nIt is important to use REST formatting because these control systems might\ninteract with other APIs besides the Kubernetes API."
+ }
+]

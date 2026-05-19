@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Configure all key-value pairs in a Secret as container environment variables",
+  "text": "This functionality is available in Kubernetes v1.6 and later.\n\n- Create a Secret containing multiple key-value pairs\n\n  ```shell\n  kubectl create secret generic test-secret --from-literal=username='my-app' --from-literal=password='39528$vdg7Jb'\n  ```\n\n- Use envFrom to define all of the Secret's data as container environment variables.\n  The key from the Secret becomes the environment variable name in the Pod.\n\n  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: envfrom-secret\nspec:\n  containers:\n  - name: envars-test-container\n    image: nginx\n    envFrom:\n    - secretRef:\n        name: test-secret\n```\n\n- Create the Pod:\n\n  ```shell\n  kubectl create -f https://k8s.io/examples/pods/inject/pod-secret-envFrom.yaml\n  ```"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#configure-all-key-value-pairs-in-a-secret-as-container-environment-variables-1",
+  "heading": "Distribute Credentials Securely Using Secrets > Configure all key-value pairs in a Secret as container environment variables",
+  "text": "- In your shell, display `username` and `password` container environment variables.\n\n  ```shell\n  kubectl exec -i -t envfrom-secret -- /bin/sh -c 'echo \"username: $username\\npassword: $password\\n\"'\n  ```\n\n  The output is similar to:\n\n  ```\n  username: my-app\n  password: 39528$vdg7Jb\n  ```"
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#using-secrets-as-environment-variables-0",
+  "heading": "Secrets > Working with Secrets > Using Secrets as environment variables",
+  "text": "To use a Secret in an environment variable\nin a Pod:\n\n1. For each container in your Pod specification, add an environment variable\n   for each Secret key that you want to use to the\n   `env[].valueFrom.secretKeyRef` field.\n1. Modify your image and/or command line so that the program looks for values\n   in the specified environment variables.\n\nFor instructions, refer to\n[Define container environment variables using Secret data](/docs/tasks/inject-data-application/distribute-credentials-secure/#define-container-environment-variables-using-secret-data).\n\nIt's important to note that the range of characters allowed for environment variable\nnames in pods is [restricted](/docs/tasks/inject-data-application/define-environment-variable-container/#using-environment-variables-inside-of-your-config).\nIf any keys do not meet the rules, those keys are not made available to your container, though\nthe Pod is allowed to start."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#define-a-container-environment-variable-with-data-from-a-single-secret-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Define container environment variables using Secret data > Define a container environment variable with data from a single Secret",
+  "text": "- Define an environment variable as a key-value pair in a Secret:\n\n  ```shell\n  kubectl create secret generic backend-user --from-literal=backend-username='backend-admin'\n  ```\n\n- Assign the `backend-username` value defined in the Secret to the `SECRET_USERNAME` environment variable in the Pod specification.\n\n  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: env-single-secret\nspec:\n  containers:\n  - name: envars-test-container\n    image: nginx\n    env:\n    - name: SECRET_USERNAME\n      valueFrom:\n        secretKeyRef:\n          name: backend-user\n          key: backend-username\n```\n\n- Create the Pod:\n\n  ```shell\n  kubectl create -f https://k8s.io/examples/pods/inject/pod-single-secret-env-variable.yaml\n  ```\n\n- In your shell, display the content of `SECRET_USERNAME` container environment variable."
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/distribute-credentials-secure#define-container-environment-variables-with-data-from-multiple-secrets-0",
+  "heading": "Distribute Credentials Securely Using Secrets > Define container environment variables using Secret data > Define container environment variables with data from multiple Secrets",
+  "text": "- As with the previous example, create the Secrets first.\n\n  ```shell\n  kubectl create secret generic backend-user --from-literal=backend-username='backend-admin'\n  kubectl create secret generic db-user --from-literal=db-username='db-admin'\n  ```\n\n- Define the environment variables in the Pod specification.\n\n  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: envvars-multiple-secrets\nspec:\n  containers:\n  - name: envars-test-container\n    image: nginx\n    env:\n    - name: BACKEND_USERNAME\n      valueFrom:\n        secretKeyRef:\n          name: backend-user\n          key: backend-username\n    - name: DB_USERNAME\n      valueFrom:\n        secretKeyRef:\n          name: db-user\n          key: db-username\n```\n\n- Create the Pod:"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/storage-version-migration#re-encrypt-kubernetes-secrets-using-storage-version-migration-0",
+  "heading": "Migrate Kubernetes Objects Using Storage Version Migration > Re-encrypt Kubernetes secrets using storage version migration",
+  "text": "- To begin with, [configure KMS provider](/docs/tasks/administer-cluster/kms-provider/)\n  to encrypt data at rest in etcd using following encryption configuration.\n\n  ```yaml\n  kind: EncryptionConfiguration\n  apiVersion: apiserver.config.k8s.io/v1\n  resources:\n  - resources:\n    - secrets\n    providers:\n    - aescbc:\n        keys:\n        - name: key1\n          secret: c2VjcmV0IGlzIHNlY3VyZQ==\n  ```\n\n  Make sure to enable automatic reload of encryption\n  configuration file by setting `--encryption-provider-config-automatic-reload` to true.\n\n- Create a Secret using kubectl.\n\n  ```shell\n  kubectl create secret generic my-secret --from-literal=key1=supersecret\n  ```"
+ },
+ {
+  "chunk_id": "concepts/configuration/secret#docker-config-secrets-1",
+  "heading": "Secrets > Types of Secret > Docker config Secrets",
+  "text": "Below is an example for a `kubernetes.io/dockercfg` type of Secret:\n\n```yaml\napiVersion: v1\nkind: Secret\nmetadata:\n  name: secret-dockercfg\ntype: kubernetes.io/dockercfg\ndata:\n  .dockercfg: |\n    eyJhdXRocyI6eyJodHRwczovL2V4YW1wbGUvdjEvIjp7ImF1dGgiOiJvcGVuc2VzYW1lIn19fQo=\n```\n\nIf you do not want to perform the base64 encoding, you can choose to use the\n`stringData` field instead.\n\nWhen you create Docker config Secrets using a manifest, the API\nserver checks whether the expected key exists in the `data` field, and\nit verifies if the value provided can be parsed as a valid JSON. The API\nserver doesn't validate if the JSON actually is a Docker config file."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/encrypt-data#write-an-encryption-configuration-file-0",
+  "heading": "Encrypting Confidential Data at Rest > Encrypt your data > Write an encryption configuration file",
+  "text": "The encryption configuration file may contain keys that can decrypt content in etcd.\nIf the configuration file contains any key material, you must properly\nrestrict permissions on all your control plane hosts so only the user\nwho runs the kube-apiserver can read this configuration.\n\nCreate a new encryption configuration file. The contents should be similar to:\n\n```yaml\n---\napiVersion: apiserver.config.k8s.io/v1\nkind: EncryptionConfiguration\nresources:\n  - resources:\n      - secrets\n      - configmaps\n      - pandas.awesome.bears.example\n    providers:\n      - aescbc:\n          keys:\n            - name: key1\n              # See the following text for more details about the secret value\n              secret: <BASE 64 ENCODED SECRET>\n      - identity: {} # this fallback allows reading unencrypted secrets;\n                     # for example, during initial migration\n```\n\nTo create a new encryption key (that does not use KMS), see\n[Generate the encryption key](#generate-key-no-kms)."
+ }
+]

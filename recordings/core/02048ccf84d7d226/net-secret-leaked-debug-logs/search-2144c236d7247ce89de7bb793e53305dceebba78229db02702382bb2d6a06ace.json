@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#define-container-environment-variables-with-data-from-multiple-configmaps-2",
+  "heading": "Configure a Pod to Use a ConfigMap > Define container environment variables using ConfigMap data > Define container environment variables with data from multiple ConfigMaps",
+  "text": "  Now, the Pod's output includes environment variables `SPECIAL_LEVEL_KEY=very` and `LOG_LEVEL=INFO`.\n\n  Once you're happy to move on, delete that Pod and ConfigMap:\n  ```shell\n  kubectl delete pod dapi-test-pod --now\n  kubectl delete configmap special-config\n  kubectl delete configmap env-config\n  ```"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/environment-variable-expose-pod-information#use-pod-fields-as-values-for-environment-variables-4",
+  "heading": "Expose Pod Information to Containers Through Environment Variables > Use Pod fields as values for environment variables",
+  "text": "```\nminikube\ndapi-envars-fieldref\ndefault\n172.17.0.4\ndefault\n```\n\nTo see why these values are in the log, look at the `command` and `args` fields\nin the configuration file. When the container starts, it writes the values of\nfive environment variables to stdout. It repeats this every ten seconds.\n\nNext, get a shell into the container that is running in your Pod:\n\n```shell\nkubectl exec -it dapi-envars-fieldref -- sh\n```\n\nIn your shell, view the environment variables:\n\n```shell\n# Run this in a shell inside the container\nprintenv\n```\n\nThe output shows that certain environment variables have been assigned the\nvalues of Pod fields:\n\n```\nMY_POD_SERVICE_ACCOUNT=default\n...\nMY_POD_NAMESPACE=default\nMY_POD_IP=172.17.0.4\n...\nMY_NODE_NAME=minikube\n...\nMY_POD_NAME=dapi-envars-fieldref\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#define-container-environment-variables-with-data-from-multiple-configmaps-1",
+  "heading": "Configure a Pod to Use a ConfigMap > Define container environment variables using ConfigMap data > Define container environment variables with data from multiple ConfigMaps",
+  "text": "  ```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: dapi-test-pod\nspec:\n  containers:\n    - name: test-container\n      image: registry.k8s.io/busybox:1.27.2\n      command: [ \"/bin/sh\", \"-c\", \"env\" ]\n      env:\n        - name: SPECIAL_LEVEL_KEY\n          valueFrom:\n            configMapKeyRef:\n              name: special-config\n              key: special.how\n        - name: LOG_LEVEL\n          valueFrom:\n            configMapKeyRef:\n              name: env-config\n              key: log_level\n  restartPolicy: Never\n```\n\n  Create the Pod:\n\n  ```shell\n  kubectl create -f https://kubernetes.io/examples/pods/pod-multiple-configmap-env-variable.yaml\n  ```"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-environment-variable-container#using-environment-variables-inside-of-your-config-0",
+  "heading": "Define Environment Variables for a Container > Using environment variables inside of your config",
+  "text": "Environment variables that you define in a Pod's configuration under \n`.spec.containers[*].env[*]` can be used elsewhere in the configuration, for \nexample in commands and arguments that you set for the Pod's containers.\nIn the example configuration below, the `GREETING`, `HONORIFIC`, and\n`NAME` environment variables are set to `Warm greetings to`, `The Most\nHonorable`, and `Kubernetes`, respectively. The environment variable \n`MESSAGE` combines the set of all these environment variables and then uses it \nas a CLI argument passed to the `env-print-demo` container.\n\nEnvironment variable names may consist of any [printable ASCII characters](https://www.ascii-code.com/characters/printable-characters) except '='."
+ },
+ {
+  "chunk_id": "concepts/configuration/configmap#using-configmaps-as-environment-variables-2",
+  "heading": "ConfigMaps > Using ConfigMaps > Using Configmaps as environment variables",
+  "text": "```shell\nkubectl apply -f env-configmap.yaml\n```\n```shell\nkubectl logs pod/env-configmap\n```\nThe output is similar to this:\n```console\n...\nusername: \"k8s-admin\"\naccess_level: \"1\"\n...\n```\n\nSometimes a Pod won't require access to all the values in a ConfigMap.\nFor example, you could have another Pod which only uses the username value from the ConfigMap.\nFor this use case, you can use the `env.valueFrom` syntax instead, which lets you select individual keys in\na ConfigMap. The name of the environment variable can also be different from the key within the ConfigMap.\nFor example:"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-interdependent-environment-variables#define-an-environment-dependent-variable-for-a-container-0",
+  "heading": "Define Dependent Environment Variables > Define an environment dependent variable for a container",
+  "text": "When you create a Pod, you can set dependent environment variables for the containers that run in the Pod. To set dependent environment variables, you can use $(VAR_NAME) in the `value` of `env` in the configuration file.\n\nIn this exercise, you create a Pod that runs one container. The configuration\nfile for the Pod defines a dependent environment variable with common usage defined. Here is the configuration manifest for the\nPod:"
+ },
+ {
+  "chunk_id": "tasks/inject-data-application/define-environment-variable-container#define-an-environment-variable-for-a-container-0",
+  "heading": "Define Environment Variables for a Container > Define an environment variable for a container",
+  "text": "When you create a Pod, you can set environment variables for the containers\nthat run in the Pod. To set environment variables, include the `env` or\n`envFrom` field in the configuration file.\n\nThe `env` and `envFrom` fields have different effects.\n\n`env`\n: allows you to set environment variables for a container, specifying a value directly for each variable that you name.\n\n`envFrom`\n: allows you to set environment variables for a container by referencing either a ConfigMap or a Secret.\n When you use `envFrom`, all the key-value pairs in the referenced ConfigMap or Secret\n are set as environment variables for the container.\n You can also specify a common prefix string."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-pod-configmap#define-container-environment-variables-with-data-from-multiple-configmaps-0",
+  "heading": "Configure a Pod to Use a ConfigMap > Define container environment variables using ConfigMap data > Define container environment variables with data from multiple ConfigMaps",
+  "text": "As with the previous example, create the ConfigMaps first.\nHere is the manifest you will use:\n\n```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: special-config\n  namespace: default\ndata:\n  special.how: very\n---\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: env-config\n  namespace: default\ndata:\n  log_level: INFO\n```\n\n* Create the ConfigMap:\n\n  ```shell\n  kubectl create -f https://kubernetes.io/examples/configmap/configmaps.yaml\n  ```\n\n* Define the environment variables in the Pod specification."
+ }
+]

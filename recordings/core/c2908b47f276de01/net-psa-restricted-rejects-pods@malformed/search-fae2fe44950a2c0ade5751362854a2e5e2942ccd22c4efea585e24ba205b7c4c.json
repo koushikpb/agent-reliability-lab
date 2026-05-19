@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/containers/images#imagepullbackoff-0",
+  "heading": "Images > Updating images > ImagePullBackOff",
+  "text": "When a kubelet starts creating containers for a Pod using a container runtime,\nit might be possible the container is in [Waiting](/docs/concepts/workloads/pods/pod-lifecycle/#container-state-waiting)\nstate because of `ImagePullBackOff`.\n\nThe status `ImagePullBackOff` means that a container could not start because Kubernetes\ncould not pull a container image (for reasons such as invalid image name, or pulling\nfrom a private registry without `imagePullSecret`). The `BackOff` part indicates\nthat Kubernetes will keep trying to pull the image, with an increasing back-off delay.\n\nKubernetes raises the delay between each attempt until it reaches a compiled-in limit,\nwhich is 300 seconds (5 minutes)."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#image-1",
+  "heading": "Volumes > Types of volumes > image",
+  "text": "`IfNotPresent`\n: The kubelet pulls if the reference isn't already present on disk. The Pod becomes\n  `Failed` if the reference isn't present and the pull fails.\n\nThe volume gets re-resolved if the Pod gets deleted and recreated, which means\nthat new remote content will become available on Pod recreation. A failure to\nresolve or pull the image during Pod startup will block containers from starting\nand may add significant latency. Failures will be retried using normal volume\nbackoff and will be reported on the Pod reason and message.\n\nThe types of objects that may be mounted by this volume are defined by the\ncontainer runtime implementation on a host machine. At a minimum, they must include\nall valid types supported by the container image field. The OCI object gets\nmounted in a single directory (`spec.containers[*].volumeMounts[*].mountPath`)\nand will be mounted read-only.\n\nBesides that:"
+ },
+ {
+  "chunk_id": "concepts/containers/images#maximum-parallel-image-pulls-0",
+  "heading": "Images > Serial and parallel image pulls > Maximum parallel image pulls",
+  "text": "When `serializeImagePulls` is set to false, the kubelet defaults to no limit on\nthe maximum number of images being pulled at the same time. If you would like to\nlimit the number of parallel image pulls, you can set the field `maxParallelImagePulls`\nin the kubelet configuration. With `maxParallelImagePulls` set to _n_, only _n_\nimages can be pulled at the same time, and any image pull beyond _n_ will have to\nwait until at least one ongoing image pull is complete.\n\nLimiting the number of parallel image pulls prevents image pulling from consuming\ntoo much network bandwidth or disk I/O, when parallel image pulling is enabled.\n\nYou can set `maxParallelImagePulls` to a positive number that is greater than or\nequal to 1. If you set `maxParallelImagePulls` to be greater than or equal to 2,\nyou must set `serializeImagePulls` to false. The kubelet will fail to start\nwith an invalid `maxParallelImagePulls` setting."
+ },
+ {
+  "chunk_id": "concepts/containers/images#ensureimagepullcredentialverification-2",
+  "heading": "Images > Using a private registry > Ensure image pull credential verification",
+  "text": "#### Enabling `KubeletEnsureSecretPulledImages` for the first time\n\nWhen the `KubeletEnsureSecretPulledImages` gets enabled for the first time, either\nby a kubelet upgrade or by explicitly enabling the feature, if a kubelet is able to\naccess any images at that time, these will all be considered pre-pulled. This happens\nbecause in this case the kubelet has no records about the images being pulled.\nThe kubelet will only be able to start making image pull records as any image gets\npulled for the first time.\n\nIf this is a concern, it is advised to clean up nodes of all images that should not\nbe considered pre-pulled before enabling the feature.\n\nNote that removing the directory holding the image pulled records will have the same\neffect on kubelet restart, particularly the images currently cached in the nodes by\nthe container runtime will all be considered pre-pulled."
+ },
+ {
+  "chunk_id": "concepts/containers/images#image-pull-policy-0",
+  "heading": "Images > Updating images > Image pull policy",
+  "text": "The `imagePullPolicy` for a container and the tag of the image both affect _when_ the\n[kubelet](/docs/reference/command-line-tools-reference/kubelet/) attempts to pull\n(download) the specified image.\n\nHere's a list of the values you can set for `imagePullPolicy` and the effects\nthese values have:\n\n`IfNotPresent`\n: the image is pulled only if it is not already present locally."
+ },
+ {
+  "chunk_id": "concepts/containers/images#ensureimagepullcredentialverification-1",
+  "heading": "Images > Using a private registry > Ensure image pull credential verification",
+  "text": " * `NeverVerify`: Mimics the behavior of having this feature gate disabled.\n   If the image is present locally, image pull credentials are not verified.\n * `NeverVerifyPreloadedImages`: Images pulled outside the kubelet are not verified,\n but all other images will have their credentials verified. This is the default behavior.\n * `NeverVerifyAllowListedImages`: Images pulled outside the kubelet and mentioned within the\n   `preloadedImagesVerificationAllowlist` specified in the kubelet config are not verified.\n * `AlwaysVerify`: All images will have their credentials verified\n   before they can be used.\n\nThis verification applies to [pre-pulled images](#pre-pulled-images),\nimages pulled using node-wide secrets, and images pulled using Pod-level secrets.\n\nIn the case of credential rotation, the credentials previously used to pull the image\nwill continue to verify without the need to access the registry. New or rotated credentials\nwill require the image to be re-pulled from the registry."
+ },
+ {
+  "chunk_id": "concepts/containers/images#ensureimagepullcredentialverification-0",
+  "heading": "Images > Using a private registry > Ensure image pull credential verification",
+  "text": "If the `KubeletEnsureSecretPulledImages` feature gate is enabled for your cluster,\nKubernetes will validate image credentials for every image that requires credentials\nto be pulled, even if that image is already present on the node. This validation\nensures that images in a Pod request which have not been successfully pulled\nwith the provided credentials must re-pull the images from the registry.\nAdditionally, image pulls that re-use the same credentials\nwhich previously resulted in a successful image pull will not need to re-pull from\nthe registry and are instead validated locally without accessing the registry\n(provided the image is available locally).\nThis is controlled by the`imagePullCredentialsVerificationPolicy` field in the\n[Kubelet configuration](/docs/reference/config-api/kubelet-config.v1beta1/#kubelet-config-k8s-io-v1beta1-ImagePullCredentialsVerificationPolicy).\n\nThis configuration controls when image pull credentials must be verified if the\nimage is already present on the node:"
+ },
+ {
+  "chunk_id": "concepts/containers/images#serial-and-parallel-image-pulls-0",
+  "heading": "Images > Serial and parallel image pulls",
+  "text": "By default, the kubelet pulls images serially. In other words, the kubelet sends\nonly one image pull request to the image service at a time. Other image pull\nrequests have to wait until the one being processed is complete.\n\nNodes make image pull decisions in isolation. Even when you use serialized image\npulls, two different nodes can pull the same image in parallel.\n\nIf you would like to enable parallel image pulls, you can set the field\n`serializeImagePulls` to false in the [kubelet configuration](/docs/reference/config-api/kubelet-config.v1beta1/).\nWith `serializeImagePulls` set to false, image pull requests will be sent to the image service immediately,\nand multiple images will be pulled at the same time.\n\nWhen enabling parallel image pulls, ensure that the image service of your container\nruntime can handle parallel image pulls."
+ }
+]

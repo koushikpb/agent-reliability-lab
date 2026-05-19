@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#intro-2",
+  "heading": "Configure a Security Context for a Pod or Container",
+  "text": "  - is run as privileged, or\n  - has the capability `CAP_SYS_ADMIN`\n\n* `readOnlyRootFilesystem`: Mounts the container's root filesystem as read-only.\n\nThe above bullets are not a complete set of security context settings -- please see\n[SecurityContext](/docs/reference/generated/kubernetes-api//#securitycontext-v1-core)\nfor a comprehensive list."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#set-the-security-context-for-a-pod-1",
+  "heading": "Configure a Security Context for a Pod or Container > Set the security context for a Pod",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo\nspec:\n  securityContext:\n    runAsUser: 1000\n    runAsGroup: 3000\n    fsGroup: 2000\n    supplementalGroups: [4000]\n  volumes:\n  - name: sec-ctx-vol\n    emptyDir: {}\n  containers:\n  - name: sec-ctx-demo\n    image: busybox:1.28\n    command: [ \"sh\", \"-c\", \"sleep 1h\" ]\n    volumeMounts:\n    - name: sec-ctx-vol\n      mountPath: /data/demo\n    securityContext:\n      allowPrivilegeEscalation: false\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#set-the-security-context-for-a-pod-0",
+  "heading": "Configure a Security Context for a Pod or Container > Set the security context for a Pod",
+  "text": "To specify security settings for a Pod, include the `securityContext` field\nin the Pod specification. The `securityContext` field is a\n[PodSecurityContext](/docs/reference/generated/kubernetes-api//#podsecuritycontext-v1-core) object.\nThe security settings that you specify for a Pod apply to all Containers in the Pod.\nHere is a configuration file for a Pod that has a `securityContext` and an `emptyDir` volume:"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-3",
+  "heading": "Pod Security Standards > Profile Details > Restricted",
+  "text": "\t\t\t\t<p>Privilege escalation (such as via set-user-ID or set-group-ID file mode) should not be allowed. <em><a href=\"#os-specific-policy-controls\">This is Linux only policy</a> in v1.25+ <code>(spec.os.name != windows)</code></em></p>\n\t\t\t\t<p><strong>Restricted Fields</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>spec.containers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t\t<li><code>spec.initContainers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t\t<li><code>spec.ephemeralContainers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<p><strong>Allowed Values</strong></p>\n\t\t\t\t<ul>"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#proc-access-1",
+  "heading": "Configure a Security Context for a Pod or Container > Managing access to the `/proc` filesystem",
+  "text": "- Read-Only Paths:\n  - `/proc/bus`\n  - `/proc/fs`\n  - `/proc/irq`\n  - `/proc/sys`\n  - `/proc/sysrq-trigger`\n\nFor some Pods, you might want to bypass that default masking of paths.\nThe most common context for wanting this is if you are trying to run containers within\na Kubernetes container (within a pod).\n\nThe `securityContext` field `procMount` allows a user to request a container's `/proc`\nbe `Unmasked`, or be mounted as read-write by the container process. This also\napplies to `/sys/firmware` which is not in `/proc`.\n\n```yaml\n...\nsecurityContext:\n  procMount: Unmasked\n```"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-8",
+  "heading": "Pod Security Standards > Profile Details > Restricted",
+  "text": "\t\t\t\t\t<li><code>spec.ephemeralContainers[*].securityContext.seccompProfile.type</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<p><strong>Allowed Values</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>RuntimeDefault</code></li>\n\t\t\t\t\t<li><code>Localhost</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<small>\n\t\t\t\t\tThe container fields may be undefined/<code>nil</code> if the pod-level\n\t\t\t\t\t<code>spec.securityContext.seccompProfile.type</code> field is set appropriately.\n\t\t\t\t\tConversely, the pod-level field may be undefined/<code>nil</code> if _all_ container-\n\t\t\t\t\tlevel fields are set.\n\t\t\t\t</small>\n  \t\t\t</td>\n  \t\t</tr>\n\t\t  <tr>\n\t\t\t<td style=\"white-space: nowrap\">Capabilities (v1.22+)</td>\n\t\t\t<td>\n\t\t\t\t<p>"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#set-the-seccomp-profile-for-a-container-1",
+  "heading": "Configure a Security Context for a Pod or Container > Set the Seccomp Profile for a Container",
+  "text": "```yaml\n...\nsecurityContext:\n  seccompProfile:\n    type: RuntimeDefault\n```\n\nHere is an example that sets the Seccomp profile to a pre-configured file at\n`<kubelet-root-dir>/seccomp/my-profiles/profile-allow.json`:\n\n```yaml\n...\nsecurityContext:\n  seccompProfile:\n    type: Localhost\n    localhostProfile: my-profiles/profile-allow.json\n```"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#baseline-3",
+  "heading": "Pod Security Standards > Profile Details > Baseline",
+  "text": "\t\t\t\t\t<li><code>spec.hostIPC</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<p><strong>Allowed Values</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li>Undefined/nil</li>\n\t\t\t\t\t<li><code>false</code></li>\n\t\t\t\t</ul>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"white-space: nowrap\">Privileged Containers</td>\n\t\t\t<td>\n\t\t\t\t<p>Privileged Pods disable most security mechanisms and must be disallowed.</p>\n\t\t\t\t<p><strong>Restricted Fields</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>spec.containers[*].securityContext.privileged</code></li>\n\t\t\t\t\t<li><code>spec.initContainers[*].securityContext.privileged</code></li>\n\t\t\t\t\t<li><code>spec.ephemeralContainers[*].securityContext.privileged</code></li>\n\t\t\t\t</ul>"
+ }
+]

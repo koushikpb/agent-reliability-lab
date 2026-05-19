@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#specify-a-cpu-request-that-is-too-big-for-your-nodes-0",
+  "heading": "Assign CPU Resources to Containers and Pods > Specify a CPU request that is too big for your Nodes",
+  "text": "CPU requests and limits are associated with Containers, but it is useful to think\nof a Pod as having a CPU request and limit. The CPU request for a Pod is the sum\nof the CPU requests for all the Containers in the Pod. Likewise, the CPU limit for\na Pod is the sum of the CPU limits for all the Containers in the Pod.\n\nPod scheduling is based on requests. A Pod is scheduled to run on a Node only if\nthe Node has enough CPU resources available to satisfy the Pod CPU request.\n\nIn this exercise, you create a Pod that has a CPU request so big that it exceeds\nthe capacity of any Node in your cluster. Here is the configuration file for a Pod\nthat has one Container. The Container requests 100 CPU, which is likely to exceed the\ncapacity of any Node in your cluster."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#intro-0",
+  "heading": "Assign CPU Resources to Containers and Pods",
+  "text": "This page shows how to assign a CPU *request* and a CPU *limit* to\na container. Containers cannot use more CPU than the configured limit.\nProvided the system has CPU time free, a container is guaranteed to be\nallocated as much CPU as it requests."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-constraint-namespace#attempt-to-create-a-pod-that-does-not-meet-the-minimum-cpu-request-0",
+  "heading": "Configure Minimum and Maximum CPU Constraints for a Namespace > Attempt to create a Pod that does not meet the minimum CPU request",
+  "text": "Here's a manifest for a Pod that has one container. The container specifies a\nCPU request of 100 millicpu and a CPU limit of 800 millicpu.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: constraints-cpu-demo-3\nspec:\n  containers:\n  - name: constraints-cpu-demo-3-ctr\n    image: nginx\n    resources:\n      limits:\n        cpu: \"800m\"\n      requests:\n        cpu: \"100m\"\n```\n\nAttempt to create the Pod:\n\n```shell\nkubectl apply -f https://k8s.io/examples/admin/resource/cpu-constraints-pod-3.yaml --namespace=constraints-cpu-example\n```\n\nThe output shows that the Pod does not get created, because it defines an unacceptable container.\nThat container is not acceptable because it specifies a CPU request that is lower than the\nenforced minimum:"
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#example-1-0",
+  "heading": "Resource Management for Pods and Containers > Container resources example",
+  "text": "The following Pod has two containers. Both containers are defined with a request for\n0.25 CPU\nand 64MiB (2<sup>26</sup> bytes) of memory. Each container has a limit of 0.5\nCPU and 128MiB of memory. You can say the Pod has a request of 0.5 CPU and 128\nMiB of memory, and a limit of 1 CPU and 256MiB of memory.\n\n```yaml\n---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: frontend\nspec:\n  containers:\n  - name: app\n    image: images.my-company.example/app:v4\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n  - name: log-aggregator\n    image: images.my-company.example/log-aggregator:v6\n    resources:\n      requests:\n        memory: \"64Mi\"\n        cpu: \"250m\"\n      limits:\n        memory: \"128Mi\"\n        cpu: \"500m\"\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-pod-level-resources#intro-0",
+  "heading": "Assign Pod-level CPU and memory resources",
+  "text": "This page shows how to specify CPU and memory resources for a Pod at pod-level in\naddition to container-level resource specifications. A Kubernetes node allocates\nresources to a pod based on the pod's resource requests. These requests can be\ndefined at the pod level or individually for containers within the pod. When\nboth are present, the pod-level requests take precedence.\n\nSimilarly, a pod's resource usage is restricted by limits, which can also be set at\nthe pod-level or individually for containers within the pod. Again,\npod-level limits are prioritized when both are present. This allows for flexible\nresource management, enabling you to control resource allocation at both the pod and\ncontainer levels.\n\nIn order to specify the resources at pod-level, it is required to enable\n`PodLevelResources` [feature gate](/docs/reference/command-line-tools-reference/feature-gates/)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/assign-cpu-resource#motivation-for-cpu-requests-and-limits-0",
+  "heading": "Assign CPU Resources to Containers and Pods > Motivation for CPU requests and limits",
+  "text": "By configuring the CPU requests and limits of the Containers that run in your\ncluster, you can make efficient use of the CPU resources available on your cluster\nNodes. By keeping a Pod CPU request low, you give the Pod a good chance of being\nscheduled. By having a CPU limit that is greater than the CPU request, you accomplish two things:\n\n* The Pod can have bursts of activity where it makes use of CPU resources that happen to be available.\n* The amount of CPU resources a Pod can use during a burst is limited to some reasonable amount."
+ },
+ {
+  "chunk_id": "tasks/administer-cluster/manage-resources/cpu-constraint-namespace#create-a-pod-that-does-not-specify-any-cpu-request-or-limit-0",
+  "heading": "Configure Minimum and Maximum CPU Constraints for a Namespace > Create a Pod that does not specify any CPU request or limit",
+  "text": "Here's a manifest for a Pod that has one container. The container does not\nspecify a CPU request, nor does it specify a CPU limit.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: constraints-cpu-demo-4\nspec:\n  containers:\n  - name: constraints-cpu-demo-4-ctr\n    image: vish/stress\n```\n\nCreate the Pod:\n\n```shell\nkubectl apply -f https://k8s.io/examples/admin/resource/cpu-constraints-pod-4.yaml --namespace=constraints-cpu-example\n```\n\nView detailed information about the Pod:\n\n```\nkubectl get pod constraints-cpu-demo-4 --namespace=constraints-cpu-example --output=yaml\n```\n\nThe output shows that the Pod's single container has a CPU request of 800 millicpu and a\nCPU limit of 800 millicpu.\nHow did that container get those values?"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/resize-pod-resources#limitations-0",
+  "heading": "Resize CPU and Memory Resources assigned to Pods > Limitations",
+  "text": "For Kubernetes , resizing Pod-level resources in-place is subject to all the limitations described for container-level resource resize, which you can find here: [Resize CPU and Memory Resources assigned to Containers: Limitations](/docs/tasks/configure-pod-container/resize-container-resources/#limitations).\n\nAdditionally, the following constraint is specific to Pod-level resource resize:\n* Container Requests Validation: A resize is only permitted if the resulting\n  Pod-level resource requests (spec.resources.requests) are greater than or equal to\n  the sum of the corresponding resource requests from all individual containers\n  within the Pod. This maintains the minimum guaranteed resource availability for\n  the Pod.\n\n* Container Limits Validation: A resize is permitted if individual container limits\n  are less than or equal to the Pod-level resource limits (spec.resources.limits).\n  The Pod-level limit serves as a boundary that no single container may exceed, but\n  the sum of container limits is permitted to exceed the Pod-level limit, enabling\n  resource sharing across containers within the Pod."
+ }
+]

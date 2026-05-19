@@ -1,0 +1,21 @@
+{
+ "content": [
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01MLyXCz8s9ftA5dKkKP43rE",
+   "input": {
+    "id": "T-1001",
+    "note": "Cause: The payments-api container (image 2.14.0) requires the file /etc/payments/feature-flags.yaml, which it expects to be provided by a ConfigMap named `payments-flags` mounted at /etc/payments. That mount is missing from the Pod spec rolled out this morning, so the process logs `FATAL exiting: configuration incomplete` and exits with code 1 immediately on startup. That is why both replicas are in CrashLoopBackOff with ~14 restarts and exit code 1, while payments-db-0 is unaffected.\n\nEvidence:\n- list_pods (payments): both payments-api-6f7c9d-* pods CrashLoopBackOff, last_state Terminated (Error) exit code 1, image payments-api:2.14.0.\n- Logs from payments-api-6f7c9d-k2x8p: \"ERROR config: required file /etc/payments/feature-flags.yaml not found\" and \"FATAL exiting: configuration incomplete (expected ConfigMap payments-flags mounted at /etc/payments)\".\n\nFix: Add the ConfigMap as a file volume on the payments-api Deployment so the file appears at /etc/payments/feature-flags.yaml. Make sure the ConfigMap `payments-flags` exists in the `payments` namespace and contains a key that lands at feature-flags.yaml, then add a volume + volumeMount to the container, e.g.:\n\n  volumes:\n  - name: flags\n    configMap:\n      name: payments-flags\n  containers:\n  - name: payments-api\n    volumeMounts:\n    - name: flags\n      mountPath: /etc/payments\n      readOnly: true\n\nThis is the standard way to mount a ConfigMap as files into a Pod [cite: concepts/configuration/configmap#using-configmaps-as-files-from-a-pod-1] [cite: concepts/storage/volumes#configmap-1]. If you need the Pod to tolerate the ConfigMap being absent (not recommended here, since the app treats it as required), you could mark the reference `optional: true`, but then the mount would be empty and the app would still fail [cite: tasks/configure-pod-container/configure-pod-configmap#optional-references-0] [cite: tasks/configure-pod-container/configure-pod-configmap#optional-configmaps-2]. After rolling out the updated Deployment, the new pods should start cleanly and checkout should recover.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4916,
+ "model": "claude-opus-4-7",
+ "output_tokens": 909,
+ "stop_reason": "tool_use"
+}

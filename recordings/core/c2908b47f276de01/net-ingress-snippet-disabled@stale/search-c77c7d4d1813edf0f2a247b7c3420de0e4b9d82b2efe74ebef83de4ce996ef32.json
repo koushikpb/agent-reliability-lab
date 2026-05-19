@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-update-objects-9",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to update objects",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # The annotation contains the updated image to nginx 1.16.1,\n    # but does not contain the updated replicas to 2\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.16.1\",\"name\":\"nginx\",\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merge-patch-calculation-7",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merge patch calculation",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # The annotation contains the updated image to nginx 1.16.1,\n    # but does not contain the updated replicas to 2\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.16.1\",\"name\":\"nginx\",\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-update-objects-8",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to update objects",
+  "text": "```shell\nkubectl get -f https://k8s.io/examples/application/update_deployment.yaml -o yaml\n```\n\nThe output shows the following changes to the live configuration:\n\n* The `replicas` field retains the value of 2 set by `kubectl scale`.\n  This is possible because it is omitted from the configuration file.\n* The `image` field has been updated to `nginx:1.16.1` from `nginx:1.14.2`.\n* The `last-applied-configuration` annotation has been updated with the new image.\n* The `minReadySeconds` field has been cleared.\n* The `last-applied-configuration` annotation no longer contains the `minReadySeconds` field."
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-update-objects-5",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to update objects",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # note that the annotation does not contain replicas\n    # because it was not updated through apply\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"minReadySeconds\":5,\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.14.2\",\"name\":\"nginx\",\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#merge-patch-calculation-2",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How apply calculates differences and merges changes > Merge patch calculation",
+  "text": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  annotations:\n    # ...\n    # note that the annotation does not contain replicas\n    # because it was not updated through apply\n    kubectl.kubernetes.io/last-applied-configuration: |\n      {\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\n      \"metadata\":{\"annotations\":{},\"name\":\"nginx-deployment\",\"namespace\":\"default\"},\n      \"spec\":{\"minReadySeconds\":5,\"selector\":{\"matchLabels\":{\"app\":nginx}},\"template\":{\"metadata\":{\"labels\":{\"app\":\"nginx\"}},\n      \"spec\":{\"containers\":[{\"image\":\"nginx:1.14.2\",\"name\":\"nginx\",\n```"
+ },
+ {
+  "chunk_id": "tasks/manage-kubernetes-objects/declarative-config#how-to-create-objects-0",
+  "heading": "Declarative Management of Kubernetes Objects Using Configuration Files > How to create objects",
+  "text": "Use `kubectl apply` to create all objects, except those that already exist,\ndefined by configuration files in a specified directory:\n\n```shell\nkubectl apply -f <directory>\n```\n\nThis sets the `kubectl.kubernetes.io/last-applied-configuration: '{...}'`\nannotation on each object. The annotation contains the contents of the object\nconfiguration file that was used to create the object.\n\nAdd the `-R` flag to recursively process directories.\n\nHere's an example of an object configuration file:\n\n```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx-deployment\nspec:\n  selector:\n    matchLabels:\n      app: nginx\n  minReadySeconds: 5\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.14.2\n        ports:\n        - containerPort: 80\n```\n\nRun `kubectl diff` to print the object that will be created:"
+ },
+ {
+  "chunk_id": "concepts/workloads/management#updating-annotations-0",
+  "heading": "Managing Workloads > Updating annotations",
+  "text": "Sometimes you would want to attach annotations to resources. Annotations are arbitrary\nnon-identifying metadata for retrieval by API clients such as tools or libraries.\nThis can be done with `kubectl annotate`. For example:\n\n```shell\nkubectl annotate pods my-nginx-v4-9gw19 description='my frontend running nginx'\nkubectl get pods my-nginx-v4-9gw19 -o yaml\n```\n\n```shell\napiVersion: v1\nkind: pod\nmetadata:\n  annotations:\n    description: my frontend running nginx\n...\n```\n\nFor more information, see [annotations](/docs/concepts/overview/working-with-objects/annotations/)\nand [kubectl annotate](/docs/reference/kubectl/generated/kubectl_annotate/)."
+ },
+ {
+  "chunk_id": "tasks/run-application/run-stateless-application-deployment#creating-and-exploring-an-nginx-deployment-1",
+  "heading": "Run a Stateless Application Using a Deployment > Creating and exploring an nginx deployment",
+  "text": "   ```\n   Name:     nginx-deployment\n   Namespace:    default\n   CreationTimestamp:  Tue, 30 Aug 2016 18:11:37 -0700\n   Labels:     app=nginx\n   Annotations:    deployment.kubernetes.io/revision=1\n   Selector:   app=nginx\n   Replicas:   2 desired | 2 updated | 2 total | 2 available | 0 unavailable\n   StrategyType:   RollingUpdate\n   MinReadySeconds:  0\n   RollingUpdateStrategy:  1 max unavailable, 1 max surge\n   Pod Template:\n     Labels:       app=nginx\n     Containers:\n       nginx:\n       Image:              nginx:1.14.2\n       Port:               80/TCP\n       Environment:        <none>\n       Mounts:             <none>\n     Volumes:              <none>\n   Conditions:\n     Type          Status  Reason\n     ----          ------  ------\n     Available     True    MinimumReplicasAvailable\n     Progressing   True    NewReplicaSetAvailable\n   OldReplicaSets:   <none>\n   NewReplicaSet:    nginx-deployment-1771418926 (2/2 replicas created)\n```"
+ }
+]

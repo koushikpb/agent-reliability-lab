@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/security/service-accounts#alternatives-1",
+  "heading": "Service Accounts > Alternatives",
+  "text": "  * [Use a service mesh such as Istio to provide certificates to Pods](https://istio.io/latest/docs/tasks/security/cert-management/plugin-ca-cert/).\n* Authenticate from outside the cluster to the API server without using service account tokens:\n  * [Configure the API server to accept OpenID Connect (OIDC) tokens from your identity provider](/docs/reference/access-authn-authz/authentication/#openid-connect-tokens).\n  * Use service accounts or user accounts created using an external Identity\n    and Access Management (IAM) service, such as from a cloud provider, to\n    authenticate to your cluster.\n  * [Use the CertificateSigningRequest API with client certificates](/docs/tasks/tls/managing-tls-in-a-cluster/).\n* [Configure the kubelet to retrieve credentials from an image registry](/docs/tasks/administer-cluster/kubelet-credential-provider/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#http-probes-7",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe mechanism details > HTTP probes",
+  "text": "If you probe an endpoint that returns a response body larger than **10KiB**,\nthe kubelet will still mark the probe as successful based on the status code,\nbut it will close the connection after reaching the 10KiB limit.\nThis abrupt closure can cause **connection reset by peer** or **broken pipe errors** to appear in your application's logs,\nwhich can be difficult to distinguish from legitimate network issues.\n\nFor reliable `httpGet` probes, it is strongly recommended to use dedicated health check endpoints\nthat return a minimal response body. If you must use an existing endpoint with a large payload,\nconsider using an `exec` probe to perform a HEAD request instead."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-a-tcp-liveness-probe-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define a TCP liveness probe",
+  "text": "A third type of liveness probe uses a TCP socket. With this configuration, the\nkubelet will attempt to open a socket to your container on the specified port.\nIf it can establish a connection, the container is considered healthy, if it\ncan't it is considered a failure.\n\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: goproxy\n  labels:\n    app: goproxy\nspec:\n  containers:\n  - name: goproxy\n    image: registry.k8s.io/goproxy:0.1\n    ports:\n    - containerPort: 8080\n    readinessProbe:\n      tcpSocket:\n        port: 8080\n      initialDelaySeconds: 15\n      periodSeconds: 10\n    livenessProbe:\n      tcpSocket:\n        port: 8080\n      initialDelaySeconds: 15\n      periodSeconds: 10\n```"
+ },
+ {
+  "chunk_id": "concepts/services-networking/network-policies#the-two-sorts-of-pod-isolation-0",
+  "heading": "Network Policies > The two sorts of pod isolation",
+  "text": "There are two sorts of isolation for a pod: isolation for egress, and isolation for ingress.\nThey concern what connections may be established. \"Isolation\" here is not absolute, rather it\nmeans \"some restrictions apply\". The alternative, \"non-isolated for $direction\", means that no\nrestrictions apply in the stated direction. The two sorts of isolation (or not) are declared\nindependently, and are both relevant for a connection from one pod to another.\n\nBy default, a pod is non-isolated for egress; all outbound connections are allowed.\nA pod is isolated for egress if there is any NetworkPolicy that both selects the pod and has\n\"Egress\" in its `policyTypes`; we say that such a policy applies to the pod for egress.\nWhen a pod is isolated for egress, the only allowed connections from the pod are those allowed by\nthe `egress` list of some NetworkPolicy that applies to the pod for egress. Reply traffic for those\nallowed connections will also be implicitly allowed.\nThe effects of those `egress` lists combine additively."
+ },
+ {
+  "chunk_id": "concepts/services-networking/network-policies#the-two-sorts-of-pod-isolation-2",
+  "heading": "Network Policies > The two sorts of pod isolation",
+  "text": "For a connection from a source pod to a destination pod to be allowed, both the egress policy on\nthe source pod and the ingress policy on the destination pod need to allow the connection. If\neither side does not allow the connection, it will not happen."
+ },
+ {
+  "chunk_id": "concepts/services-networking/network-policies#network-traffic-filtering-0",
+  "heading": "Network Policies > Network traffic filtering",
+  "text": "NetworkPolicy is defined for [layer 4](https://en.wikipedia.org/wiki/OSI_model#Layer_4:_Transport_layer)\nconnections (TCP, UDP, and optionally SCTP). For all the other protocols, the behaviour may vary\nacross network plugins.\n\nYou must be using a CNI plugin that supports SCTP\nprotocol NetworkPolicies.\n\nWhen a `deny all` network policy is defined, it is only guaranteed to deny TCP, UDP and SCTP\nconnections. For other protocols, such as ARP or ICMP, the behaviour is undefined.\nThe same applies to allow rules: when a specific pod is allowed as ingress source or egress destination,\nit is undefined what happens with (for example) ICMP packets. Protocols such as ICMP may be allowed by some\nnetwork plugins and denied by others."
+ },
+ {
+  "chunk_id": "concepts/services-networking/network-policies#the-two-sorts-of-pod-isolation-1",
+  "heading": "Network Policies > The two sorts of pod isolation",
+  "text": "By default, a pod is non-isolated for ingress; all inbound connections are allowed.\nA pod is isolated for ingress if there is any NetworkPolicy that both selects the pod and\nhas \"Ingress\" in its `policyTypes`; we say that such a policy applies to the pod for ingress.\nWhen a pod is isolated for ingress, the only allowed connections into the pod are those from\nthe pod's node and those allowed by the `ingress` list of some NetworkPolicy that applies to\nthe pod for ingress. Reply traffic for those allowed connections will also be implicitly allowed.\nThe effects of those `ingress` lists combine additively.\n\nNetwork policies do not conflict; they are additive. If any policy or policies apply to a given\npod for a given direction, the connections allowed in that direction from that pod is the union of\nwhat the applicable policies allow. Thus, order of evaluation does not affect the policy result."
+ },
+ {
+  "chunk_id": "concepts/services-networking/network-policies#allow-all-ingress-traffic-0",
+  "heading": "Network Policies > Default policies > Allow all ingress traffic",
+  "text": "If you want to allow all incoming connections to all pods in a namespace, you can create a policy\nthat explicitly allows that.\n\n```yaml\n---\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: allow-all-ingress\nspec:\n  podSelector: {}\n  ingress:\n  - {}\n  policyTypes:\n  - Ingress\n```\n\nWith this policy in place, no additional policy or policies can cause any incoming connection to\nthose pods to be denied. This policy has no effect on isolation for egress from any pod."
+ }
+]

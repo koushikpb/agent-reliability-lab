@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "Summary: Inspected T-6001 and the catalog namespace. The 4.8.0 release added a `log-forwarder` sidecar with no CPU request to the search-api pods; for Resource-type HPAs, a missing request on any container makes pod CPU utilization undefined, which matches the `<unknown>/60%` symptom. Resolved the ticket with two possible owner-applied fixes (add a cpu request to the sidecar, or move the HPA to a ContainerResource metric targeting the `api` container), each with doc citations.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8065,
+ "model": "claude-opus-4-7",
+ "output_tokens": 179,
+ "stop_reason": "end_turn"
+}

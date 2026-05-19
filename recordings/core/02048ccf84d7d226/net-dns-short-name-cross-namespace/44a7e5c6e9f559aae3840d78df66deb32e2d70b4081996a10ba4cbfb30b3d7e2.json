@@ -1,0 +1,30 @@
+{
+ "content": [
+  {
+   "signature": "EpEICqgBCBMYAipARX7XeAaej0PMG6giODMPi6fo0TGXl8smPgYFQ03Jx2+oK1YomvROjQa8n6YSHVC3Bxnbt8uJpHRjWG9kiw39GzIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAZTu8dYGEgzhn2d/C90xpV7BiQkaDAt+iB0Tokh5mcHeviIwBYhK1s2UufFhJfjzOWjYvtLzkmBlbyelpaYeNhxh55GWfk70m+U93W4fujyANcXLKpUGapBhxzp5ovJC7Hyh/3b3uy3vZvVeCNpackwqSJ/vfEDKHLzJBpB3h3vAiJRFphpdAh/qwU+sYBX6lgF2jgy13rjNXykxgtgD93dTPufnkBeGnxcE2F90S5J66tkZNZE0fEktlLgNX7eHa5sX5FOZaKtTCbILolxx/HIfR5UJ38VuokqRYMZSq4vpxdcMsKGpFsPmmPntyNuTMWcmvDWLqbihdD1Bi+5NE9VimEPFysIIP1TqZkfNF9UlttwMURzvqePNlYi+iszk/VM/ITDgphJt4PtlsCY9kUPst8JoY4HGsbJ9mW5OmiJ/W1hsMJBavJ5tJSWbETKr6ULxnlLruTyqGlliN5j1GE3F0+jg1Pvmfexx2hkMigjMkQ3fln5no5Ya4Vue12EmbonS4rjo2w4kyOeyuDfR+AcAmluhuTrZ7LzU2drhlDwkLCMWbSpl8ETWmGXI1mr4P5T9jOqnW67h9tBX0PXW3h60JMvA/gHIEZsh3z/Pnu2hvN3ZQCuYpLhADwzYZB77+GjYN2sfCxH9KmLCx6H9/v6Oe5Pvkvw2Qfb+VQkjDVVfz62Bj25ZrOZmVFKxAu6P9lzYzz0KtNnQAdDuJ+f7WYGTicksd4z2b+adS6pZSCssW4KjG3jdX9e+gD5K9qoJE66kS2GxO+Z/fXg79gfikz4PP+SxPNDUGZbN0jHmMoBBKpFfLlO8OigOcH/2V9VyX6yyWWxVnN0SwxHOJx34PqvocJetP7f0cvh8BNTUnCLS4OQKN0SFiKPC19D14Q/kYo8qJ1xGgy9FCRMfvqDbIwvxGf5OtBsoJxRjkAFJ75s1ktdSduxhKk61IUrQ2rLXsSdW7TRyUd5/QGlSqf2LfhUJJbEMc0U34cJSTwleSQxdxUllH3HmK2VYLkbBnrsk+7RHQgYR3vyZFmPf6fqPe0DdAnyLBgzDUj8qEHEZRIn2A6FgBTzLOuAcLzu5Q4Zmbh+RzWewzF2MGEYhLZsqn15xMRDhdp2K+vl5sh/ybgkfohyRJL/XIfwQJaw0G/5Czcr2VVGtAc9jATWEGAE=",
+   "thinking": "The evidence is clear:\n\n1. The notification-worker is configured with `SMTP_HOST=smtp-relay` (just the short name, no namespace).\n2. The DNS error is: `lookup smtp-relay on 10.96.0.10:53: no such host`\n3. This is because `smtp-relay` was in the `notify` namespace before Sunday, so the short name `smtp-relay` would resolve. Now it's in `shared-infra`, so the short DNS name `smtp-relay` no longer resolves from the `notify` namespace.\n4. The fix is to update the `SMTP_HOST` configuration to use the fully qualified service name: `smtp-relay.shared-infra` or `smtp-relay.shared-infra.svc.cluster.local`.\nThis also confirms the relay itself is healthy since other teams like billing are connecting without issues, reinforcing that it's purely a DNS resolution problem for this namespace. I'll document these findings in the ticket now.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "I have all the evidence I need. Let me resolve the ticket now.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_019iorcW1n3UGKjAzE8QGwts",
+   "input": {
+    "id": "T-4004",
+    "note": "**Root cause: unqualified DNS name no longer resolves after the smtp-relay Service moved to a different namespace.**\n\n**Evidence:**\n- The notification-worker logs show the worker is configured with `SMTP_HOST=smtp-relay` (short/unqualified name):\n  `config: SMTP_HOST=smtp-relay SMTP_PORT=587`\n- Every email job fails with: `smtp dial: dial tcp: lookup smtp-relay on 10.96.0.10:53: no such host`\n- The smtp-relay pods in `shared-infra` are healthy and actively serving other tenants (e.g. the billing namespace), confirming the relay itself is not the problem.\n\n**Why this happens:**\nDNS queries that do not specify a namespace are scoped to the pod's own namespace. When `smtp-relay` lived in the `notify` namespace the short name resolved fine. After the platform team moved it to `shared-infra` on Sunday night, the unqualified name `smtp-relay` no longer exists in the `notify` namespace, so CoreDNS returns \"no such host\". Pods in a different namespace must use the fully-qualified service name to reach a service in another namespace [cite: concepts/services-networking/service#dns-0][cite: tasks/administer-cluster/dns-debugging-resolution#are-you-in-the-right-namespace-for-the-service-0].\n\n**Fix:**\nUpdate the `SMTP_HOST` environment variable (or the ConfigMap/Secret that sets it) for the `notification-worker` Deployment from:\n```\nsmtp-relay\n```\nto the namespace-qualified DNS name:\n```\nsmtp-relay.shared-infra\n```\nor the fully-qualified form `smtp-relay.shared-infra.svc.cluster.local`. After updating the value, roll the Deployment so pods pick up the new configuration. No changes to the smtp-relay or CoreDNS are required.",
+    "status": "resolved"
+   },
+   "name": "update_ticket",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4920,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 776,
+ "stop_reason": "tool_use"
+}

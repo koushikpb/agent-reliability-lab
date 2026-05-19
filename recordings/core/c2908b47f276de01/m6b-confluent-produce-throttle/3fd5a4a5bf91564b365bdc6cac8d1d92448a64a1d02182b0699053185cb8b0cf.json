@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The Kubernetes docs don't cover Kafka throttling specifically. Let me search more specifically for Kafka broker throttling:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01RaUvLyeQkp8oKFBBHLt1qF",
+   "input": {
+    "query": "Kafka broker client quota throttling rate limit"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 5587,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 87,
+ "stop_reason": "tool_use"
+}

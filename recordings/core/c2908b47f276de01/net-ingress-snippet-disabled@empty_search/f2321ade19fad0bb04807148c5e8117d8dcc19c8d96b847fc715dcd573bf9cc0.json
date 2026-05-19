@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me try a different search:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_017kXqXVsg1rn1sxc4tiisno",
+   "input": {
+    "query": "ingress-nginx rewrite target regex"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2622,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 68,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/probes#when-should-you-use-a-readiness-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > When to use each probe > When should you use a readiness probe?",
+  "text": "To start sending traffic to a Pod only when a probe succeeds, specify a\nreadiness probe. The readiness probe might be the same as the liveness probe,\nbut the existence of the readiness probe in the spec means that the Pod will\nstart without receiving any traffic and only start receiving traffic after the\nprobe starts succeeding.\n\nYou can also use a readiness probe to let a container take itself down for\nmaintenance, by checking an endpoint specific to readiness that is different\nfrom the liveness probe.\n\nWhen your app has a strict dependency on back-end services, you can implement\nboth a liveness and a readiness probe. The liveness probe passes when the app\nitself is healthy, but the readiness probe additionally checks that each\nrequired back-end service is available. This helps you avoid directing traffic\nto Pods that can only respond with error messages."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-readiness-probes-0",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define readiness probes",
+  "text": "Sometimes, applications are temporarily unable to serve traffic.\nFor example, an application might need to load large data or configuration\nfiles during startup, or depend on external services after startup.\nIn such cases, you don't want to kill the application,\nbut you don't want to send it requests either. Kubernetes provides\nreadiness probes to detect and mitigate these situations. A pod with containers\nreporting that they are not ready does not receive traffic through Kubernetes\nServices.\n\nReadiness probes run on the container during its whole lifecycle.\n\nThe readiness and liveness probes do not depend on each other to succeed.\nIf you want to wait before executing a readiness probe, you should use\n`initialDelaySeconds` or a `startupProbe`.\n\nReadiness probes are configured similarly to liveness probes. The only difference\nis that you use the `readinessProbe` field instead of the `livenessProbe` field.\n\n```yaml\nreadinessProbe:\n  exec:\n    command:\n    - /bin/cat\n    - /tmp/healthy\n  initialDelaySeconds: 5\n  periodSeconds: 5\n```"
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#interact-with-the-frontend-service-0",
+  "heading": "Connect a Frontend to a Backend Using Services > Interact with the frontend Service",
+  "text": "Once you've created a Service of type LoadBalancer, you can use this\ncommand to find the external IP:\n\n```shell\nkubectl get service frontend --watch\n```\n\nThis displays the configuration for the `frontend` Service and watches for\nchanges. Initially, the external IP is listed as `<pending>`:\n\n```\nNAME       TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)  AGE\nfrontend   LoadBalancer   10.51.252.116   <pending>     80/TCP   10s\n```\n\nAs soon as an external IP is provisioned, however, the configuration updates\nto include the new IP under the `EXTERNAL-IP` heading:\n\n```\nNAME       TYPE           CLUSTER-IP      EXTERNAL-IP        PORT(S)  AGE\nfrontend   LoadBalancer   10.51.252.116   XXX.XXX.XXX.XXX    80/TCP   1m\n```\n\nThat IP can now be used to interact with the `frontend` service from outside the\ncluster."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#readiness-probe-0",
+  "heading": "Liveness, Readiness, and Startup Probes > Types of probe > Readiness probe",
+  "text": "Readiness probes determine when a container is ready to accept traffic.\nThis is useful when waiting for an application to perform time-consuming initial\ntasks, such as establishing network connections, loading files, and warming\ncaches.\nReadiness probes can also be useful later in the container\u2019s lifecycle,\nfor example, when recovering from temporary faults or overloads.\n\nIf the readiness probe returns a failed state, the\nEndpointSlice\ncontroller removes the Pod's IP address from the EndpointSlices of all Services\nthat match the Pod.\n\nReadiness probes run on the container during its whole lifecycle."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#readiness-probe-0",
+  "heading": "Pod Lifecycle > Container probes > Readiness probe",
+  "text": "Readiness probes determine when a container is ready to accept traffic.\nThis is useful when waiting for an application to perform time-consuming initial\ntasks, such as establishing network connections, loading files, and warming\ncaches.\nReadiness probes can also be useful later in the container's lifecycle,\nfor example, when recovering from temporary faults or overloads.\n\nIf the readiness probe returns a failed state, the\nEndpointSlice\ncontroller removes the Pod's IP address from the EndpointSlices of all Services\nthat match the Pod.\n\nReadiness probes run on the container during its whole lifecycle."
+ },
+ {
+  "chunk_id": "tasks/access-application-cluster/connecting-frontend-backend#before-you-begin-0",
+  "heading": "Connect a Frontend to a Backend Using Services > Before you begin",
+  "text": "This task uses\n[Services with external load balancers](/docs/tasks/access-application-cluster/create-external-load-balancer/), which\nrequire a supported environment. If your environment does not support this, you can use a Service of type\n[NodePort](/docs/concepts/services-networking/service/#type-nodeport) instead."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/probes#grpc-probes-2",
+  "heading": "Liveness, Readiness, and Startup Probes > Probe mechanism details > gRPC probes",
+  "text": "To use a gRPC probe, `port` must be configured. If you want to\ndistinguish probes of different types and probes for different features you can\nuse the `service` field. You can set `service` to the value `liveness` and make\nyour gRPC Health Checking endpoint respond to this request differently than when\nyou set `service` set to `readiness`. This lets you use the same endpoint for\ndifferent kinds of container health check rather than listening on two different\nports. If you want to specify your own custom service name and also specify a\nprobe type, the Kubernetes project recommends that you use a name that\nconcatenates those. For example: `myservice-liveness` (using `-` as a separator).\n\nUnlike HTTP or TCP probes, you cannot specify the health check port by name,\nand you cannot configure a custom hostname.\n\nConfiguration problems (for example: incorrect port or service, unimplemented\nhealth checking protocol) are considered a probe failure, similar to HTTP and\nTCP probes."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/configure-liveness-readiness-startup-probes#define-readiness-probes-1",
+  "heading": "Configure Liveness, Readiness and Startup Probes > Define readiness probes",
+  "text": "Configuration for HTTP and TCP readiness probes also remains identical to\nliveness probes.\n\nReadiness and liveness probes can be used in parallel for the same container.\nUsing both can ensure that traffic does not reach a container that is not ready\nfor it, and that containers are restarted when they fail."
+ }
+]

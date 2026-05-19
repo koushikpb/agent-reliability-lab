@@ -1,0 +1,50 @@
+{
+ "content": [
+  {
+   "signature": "EuICCqgBCBMYAipAHKWlM8SDiXtqNbQpcM/xpNNXUP1Yo2tpt1/jfcN9wCXFAN9DsiQG5YcVwqpKGtI3ItFbDnHMyoHM9CKj3bCoODIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAfOB8tYGEgwNu6Mg0x+N1Oe5LbIaDGMbUBscQIkuFMk6RiIwq/4t10JcT37tekFFqgYXjdFu+UDIdn6aF9jlIReiZJGP4zg7Je7o91TfRbCb/yK3KmdYk4R6ngaKvy4aDOZU15ssAl17snLK3DqjxiKgoUcjTSF78tSMR55yRxCxSfaS6toCiMsrzaL2UMfcfQBiIDVSc8NMkRXm0K1ei8SoHe5i+l9Ndvyy6m80PLII3rLm6Vd6P6F2NP4NGAE=",
+   "thinking": "Let me now look at the pods in the kafka namespace and search the docs simultaneously.",
+   "type": "thinking"
+  },
+  {
+   "text": "Got the ticket. Now let me simultaneously check the pods in the `kafka` namespace and search the docs on PodDisruptionBudgets and draining nodes.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01QzhzDF7jVAvowpqSTSGzMy",
+   "input": {
+    "namespace": "kafka"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_012uqER9bCCXizDJDVjfGDKq",
+   "input": {
+    "query": "PodDisruptionBudget drain eviction cannot evict pod"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01DQbasEfWaSw9jqLnc67Qtz",
+   "input": {
+    "query": "kubectl drain --disable-eviction force delete pod"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1437,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 216,
+ "stop_reason": "tool_use"
+}

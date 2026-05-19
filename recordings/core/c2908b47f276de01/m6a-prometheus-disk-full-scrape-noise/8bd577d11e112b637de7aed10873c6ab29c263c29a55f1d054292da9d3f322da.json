@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me check the monitoring namespace to see the status of the Prometheus and Grafana pods.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01FhfQygVzqss5rtvbpaSqZX",
+   "input": {
+    "namespace": "monitoring"
+   },
+   "name": "list_pods",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 1342,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 75,
+ "stop_reason": "tool_use"
+}

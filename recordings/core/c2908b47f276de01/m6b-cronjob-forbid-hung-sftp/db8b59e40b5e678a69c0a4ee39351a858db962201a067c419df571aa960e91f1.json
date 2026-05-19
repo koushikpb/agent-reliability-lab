@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The documentation shows that with `concurrencyPolicy: Forbid` (which is set for this job), if a job is still running, the next scheduled execution is skipped. The current pod has been running for 19+ hours, which means all subsequent scheduled runs have been blocked. The job appears to be hung during a file download. Let me search for more information about job timeouts.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01GQTXuEMAX9t39vMgEWT8CH",
+   "input": {
+    "query": "activeDeadlineSeconds job timeout killing pod"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4775,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 144,
+ "stop_reason": "tool_use"
+}

@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-6",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "**Example 3: One-time task with `restartPolicy: Never`**\n```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: migration-task\nspec:\n  restartPolicy: Never  # Never restart, regardless of exit code\n  containers:\n  - name: migrate\n    image: busybox:1.28\n    command: ['sh', '-c', 'echo \"Running migration...\"; exit 1']\n    # Even with exit code 1 (failure), the container will not restart\n    # The Pod will remain in Failed state\n```\n\n##### Sidecar containers and restart policies\n\n[Sidecar containers](/docs/concepts/workloads/pods/sidecar-containers/) have special restart behavior that differs from regular app containers:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#forced-rollback-0",
+  "heading": "StatefulSets > Rolling Updates > Forced rollback",
+  "text": "When using [Rolling Updates](#rolling-updates) with the default\n[Pod Management Policy](#pod-management-policies) (`OrderedReady`),\nit's possible to get into a broken state that requires manual intervention to repair.\n\nIf you update the Pod template to a configuration that never becomes Running and\nReady (for example, due to a bad binary or application-level configuration error),\nStatefulSet will stop the rollout and wait.\n\nIn this state, it's not enough to revert the Pod template to a good configuration.\nDue to a [known issue](https://github.com/kubernetes/kubernetes/issues/67250),\nStatefulSet will continue to wait for the broken Pod to become Ready\n(which never happens) before it will attempt to revert it back to the working\nconfiguration.\n\nAfter reverting the template, you must also delete any Pods that StatefulSet had\nalready attempted to run with the bad configuration.\nStatefulSet will then begin to recreate the Pods using the reverted template."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-14",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: restart-on-exit-codes\nspec:\n  restartPolicy: Never\n  containers:\n  - name: restart-on-exit-codes\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'sleep 60 && exit 0']\n    restartPolicy: Never     # Container restart policy must be specified if rules are specified\n    restartPolicyRules:      # Only restart the container if it exits with code 42\n    - action: Restart\n      exitCodes:\n        operator: In\n        values: [42]\n```\n\nRestart rules can be used for many more advanced lifecycle management scenarios. Note, restart rules\nare affected by the same inconsistencies as the regular restart policy. The kubelet restarts, container\nruntime garbage collection, intermitted connectivity issues with the control plane may cause the state\nloss and containers may be re-run even when you expect a container not to be restarted.\n\n#### Restart All Containers {#restart-all-containers}"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-13",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: fail-pod-if-init-fails\nspec:\n  restartPolicy: Always\n  initContainers:\n  - name: init-once      # This init container will only try once. If it fails, the pod will fail.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'echo \"Failing initialization\" && sleep 10 && exit 1']\n    restartPolicy: Never\n  containers:\n  - name: main-container # This container will always be restarted once initialization succeeds.\n    image: registry.k8s.io/busybox:1.27.2\n    command: ['sh', '-c', 'sleep 1800 && exit 0']\n```\n\nA Pod with Never restart policy with a container that ignores and restarts on specific exit codes.\nThis is useful to differentiate between restartable errors and non-restartable errors:"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/statefulset#deployment-and-scaling-guarantees-0",
+  "heading": "StatefulSets > Deployment and Scaling Guarantees",
+  "text": "* For a StatefulSet with N replicas, when Pods are being deployed, they are created sequentially, in order from {0..N-1}.\n* When Pods are being deleted, they are terminated in reverse order, from {N-1..0}.\n* Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready. If [`.spec.minReadySeconds`](#minimum-ready-seconds) is set, predecessors must be available (Ready for at least `minReadySeconds`).\n* Before a Pod is terminated, all of its successors must be completely shutdown.\n\nThe StatefulSet should not specify a `pod.Spec.TerminationGracePeriodSeconds` of 0. This practice\nis unsafe and strongly discouraged. For further explanation, please refer to\n[force deleting StatefulSet Pods](/docs/tasks/run-application/force-delete-stateful-set-pod/)."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-5",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "**Example 2: Batch job with `restartPolicy: OnFailure`**\n```yaml\napiVersion: batch/v1\nkind: Job\nmetadata:\n  name: data-processor\nspec:\n  template:\n    spec:\n      restartPolicy: OnFailure  # Only restart on non-zero exit codes\n      containers:\n      - name: processor\n        image: busybox:1.28\n        command: ['sh', '-c', 'echo \"Processing data...\"; exit 0']\n        # Exit code 0: Job completes successfully, no restart\n        # Exit code 1+: Container restarts to retry the task\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-20",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "In this example:\n\n- The Pod's overall `restartPolicy` is `Never`.\n- The `watcher-sidecar` runs a command and then exits with code `88`.\n- The exit code matches the rule, triggering the `RestartAllContainers` action.\n- The entire Pod, including the `setup-environment` init container and the `main-application` container,\n  is then restarted in-place. The pod keeps its UID, sandbox, IP, and volumes."
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/pod-lifecycle#restart-policy-15",
+  "heading": "Pod Lifecycle > How Pods handle problems with containers > Container restarts",
+  "text": "If your cluster has the feature gate `RestartAllContainersOnContainerExits` enabled, you can specify\n`RestartAllContainers` as an action in `restartPolicyRules` at container level. When a container's exit\nmatches a rule with this action, the entire Pod is terminated and restarted in-place.\n\nThis \"in-place\" restart offers a more efficient way to reset a Pod's state compared to full deletion\nand recreation. This is especially valuable for workloads where rescheduling is costly, such as\nbatch jobs or AI/ML training tasks.\n\n##### How in-place Pod restarts work\n\nWhen a `RestartAllContainers` action is triggered, the kubelet performs the following steps:\n\n1. **Fast Termination**: All running containers in the Pod are terminated.\n   The configured `terminationGracePeriodSeconds` is not respected, and any configured `preStop` hooks\n   are not executed. This ensures a swift shutdown.\n1. **Preservation of Pod Resources**: The Pod's essential resources are preserved:"
+ }
+]

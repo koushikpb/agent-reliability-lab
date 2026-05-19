@@ -1,0 +1,24 @@
+{
+ "content": [
+  {
+   "signature": "Es8DCqQBCBMYAipAd2B3jJApXvXAwQylsEqODfRLYgQtMb5HcQDzSzXLEYAVaNM8q47Akw5q74NpjclsmAaE85vJ83AAV+ZGNBD1RjIPY2xhdWRlLW9wdXMtNC03OABCCHRoaW5raW5nWiQ5YWI5ZTdlYS0wOTllLTQ5ZmQtOWQ4NC1lYTIzNGNhNWI4YWSaAREKD2NsYXVkZS1vcHVzLTQtN6gB2vDw1gYSDKBsJi19k8URsF3A3xoM3JQDcfoO91+Vx2oZIjCsM6UBsWtvtd0OUjW/jmfjvpRWfaPmSSPNGw1ulEDZx6kJn9DBhA4dUNg04IgAzcoq1wEhv44vtE3ece1cg/H0UPNrmGe/eeWqmKM8+z6CLHAL7kjXYwou3c+x3rurN4ag8GDq34h748RRvGa0K0whdsn7MaxnsS5ccCIWk1ttN7aU4X1qp8LUXHRonM2sVZtHLwZ4Sa5wrs0L8Y/HPWKhS28K4Ckk12QUJi+evJqOT/LZmxYeZLknJ7/bSdMuyNVTtClBSSmHzgrYcv+/u7e1Q6pjwigNN6286KII2DmkbjjVJqjYzHczyQPcxlLnvj0HgrycCyVK5+W5Hd4QbAWL7EEBetfsZu1f/xgB",
+   "thinking": "",
+   "type": "thinking"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01CMy1PJZ3QYjjWWNoo3hLFA",
+   "input": {
+    "query": "readOnlyRootFilesystem emptyDir writable cache"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 3258,
+ "model": "claude-opus-4-7",
+ "output_tokens": 193,
+ "stop_reason": "tool_use"
+}

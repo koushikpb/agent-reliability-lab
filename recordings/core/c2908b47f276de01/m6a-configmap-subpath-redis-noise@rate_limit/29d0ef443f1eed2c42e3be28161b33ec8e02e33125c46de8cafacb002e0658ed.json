@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI've resolved ticket T-5004. The issue was that the api-gateway pods in the edge namespace are using `subPath` when mounting the gateway-limits ConfigMap. According to Kubernetes documentation, ConfigMaps mounted with `subPath` do not receive automatic updates. \n\nThe logs confirmed the limit remained at 100 rps even after the update was supposedly applied 2+ hours earlier. The fix is to restart the gateway pods to load the new 500 rps limit, and to permanently resolve the issue, the deployment should be reconfigured to mount the entire ConfigMap directory instead of using subPath.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 7932,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 137,
+ "stop_reason": "end_turn"
+}

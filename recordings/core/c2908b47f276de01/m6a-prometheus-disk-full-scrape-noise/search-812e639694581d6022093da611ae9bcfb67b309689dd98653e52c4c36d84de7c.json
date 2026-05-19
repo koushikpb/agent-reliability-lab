@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/cluster-administration/observability#metrics-tools-0",
+  "heading": "Observability > Common observability tools > Metrics tools",
+  "text": "- [Cortex](https://cortexmetrics.io/) offers horizontally scalable, long-term Prometheus storage.\n- [Grafana Mimir](https://grafana.com/oss/mimir/) is a Grafana Labs project that provides multi-tenant, horizontally scalable Prometheus-compatible storage.\n- [Prometheus](https://prometheus.io/) is the monitoring system that scrapes and stores metrics from Kubernetes components.\n- [Thanos](https://thanos.io/) extends Prometheus with global querying, downsampling, and object storage support."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-classes#vsphere-3",
+  "heading": "Storage Classes > Parameters > vSphere",
+  "text": "     One of the most important features of vSphere for Storage Management is\n     policy based Management. Storage Policy Based Management (SPBM) is a\n     storage policy framework that provides a single unified control plane\n     across a broad range of data services and storage solutions. SPBM enables\n     vSphere administrators to overcome upfront storage provisioning challenges,\n     such as capacity planning, differentiated service levels and managing\n     capacity headroom.\n\n     The SPBM policies can be specified in the StorageClass using the\n     `storagePolicyName` parameter.\n\n   - Virtual SAN policy support inside Kubernetes\n\n     Vsphere Infrastructure (VI) Admins will have the ability to specify custom\n     Virtual SAN Storage Capabilities during dynamic volume provisioning. You\n     can now define storage requirements, such as performance and availability,\n     in the form of storage capabilities during dynamic volume provisioning.\n     The storage capability requirements are converted into a Virtual SAN\n     policy which are then pushed down to the Virtual SAN layer when a\n     persistent volume (virtual disk) is being created. The virtual disk is\n     distributed across the Virtual SAN datastore to meet the requirements."
+ },
+ {
+  "chunk_id": "concepts/storage/volumes#resources-0",
+  "heading": "Volumes > Resources",
+  "text": "The storage medium (such as Disk or SSD) of an `emptyDir` volume is determined by the\nmedium of the filesystem holding the kubelet root dir (typically\n`/var/lib/kubelet`). There is no limit on how much space an `emptyDir` or\n`hostPath` volume can consume, and no isolation between containers or\nPods.\n\nTo learn about requesting space using a resource specification, see\n[how to manage resources](/docs/concepts/configuration/manage-resources-containers/)."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-capacity#intro-0",
+  "heading": "Storage Capacity",
+  "text": "Storage capacity is limited and may vary depending on the node on\nwhich a pod runs: network-attached storage might not be accessible by\nall nodes, or storage is local to a node to begin with.\n\nThis page describes how Kubernetes keeps track of storage capacity and\nhow the scheduler uses that information to [schedule Pods](/docs/concepts/scheduling-eviction/) onto nodes\nthat have access to enough storage capacity for the remaining missing\nvolumes. Without storage capacity tracking, the scheduler may choose a\nnode that doesn't have enough capacity to provision a volume and\nmultiple scheduling retries will be needed."
+ },
+ {
+  "chunk_id": "concepts/storage/ephemeral-storage#resource-emphemeralstorage-consumption-1",
+  "heading": "Local ephemeral storage > Ephemeral storage consumption management",
+  "text": "However, if the filesystem space for writeable container layers, node-level logs,\nor `emptyDir` volumes falls low, the node\ntaints itself as short on local storage\nand this taint triggers eviction for any Pods that don't specifically tolerate the taint.\n\nSee the supported [configurations](#configurations) for ephemeral local storage.\n\nThe kubelet supports different ways to measure Pod storage use:\n\nThe kubelet performs regular, scheduled checks that scan each `emptyDir` volume,\ncontainer log directory, and writeable container layer.\n\nThe scan measures how much space is used.\n\nIn this mode, the kubelet does not track open file descriptors\nfor deleted files.\n\nIf you (or a container) create a file inside an `emptyDir` volume,\nsomething then opens that file, and you delete the file while it is still open,\nthen the inode for the deleted file stays until you close that file\nbut the kubelet does not categorize the space as in use."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-capacity#scheduling-0",
+  "heading": "Storage Capacity > Scheduling",
+  "text": "Storage capacity information is used by the Kubernetes scheduler if:\n- a Pod uses a volume that has not been created yet,\n- that volume uses a StorageClass which references a CSI driver and\n  uses `WaitForFirstConsumer` [volume binding\n  mode](/docs/concepts/storage/storage-classes/#volume-binding-mode),\n  and\n- the `CSIDriver` object for the driver has `StorageCapacity` set to\n  true.\n\nIn that case, the scheduler only considers nodes for the Pod which\nhave enough storage available to them. This check is very\nsimplistic and only compares the size of the volume against the\ncapacity listed in `CSIStorageCapacity` objects with a topology that\nincludes the node.\n\nFor volumes with `Immediate` volume binding mode, the storage driver\ndecides where to create the volume, independently of Pods that will\nuse the volume. The scheduler then schedules Pods onto nodes where the\nvolume is available after the volume has been created."
+ },
+ {
+  "chunk_id": "concepts/configuration/manage-resources-containers#resource-monitoring-for-local-ephemeral-storage-0",
+  "heading": "Resource Management for Pods and Containers > Local ephemeral storage > Resource monitoring for local ephemeral storage",
+  "text": "The kubelet can measure how much local ephemeral storage is being used. It \ndoes this as long as you have enabled local ephemeral storage capacity isolation.\n\nKubernetes tracks the amount of ephemeral storage a Pod uses from the following:\n* Writing to the container's writable layer (rootfs), container images, or both.\n* Writing to local `emptyDir` volumes.\n* The Pod's own logs (usually stored under `/var/log/pods`).\n* System files managed by Kubernetes that are mapped into the Pod, such as `/etc/hosts`."
+ },
+ {
+  "chunk_id": "concepts/storage/storage-capacity#api-0",
+  "heading": "Storage Capacity > API",
+  "text": "There are two API extensions for this feature:\n- [CSIStorageCapacity](/docs/reference/kubernetes-api/config-and-storage-resources/csi-storage-capacity-v1/) objects:\n  these get produced by a CSI driver in the namespace\n  where the driver is installed. Each object contains capacity\n  information for one storage class and defines which nodes have\n  access to that storage.\n- [The `CSIDriverSpec.StorageCapacity` field](/docs/reference/kubernetes-api/config-and-storage-resources/csi-driver-v1/#CSIDriverSpec):\n  when set to `true`, the Kubernetes scheduler will consider storage\n  capacity for volumes that use the CSI driver."
+ }
+]

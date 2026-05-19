@@ -1,0 +1,28 @@
+{
+ "content": [
+  {
+   "signature": "EvMHCqgBCBMYAipAeQAppnJgFSP4w9Fn6vB7IIP0C55nNeWDUAkUSSGHlwWE/oqPWbTvooQv/z7C9VfGbnqW5NGCSk6YoygsOu/wujIRY2xhdWRlLXNvbm5ldC00LTY4AEIIdGhpbmtpbmdaJDlhYjllN2VhLTA5OWUtNDlmZC05ZDg0LWVhMjM0Y2E1YjhhZJoBEwoRY2xhdWRlLXNvbm5ldC00LTaoAef18NYGEgzRKN6VYDjkeOzxMtsaDIyxmK9jZquV10cNjCIwBy+NxBLxNZunRN5wsy8Jca8I59lNTQbB7pg83q29PlwBdfCz5K0c/QscApGJ4zr4KvcFgW7cmKVrRKfi6JhNazOVcJuUP2GjBGhhPWcx5GIvkSEnLqp+SAQ5/Ai3dpah+hY5k0Yd0LUVjwsO1y4jGqkCgLNR4O8KGzpSau3NQQ5lUF+Yyn+mCHpbH4jkVYLl0zSx2JoaXs/mMPu76wEEBVhRxUudrpsIe4lkcivmHVlCj1OTnH2J9mRa3bsZVFc2KBawK8bAb7lvFGq3ijYBQK+PzLzysklakXI53i18y7dZmiE+zWpG1lM9U3+iWvxm3gDWy/eLEXWyLvmzQwRhrCqU4QKjvnUrV9Jjr45ZVXXLM93UHUWPK3dS+FctafRIXay2gBLUMGKmhlEDjJPPellC6D6y9AeeK8CuWHNzWa+5u/xf1E4w8wosO/YpTJ4qisW1XOD/LuWGEQJuxqBTWj5g4CsKhynsvibtlZLS6+eC/n1Gx/UH8flmwLcotrJvIrHfDeKxrRHHbM0DkmSKH9odPeo4rWEkDcOmDY1AOzMgzFFFKp+Ntu502sO7Hu7qpGSNMwuuQbRqLZtNAYEVleGPcA47bHf5nLn79brX01QxoAXV/kPv7VQr3oCet+sv5yGH0SnbgerPX57d5a5C4WLeqIjToHTzTzWM8Yrtu+LQQItGVQbEJhfByElPW9+r0jOm1fv97EbbdJfTk7vn+A+BfwZh7BRbeGQGwvanuAVT+rdYq+W/R9HB/MllbNWuCV+f56SojwNrQworDxyYWpUGlJ2Cssh4yCZTgrHYJd9maIp5NSopLFCXJttdG9bg7BWYwvwEnwTcrVK25vCpz+cJN005ahrkX5lV6XRXsdfilF7Fj+LNjrVNCXJMFaUAOuQlOgDgo2ucNf1snu2NUOdEuUForWf4niPQxle86beU7oUZdyfSbi89a+PSp+OUeVeXP1P9R1uV/NZohHMw9jIUJQXBw0dA1pH1tLsgVS12MirH7tUsFOMYsqZfOLDwlqz9KWOJS044+rHxpa1woD6ZuauJHKzLK8Oyh72NiurYMthM9xy8E1JQGAE=",
+   "thinking": "The logs are very clear. The issue is not an image pull problem but a PodSecurity violation. The new ReplicaSet cannot create pods because the `documents` namespace enforces PodSecurity policy `restricted:latest`, and the new 1.5.0 manifest doesn't set the required security context fields:\n\n1. `securityContext.allowPrivilegeEscalation=false`\n2. `securityContext.capabilities.drop=[\"ALL\"]`\n3. `securityContext.runAsNonRoot=true`\n4. `securityContext.seccompProfile.type` to `\"RuntimeDefault\"` or `\"Localhost\"`\nThe old 1.4.2 pods probably remain running simply because they predate enforcement or already had compliant settings, unlike this new manifest. I should look into the PodSecurity restricted profile requirements to confirm exactly what's needed.\n\n",
+   "type": "thinking"
+  },
+  {
+   "text": "The root cause is clear from the logs \u2014 a PodSecurity admission violation. Let me search the docs for the restricted policy requirements to cite them properly.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_014kqWjsWeqALmh5TccWjQPr",
+   "input": {
+    "query": "PodSecurity restricted profile allowPrivilegeEscalation runAsNonRoot seccompProfile capabilities drop"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 6941,
+ "model": "claude-sonnet-4-6",
+ "output_tokens": 325,
+ "stop_reason": "tool_use"
+}

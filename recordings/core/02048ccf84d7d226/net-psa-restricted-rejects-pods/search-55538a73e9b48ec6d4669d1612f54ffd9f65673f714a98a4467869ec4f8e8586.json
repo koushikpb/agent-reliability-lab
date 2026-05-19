@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#eliminate-non-standard-options-2",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.b. Eliminate options not covered by the Pod Security Standards",
+  "text": "- `.spec.requiredDropCapabilities` - Required to drop `ALL` for the Restricted profile.\n- `.spec.seLinux` - (Only mutating with the `MustRunAs` rule) required to enforce the SELinux\n  requirements of the Baseline & Restricted profiles.\n- `.spec.runAsUser` - (Non-mutating with the `RunAsAny` rule) required to enforce `RunAsNonRoot` for\n  the Restricted profile.\n- `.spec.allowPrivilegeEscalation` - (Only mutating if set to `false`) required for the Restricted\n  profile."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#psp-update-rollout-2",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 2. Simplify & standardize PodSecurityPolicies > 2.c. Rollout the updated PSPs",
+  "text": "   you can compare the pod with the PodTemplate in the controller resource. If any changes are\n   identified, the original Pod or PodTemplate should be updated with the desired configuration.\n   The fields to review are:\n   - `.metadata.annotations['container.apparmor.security.beta.kubernetes.io/*']` (replace * with each container name)\n   - `.spec.runtimeClassName`\n   - `.spec.securityContext.fsGroup`\n   - `.spec.securityContext.seccompProfile`\n   - `.spec.securityContext.seLinuxOptions`\n   - `.spec.securityContext.supplementalGroups`\n   - On containers, under `.spec.containers[*]` and `.spec.initContainers[*]`:\n       - `.securityContext.allowPrivilegeEscalation`\n       - `.securityContext.capabilities.add`"
+ },
+ {
+  "chunk_id": "concepts/security/pod-security-standards#restricted-3",
+  "heading": "Pod Security Standards > Profile Details > Restricted",
+  "text": "\t\t\t\t<p>Privilege escalation (such as via set-user-ID or set-group-ID file mode) should not be allowed. <em><a href=\"#os-specific-policy-controls\">This is Linux only policy</a> in v1.25+ <code>(spec.os.name != windows)</code></em></p>\n\t\t\t\t<p><strong>Restricted Fields</strong></p>\n\t\t\t\t<ul>\n\t\t\t\t\t<li><code>spec.containers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t\t<li><code>spec.initContainers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t\t<li><code>spec.ephemeralContainers[*].securityContext.allowPrivilegeEscalation</code></li>\n\t\t\t\t</ul>\n\t\t\t\t<p><strong>Allowed Values</strong></p>\n\t\t\t\t<ul>"
+ },
+ {
+  "chunk_id": "concepts/workloads/pods/advanced-pod-config#container-level-security-context-0",
+  "heading": "Advanced Pod Configuration > Pod and container level security context configuration > Container-level security context",
+  "text": "You can specify the security context just for a specific container.\nHere's an example:\n\n#### Example Pod {#container-level-security-context-example}\n\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo-2\nspec:\n  containers:\n  - name: sec-ctx-demo-2\n    image: gcr.io/google-samples/node-hello:1.0\n    securityContext:\n      allowPrivilegeEscalation: false\n      runAsNonRoot: true\n      runAsUser: 1000\n      capabilities:\n        drop:\n        - ALL\n      seccompProfile:\n        type: RuntimeDefault"
+ },
+ {
+  "chunk_id": "concepts/security/security-checklist#pod-security-2",
+  "heading": "Security Checklist > Pod security",
+  "text": "Pod Security admission `restricted` policy, the most restrictive policy of the\n[Pod Security Standards](/docs/concepts/security/pod-security-standards/) set,\n[can operate in several modes](/docs/concepts/security/pod-security-admission/#pod-security-admission-labels-for-namespaces),\n`warn`, `audit` or `enforce` to gradually apply the most appropriate\n[security context](/docs/tasks/configure-pod-container/security-context/)\naccording to security best practices. Nevertheless, pods'\n[security context](/docs/tasks/configure-pod-container/security-context/)\nshould be separately investigated to limit the privileges and access pods may\nhave on top of the predefined security standards, for specific use cases."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/migrate-from-psp#is-psa-right-for-you-2",
+  "heading": "Migrate from PodSecurityPolicy to the Built-In PodSecurity Admission Controller > 0. Decide whether Pod Security Admission is right for you",
+  "text": "  to enforce those policies.\n- **Sub-namespace policy granularity** - PodSecurityPolicy lets you bind different policies to\n  different Service Accounts or users, even within a single namespace. This approach has many\n  pitfalls and is not recommended, but if you require this feature anyway you will\n  need to use a 3rd party webhook instead. The exception to this is if you only need to completely exempt\n  specific users or [RuntimeClasses](/docs/concepts/containers/runtime-class/), in which case Pod\n  Security Admission does expose some\n  [static configuration for exemptions](/docs/concepts/security/pod-security-admission/#exemptions)."
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/security-context#set-the-security-context-for-a-pod-1",
+  "heading": "Configure a Security Context for a Pod or Container > Set the security context for a Pod",
+  "text": "```yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: security-context-demo\nspec:\n  securityContext:\n    runAsUser: 1000\n    runAsGroup: 3000\n    fsGroup: 2000\n    supplementalGroups: [4000]\n  volumes:\n  - name: sec-ctx-vol\n    emptyDir: {}\n  containers:\n  - name: sec-ctx-demo\n    image: busybox:1.28\n    command: [ \"sh\", \"-c\", \"sleep 1h\" ]\n    volumeMounts:\n    - name: sec-ctx-vol\n      mountPath: /data/demo\n    securityContext:\n      allowPrivilegeEscalation: false\n```"
+ },
+ {
+  "chunk_id": "tasks/configure-pod-container/enforce-standards-admission-controller#configure-the-admission-controller-1",
+  "heading": "Enforce Pod Security Standards by Configuring the Built-in Admission Controller > Configure the Admission Controller",
+  "text": "```yaml\napiVersion: apiserver.config.k8s.io/v1\nkind: AdmissionConfiguration\nplugins:\n- name: PodSecurity\n  configuration:\n    apiVersion: pod-security.admission.config.k8s.io/v1 # see compatibility note\n    kind: PodSecurityConfiguration\n    # Defaults applied when a mode label is not set.\n    #\n    # Level label values must be one of:\n    # - \"privileged\" (default)\n    # - \"baseline\"\n    # - \"restricted\"\n    #\n    # Version label values must be one of:\n    # - \"latest\" (default) \n    # - specific version like \"v\"\n    defaults:\n      enforce: \"privileged\"\n      enforce-version: \"latest\"\n      audit: \"privileged\"\n      audit-version: \"latest\"\n      warn: \"privileged\"\n      warn-version: \"latest\"\n    exemptions:\n      # Array of authenticated usernames to exempt.\n      usernames: []\n      # Array of runtime class names to exempt.\n      runtimeClasses: []\n      # Array of namespaces to exempt.\n```"
+ }
+]

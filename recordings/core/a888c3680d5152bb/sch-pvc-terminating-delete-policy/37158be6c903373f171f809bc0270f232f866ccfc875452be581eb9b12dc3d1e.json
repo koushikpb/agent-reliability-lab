@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Let me get the logs from the cleanup job:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_015tVP2Qs17mP4wCbRatZr6c",
+   "input": {
+    "pod_name": "pvc-cleanup-29622560-r5vzt"
+   },
+   "name": "get_pod_logs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4279,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 80,
+ "stop_reason": "tool_use"
+}

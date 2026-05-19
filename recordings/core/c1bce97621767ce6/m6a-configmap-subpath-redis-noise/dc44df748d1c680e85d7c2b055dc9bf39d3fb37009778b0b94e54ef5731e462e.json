@@ -1,0 +1,12 @@
+{
+ "content": [
+  {
+   "text": "## Summary\n\nI resolved ticket T-5004 by identifying that the api-gateway pods use a `subPath` mount for their ConfigMap, which prevents ConfigMap updates from being propagated to the pods. The gateway logs showed the file hash never changed despite the ConfigMap being updated. The fix is to remove the `subPath` from the volume mount so that ConfigMap changes automatically propagate to the running pods within 2 minutes without requiring a restart.",
+   "type": "text"
+  }
+ ],
+ "input_tokens": 8097,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 99,
+ "stop_reason": "end_turn"
+}

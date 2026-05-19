@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "Now let me search for documentation about this CVN-4127 error to understand it better:",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01PuVsUANyNWXJUb53vDvNQE",
+   "input": {
+    "query": "CVN-4127 host group LUN mappings limit array"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 2376,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 87,
+ "stop_reason": "tool_use"
+}

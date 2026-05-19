@@ -1,0 +1,23 @@
+{
+ "content": [
+  {
+   "text": "The search results are about ingress configuration but not specifically about 502 errors. Let me search more specifically about connection issues and upstream problems.",
+   "type": "text"
+  },
+  {
+   "caller": {
+    "type": "direct"
+   },
+   "id": "toolu_01LGDAShgMaRYKawmFfKtxGR",
+   "input": {
+    "query": "service port connection refused upstream unhealthy"
+   },
+   "name": "search_docs",
+   "type": "tool_use"
+  }
+ ],
+ "input_tokens": 4137,
+ "model": "claude-haiku-4-5",
+ "output_tokens": 90,
+ "stop_reason": "tool_use"
+}

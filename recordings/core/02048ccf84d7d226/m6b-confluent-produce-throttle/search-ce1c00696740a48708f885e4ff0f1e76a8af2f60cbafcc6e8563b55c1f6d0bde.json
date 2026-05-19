@@ -1,0 +1,42 @@
+[
+ {
+  "chunk_id": "concepts/workloads/controllers/replicaset#scaling-a-replicaset-0",
+  "heading": "ReplicaSet > Working with ReplicaSets > Scaling a ReplicaSet",
+  "text": "A ReplicaSet can be easily scaled up or down by simply updating the `.spec.replicas` field. The ReplicaSet controller\nensures that a desired number of Pods with a matching label selector are available and operational.\n\nWhen scaling down, the ReplicaSet controller chooses which pods to delete by sorting the available pods to\nprioritize scaling down pods based on the following general algorithm:\n\n1. Pending (and unschedulable) pods are scaled down first\n1. If `controller.kubernetes.io/pod-deletion-cost` annotation is set, then\n   the pod with the lower value will come first.\n1. Pods on nodes with more replicas come before pods on nodes with fewer replicas.\n1. If the pods' creation times differ, the pod that was created more recently\n   comes before the older pod (the creation times are bucketed on an integer log scale).\n\nIf all of the above match, then selection is random."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#scaling-to-and-from-zero-0",
+  "heading": "Horizontal Pod Autoscaling > Scaling to and from zero",
+  "text": "For HorizontalPodAutoscalers that scale on [custom](#scaling-on-custom-metrics) (object) or\nexternal metrics, you can set `spec.minReplicas` to `0`. The workload is then scaled all the way\ndown to zero replicas when there is no load, and scaled back up when the metric indicates that at\nleast one replica is needed. This is useful for workloads that are idle for long periods and\nexpensive to keep running, such as consumers of an occasionally used queue or jobs that require\ndedicated hardware like GPUs.\n\nScaling to zero is only supported for object and external metrics. It is not available for\nresource metrics (such as CPU or memory utilization), because those can only be measured on\nrunning Pods. Setting `minReplicas: 0` requires at least one object or external metric to be\nconfigured; the API server rejects the HorizontalPodAutoscaler otherwise."
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#scaling-policies-1",
+  "heading": "Horizontal Pod Autoscaling > Configurable scaling behavior > Scaling policies",
+  "text": "Since by default the policy which allows the highest amount of change is selected, the second policy will\nonly be used when the number of pod replicas is more than 40. With 40 or less replicas, the first policy will be applied.\nFor instance if there are 80 replicas and the target has to be scaled down to 10 replicas\nthen during the first step 8 replicas will be reduced. In the next iteration when the number\nof replicas is 72, 10% of the pods is 7.2 but the number is rounded up to 8. On each loop of\nthe autoscaler controller the number of pods to be change is re-calculated based on the number\nof current replicas. When the number of replicas falls below 40 the first policy _(Pods)_ is applied\nand 4 replicas will be reduced at a time.\n\nThe policy selection can be changed by specifying the `selectPolicy` field for a scaling\ndirection. By setting the value to `Min` which would select the policy which allows the\nsmallest change in the replica count. Setting the value to `Disabled` completely disables\nscaling in that direction."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#proportional-scaling-2",
+  "heading": "Deployments > Scaling a Deployment > Proportional scaling",
+  "text": "* Then a new scaling request for the Deployment comes along. The autoscaler increments the Deployment replicas\nto 15. The Deployment controller needs to decide where to add these new 5 replicas. If you weren't using\nproportional scaling, all 5 of them would be added in the new ReplicaSet. With proportional scaling, you\nspread the additional replicas across all ReplicaSets. Bigger proportions go to the ReplicaSets with the\nmost replicas and lower proportions go to ReplicaSets with less replicas. Any leftovers are added to the\nReplicaSet with the most replicas. ReplicaSets with zero replicas are not scaled up.\n\nIn our example above, 3 replicas are added to the old ReplicaSet and 2 replicas are added to the\nnew ReplicaSet. The rollout process should eventually move all replicas to the new ReplicaSet, assuming\nthe new replicas become healthy. To confirm this, run:\n\n```shell\nkubectl get deploy\n```"
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/deployment#updating-a-deployment-7",
+  "heading": "Deployments > Updating a Deployment",
+  "text": "      Normal  ScalingReplicaSet  14s   deployment-controller  Scaled down replica set nginx-deployment-2035384211 to 0\n  ```\n  Here you see that when you first created the Deployment, it created a ReplicaSet (nginx-deployment-2035384211)\n  and scaled it up to 3 replicas directly. When you updated the Deployment, it created a new ReplicaSet\n  (nginx-deployment-1564180365) and scaled it up to 1 and waited for it to come up. Then it scaled down the old ReplicaSet\n  to 2 and scaled up the new ReplicaSet to 2 so that at least 3 Pods were available and at most 4 Pods were created at all times.\n  It then continued scaling up and down the new and the old ReplicaSet, with the same rolling update strategy.\n  Finally, you'll have 3 available replicas in the new ReplicaSet, and the old ReplicaSet is scaled down to 0."
+ },
+ {
+  "chunk_id": "concepts/workloads/controllers/replicationcontroller#scaling-0",
+  "heading": "ReplicationController > Common usage patterns > Scaling",
+  "text": "The ReplicationController enables scaling the number of replicas up or down, either manually or by an auto-scaling control agent, by updating the `replicas` field."
+ },
+ {
+  "chunk_id": "tasks/run-application/run-replicated-stateful-application#scaling-the-number-of-replicas-1",
+  "heading": "Run a Replicated Stateful Application > Scaling the number of replicas",
+  "text": "```\nWaiting for pod default/mysql-client to be running, status is Pending, pod ready: false\n+---------+\n| message |\n+---------+\n| hello   |\n+---------+\npod \"mysql-client\" deleted\n```\n\nScaling back down is also seamless:\n\n```shell\nkubectl scale statefulset mysql --replicas=3\n```\n\nAlthough scaling up creates new PersistentVolumeClaims\nautomatically, scaling down does not automatically delete these PVCs.\n\nThis gives you the choice to keep those initialized PVCs around to make\nscaling back up quicker, or to extract data before deleting them.\n\nYou can see this by running:\n\n```shell\nkubectl get pvc -l app=mysql\n```\n\nWhich shows that all 5 PVCs still exist, despite having scaled the\nStatefulSet down to 3:"
+ },
+ {
+  "chunk_id": "concepts/workloads/autoscaling/horizontal-pod-autoscale#scaling-to-and-from-zero-1",
+  "heading": "Horizontal Pod Autoscaling > Scaling to and from zero",
+  "text": "This behavior is controlled by the `HPAScaleToZero`\n[feature gate](/docs/reference/command-line-tools-reference/feature-gates/), which is enabled by\ndefault. The feature gate must be enabled on both the\nkube-apiserver (which allows\n`minReplicas: 0`) and the\nkube-controller-manager\n(which performs the scaling).\n\nWhile the HPA is holding a workload at zero replicas, it records a `ScaledToZero` condition set to\n`True` on the HorizontalPodAutoscaler's status. The HPA uses this condition to distinguish a\nworkload that it scaled to zero (and will scale back up when the metric returns) from one that was\n[manually deactivated](#implicit-maintenance-mode-deactivation) by setting its replica count to\n`0`. Once the workload is scaled back up, the condition is set to `False` with the reason\n`NotScaledToZero`."
+ }
+]
