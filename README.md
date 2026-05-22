@@ -25,8 +25,6 @@ uv run pytest
 
 ## Results
 
-All numbers come from real runs. Total live spend: $43.89.
-
 ### Agent configs, 40 core scenarios
 
 | Config | Pass rate | $ per success | p50 / p95 latency | Repeats |
@@ -36,8 +34,6 @@ All numbers come from real runs. Total live spend: $43.89.
 | Sonnet 4.6, prompt v2, hybrid + rerank | 0.625 | $0.167 | 50.1 s / 81.9 s | 1 |
 | Sonnet 4.6, prompt v1, dense only | 0.325 | $0.315 | 46.8 s / 87.3 s | 1 |
 | Haiku 4.5 (no thinking), prompt v1, hybrid + rerank | 0.450 | $0.062 | 21.3 s / 31.8 s | 1 |
-
-![Pass rate against cost per successful task and p50 latency](assets/frontier.svg)
 
 - Three identical Opus runs spread from 0.55 to 0.575, and 18 of 40 scenarios passed in some repeats and failed
   in others. Opus vs Sonnet v1 is -0.108 (paired bootstrap CI -0.275 to +0.058), so 40 scenarios cannot tell
@@ -94,12 +90,5 @@ Live gating with one run per side is not trustworthy, so CI gates on replays.
 | Citations support the claims | 51 | 0.80 | 0.45 | 10 | 0 |
 
 The judge is lenient, and its verdicts feed no number above.
-
-### Limits
-
-- The 40 scenarios and the retrieval labels were written by LLM agents and reviewed by an LLM, not by a person.
-- Only Opus has repeats. Sonnet and Haiku numbers are single runs.
-- Faults and seeded bugs ran on Haiku 4.5 without thinking; they say nothing about Opus.
-- The judge calibration rests on one labeler and 70 items.
 
 Corpus: Kubernetes documentation, © The Kubernetes Authors, CC BY 4.0.
